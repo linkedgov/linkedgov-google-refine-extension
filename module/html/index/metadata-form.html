@@ -1,0 +1,75 @@
+<form bind="form">
+	<div class="grid-layout metadata">
+		
+		<ul class="errorMessages"></ul>
+			
+		<table class="form-table">
+			<tr>
+				<th><label for="data-name-input">Enter the name of the dataset<span class="required">*</span></label></th>
+				<td><input type="text" size="40" id="data-name-input" name="data-name" /></td>
+			</tr>
+		  <tr class="license">
+			<th><label for="data-license">License details<span class="required">*</span></label></th>
+			<td>
+				<span><input id="data-open-license" type="radio" name="data-license" value="open-license"/><label for="data-open-license">Open license</label></span>
+				<span><input id="data-lorem-license" type="radio" name="data-license" value="lorem-license"/><label for="data-lorem-license">Lorem license</label></span>
+				<span><input id="data-ipsum-license" type="radio" name="data-license" value="ipsum-license"/><label for="data-ipsum-license">Ipsum license</label></span>
+				<span><input id="open-license" type="radio" name="data-license" value="other" id="data-license-other-radio" /><label for="data-license-other-radio">Other - please specify</label></span>
+				<input type="text" name="data-license-other" id="data-license-other-input" disabled="true" size="40" />
+			</td>
+		  </tr>	
+
+			<tr class="license-message">
+			<td colspan="2">
+				<span>Sorry! We cannot use this data.</span>
+				<span>Due to licensing restrictions we cannot use the dataset you want to add.</span>
+				<span>We will do our best to resolve this issue and notify you if we add the dataset to LinkedGov.</span>
+			</td>
+			</tr>
+
+			<tr>
+				<th><label for="data-webpage-input">Enter the location of the dataset webpage<span class="required">*</span></label></th>
+				<td><input type="text" size="40" id="data-webpage-input" name="data-webpage" value="http://"/></td>
+			</tr>
+			<tr>
+				<th><label for="data-license-webpage-input">If the license details are separate, enter the location of the license webpage</label></th>
+				<td><input type="text" size="40" id="data-license-webpage-input" name="data-license-webpage" value="http://"/></td>
+			</tr>
+			<tr>
+				<th><label for="data-organisation-input">Source organisation<span class="required">*</span></label></th>
+				<td><input type="text" size="40" id="data-organisation-input" name="data-organisation"/></td>
+			</tr>
+			<tr>
+				<th><label for="data-description-webpage-input">Enter the location of the description of the dataset<span class="required">*</span></label></th>
+				<td><input type="text" size="40" id="data-description-webpage-input" name="data-description" value="http://"/></td>
+			</tr>			
+			<tr>
+				<th><label for="data-keywords-input">Enter keywords describing the data<span class="required">*</span><span class="smallprint">(separate the keywords with commas, e.g. location, postcode)</span></label></th>
+				<td><textarea rows="2" id="data-keywords-input" name="data-keywords"/></textarea></td>
+			</tr>						
+			<tr>
+				<th><label for="data-date-input">Enter the date this data was published</label></th>
+				<td><input type="text" id="data-date-input" name="data-date" class="datepicker" /></td>
+			</tr>
+			<tr>
+				<th><label for="data-update-freq-input">Enter the frequency this data gets updated (approximately)</label></th>
+				<td>
+				<select id="data-update-freq-input" name="data-update-freq">
+					<option value="hourly">Hourly</option>
+					<option value="daily">Daily</option>
+					<option value="weekly">Weekly</option>
+					<option value="montly">Monthly</option>
+					<option value="quarterly">Quarterly</option>
+					<option value="yearly">Yearly</option>
+				</select>
+				</td>
+			</tr>
+
+			<tr>
+				<th><!-- space --></th>
+				<!-- td width="1"><button bind="addButton" class="button" type="button">Add Another URL</button></td-->
+				<td><button class="button button-primary proceed" type="button">Next &raquo;</button></td>
+			</tr>
+		</table>
+	</div>
+</form>

@@ -1,0 +1,370 @@
+/*
+ * Copyright 2011
+ * LinkedGov
+ * Author: Dan Smith
+ * 
+ */
+
+/* This file is added to the /index page */
+
+body.lg #left-panel {
+	display:none !important;
+}
+body.lg #right-panel {
+	left:0px !important;
+	width:100% !important;
+}
+body.lg #right-panel-body {
+/*	width:100% !important;*/
+}
+body.lg .create-project-ui-source-selection-tab-body {
+	height:100px !important;
+}
+body.lg #create-project-ui-source-selection-layout {
+    width: 100%;
+}
+
+/* ---- */
+
+
+/*
+ * CSS styles for LinkedGov Refine 
+ */
+
+body.lg #header {
+    height: 40px;
+    margin-bottom: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-top: 8px;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    position: relative;
+}
+body.lg div#left-panel {
+display: none;
+}
+body.lg div#right-panel {
+left:0px;
+}
+body.lg .clear {
+clear:both;
+}
+body.lg .hide {
+display: none;
+}
+
+/**** Upload data from source & metadata forms ****/
+
+body.lg #lg-logo {
+    background: url("../images/logo-linkedgov.png") no-repeat scroll right top transparent;
+    height: 135px;
+    position: absolute;
+    right: 50px;
+    top: 50px;
+    width: 135px;
+}
+body.lg div.grid-layout.layout-normal {
+    /*margin-bottom: 100px;*/    
+}
+body.lg div.computer {
+    /*background-image: url("../images/upload_file.png");*/
+}
+body.lg div.web {
+    /*background-image: url("../images/upload_web.png");*/
+}
+body.lg td.spacer {
+	background-color:#EBEEF8;
+	padding:10px;
+}
+body.lg td#linkedgov-metadata-form {
+	bottom: 0;
+    display: block;
+    height: 200px;
+    left: 0;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    right: 0;
+    border-top:1px solid #bbccff;
+}
+body.lg .form-table {
+    border-spacing: 10px;
+    /*margin: 0 auto;*/
+}
+body.lg .form-table th, body.lg .form-table td {
+	font-size: 12px;
+}
+body.lg ul.errorMessages {
+    background-color: #FFEBEB;
+    border: 1px solid #DDDDDD;
+    color: #710101;
+    display:none;
+    font-size: 12px;
+    margin: 10px 0 0 10px;
+    padding: 20px;
+    text-align: left;
+    width: 540px;
+}
+body.lg ul.errorMessages li {
+    padding-bottom: 2px;
+    padding-top: 2px;	
+}
+body.lg .form-table tr {
+    display: table-row-group;
+}
+body.lg .form-table th {
+    display: block;
+    font-weight: normal;
+    line-height: 20px;
+    margin-right: 10px;
+    padding-top: 4px;
+    text-align: left;
+    width: 300px;
+}
+body.lg .form-table tr.location {
+margin-bottom:5px;
+}
+body.lg .form-table tr.or {
+margin-bottom:5px;
+}
+body.lg .form-table tr.license span {
+    display: block;
+    padding: 3px 3px 3px 0;
+}
+body.lg input.default-importing-web-url {
+	width:245px;
+}
+body.lg input:focus {
+	background-color:#FEFDE1;
+	border-color:#DADCAC;
+}
+body.lg textarea:focus {
+	background-color:#FEFDE1;
+	border-color:#DADCAC;
+}
+body.lg input.error {
+    background-color: #FFEBEB;
+    border: 1px solid #C47D7D;
+}
+body.lg textarea.error {
+    background-color: #FFEBEB;
+    border: 1px solid #C47D7D;
+}
+body.lg tr.license td.error {
+    background-color: #FFEBEB;
+    border: 1px solid #C47D7D;
+    padding: 5px;
+}
+input#data-license-other-input {
+	width: 245px;
+}
+td.error input#data-license-other-input {
+	width: 233px;
+}
+body.lg div.metadata input[type="text"] {
+    width: 245px;
+}
+body.lg input[type="radio"] {
+    margin-left: 0;
+    margin-right: 10px;
+    padding: 0;
+}
+body.lg textarea {
+	width:245px;
+    border-color: #888888 #CCCCCC #CCCCCC;
+    border-right: 1px solid #CCCCCC;
+    border-style: solid;
+    border-width: 1px;
+    font-family: inherit;
+    font-size: 1em;
+    padding: 3px;
+    vertical-align: baseline;	
+}
+body.lg form span.smallprint {
+    color: #999999;
+    display: block;
+    font-size: 12px;
+    line-height: 12px;
+}
+body.lg form span.required {
+    color: red;
+    display: inline-block !important;
+    padding-left: 5px !important;
+    padding-right: 0 !important;
+}
+body.lg div#ui-datepicker-div {
+    background: none repeat scroll 0 0 #FFFFFF;
+    border: 2px solid #999999;
+    width:24.5em;
+}
+/*
+body.lg input#project-file-input {
+	display: none;
+}
+*/
+body.lg input#project-license-other-input {
+	margin-top:5px;
+}
+body.lg select#project-update-freq-input {
+    padding: 3px;
+    width: 253px;
+}
+body.lg input#upload-file-button {
+    margin-left: 314px;
+}
+body.lg tr.license-message {
+	border:1px solid #EEEEEE;
+	background-color:#FFFDCC;
+	display: none;
+}
+body.lg tr.license-message td {
+    padding: 10px;
+    text-align: center;
+}
+body.lg tr.license-message td span {
+	display: block;
+	padding: 5px;
+}
+
+
+/**** Parsing panel ****/
+body.lg .default-importing-parsing-data-panel {
+	border-left:5px solid #BBCCFF;
+}
+body.lg td.default-importing-parsing-control-panel-options-panel {
+	padding: 0 0 0 0;
+}
+body.lg .default-importing-parsing-control-panel {
+    border-top-width: 0px;
+    background-color: #BBCCFF;
+}
+body.lg .default-importing-parsing-control-panel div.successQuestion {
+    background: none repeat scroll 0 0 #FFFFFF;
+    padding: 15px;
+}
+body.lg .default-importing-parsing-control-panel div.successQuestion p {
+	margin-bottom: 10px;
+}
+body.lg .default-importing-parsing-control-panel div.successQuestion button {
+	margin-bottom: 10px;
+}
+body.lg .default-importing-parsing-control-panel div.successQuestion ul {
+    list-style-type: square;
+    margin-bottom: 10px;
+    margin-left: 15px;
+    text-indent: -13px;
+}
+body.lg .default-importing-parsing-control-panel div.successQuestion ul li {
+	padding-bottom: 10px;
+}
+body.lg div.primary-buttons {
+    background: none repeat scroll 0 0 #BBCCFF;
+    bottom: 0;
+    height: 60px;
+    left: 0;
+    position: relative;
+    text-align: center;
+    top: 0;
+    width: 100%;
+}
+body.lg div.primary-buttons button {
+    clear: both;
+    display: inline-block;
+    float: right;
+    margin: 4px 2px 0;
+    padding: 1px;
+}
+body.lg .default-importing-parsing-control-panel table {
+    display: none;
+}
+body.lg td.default-importing-parsing-control-panel-formats {
+	display: none;
+}
+body.lg td.default-importing-parsing-control-panel-options-panel div.layout-tightest table tr td {
+	float:left;
+}
+body.lg td.default-importing-parsing-control-panel-options-panel div.grid-layout.layout-tightest {
+    background-color: #FFFFFF;
+    border-color: #BBCCFF;
+    border-right: 1px solid #BBCCFF;
+    border-style: none solid solid;
+    border-width: medium 1px 1px;
+    margin: 0 5px 5px 0;
+    padding: 10px;
+    right: 0;
+    width: auto;
+}
+body.lg td.default-importing-parsing-control-panel-options-panel div.layout-full table tr td {
+	float: none;
+}
+body.lg td.default-importing-parsing-control-panel-options-panel div.grid-layout.layout-full .button, body.lg td.default-importing-parsing-control-panel-options-panel div.grid-layout.layout-full a.button {
+	/*width: 48%;*/
+}
+body.lg td.default-importing-parsing-control-panel-options-panel div.parser-panel {
+    bottom: 60px;
+    overflow-y: auto;
+    padding-bottom: 5px;
+    padding-left: 5px;
+    position: relative;
+    top: 0;
+}
+body.lg td.default-importing-parsing-control-panel-options-panel div.parser-panel table.sheetRecordContainer {
+margin-top:5px;
+margin-bottom:5px;
+}
+body.lg td.default-importing-parsing-control-panel-options-panel div.parser-panel table.sheetRecordContainer tr td {
+    float: none;
+}
+body.lg td.default-importing-parsing-control-panel-options-panel div.parser-panel input {
+    margin-bottom: 0;
+    margin-left: 0;
+    margin-right: 5px;
+    margin-top: 0;
+}
+body.lg td.default-importing-parsing-control-panel-options-panel div.parser-panel span {
+/*background: #FFFFFF;*/
+}
+body.lg td.default-importing-parsing-control-panel-options-panel div.parser-panel input.lightweight {
+    margin-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    border: 1px solid #CCCCCC;
+}
+body.lg td.default-importing-parsing-control-panel-options-panel div.parser-panel ul {
+list-style-type:none;
+}
+body.lg td.default-importing-parsing-control-panel-options-panel div.parser-panel ul li {
+    display: inline-block;
+    float: none;
+    margin-bottom: 5px;
+    margin-left: 18px;
+    width: 190px;
+}
+body.lg td.default-importing-parsing-control-panel-options-panel div.parser-panel ul li input {
+    float: none;
+    margin-bottom: 0;
+    margin-left: -18px;
+    margin-right: 5px;
+    margin-top: 0;
+}
+
+body.lg td.default-importing-parsing-control-panel-options-panel div.parser-panel div.layout-tightest {
+	display: none;
+}
+body.lg td.default-importing-parsing-control-panel-options-panel div.parser-panel a.question {
+    background: url("../images/arrow.png") no-repeat scroll 10px 11px #EBEEF8;
+    border: 1px solid #BBCCFF;
+    color: #444444;
+    cursor: pointer;
+    display: block;
+    margin: 5px 5px 0 0;
+    padding: 10px 5px 10px 30px;
+    text-decoration: none;
+}
+body.lg td.default-importing-parsing-control-panel-options-panel div.parser-panel a.question.exp {
+    background-image:url(../images/arrow-exp.png);
+}
+body.lg td.default-importing-parsing-control-panel-options-panel div.parser-panel a.question:hover {
+	border:1px solid #444444;
+}

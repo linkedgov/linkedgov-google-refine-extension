@@ -1,0 +1,71 @@
+<div class="grid-layout layout-full parser-panel">
+
+	<div class="hide">
+		<span>Character&nbsp;encoding</span>
+		<input bind="encodingInput" />
+	</div>
+	
+	<a class="question">Has the data been imported in to the correct columns?</a>
+	<div class="grid-layout layout-tightest question-input">
+		<span>Columns are separated by</span>
+		<ul>
+		<li><input type="radio" name="column-separator" value="comma" /><span>commas (CSV)</span></li>
+		<li><input type="radio" name="column-separator" value="tab" /><span>tabs (TSV)</span></li>
+		<li><input type="radio" name="column-separator" value="custom" /><span>custom</span>
+			<br />
+			<input bind="columnSeparatorInput" type="text" class="lightweight" size="5" />
+		</li>
+		</ul>
+		<span>Escape special characters with \</span>
+	</div>
+	
+	<a class="question">Have the correct number of rows been captured?</a>
+	<div class="grid-layout layout-tightest question-input">
+		<ul>
+		<li><input type="checkbox" bind="ignoreCheckbox" /><span>Ignore first</span>
+		<input bind="ignoreInput" type="text" class="lightweight" size="2" value="0" /><span>line(s) at beginning of file</span></li>
+		<li><input type="checkbox" bind="headerLinesCheckbox" /><span>Parse next</span>
+		<input bind="headerLinesInput" type="text" class="lightweight" size="2" value="1" /><span>line(s) as column headers</span></li>
+		<li><input type="checkbox" bind="skipCheckbox" /><span>Discard initial</span>  
+		<input bind="skipInput" type="text" class="lightweight" size="2" value="0" /><span>row(s) of data</span></li>
+		<li><input type="checkbox" bind="limitCheckbox" /><span>Load at most</span>
+		<input bind="limitInput" type="text" class="lightweight" size="2" value="0" /><span>row(s) of data</span></li>
+		</ul>
+	</div>
+	
+	<a class="question">Have the rows been separated properly?</a>
+	<div class="grid-layout layout-tightest question-input">
+		<span>Rows are separated by</span>
+		<ul>
+		<li><input type="radio" name="row-separator" value="new-line" /><span>new line characters \n</span></li>
+		<li><input type="radio" name="row-separator" value="custom" /><span>custom</span>
+			<br />
+			<input bind="rowSeparatorInput" type="text" class="lightweight" size="5" />
+		</li>
+		</ul>
+		<span>Escape special characters with \</span>
+	</div>	
+	
+	<a class="question">Have value types (i.e. numbers and dates) been detected correctly?</a>
+	<div class="grid-layout layout-tightest question-input">
+		<ul>
+		<li><input type="checkbox" bind="guessCellValueTypesCheckbox" /><span>Parse cell text into numbers, dates, ...</span></li>
+		<li><input type="checkbox" bind="processQuoteMarksCheckbox" /><span>Quotation marks are used to enclose cells containing column separators</span></li>
+		</ul>
+	</div>
+	
+	<a class="question">Other</a>
+	<div class="grid-layout layout-tightest question-input">
+		<ul>
+		<li><input type="checkbox" bind="storeBlankRowsCheckbox" /><span>Store blank rows</span></li>
+		<li><input type="checkbox" bind="storeBlankCellsAsNullsCheckbox" /><span>Store blank cells as nulls</span></li>
+		<li><input type="checkbox" bind="includeFileSourcesCheckbox" /><span>Store file source (file names, URLs) in each row</span></li>
+		</ul>
+	</div>
+		
+</div>
+
+<div class="primary-buttons">
+	<button class="button" bind="previewButton">Update&nbsp;Preview</button>
+	<button class="button create-project"><strong>Create Project &raquo;</strong></button>
+</div>	

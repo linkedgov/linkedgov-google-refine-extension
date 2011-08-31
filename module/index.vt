@@ -1,0 +1,15 @@
+#*
+ * Access this page at the URL /extension/linkedgov/
+ *#
+<html>
+  <head>
+    <title>LinkedGov Extension</title>
+  </head>
+  <body>
+    <h1>LinkedGov Extension</h1>
+    
+    <p>The LinkedGov extension for Google Refine is aimed at non-technical users that may have a high level of expertise regarding 
+    the semantics of their data, but are ultimately non-technical and would otherwise struggle with some of the processes and methods offered by GRefine.</p>
+    
+  </body>
+</html>

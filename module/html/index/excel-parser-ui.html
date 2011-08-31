@@ -1,0 +1,75 @@
+<!-- <div class="grid-layout layout-loose layout-full"><table>
+  <tr>
+    <td colspan="2"></td>
+    <td><div class="grid-layout layout-tighter layout-full"><table>
+      <tr>
+        <td style="text-align: right;">&nbsp;</td>
+        <td width="1%"><button class="button" bind="previewButton">Update&nbsp;Preview</button></td>
+      </tr>
+    </table></div></td>
+  </tr>
+  <tr>
+    <td><div class="grid-layout layout-tightest"><table bind="sheetRecordContainer">
+      <tr><td colspan="3">Worksheets to Import</td></tr>
+    </table></div></td>
+    
+    <td><div class="grid-layout layout-tightest"><table>
+      <tr><td width="1%"><input type="checkbox" bind="ignoreCheckbox" /></td><td>Ignore first</td>
+        <td><input bind="ignoreInput" type="text" class="lightweight" size="2" value="0" /> line(s) at beginning of file</td></tr>
+      <tr><td width="1%"><input type="checkbox" bind="headerLinesCheckbox" /></td><td>Parse next</td>
+        <td><input bind="headerLinesInput" type="text" class="lightweight" size="2" value="1" /> line(s) as column headers</td></tr>
+      <tr><td width="1%"><input type="checkbox" bind="skipCheckbox" /></td><td>Discard initial</td>
+        <td><input bind="skipInput" type="text" class="lightweight" size="2" value="0" /> row(s) of data</td></tr>
+      <tr><td width="1%"><input type="checkbox" bind="limitCheckbox" /></td><td>Load at most</td>
+        <td><input bind="limitInput" type="text" class="lightweight" size="2" value="0" /> row(s) of data</td></tr>
+    </table></div></td>
+
+    <td><div class="grid-layout layout-tightest"><table>
+      <tr><td width="1%"><input type="checkbox" bind="storeBlankRowsCheckbox" /></td>
+        <td colspan="2">Store blank rows</td></tr>
+      <tr><td width="1%"><input type="checkbox" bind="storeBlankCellsAsNullsCheckbox" /></td>
+        <td colspan="2">Store blank cells as nulls</td></tr>
+      <tr><td width="1%"><input type="checkbox" bind="includeFileSourcesCheckbox" /></td>
+        <td>Store file source<br/>(file names, URLs)<br/>in each row</td></tr>
+    </table></div></td>
+  </tr>
+</table></div> -->
+
+<div class="grid-layout layout-full parser-panel">
+
+<a class="question">Has the correct worksheet been imported?</a>
+<div class="grid-layout layout-tightest question-input">
+	<table class="sheetRecordContainer" bind="sheetRecordContainer">
+	<tr><td colspan="3">Worksheets to Import</td></tr>
+	</table>
+</div>
+
+<a class="question">Have the correct number of rows been captured?</a>
+<div class="grid-layout layout-tightest question-input">
+	<ul>
+	<li><input type="checkbox" bind="ignoreCheckbox" /><span>Ignore first</span>
+	<input bind="ignoreInput" type="text" class="lightweight" size="2" value="0" /><span>line(s) at beginning of file</span></li>
+	<li><input type="checkbox" bind="headerLinesCheckbox" /><span>Parse next</span>
+	<input bind="headerLinesInput" type="text" class="lightweight" size="2" value="1" /><span>line(s) as column headers</span></li>
+	<li><input type="checkbox" bind="skipCheckbox" /><span>Discard initial</span>  
+	<input bind="skipInput" type="text" class="lightweight" size="2" value="0" /><span>row(s) of data</span></li>
+	<li><input type="checkbox" bind="limitCheckbox" /><span>Load at most</span>
+	<input bind="limitInput" type="text" class="lightweight" size="2" value="0" /><span>row(s) of data</span></li>
+	<li><input type="checkbox" bind="storeBlankRowsCheckbox" /><span>Store blank rows</span></li>
+	<li><input type="checkbox" bind="storeBlankCellsAsNullsCheckbox" /><span>Store blank cells as nulls</span></li>
+	<li><input type="checkbox" bind="includeFileSourcesCheckbox" /><span>Store file source (file names, URLs) in each row</span></li>
+	</ul>
+</div>
+
+</div>
+
+<div class="primary-buttons">
+	<button class="button" bind="previewButton">Update&nbsp;Preview</button>
+	<button class="button create-project"><strong>Create Project &raquo;</strong></button>
+</div>	
+
+<script type="text/javascript">
+$("button.create-project").click(function(){
+	$("button.yes-success").click();
+})
+</script>

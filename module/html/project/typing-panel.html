@@ -1,0 +1,126 @@
+<div class="typing-panel-body" bind="bodyDiv">
+
+	<a class="question">Does the dataset include <b>dates</b> or <b>times</b>?</a>
+	<div class="grid-layout layout-tightest type question-input">
+	
+		<ul class="checkboxes">
+			<li><input id="dates" type="checkbox" /><label for="dates" title="Select both if a column contains a date and a time">Dates</label></li>
+			<li><input id="times" type="checkbox" /><label for="times" title="Select both if a column contains a date and a time">Times</label></li>
+		</ul>
+		<a class="info"><!-- info --></a>
+		<span class="note">Select both if a column contains a date and a time</span>
+		
+		<div class="selector">
+			<a class="button" id="dateSelect" title="To select multiple column headings, hold down CTRL (Windows) or CMD (Mac). You can also drag your mouse across multiple column headers while holding down relevant key.">Start Select</a>
+			
+			<a class="info"><!-- info --></a>
+			<span class="note">To select multiple column headings, hold down CTRL (Windows) or CMD (Mac). You can also drag your mouse across multiple column headers while holding down relevant key.</span>
+		
+			<ul class="column-display" bind="dateTimeColumns">
+			</ul>
+		</div>
+		<!--label>Enter the column title (it should be in bold)</label><input type="text" id="dateInputField" name="dateInputField"> <br />
+		<br/-->
+		
+		<input bind="dateComplicated" type="checkbox" class="date-complicated" id="date-complicated"><label for="date-complicated"">It is a bit more complicated than that</label>
+		<div class="date-complicated">
+			<ul class="cols-copy column-display" bind="dateColsComplicated"></ul>
+		</div>
+		<a href="javascript:{}" bind="dateTimeButton" class="button update" title="Update">Update</a>		
+	
+	</div>
+		
+	<a class="question">Does the dataset include <b>measurements</b>?</a>
+	<div class="grid-layout layout-tightest type question-input">
+		<a class="info"><!-- info --></a>
+		<span class="note">Search for a measurement</span>
+		<input class="text" id="unitInputField" type="text" autocomplete="on" name="unitInputField" bind="unitInputField"/>
+		
+		<div class="selector">
+			<a class="button" id="measurementSelect">Start Select</a>
+			<a class="info"><!-- info --></a>
+			<span class="note">To select multiple column headings, hold down CTRL (Windows) or CMD (Mac). You can also drag your mouse across multiple column headers while holding down relevant key.</span>
+		
+			<ul class="column-display" bind="measurementsColumns">
+			</ul>
+		</div>
+		
+		<ul class="checkboxes">
+			<li><input type="checkbox" /><label>It is a bit more complicated than that</label></li>
+		</ul>		
+		
+		
+		<!--label>Enter the column title (it should be in bold)</label><input type="text" id="dateInputField" name="dateInputField"> <br />
+		<input type="checkbox"><label>It is a bit more complicated than that</label><br/-->
+		
+		<a href="javascript:{}" bind="measurementButton" class="button update" title="Update">Update</a>		
+	
+	</div>
+
+
+
+	<a class="question">Does the dataset include <b>latitude</b> or <b>longitude</b> or <b>northing</b> or <b>easting</b>?</a>
+	<div class="grid-layout layout-tightest type question-input">
+
+		<ul class="checkboxes">
+            <li><input type="checkbox" /><label>Latitude</label></li>
+            <li><input type="checkbox" /><label>Longitude</label></li>
+            <li><input type="checkbox" /><label>Northing</label></li>
+            <li><input type="checkbox" /><label>Easting</label></li>
+		</ul>	
+				
+		<div class="selector">
+			<a class="button" id="latLongSelect">Start Select</a>
+			<a class="info"><!-- info --></a>
+			<span class="note">To select multiple column headings, hold down CTRL (Windows) or CMD (Mac). You can also drag your mouse across multiple column headers while holding down relevant key.<br /><br />Click anywhere in the table to unselect the columns.</span>
+		
+			<ul class="column-display" bind="latLongColumns">
+			</ul>
+		</div>
+
+		<span class="note">Select the format</span>
+		<a class="info"><!-- info --></a>
+
+		<select class="select">
+			<option>Lat, Long</option>
+			<option>Long, Lat</option>
+		</select>
+		
+		
+		<!--label>Enter the column title (it should be in bold)</label><input type="text" id="dateInputField" name="dateInputField"> <br />
+		<input type="checkbox"><label>It is a bit more complicated than that</label><br/-->
+		
+		<a href="javascript:{}" bind="latLongButton" class="button update" title="Update">Update</a>		
+	
+	</div>
+
+	<a class="question">Does the dataset include <b>postcodes</b>?</a>
+
+	<div class="grid-layout layout-tightest type question-input">
+
+		<!-- ul class="checkboxes">
+            <li><input type="checkbox" /><label>House/Flat number</label></li>
+            <li><input type="checkbox" /><label>Street/Road name</label></li>
+            <li><input type="checkbox" /><label>Town/City</label></li>
+            <li><input type="checkbox" /><label>Postcode</label></li>
+		</ul -->	
+		
+		<div class="selector">
+			<a class="button" id="addressSelect">Start Select</a>
+
+			<a class="info"><!-- info --></a>
+			<span class="note">To select multiple column headings, hold down CTRL (Windows) or CMD (Mac). You can also drag your mouse across multiple column headers while holding down relevant key.<br /><br />Click anywhere in the table to unselect the columns.</span>
+		
+			<ul class="column-display" bind="addressColumns">
+			</ul>
+		</div>
+
+		<span class="note">Select the format</span>		
+		
+		<!--label>Enter the column title (it should be in bold)</label><input type="text" id="dateInputField" name="dateInputField"> <br />
+		<input type="checkbox"><label>It is a bit more complicated than that</label><br/-->
+		
+		<a href="javascript:{}" bind="addressButton" class="button update" title="Update">Update</a>		
+	
+	</div>
+</div>
