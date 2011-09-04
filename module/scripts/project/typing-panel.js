@@ -1,6 +1,4 @@
 function TypingPanel(div) {
-	log("creating TypingPanel using div:")
-	log(div);
   this._div = div;
   this.update();
 }
@@ -395,22 +393,19 @@ $(document).ready(function(){
 			ui.leftPanelTabs.unbind('tabsshow');
 			ui.leftPanelTabs.bind('tabsshow', function(event, tabs) {
 				if (tabs.index === 0) {
+					  ui.browsingEngine.resize();
+				} else if (tabs.index === 1) {				      
 				      ui.typingPanel.resize();
-				} else if (tabs.index === 1) {
-				      ui.browsingEngine.resize();
 				} else if (tabs.index === 2) {
 				      ui.historyPanel.resize();    
 				}
 			});	
 			
-			$("div#refine-tabs-facets").addClass("ui-tabs-hide");
-			$("div#refine-tabs-typing").removeClass("ui-tabs-hide");
-
-			// $('div.refine-tabs').tabs('select', 0);
+			$("div#left-panel div.refine-tabs").tabs('select', 1);
+			$("div#left-panel div.refine-tabs").css("visibility","visible");
 			
-			$(window).unbind("resize").bind("resize", resizeAll);
-			$(window).resize();
-
+			//$(window).unbind("resize").bind("resize", resizeAll);
+			//$(window).resize();
 
 		}
 	},5);	
@@ -454,7 +449,6 @@ $(document).ready(function(){
 	});
 
 	$("input.more-complicated").click(function(){
-
 		
 		$colscopy = $(this).parent().children("div.more-complicated").children("ul.cols-copy");
 		

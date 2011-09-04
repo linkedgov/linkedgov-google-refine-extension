@@ -34,11 +34,12 @@ var LinkedGov = {
 
 		_injectTypingPanel: function() {
 
-			
-			$(".refine-tabs ul").prepend('<li><a href="#refine-tabs-typing">Typing</a></li>');
+			$(".refine-tabs ul li").eq(0).after('<li><a href="#refine-tabs-typing">Typing</a></li>');
+			//$(".refine-tabs ul li").removeClass("ui-state-active");
+			//$(".refine-tabs ul li").eq(1).addClass("ui-state-active");
 			$("div.refine-tabs").append('<div id="refine-tabs-typing" bind="typingPanelDiv"><!-- spacer --></div>');
 			$("div#refine-tabs-typing").html(DOM.loadHTML("linkedgov", "html/project/typing-panel.html"));
-			
+						
 			$.getScript(ModuleWirings["linkedgov"] + 'scripts/project/typing-panel.js');
 
 			

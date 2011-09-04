@@ -1,10 +1,12 @@
 /* Styles for the project page */
 
 /**** Typing panel ****/
+body.lg div#left-panel div.refine-tabs {
+	visibility:hidden;
+}
 body.lg div.typing-panel-body {
     overflow-y: auto;
-    padding-bottom: 5px;
-    padding-left: 5px;
+	padding: 5px 5px 10px 10px;
     position: absolute;
 }
 body.lg div.typing-panel-body div.grid-layout.layout-tightest {
@@ -54,28 +56,16 @@ body.lg div.type label {
 	padding-left: 5px;
 }
 body.lg div.type span.note {
-/*
-	background-color: #FFFEE8;
-    border: 1px solid #E0D981;
-    color: #757757;
-    display: block;
-    margin: 5px 0;
-    padding: 2px 5px;
-    text-align: justify;
-*/
-
-    background: none repeat scroll 0 0 #FEFFDA;
-    border-color: #BBCCFF #BBCCFF #BBCCFF #FFFFFF;
-    border-radius: 3px 3px 3px 3px;
-    border-style: solid;
-    border-width: 5px 5px 5px 0;
-    color: #444444;
+    background: none repeat scroll 0 0 #FDFFA9;
+    border: 2px solid #F8FF00;
+    box-shadow: 0 0 10px #7D7D7D;
+    color: #000000;
     display:none;
-    left: 300px;
+    left: 315px;
     margin: 5px 0;
-    padding: 10px;
+    padding: 15px 20px;
     position: fixed;
-    text-align: justify;
+    text-align: center;
     width: 300px;
     z-index: 9999;
 }
@@ -100,7 +90,7 @@ body.lg div.type div.selector {
     text-align: center;
 }
 body.lg div.type div.selector a.button {
-    background: -moz-linear-gradient(center top , #E8FFED, #A1DEAA) repeat scroll 0 0 transparent !important;
+    /*background: -moz-linear-gradient(center top , #E8FFED, #A1DEAA) repeat scroll 0 0 transparent !important;*/
 }
 body.lg div.type ul.column-display {
     background: none repeat scroll 0 0 #FFFFFF;
@@ -110,7 +100,6 @@ body.lg div.type ul.column-display {
 body.lg div.type ul.column-display li {
     background: none repeat scroll 0 0 #DAFFD9;
     border: 1px solid #96D796;
-    border-radius: 3px 3px 3px 3px;
     font-weight: bold;
     list-style-type: none;
     margin-bottom: 3px;
