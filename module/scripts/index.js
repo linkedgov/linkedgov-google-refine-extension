@@ -1,11 +1,3 @@
-/*
- * Copyright 2011
- * LinkedGov
- * Author: Dan Smith
- * 
- */
-// This file is added to the /index page
-
 var LinkedGov = {
 		
 		_initialise: function() {

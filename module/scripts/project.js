@@ -1,47 +1,22 @@
-/*
- * Copyright 2011
- * LinkedGov
- * Author: Dan Smith
- * 
- */
-// This file is added to the /project page
-
 var LinkedGov = {
 		
 		_initialise: function() {
 			
-			this._disableFeatures();
 			this._restyle();
 			this._injectTypingPanel();
 		},
 		
 		_restyle: function() {
 			$("body").addClass("lg");
-			//$("#left-panel").hide();
-		},
-		
-		_disableFeatures: function() {
-
-			/*
-			 * actionAreas[0] - Create Project
-			 * actionAreas[1] - Open Project
-			 * actionAreas[2] - Import Project
-			 */
-			
-			// Remove the clipboard source HTML
-
 		},
 
 		_injectTypingPanel: function() {
 
 			$(".refine-tabs ul li").eq(0).after('<li><a href="#refine-tabs-typing">Typing</a></li>');
-			//$(".refine-tabs ul li").removeClass("ui-state-active");
-			//$(".refine-tabs ul li").eq(1).addClass("ui-state-active");
 			$("div.refine-tabs").append('<div id="refine-tabs-typing" bind="typingPanelDiv"><!-- spacer --></div>');
 			$("div#refine-tabs-typing").html(DOM.loadHTML("linkedgov", "html/project/typing-panel.html"));
 						
 			$.getScript(ModuleWirings["linkedgov"] + 'scripts/project/typing-panel.js');
-
 			
 		},
 		
