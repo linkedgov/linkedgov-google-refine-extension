@@ -92,6 +92,9 @@ body.lg div.type div.selector a.button {
 body.lg div.type ul.column-display {
     background: none repeat scroll 0 0 #FFFFFF;
     margin-top: 10px;
+    max-height: 107px;
+    overflow-y: auto;
+    padding: 1px;
     text-align: left;
 }
 body.lg div.type ul.column-display li {
@@ -141,6 +144,17 @@ body.lg input#unitInputField {
 }
 body.lg .fbs-pane {
      width: 238px
+}
+body.lg div.rangeSelect div.range {
+	text-align:left;
+	margin-top:10px;
+}
+body.lg div.rangeSelect div.range span {
+	display:inline-block;
+	width:35px;
+}
+body.lg div.rangeSelect div.range select {
+	width:200px;
 }
 	
 /**** jQuery UI Selectable styles ****/
