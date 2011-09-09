@@ -13,30 +13,26 @@
 		</ul>
 		<a class="info">
 			<!-- info -->
-		</a> <span class="note">Select both if a column contains a date and
-			a time</span>
+		</a> 
+		<span class="note">Select both if a column contains a date and a time</span>
 
 		<div class="selector">
-			<a class="button" id="dateSelect"
-				title="To select multiple column headings, hold down CTRL (Windows) or Apple (Mac). You can also drag your mouse across multiple column headers while holding down relevant key.">Start
-				Select</a> <a class="info">
-				<!-- info -->
-			</a> <span class="note">To select multiple column headings, hold
+			<a class="button" id="dateSelect">Start Select</a> 
+				<a class="info"><!-- info --></a>
+				<span class="note">To select multiple column headings, hold
 				down CTRL (Windows) or Apple (Mac). You can also drag your mouse
-				across multiple column headers while holding down relevant key.</span>
+				across multiple column headers while holding down the relevant key.</span>
 
 			<ul class="column-display" bind="dateTimeColumns">
 			</ul>
 		</div>
 
-		<input bind="dateComplicated" type="checkbox" class="date-complicated"
-			id="date-complicated"><label for="date-complicated"">It
-			is a bit more complicated than that</label>
+		<input bind="dateComplicated" type="checkbox" class="date-complicated" id="date-complicated">
+			<label for="date-complicated"">It is a bit more complicated than that</label>
 		<div class="date-complicated">
 			<ul class="cols-copy column-display" bind="dateColsComplicated"></ul>
 		</div>
-		<a href="javascript:{}" bind="dateTimeButton" class="button update"
-			title="Update">Update</a>
+		<a href="javascript:{}" bind="dateTimeButton" class="button update" title="Update">Update</a>
 
 	</div>
 
@@ -54,7 +50,7 @@
 				<!-- info -->
 			</a> <span class="note">To select multiple column headings, hold
 				down CTRL (Windows) or Apple (Mac). You can also drag your mouse
-				across multiple column headers while holding down relevant key.</span>
+				across multiple column headers while holding down the relevant key.</span>
 
 			<ul class="column-display" bind="measurementsColumns">
 			</ul>
@@ -66,8 +62,7 @@
 			</li>
 		</ul>
 
-		<a href="javascript:{}" bind="measurementButton" class="button update"
-			title="Update">Update</a>
+		<a href="javascript:{}" bind="measurementButton" class="button update" title="Update">Update</a>
 
 	</div>
 
@@ -89,24 +84,23 @@
 		</ul>
 
 		<div class="selector">
-			<a class="button" id="latLongSelect">Start Select</a> <a class="info">
-				<!-- info -->
-			</a> <span class="note">To select multiple column headings, hold
+			<a class="button" id="latLongSelect">Start Select</a>
+			<a class="info"></a> 
+			<span class="note">To select multiple column headings, hold
 				down CTRL (Windows) or Apple (Mac). You can also drag your mouse
-				across multiple column headers while holding down relevant key.<br />
+				across multiple column headers while holding down the relevant key.<br />
 			<br />Click anywhere in the table to unselect the columns.</span>
 
 			<ul class="column-display" bind="latLongColumns">
 			</ul>
 		</div>
 
-		<span class="note">Select the format</span> <a class="info">
-			<!-- info -->
-		</a> <select class="select">
+		<span class="note">Select the format</span> 
+		<a class="info"><!-- info --></a> 
+		<select class="select">
 			<option>Lat, Long</option>
 			<option>Long, Lat</option>
-		</select> <a href="javascript:{}" bind="latLongButton" class="button update"
-			title="Update">Update</a>
+		</select> <a href="javascript:{}" bind="latLongButton" class="button update" title="Update">Update</a>
 
 	</div>
 
@@ -124,9 +118,10 @@
 		<div class="selector">
 			<a class="button" id="addressSelect">Start Select</a> <a class="info">
 				<!-- info -->
-			</a> <span class="note">To select multiple column headings, hold
+			</a> 
+			<span class="note">To select multiple column headings, hold
 				down CTRL (Windows) or Apple (Mac). You can also drag your mouse
-				across multiple column headers while holding down relevant key.<br />
+				across multiple column headers while holding down the relevant key.<br />
 			<br />Click anywhere in the table to unselect the columns.</span>
 
 			<ul class="column-display" bind="addressColumns">
@@ -138,44 +133,72 @@
 
 	</div>
 
-	<a class="question">Are there any columns with <b>multiple
+	<a class="question">Is there a column with <b>multiple
 			values</b> that could be used as <b>column headers</b>?</a>
 
 	<div class="grid-layout layout-tightest type question-input">
 
 		<div class="selector">
-			<a class="button" id="multipleValuesSelect">Start Select</a> <a
-				class="info">
-				<!-- info -->
-			</a> <span class="note">To select multiple column headings, hold
+			<p>Select the column that has values to be used as headers:</p>
+			<a class="button" id="multipleValuesSelect">Start Select</a>
+			<a class="info"><!-- info --></a> 
+			<span class="note">To select multiple column headings, hold
 				down CTRL (Windows) or Apple (Mac). You can also drag your mouse
-				across multiple column headers while holding down relevant key.<br />
+				across multiple column headers while holding down the relevant key.<br />
 			<br />Click anywhere in the table to unselect the columns.</span>
 
 			<ul class="column-display" bind="multipleValuesColumns">
 			</ul>
 		</div>
 
+		<div class="selector">
+			<p>Select the column that contains the values/measurements for the new headed columns:</p>
+			<a class="button 2" id="multipleValuesSelect2">Start Select</a>
+			<a class="info"><!-- info --></a> 
+			<span class="note">To select multiple column headings, hold
+				down CTRL (Windows) or Apple (Mac). You can also drag your mouse
+				across multiple column headers while holding down the relevant key.<br />
+			<br />Click anywhere in the table to unselect the columns.</span>
+
+			<ul class="column-display 2" bind="multipleValuesColumns2">
+			</ul>
+		</div>
+
+		<div class="selector">
+			<p>Select any columns that contain values/measurements that do not fit under the new headed columns:</p>
+			<a class="button 3" id="multipleValuesSelect3">Start Select</a>
+			<a class="info"><!-- info --></a> 
+			<span class="note">To select multiple column headings, hold
+				down CTRL (Windows) or Apple (Mac). You can also drag your mouse
+				across multiple column headers while holding down the relevant key.<br />
+			<br />Click anywhere in the table to unselect the columns.</span>
+
+			<ul class="column-display 3" bind="multipleValuesColumns3">
+			</ul>
+		</div>
+				
 		<a href="javascript:{}" bind="multipleValuesButton"
 			class="button update" title="Update">Update</a>
 
 	</div>
 
-	<a class="question">Are there <b>multiple columns</b> that could
+	<a class="question">Is there a <b>range of columns</b> that could
 		fit into one column of the same type?</a>
 
-	<div
-		class="grid-layout layout-tightest type question-input rangeSelect">
+	<div class="grid-layout layout-tightest type question-input rangeSelect">
 
 		<div class="selector">
 
 			<a class="info">
 				<!-- info -->
-			</a> <span class="note">To select multiple column headings, hold
+			</a> 
+			<span class="note">To select multiple column headings, hold
 				down CTRL (Windows) or Apple (Mac). You can also drag your mouse
-				across multiple column headers while holding down relevant key.<br />
-			<br />Click anywhere in the table to unselect the columns.</span> <a
-				class="button" id="multipleColumnsSelect">Start Select</a>
+				across multiple column headers while holding down the relevant key.
+				<br /><br />
+				Click anywhere in the table to unselect the columns.
+			</span> 
+			<a class="button" id="multipleColumnsSelect">Start Select</a>
 			<div class="range">
 				<span>From:</span> <select class="from"></select> <span>To:</span> <select
 					class="to"></select>
