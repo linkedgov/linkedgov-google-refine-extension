@@ -74,8 +74,42 @@ var LinkedGov = {
 			} else {
 				log("_setBlanksToNull complete");
 				self.vars.cellsSetToBlank = true;
-				Refine.update({cellsChanged:true});
-				callback();
+				Refine.update({cellsChanged:true},callback);
+			}
+
+		},
+
+		_setNullsToBlank: function(columns,i,callback){
+
+			var self = this;
+
+			//log("_setNullsToBlank");
+			//log(i);
+			//log("++++++++++++++++++++++++++++");
+
+			if(i < columns.length){
+
+				$.post(
+						"/command/" + "core" + "/" + "text-transform" + "?" + $.param({
+							columnName: columns[i].name, 
+							expression: "if(value==\""+LinkedGov.vars.nullValue+"\",blank,value)", 
+							onError: "set-to-blank",
+							repeat: false,
+							repeatCount: 10,
+							project:theProject.id
+						}),
+						null,
+						function(){
+							i = i+1;
+							self._setNullsToBlank(columns,i,callback);
+						},
+						"json"
+				);
+
+			} else {
+				log("_setNullsToBlank complete");
+				self.vars.cellsSetToBlank = true;
+				Refine.update({cellsChanged:true},callback);
 			}
 
 		},
@@ -141,53 +175,57 @@ LinkedGov.multipleColumnsOperation = {
 
 			var self = this;
 
-			var config1 = {
+			var config = {
 					startColumnName: self.vars.origColName,
 					columnCount: self.vars.colCount,
 					combinedColumnName: self.vars.newColName,
 					prependColumnName: true,
 					separator: LinkedGov.vars.separator,
-					ignoreBlankCells: true
+					ignoreBlankCells: true,
+					project:theProject.id
 			};
 
-			Refine.postCoreProcess(
-					"transpose-columns-into-rows", 
-					config1,
+			$.post(
+					"/command/" + "core" + "/" + "transpose-columns-into-rows" + "?" + $.param(config),
 					null,
-					{ modelsChanged: true },
-					{
-						onDone:function(){
-							self.splitColumns();
-						}
-					}
-			);	  			
+					function(){
+						Refine.reinitializeProjectData(function(){
+							ui.dataTableView.update(function(){
+								ui.browsingEngine.update(self.splitColumns());
+							});
+						});
+					},
+					"json"
+			);
+
 		},
 
 		splitColumns: function(){
 
+			log("splitting columns");
+
 			var self = this;
 
-			var config2 = {
+			var config = {
 					columnName: self.vars.newColName,
 					mode: "separator",
 					separator: LinkedGov.vars.separator,
 					guessCellType: true,
 					removeOriginalColumn: true,
-					regex:false
+					regex:false,
+					project:theProject.id
 			};
 
-			Refine.postCoreProcess(
-					"split-column", 
-					config2,
-					null,
-					{ modelsChanged: true },
-					{
-						onDone: function(){
 
-							self.fillDownColumns(theProject.columnModel.columns,0);
-						}
-					}
-			);				
+			$.post(
+					"/command/" + "core" + "/" + "split-column" + "?" + $.param(config),
+					null,
+					function(){
+						self.fillDownColumns(theProject.columnModel.columns,0);					
+					},
+					"json"
+			);
+
 		},
 
 		fillDownColumns:function(columns,i){
@@ -196,9 +234,13 @@ LinkedGov.multipleColumnsOperation = {
 
 			//log("fillDownColumns");
 			//log(i);
+			//log(columns);
 			//log("-----------------------------");
 
 			if(i < columns.length) {
+				//log("columns[i].name: "+columns[i].name);
+				//log("self.vars.newColName: "+self.vars.newColName);
+
 				if(columns[i].name != self.vars.newColName && columns[i].name != self.vars.newColName+" 1" && columns[i].name != self.vars.newColName+" 2"){
 
 					$.post(
@@ -214,26 +256,78 @@ LinkedGov.multipleColumnsOperation = {
 							"json"
 					);
 
+				} else {
+					i = i+1;
+					self.fillDownColumns(columns,i);					
 				}
 			} else {
 				log("filDownColumns complete, i = "+i);		
-				Refine.update({modelsChanged:true});
 				self.onComplete();
 			}
 
 		},
 
 		onComplete:function(){
-			log("multipleColumnsOperation complete");
+			LinkedGov._setNullsToBlank(theProject.columnModel.columns,0,function(){
+				log("multipleColumnsOperation complete");
+				Refine.update({everythingChanged:true});
+			});
+			return false;
 		}
 }
 
+/*
+ * multipleValuesOperation()
+ * 
+ * Wizard for transposing a column of multiple values into a set of 
+ * new headed columns. The user is asked to select three types of column:
+ * 
+ * a) headersColName - The column that contains the new header names
+ * b) valuesColName - The column that contains the values for the new columns
+ * c) colNamesToExclude - Columns that contain values/measurements to avoid
+ * 
+ * 1. initialise()
+ * Store variables, set facet limit and check for blank cells 
+ * before beginning the operation.
+ * 
+ * 2. getColumHeaders()
+ * Find out which column headers are to be used in the "sort", 
+ * which allows us to create a patterned situation for the transpose.
+ * 
+ * 3. reorderRows()
+ * Create a sorting object that contains the relevant columns in the 
+ * correct order and post the "reorder rows permanently" process.
+ * 
+ * 4. multiValueTranspose()
+ * Use a facet on the 'headers' column to find out how many unique values
+ * there are. This number is used as a the "how many rows to transpose by" 
+ * parameter. The 'transpose-rows' process is then posted.
+ * 
+ * 5. removeBlankRows()
+ * With blank rows now occurring throughout the data, use an "isBlank" facet 
+ * on one of the new columns and post the "remove-all-matching-rows" process.
+ * 
+ * 6. reorderRows2()
+ * Reorder the headers column's values so they are in alphabetical order, 
+ * allowing us to transpose a known situation once again. We can then label the 
+ * newly transposed columns alphabetically.
+ * 
+ * 7. renameMultipleColumns()
+ * Rename the new columns using the unique values from the headers column. 
+ * Refine adds iterative integers beginning at "1" for each newly created 
+ * column.
+ * 
+ * 8. removeHeadersColumn()
+ * Discard the headers column that contains the new header values.
+ * 
+ */
 LinkedGov.multipleValuesOperation = {
 
 		vars:{
 			headersColName:"",
 			valuesColName:"",
-			colsToExclude:""
+			colsToExclude:[],
+			newHeaders:[]
 		},
 
 		initialise: function(headersColName, valuesColName, colsToExclude) {
@@ -444,6 +538,7 @@ LinkedGov.multipleValuesOperation = {
 			log('sortingObject:');
 			log(sortingObject);
 
+			/*
 			Refine.postCoreProcess(
 					"reorder-rows",
 					null,
@@ -454,7 +549,20 @@ LinkedGov.multipleValuesOperation = {
 							self.multiValueTranspose();
 						}
 					}
-			);							
+			);	
+			 */
+
+			$.post(
+					"/command/" + "core" + "/" + "reorder-rows" + "?" + $.param({ 
+						sorting : JSON.stringify(sortingObject), 
+						project: theProject.id 
+					}),
+					null,
+					function(){
+						self.multiValueTranspose();				
+					},
+					"json"
+			);
 
 		},
 
@@ -489,38 +597,52 @@ LinkedGov.multipleValuesOperation = {
 					{ engine: JSON.stringify(facetParams) },
 					function(data) {
 
-						var newHeaders = [];
 						for(var h=0;h<data.facets.length;h++){
 							if(data.facets[h].columnName == self.vars.headersColName){
 								for(var i=0;i<data.facets[h].choices.length;i++){
-									newHeaders.push(data.facets[h].choices[i].v.l);
+									self.vars.newHeaders.push(data.facets[h].choices[i].v.l);
 								}										
 							}
 						}								
 
+						/*
 						Refine.postCoreProcess(
 								"transpose-rows-into-columns", 
 								{
 									columnName:self.vars.valuesColName,
-									rowCount:newHeaders.length
+									rowCount:self.vars.newHeaders.length
 								},
 								null,
 								{ modelsChanged: true },
 								{
 									onDone:function(){
-										self.removeBlankRows(newHeaders);
+										self.removeBlankRows();
 									}
 								}
-						);								
+						);
+						 */
+						$.post(
+								"/command/" + "core" + "/" + "transpose-rows-into-columns" + "?" + $.param({
+									columnName:self.vars.valuesColName,
+									rowCount:self.vars.newHeaders.length,
+									project: theProject.id
+								}),
+								null,
+								function(){
+									self.removeBlankRows();				
+								},
+								"json"
+						);
 					},
 					"json"
 			);					
 
 		},
 
-		removeBlankRows:function(newHeaders){
+		removeBlankRows:function(){
 
 			var self = this;
+
 			/*
 			 * Need to use facet functionality to select all blank rows
 			 * and then remove those rows.
@@ -541,95 +663,180 @@ LinkedGov.multipleValuesOperation = {
 			//Refine.update({ engineChanged: true });
 
 			var facets = ui.browsingEngine._facets;
+			// For each possible facet on the screen
 			for(var i=0; i < facets.length; i++){
-				//log(facets[i].facet._config.columnName);
+				// Find the facet that we have just created
+				// log(facets[i].facet._config.columnName);
 				if(facets[i].facet._config.columnName == self.vars.valuesColName+" 1"){
+					// Store it as a variable
 					var blankFacet = facets[i].facet;
+					// Check that the UI has been created using an interval
 					var myInterval = setInterval(function(){
 						if(blankFacet._data != null){
-							for(var j=0;j<blankFacet._data.choices.length;j++){
-								if(blankFacet._data.choices[j].v.l === "true"){
-									blankFacet._selection.push(blankFacet._data.choices[j]);
-									//Refine.update({ engineChanged: true });
-									Refine.postCoreProcess("remove-rows", {}, null, { rowMetadataChanged: true },{
-										onDone:function(){
+							// Check to see if there are both true and false values
+							if(blankFacet._data.choices.length > 1){
+								// Find the "true" value
+								log("blankFacet._data.choices.length:");
+								log(blankFacet._data.choices.length);
+								for(var j=0;j<blankFacet._data.choices.length;j++){
+									log("blankFacet._data.choices[j].v.l");
+									log(blankFacet._data.choices[j].v.l);
+									if(blankFacet._data.choices[j].v.l === "true"){
+										// Invoke a selection action on that facet choice
+										blankFacet._selection.push(blankFacet._data.choices[j]);
+										// Remove the matching rows
 
-											Refine.postCoreProcess(
-													"reorder-rows",
-													null,
-													{ "sorting" : JSON.stringify({
-														column:self.vars.headersColName,
-														valueType:"string",
-														reverse:false,
-														blankPosition:2,
-														errorPosition:1,
-														caseSensitive:false
-													})}, 
-													{ rowMetadataChanged: true },
-													{
-														onDone: function(){
+										Refine.postCoreProcess("remove-rows", {}, null, { rowMetadataChanged: true }, {
+											onDone:function(){
+												// Pass a count beginning of "1" if multi-values are transposed.
+												// Refine adds incremental int's to newly created columns with the same
+												// name.
+												self.reorderRows2(blankFacet,1);
+											}
+										});
 
-															ui.browsingEngine.removeFacet(blankFacet);
-															//Refine.update({ engineChanged: true });
+										/*
+										Refine.reinitializeProjectData(function(){
+											ui.dataTableView.update(function(){
+												ui.browsingEngine.update(function(){
+													$.post(
+															"/command/" + "core" + "/" + "remove-rows" + "?" + $.param({project: theProject.id}),
+															null,
+															{ rowMetadataChanged: true },
+															function(){
+																self.reorderRows2(blankFacet,1);				
+															},
+															"json"
+													);
+												});
+											});
+										});
+										 */
 
-															var oldHeaders = [];
-															var columns = theProject.columnModel.columns;
-															var count = 1;
-															for(var k=0; k<columns.length;k++){
-																//log("columns[k].name");log(columns[k].name);
-																//log("self.vars.valuesColName+count");log(self.vars.valuesColName+" "+count);
-																if(columns[k].name == self.vars.valuesColName+" "+count){
-																	oldHeaders.push(columns[k].name);
-																	count++;
-																}
-															}
-															newHeaders.sort();
-															self.renameMultipleColumns(oldHeaders,newHeaders,function(){
-																//log("Removing last column");
-																Refine.postCoreProcess(
-																		"remove-column", 
-																		{
-																			columnName: self.vars.headersColName
-																		},
-																		null,
-																		{ modelsChanged: true },
-																		{
-																			onDone:function(){
-																				self.onComplete();
-																			}
-																		}
-																);
-															});
-
-
-														}
-													}
-											);
-
-
-										}
-									});
+									}
 								}
-							}																
+							} else {
+								// Only one choice, must have been a single value type, 
+								// so no rows to remove.
+								// Pass a count of 0 if a single value is transposed
+								self.reorderRows2(blankFacet,0);
+							}
 							clearInterval(myInterval);
 						} else {
 							// wait for facet UI to complete creation
+							log("Blank facet isn't set up yet, waiting 1 second...");
 						}
 					},1000);
 				}
 			}		
 		},
 
-		renameMultipleColumns: function(oldNames, newNames, callback){
+		reorderRows2:function(blankFacet, count){
+
+			var self = this;
+			/*
+			Refine.postCoreProcess(
+					"reorder-rows",
+					null,
+					{ "sorting" : JSON.stringify({
+						column:self.vars.headersColName,
+						valueType:"string",
+						reverse:false,
+						blankPosition:2,
+						errorPosition:1,
+						caseSensitive:false
+					})}, 
+					{ rowMetadataChanged: true },
+					{
+						onDone: function(){
+
+							ui.browsingEngine.removeFacet(blankFacet);
+							Refine.update({ engineChanged: true });
+
+							var oldHeaders = [];
+							var columns = theProject.columnModel.columns;
+							for(var k=0; k<columns.length;k++){
+								log("columns[k].name");log(columns[k].name);
+								log("self.vars.valuesColName+count");log(self.vars.valuesColName+" "+count);
+								if(count > 0){
+									if(columns[k].name == self.vars.valuesColName+" "+count){
+										oldHeaders.push(columns[k].name);
+										count++;
+									}
+								} else {
+									if(columns[k].name == self.vars.valuesColName){
+										oldHeaders.push(columns[k].name+" 1");
+										k=columns.length;
+									}
+								}
+							}
+
+							self.vars.newHeaders.sort();
+							self.renameMultipleColumns(oldHeaders,self.vars.newHeaders);
+						}
+					}
+			);	
+			 */
+			$.post(
+					"/command/" + "core" + "/" + "reorder-rows" + "?" + $.param({ 
+						"sorting" : JSON.stringify({
+							column:self.vars.headersColName,
+							valueType:"string",
+							reverse:false,
+							blankPosition:2,
+							errorPosition:1,
+							caseSensitive:false,
+
+						}),
+						project: theProject.id
+					}),
+					null,
+					function(){
+
+						ui.browsingEngine.removeFacet(blankFacet);
+						Refine.update({ everythingChanged: true },function(){
+
+							var oldHeaders = [];
+							var columns = theProject.columnModel.columns;
+							for(var k=0; k<columns.length;k++){
+								log("columns[k].name");log(columns[k].name);
+								log("self.vars.valuesColName+count");log(self.vars.valuesColName+" "+count);
+								if(count > 0){
+									if(columns[k].name == self.vars.valuesColName+" "+count){
+										oldHeaders.push(columns[k].name);
+										count++;
+									}
+								} else {
+									log("else");
+									log(columns[k].name);
+									log(self.vars.valuesColName+" 1");
+									
+									if(columns[k].name == self.vars.valuesColName+" 1"){
+										oldHeaders.push(columns[k].name);
+										k=columns.length;
+									}
+								}
+							}
+
+							self.vars.newHeaders.sort();
+							self.renameMultipleColumns(oldHeaders,self.vars.newHeaders);
+						});
+					},
+					"json"
+			);
+		},
+
+		renameMultipleColumns: function(oldNames, newNames){
 
 			var self = this;
 
-			//log('oldNames');
-			//log(oldNames);
-			//log('newNames');
-			//log(newNames);
+			log('oldNames');
+			log(oldNames);
+			log('newNames');
+			log(newNames);
 
 			if(oldNames.length > 0 && newNames.length > 0){
+				/*
 				Refine.postCoreProcess(
 						"rename-column", 
 						{
@@ -643,22 +850,80 @@ LinkedGov.multipleValuesOperation = {
 								oldNames.splice(0,1);
 								newNames.splice(0,1);
 								if(oldNames.length > 0 && newNames.length > 0){
-									self.renameMultipleColumns(oldNames,newNames,callback);
+									self.renameMultipleColumns(oldNames,newNames);
 								} else {
-									callback();
+									self.removeHeadersColumn();
 								}
 
 							}
 						}
-				);		
+				);	
+				 */
+				$.post(
+						"/command/" + "core" + "/" + "rename-column" + "?" + $.param({
+							oldColumnName: oldNames[0],
+							newColumnName: newNames[0],
+							project: theProject.id
+						}),
+						null,
+						function(){
+							oldNames.splice(0,1);
+							newNames.splice(0,1);
+							if(oldNames.length > 0 && newNames.length > 0){
+								self.renameMultipleColumns(oldNames,newNames);
+							} else {
+								self.removeHeadersColumn();
+							}				
+						},
+						"json"
+				);
 			} else {
-
+				// No more columns to rename
+				log("No more columns to rename");
 			}
 		},
 
+		removeHeadersColumn:function(){
+
+			var self = this;
+
+			//log("Removing last column");
+			/*
+			Refine.postCoreProcess(
+					"remove-column", 
+					{
+						columnName: self.vars.headersColName
+					},
+					null,
+					{ modelsChanged: true },
+					{
+						onDone:function(){
+							self.onComplete();
+						}
+					}
+			);
+			 */
+			$.post(
+					"/command/" + "core" + "/" + "remove-column" + "?" + $.param({
+						columnName: self.vars.headersColName,
+						project: theProject.id
+					}),
+					null,
+					function(){
+						self.onComplete();			
+					},
+					"json"
+			);
+		},
+
 		onComplete:function(){
-			DialogSystem.dismissAll();
-			LinkedGov._setFacetCountLimit(100);
+			Refine.update({modelsChanged:true},function(){
+				LinkedGov._setNullsToBlank(theProject.columnModel.columns,0,function(){
+					DialogSystem.dismissAll();
+					LinkedGov._setFacetCountLimit(100);
+				});
+			});
+			return false;
 		}		
 
 }
