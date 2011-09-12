@@ -1,32 +1,93 @@
+/*
+ * LinkedGov UI skin for Google Refine
+ * 
+ * Author: Dan Smith
+ * 
+ * The global LinkedGov object for the Project page.
+ * 
+ * Contents:
+ * - Global variables (debug on / off)
+ * - Initialisation functions
+ * - Initial injection functions
+ * - General data operations (set blank cells to null)
+ * - Individual wizard operations
+ * 
+ * Notes:
+ * 
+ * When posting one of Refine's core process operations using 
+ * Refine.postCoreProcess() - a number of UI updates is usually 
+ * bundled with it as the expected behaviour is for Refine to 
+ * perform a core process with gaps for user input in between. This 
+ * isn't the case for the LinkedGov skin as a series of operations are 
+ * often strung together and executed rapidly, resulting in flashes of
+ * "updating" and "working" messages while operations are performed. To 
+ * avoid this, the function call is skipped when possible and replaced 
+ * using the minimal AJAX $.post() function, which doesn't carry with it 
+ * any of Refine's UI update functions. This replacement has to be used 
+ * carefully though as some operations rely on previous updates being 
+ * made (i.e. row-removals and row/column transposes require the 
+ * data-table to be updated otherwise successive operations will fail 
+ * to realise the old rows/columns have been changed).
+ * 
+ */
 var LinkedGov = {
 
+		/*
+		 * Variables used in multiple operations
+		 */
 		vars : {
+			debug:true,
 			separator: "<LG>",
 			nullValue:"<LG_NULL>",
 			cellsSetToBlank:false
 		},
 
-		_initialise: function() {
-
-			this._restyle();
-			this._injectTypingPanel();
+		/*
+		 * initialise
+		 * 
+		 * Initial styles and injections
+		 */
+		initialise: function() {
+			this.restyle();
+			this.injectTypingPanel();
 		},
 
-		_restyle: function() {
+		/*
+		 * restyle
+		 * 
+		 * Any major initial restyling
+		 */
+		restyle: function() {
 			$("body").addClass("lg");
 		},
 
-		_injectTypingPanel: function() {
+		/*
+		 * injectTypingPanel
+		 * 
+		 * Injects the Typing panel HTML and JS into the page
+		 */
+		injectTypingPanel: function() {
 
+			// Create the Typing tab
 			$(".refine-tabs ul li").eq(0).after('<li><a href="#refine-tabs-typing">Typing</a></li>');
+			// Create the Typing panel div
 			$("div.refine-tabs").append('<div id="refine-tabs-typing" bind="typingPanelDiv"><!-- spacer --></div>');
+			// Load LinkedGov's Typing panel HTML into the div
 			$("div#refine-tabs-typing").html(DOM.loadHTML("linkedgov", "html/project/typing-panel.html"));
-
+			// Inject LinkedGov's Typing panel JS into the page
 			$.getScript(ModuleWirings["linkedgov"] + 'scripts/project/typing-panel.js');
 
 		},
 
-		_setFacetCountLimit: function(n){
+		/*
+		 * setFacetCountLimit
+		 * 
+		 * Sets the facet count limit. 
+		 * If a column has more than 100 unique values, the facet UI 
+		 * returns an error, which we don't want when sorting columns 
+		 * during the operations.
+		 */
+		setFacetCountLimit: function(n){
 			$.post(
 					"/command/core/set-preference",
 					{
@@ -44,13 +105,17 @@ var LinkedGov = {
 			);			
 		},
 
-		_setBlanksToNull: function(columns,i,callback){
+		/*
+		 * setBlanksToNull
+		 * 
+		 * Recursive function that applies a text-transform expression to each 
+		 * column cell, setting any blank cells to the global nullValue variable.
+		 * Usually called at the start of a wizard to avoid "fill-down" and "row-
+		 * remove" issues.
+		 */
+		setBlanksToNull: function(columns,i,callback){
 
 			var self = this;
-
-			//log("_setBlanksToNull");
-			//log(i);
-			//log("++++++++++++++++++++++++++++");
 
 			if(i < columns.length){
 
@@ -66,26 +131,28 @@ var LinkedGov = {
 						null,
 						function(){
 							i = i+1;
-							self._setBlanksToNull(columns,i,callback);
+							self.setBlanksToNull(columns,i,callback);
 						},
 						"json"
 				);
 
 			} else {
-				log("_setBlanksToNull complete");
+				log("setBlanksToNull complete");
 				self.vars.cellsSetToBlank = true;
 				Refine.update({cellsChanged:true},callback);
 			}
 
 		},
 
-		_setNullsToBlank: function(columns,i,callback){
+		/*
+		 * setNullsToBlank
+		 * 
+		 * Recursive function that restores any "nullValue" cells back to 
+		 * blanks - usually called at the end of a wizard.
+		 */
+		setNullsToBlank: function(columns,i,callback){
 
 			var self = this;
-
-			//log("_setNullsToBlank");
-			//log(i);
-			//log("++++++++++++++++++++++++++++");
 
 			if(i < columns.length){
 
@@ -101,22 +168,28 @@ var LinkedGov = {
 						null,
 						function(){
 							i = i+1;
-							self._setNullsToBlank(columns,i,callback);
+							self.setNullsToBlank(columns,i,callback);
 						},
 						"json"
 				);
 
 			} else {
-				log("_setNullsToBlank complete");
+				log("setNullsToBlank complete");
 				self.vars.cellsSetToBlank = true;
 				Refine.update({cellsChanged:true},callback);
 			}
 
 		},
 
+		/*
+		 * loadHTMLCallback
+		 * 
+		 * Called each time HTML is loaded, either through LinkedGov or 
+		 * Refine.
+		 */
 		loadHTMLCallback: function(htmlPage) {
 
-			//alert(htmlPage+" has been loaded");
+			log(htmlPage+" has been loaded");
 
 			htmlPage = htmlPage.split("/");			
 			htmlPage = htmlPage[htmlPage.length-1];
@@ -125,7 +198,6 @@ var LinkedGov = {
 			switch(pageName) {
 
 			case 'typing-panel' :
-
 				break;
 
 			default:
@@ -137,38 +209,89 @@ var LinkedGov = {
 
 };
 
+
+
+/*
+ * multipleColumnsOperation
+ * 
+ * Rotates columns to rows (i.e. 24 columns labelled by the hour, 
+ * rotated into one column named "Time" with 24 values per every 
+ * original row).
+ * 
+ * The user is asked to select the range of columns to rotate, from 
+ * that the following parameters are passed to the wizard:
+ * 
+ * a) startColName - The column name at the start of the range of columns
+ * b) colCount - The number of columns in the range
+ * c) newColName - The name for the new column (input by user)
+ * 
+ * 
+ * Operation steps:
+ * 
+ * 1. initialise()
+ * Store global variables, set facet limit and check for blank cells 
+ * before beginning the operation.
+ * 
+ * 2. transposeColumns()
+ * Transposes the range of columns into one column using the global
+ * LinkedGov 'separator' variable and the operation's global parameters.
+ * 
+ * 3. splitColumns()
+ * Splits the newly created column into two columns using the global 
+ * LinkedGov 'separator' variable.
+ * 
+ * 4. fillDownColumns()
+ * Fills in all the blank cells as a result of the transpose.
+ *
+ *  
+ */
 LinkedGov.multipleColumnsOperation = {
 
 		vars : {
-			origColName:"",
+			startColName:"",
 			newColName:"",
 			colCount:0
 		},
 
-		intialise: function(origColName,colCount,newColName){
+		/*
+		 * initialise
+		 * 
+		 * Fills any blank cells with null values before beginning 
+		 * the transpose operation.
+		 */
+		initialise: function(startColName,colCount,newColName){
 
 			log("Starting multipleColumnsOperation");
 
 			var self = this;
 
-			self.vars.origColName = origColName;
+			self.vars.startColName = startColName;
 			self.vars.newColName = newColName;
 			self.vars.colCount = colCount;
 
-			if(LinkedGov.vars.cellsSetToBlank){
-				log("multipleColumnsOperation - blank cells are already nulls");
+			/*
+			 * Pass the project column data as a parameter, the index 0 to begin with, 
+			 * and a callback function that commences the operation.
+			 * 
+			 * Passing self.transpose() as a parameter calls it immediately for some reason.
+			 */
+			LinkedGov.setBlanksToNull(theProject.columnModel.columns,0,function(){
 				self.transposeColumns();
-			} else {
-				log("multipleColumnsOperation - blank cells need to be nulls");	
-				LinkedGov._setBlanksToNull(theProject.columnModel.columns,0,function(){
-					log("_setBlanksToNull callback");
-					self.transposeColumns();
-				});
-
-			}
+			});
 
 		},
 
+		/*
+		 * transposeColumns
+		 * 
+		 * Uses the operation's global variables to transpose 
+		 * the selected column - using the global LinkedGov separator 
+		 * as the separator value. 
+		 * 
+		 * Performs a necessary minimal UI update before calling the 
+		 * next operation.
+		 * 
+		 */
 		transposeColumns: function(){
 
 			log("transposeColumns");
@@ -176,7 +299,7 @@ LinkedGov.multipleColumnsOperation = {
 			var self = this;
 
 			var config = {
-					startColumnName: self.vars.origColName,
+					startColumnName: self.vars.startColName,
 					columnCount: self.vars.colCount,
 					combinedColumnName: self.vars.newColName,
 					prependColumnName: true,
@@ -189,6 +312,7 @@ LinkedGov.multipleColumnsOperation = {
 					"/command/" + "core" + "/" + "transpose-columns-into-rows" + "?" + $.param(config),
 					null,
 					function(){
+						// The most minimal yet fully-functional UI update 
 						Refine.reinitializeProjectData(function(){
 							ui.dataTableView.update(function(){
 								ui.browsingEngine.update(self.splitColumns());
@@ -200,9 +324,15 @@ LinkedGov.multipleColumnsOperation = {
 
 		},
 
+		/*
+		 * splitColumns
+		 * 
+		 * Splits the newly created column using the global 
+		 * LinkedGov separator.
+		 */
 		splitColumns: function(){
 
-			log("splitting columns");
+			log("splitColumns");
 
 			var self = this;
 
@@ -216,7 +346,6 @@ LinkedGov.multipleColumnsOperation = {
 					project:theProject.id
 			};
 
-
 			$.post(
 					"/command/" + "core" + "/" + "split-column" + "?" + $.param(config),
 					null,
@@ -228,18 +357,31 @@ LinkedGov.multipleColumnsOperation = {
 
 		},
 
+		/*
+		 * fillDownColumns
+		 * 
+		 * A recursive function that takes the column model's 
+		 * list of columns and an iterator as parameters.
+		 * 
+		 * Only fills a column if it's name is not equal to the columns being 
+		 * operated on. The +" 1" and +" 2" are always the same after a 
+		 * column split.
+		 * 
+		 * $.post() used to avoid multiple UI "Working" messages.
+		 */
 		fillDownColumns:function(columns,i){
 
 			var self = this;
 
-			//log("fillDownColumns");
-			//log(i);
-			//log(columns);
-			//log("-----------------------------");
+//			log("fillDownColumns");
+//			log(i);
+//			log(columns);
+//			log("-----------------------------");
 
 			if(i < columns.length) {
-				//log("columns[i].name: "+columns[i].name);
-				//log("self.vars.newColName: "+self.vars.newColName);
+
+//				log("columns[i].name: "+columns[i].name);
+//				log("self.vars.newColName: "+self.vars.newColName);
 
 				if(columns[i].name != self.vars.newColName && columns[i].name != self.vars.newColName+" 1" && columns[i].name != self.vars.newColName+" 2"){
 
@@ -267,8 +409,14 @@ LinkedGov.multipleColumnsOperation = {
 
 		},
 
+		/*
+		 * onComplete
+		 * 
+		 * Sets any null values back to blank and performs a full 
+		 * update.
+		 */
 		onComplete:function(){
-			LinkedGov._setNullsToBlank(theProject.columnModel.columns,0,function(){
+			LinkedGov.setNullsToBlank(theProject.columnModel.columns,0,function(){
 				log("multipleColumnsOperation complete");
 				Refine.update({everythingChanged:true});
 			});
@@ -277,7 +425,7 @@ LinkedGov.multipleColumnsOperation = {
 }
 
 /*
- * multipleValuesOperation()
+ * multipleValuesOperation
  * 
  * Wizard for transposing a column of multiple values into a set of 
  * new headed columns. The user is asked to select three types of column:
@@ -290,7 +438,7 @@ LinkedGov.multipleColumnsOperation = {
  * Store variables, set facet limit and check for blank cells 
  * before beginning the operation.
  * 
- * 2. getColumHeaders()
+ * 2. getSortableColumnHeaders()
  * Find out which column headers are to be used in the "sort", 
  * which allows us to create a patterned situation for the transpose.
  * 
@@ -307,10 +455,9 @@ LinkedGov.multipleColumnsOperation = {
  * With blank rows now occurring throughout the data, use an "isBlank" facet 
  * on one of the new columns and post the "remove-all-matching-rows" process.
  * 
- * 6. reorderRows2()
- * Reorder the headers column's values so they are in alphabetical order, 
- * allowing us to transpose a known situation once again. We can then label the 
- * newly transposed columns alphabetically.
+ * 6. getNewColumnHeaders()
+ * Creates an array of the newly created column names to pass to the next 
+ * step.
  * 
  * 7. renameMultipleColumns()
  * Rename the new columns using the unique values from the headers column. 
@@ -330,71 +477,79 @@ LinkedGov.multipleValuesOperation = {
 			newHeaders:[]
 		},
 
+		/*
+		 * initialise
+		 * 
+		 * Set the facet choice count limit high enough to avoid any 
+		 * returned errors when counting unique values for sorting by 
+		 * columns.
+		 * 
+		 */
 		initialise: function(headersColName, valuesColName, colsToExclude) {
 
 			var self = this;
 
-			// Set the facet choice count limit high enough to avoid any 
-			// returned errors when counting unique values for sorting by 
-			// columns.
-			LinkedGov._setFacetCountLimit(1000);
+			LinkedGov.setFacetCountLimit(1000);
 
-			// headersColName = the column with multiple values to be converted to column headers
-			// valuesColName = the column that contains the values of the new columns
-			// colsToExclude = the columns that should not be included in the sorting order (i.e. 
-			// any other measurements not related to the headers/values column.
 			self.vars.headersColName = headersColName;
 			self.vars.valuesColName = valuesColName;
-			self.vars.colsToExclude = colsToExclude;	
+			self.vars.colsToExclude = colsToExclude || [];	
 
-			if(LinkedGov.vars.cellsSetToBlank){
-				log("multipleValuesOperation - blank cells are already nulls");	
-				self.getColumnHeaders();
-			} else {
-				log("multipleValuesOperation - blank cells need to be nulls");	
-				LinkedGov._setBlanksToNull(theProject.columnModel.columns,0,function(){
-					log("_setBlanksToNull callback");
-					self.getColumnHeaders();
-				});
-			}
+			LinkedGov.setBlanksToNull(theProject.columnModel.columns,0,function(){
+				self.getSortableColumnHeaders();
+			});
 
 		},
 
-		getColumnHeaders: function(){
+		/*
+		 * getSortableColumnHeaders
+		 * 
+		 * For each column header that isn't involved in the transpose 
+		 * - Find out how many unique values each column has
+		 * - Push the column names into the sortingObject in order, starting 
+		 * with the column with the highest number of unique values.
+		 * 
+		 */
+		getSortableColumnHeaders: function(){
 
-			log("getColumnHeaders beginning");
+			log("getSortableColumnHeaders");
+
 			var self = this;
 
-			/* for each column header that isn't involved in the transpose
-			 *  - find out how many unique values each column has in it
-			 *  - push the columns into the sortingObject starting with 
-			 *  the column with the highest number of unique values
-			 */ 	
-
+			var colHeaders = [];
 
 			/*
-			 * make an array of the column header names to include in the sort
+			 * - Loop through each columns object
+			 * - Check to see if the column name is not equal to the column 
+			 * we're operating on and whether there are any column names to 
+			 * exclude, otherwise store it as a good column name to sort on.
+			 * - If the column name is good but there are columns to exclude, 
+			 * we need to check whether this column name exists in the exclude 
+			 * array before storing it.
 			 */
-			var columns = theProject.columnModel.columns;
-			var colHeaders = [];
-			for(var a=0;a<columns.length;a++){
-				if(columns[a].name != self.vars.valuesColName){
-					if(self.vars.colsToExclude.length > 0){
-						for(var b=0; b<self.vars.colsToExclude.length;b++){
-							if(columns[a].name != self.vars.colsToExclude[b]){
-								colHeaders.push(columns[a].name);
-							}
-						}
-					} else {
-						colHeaders.push(columns[a].name);
-					}
-				}
-			}
+			$.each(theProject.columnModel.columns,function(key,value){
 
-			log("this?");log(this);
+//				log("self.vars.valuesColName:");
+//				log(self.vars.valuesColName);
+//				log("self.vars.headersColName:");
+//				log(self.vars.headersColName);
+//				log("value.name");
+//				log(value.name);
+
+				if(value.name != self.vars.valuesColName && $.inArray(value.name, self.vars.colsToExclude) < 0){
+					colHeaders.push(value.name);
+				}
+			});
+
+			log("colHeaders");
 			log(colHeaders);
 
-			// Sort the columns first, call the transpose function in the callback
+			/*
+			 * Sort the columns to produce a 'grouped' situation amongst the rows.
+			 * 
+			 * Pass a callback function that reorders the columns by the number of 
+			 * their unique values.
+			 */
 			self.sortColumnsByUniqueValues(colHeaders,function(ans){
 
 				log('ans');
@@ -405,16 +560,12 @@ LinkedGov.multipleValuesOperation = {
 				var columnUniqueValues = ans;
 
 				for(var a=0;a<columnUniqueValues.length;a++){
-
 					if(columnUniqueValues[a].count > highest){
-
 						columnHeadersByUniqueValue.splice(0,0,columnUniqueValues[a].name);
 						highest = columnUniqueValues[a].count;
-
 					} else {
 						columnHeadersByUniqueValue.splice(1,0,columnUniqueValues[a].name);
 					}
-
 				}
 
 				log('columnHeadersByUniqueValue');
@@ -422,25 +573,39 @@ LinkedGov.multipleValuesOperation = {
 
 				self.reorderRows(columnHeadersByUniqueValue);
 
-
 			});
 		},
 
+		/*
+		 * sortColumnsByUniqueValues
+		 * 
+		 * 
+		 */
 		sortColumnsByUniqueValues: function (colHeaders,callback){
 			this.columnCountUniqueValues(colHeaders,[],callback);
 		},
 
+		/*
+		 * columnCountUniqueValues
+		 * 
+		 * A recursive function that posts a quick "compute-facet" call to 
+		 * retrieve information about the number of unique values in each 
+		 * column. This avoids any facets being created and removed on the 
+		 * screen, thus saving time.
+		 * 
+		 * When done, it passes an array of object key-value pairs containing 
+		 * the column names and their unique values to the next operation.
+		 */
 		columnCountUniqueValues: function(colHeaders,ans,callback){
 
 			var self = this;
 
 			var ans = ans || [];
 
-			log("-----------------------------------")
-			log("columnCountUniqueValues:");
-			log(colHeaders);
-			log(ans);
-
+//			log("-----------------------------------")
+//			log("columnCountUniqueValues:");
+//			log(colHeaders);
+//			log(ans);
 
 			if(colHeaders.length > 0){
 				var values=0;
@@ -467,14 +632,8 @@ LinkedGov.multipleValuesOperation = {
 						function(data) {
 
 							for(var h=0;h<data.facets.length;h++){
-								if(data.facets[h].columnName == colHeaders[0]){
-									if(typeof data.facets[h].choices != 'undefined'){
-										for(var i=0;i<data.facets[h].choices.length;i++){
-											values++;
-										}										
-									} else {
-										values = 0;
-									}
+								if(data.facets[h].columnName == colHeaders[0] && typeof data.facets[h].choices != 'undefined'){
+									values = data.facets[h].choices.length;
 								}
 							}
 
@@ -483,14 +642,12 @@ LinkedGov.multipleValuesOperation = {
 								count: values
 							});
 
-
-							log('colHeaders');
-							log(colHeaders);
-							log('ans');
-							log(ans);
-							log('colHeaders.length');
-							log(colHeaders.length);
-
+//							log('colHeaders');
+//							log(colHeaders);
+//							log('ans');
+//							log(ans);
+//							log('colHeaders.length');
+//							log(colHeaders.length);
 
 							colHeaders.splice(0,1);					
 							self.columnCountUniqueValues(colHeaders,ans,callback);
@@ -504,6 +661,16 @@ LinkedGov.multipleValuesOperation = {
 			}
 		},
 
+		/*
+		 * reorderRows
+		 * 
+		 * Reorders the rows to produce a 'grouped' situation - ready for 
+		 * transposing multiple values.
+		 * 
+		 * A sorting object has to be created with the relevant "sort criteria" 
+		 * objects inside it - in order. This is passed as a parameter to the 
+		 * "reorder-rows" process post.
+		 */
 		reorderRows: function(columnHeadersByUniqueValue){
 
 			var self = this;
@@ -538,20 +705,6 @@ LinkedGov.multipleValuesOperation = {
 			log('sortingObject:');
 			log(sortingObject);
 
-			/*
-			Refine.postCoreProcess(
-					"reorder-rows",
-					null,
-					{ "sorting" : JSON.stringify(sortingObject)}, 
-					{ rowMetadataChanged: true },
-					{
-						onDone: function(){
-							self.multiValueTranspose();
-						}
-					}
-			);	
-			 */
-
 			$.post(
 					"/command/" + "core" + "/" + "reorder-rows" + "?" + $.param({ 
 						sorting : JSON.stringify(sortingObject), 
@@ -566,14 +719,24 @@ LinkedGov.multipleValuesOperation = {
 
 		},
 
+		/*
+		 * multiValueTranspose
+		 * 
+		 * Before transposing rows, we need to know how many rows to 
+		 * transpose by - this number is equivalent to the number of 
+		 * unique values in the multi-valued column.
+		 * 
+		 * The facet functionality from before is used to get this number.
+		 * 
+		 * The labels of the unique values in the facet are also extracted 
+		 * and used as the new headers for the new columns.
+		 */
 		multiValueTranspose:function(){
 
 			var self = this;
 
 			log("multiValueTranspose beginning");
 
-			// Use a facet to calculate how many rows to transpose by
-			// (the unique number of values in the header column
 			var facetParams = {
 					"facets":[
 					          {"type":"list",
@@ -591,7 +754,6 @@ LinkedGov.multipleValuesOperation = {
 					          "mode":"row-based"
 			};
 
-
 			$.post(
 					"/command/core/compute-facets?" + $.param({ project: theProject.id }),
 					{ engine: JSON.stringify(facetParams) },
@@ -605,22 +767,6 @@ LinkedGov.multipleValuesOperation = {
 							}
 						}								
 
-						/*
-						Refine.postCoreProcess(
-								"transpose-rows-into-columns", 
-								{
-									columnName:self.vars.valuesColName,
-									rowCount:self.vars.newHeaders.length
-								},
-								null,
-								{ modelsChanged: true },
-								{
-									onDone:function(){
-										self.removeBlankRows();
-									}
-								}
-						);
-						 */
 						$.post(
 								"/command/" + "core" + "/" + "transpose-rows-into-columns" + "?" + $.param({
 									columnName:self.vars.valuesColName,
@@ -629,7 +775,9 @@ LinkedGov.multipleValuesOperation = {
 								}),
 								null,
 								function(){
-									self.removeBlankRows();				
+									Refine.update({modelsChanged:true},function(){
+										self.removeBlankRows();				
+									});
 								},
 								"json"
 						);
@@ -639,18 +787,23 @@ LinkedGov.multipleValuesOperation = {
 
 		},
 
+		/*
+		 * A large number of blank rows have been generated from the transpose
+		 * which need to be removed.
+		 * 
+		 * Facet functionality is used again. By creating a facet on one of the new 
+		 * columns using the "isBlank" expression, the data table is updated to show 
+		 * only the blank rows which are to be removed.
+		 */
 		removeBlankRows:function(){
 
 			var self = this;
 
 			/*
-			 * Need to use facet functionality to select all blank rows
-			 * and then remove those rows.
-			 * 
-			 *  Doesn't seem possible unless a facet UI container is actually
-			 *  created on the screen.
+			 *  It doesn't seem possible to use the facet functionality "behind-the-scenes" 
+			 *  for this particular operation. We need to actually update the data table, so 
+			 *  a facet has to be added to the UI.
 			 */
-
 			ui.browsingEngine.addFacet(
 					"list",
 					{
@@ -660,66 +813,52 @@ LinkedGov.multipleValuesOperation = {
 					}
 			);
 
-			//Refine.update({ engineChanged: true });
-
 			var facets = ui.browsingEngine._facets;
 			// For each possible facet on the screen
 			for(var i=0; i < facets.length; i++){
+
 				// Find the facet that we have just created
-				// log(facets[i].facet._config.columnName);
+				log(facets[i].facet._config.columnName);
+
+				// The first of the transposed columns will not have the same name
+				// as the value stored in the column we
 				if(facets[i].facet._config.columnName == self.vars.valuesColName+" 1"){
+
 					// Store it as a variable
 					var blankFacet = facets[i].facet;
+
 					// Check that the UI has been created using an interval
 					var myInterval = setInterval(function(){
 						if(blankFacet._data != null){
+
 							// Check to see if there are both true and false values
 							if(blankFacet._data.choices.length > 1){
-								// Find the "true" value
-								log("blankFacet._data.choices.length:");
-								log(blankFacet._data.choices.length);
+
+								// Find the "true" value					
 								for(var j=0;j<blankFacet._data.choices.length;j++){
-									log("blankFacet._data.choices[j].v.l");
-									log(blankFacet._data.choices[j].v.l);
 									if(blankFacet._data.choices[j].v.l === "true"){
+
 										// Invoke a selection action on that facet choice
 										blankFacet._selection.push(blankFacet._data.choices[j]);
-										// Remove the matching rows
 
+										// Remove the matching rows
+										// Have to use the postCoreProcess function here as 
+										// the rows are removed while using Refine's facet list JSON object
 										Refine.postCoreProcess("remove-rows", {}, null, { rowMetadataChanged: true }, {
 											onDone:function(){
 												// Pass a count beginning of "1" if multi-values are transposed.
 												// Refine adds incremental int's to newly created columns with the same
 												// name.
-												self.reorderRows2(blankFacet,1);
+												self.getNewColumnHeaders(blankFacet,1);
 											}
 										});
-
-										/*
-										Refine.reinitializeProjectData(function(){
-											ui.dataTableView.update(function(){
-												ui.browsingEngine.update(function(){
-													$.post(
-															"/command/" + "core" + "/" + "remove-rows" + "?" + $.param({project: theProject.id}),
-															null,
-															{ rowMetadataChanged: true },
-															function(){
-																self.reorderRows2(blankFacet,1);				
-															},
-															"json"
-													);
-												});
-											});
-										});
-										 */
-
 									}
 								}
 							} else {
 								// Only one choice, must have been a single value type, 
 								// so no rows to remove.
 								// Pass a count of 0 if a single value is transposed
-								self.reorderRows2(blankFacet,0);
+								self.getNewColumnHeaders(blankFacet,0);
 							}
 							clearInterval(myInterval);
 						} else {
@@ -731,134 +870,60 @@ LinkedGov.multipleValuesOperation = {
 			}		
 		},
 
-		reorderRows2:function(blankFacet, count){
+		
+		/*
+		 * getNewColumnHeaders
+		 * 
+		 * Creates an array with the names of the newly created columns in, 
+		 * which is then passed to the renameMultipleColumns function so they 
+		 * can be renamed using the unique values in the "headers" column.
+		 */
+		getNewColumnHeaders:function(blankFacet, count){
 
 			var self = this;
-			/*
-			Refine.postCoreProcess(
-					"reorder-rows",
-					null,
-					{ "sorting" : JSON.stringify({
-						column:self.vars.headersColName,
-						valueType:"string",
-						reverse:false,
-						blankPosition:2,
-						errorPosition:1,
-						caseSensitive:false
-					})}, 
-					{ rowMetadataChanged: true },
-					{
-						onDone: function(){
+			ui.browsingEngine.removeFacet(blankFacet);
+			Refine.update({ everythingChanged: true },function(){
 
-							ui.browsingEngine.removeFacet(blankFacet);
-							Refine.update({ engineChanged: true });
-
-							var oldHeaders = [];
-							var columns = theProject.columnModel.columns;
-							for(var k=0; k<columns.length;k++){
-								log("columns[k].name");log(columns[k].name);
-								log("self.vars.valuesColName+count");log(self.vars.valuesColName+" "+count);
-								if(count > 0){
-									if(columns[k].name == self.vars.valuesColName+" "+count){
-										oldHeaders.push(columns[k].name);
-										count++;
-									}
-								} else {
-									if(columns[k].name == self.vars.valuesColName){
-										oldHeaders.push(columns[k].name+" 1");
-										k=columns.length;
-									}
-								}
-							}
-
-							self.vars.newHeaders.sort();
-							self.renameMultipleColumns(oldHeaders,self.vars.newHeaders);
+				var oldHeaders = [];
+				var columns = theProject.columnModel.columns;
+				for(var k=0; k<columns.length;k++){
+					if(count > 0){
+						if(columns[k].name == self.vars.valuesColName+" "+count){
+							oldHeaders.push(columns[k].name);
+							count++;
+						}
+					} else {						
+						if(columns[k].name == self.vars.valuesColName+" 1"){
+							oldHeaders.push(columns[k].name);
+							k=columns.length;
 						}
 					}
-			);	
-			 */
-			$.post(
-					"/command/" + "core" + "/" + "reorder-rows" + "?" + $.param({ 
-						"sorting" : JSON.stringify({
-							column:self.vars.headersColName,
-							valueType:"string",
-							reverse:false,
-							blankPosition:2,
-							errorPosition:1,
-							caseSensitive:false,
+				}
 
-						}),
-						project: theProject.id
-					}),
-					null,
-					function(){
-
-						ui.browsingEngine.removeFacet(blankFacet);
-						Refine.update({ everythingChanged: true },function(){
-
-							var oldHeaders = [];
-							var columns = theProject.columnModel.columns;
-							for(var k=0; k<columns.length;k++){
-								log("columns[k].name");log(columns[k].name);
-								log("self.vars.valuesColName+count");log(self.vars.valuesColName+" "+count);
-								if(count > 0){
-									if(columns[k].name == self.vars.valuesColName+" "+count){
-										oldHeaders.push(columns[k].name);
-										count++;
-									}
-								} else {
-									log("else");
-									log(columns[k].name);
-									log(self.vars.valuesColName+" 1");
-									
-									if(columns[k].name == self.vars.valuesColName+" 1"){
-										oldHeaders.push(columns[k].name);
-										k=columns.length;
-									}
-								}
-							}
-
-							self.vars.newHeaders.sort();
-							self.renameMultipleColumns(oldHeaders,self.vars.newHeaders);
-						});
-					},
-					"json"
-			);
+				self.vars.newHeaders.sort();
+				self.renameMultipleColumns(oldHeaders,self.vars.newHeaders);
+			});
 		},
 
+		/*
+		 * renameMultipleColumns
+		 * 
+		 * Recursive function that takes two arrays as parameters. 
+		 * One array for the old column names, and the second array for 
+		 * the new column names.
+		 * 
+		 */
 		renameMultipleColumns: function(oldNames, newNames){
 
 			var self = this;
 
-			log('oldNames');
-			log(oldNames);
-			log('newNames');
-			log(newNames);
+//			log('oldNames');
+//			log(oldNames);
+//			log('newNames');
+//			log(newNames);
 
 			if(oldNames.length > 0 && newNames.length > 0){
-				/*
-				Refine.postCoreProcess(
-						"rename-column", 
-						{
-							oldColumnName: oldNames[0],
-							newColumnName: newNames[0]
-						},
-						null,
-						{ modelsChanged: true },
-						{
-							onDone:function(){
-								oldNames.splice(0,1);
-								newNames.splice(0,1);
-								if(oldNames.length > 0 && newNames.length > 0){
-									self.renameMultipleColumns(oldNames,newNames);
-								} else {
-									self.removeHeadersColumn();
-								}
 
-							}
-						}
-				);	
-				 */
 				$.post(
 						"/command/" + "core" + "/" + "rename-column" + "?" + $.param({
 							oldColumnName: oldNames[0],
@@ -878,31 +943,22 @@ LinkedGov.multipleValuesOperation = {
 						"json"
 				);
 			} else {
-				// No more columns to rename
 				log("No more columns to rename");
 			}
 		},
 
+		/*
+		 * removeHeadersColumn
+		 * 
+		 * Removes the column containing the values for the new column 
+		 * headers.
+		 */
 		removeHeadersColumn:function(){
 
 			var self = this;
 
-			//log("Removing last column");
-			/*
-			Refine.postCoreProcess(
-					"remove-column", 
-					{
-						columnName: self.vars.headersColName
-					},
-					null,
-					{ modelsChanged: true },
-					{
-						onDone:function(){
-							self.onComplete();
-						}
-					}
-			);
-			 */
+			log("Removing last column");
+
 			$.post(
 					"/command/" + "core" + "/" + "remove-column" + "?" + $.param({
 						columnName: self.vars.headersColName,
@@ -916,18 +972,32 @@ LinkedGov.multipleValuesOperation = {
 			);
 		},
 
+		/*
+		 * onComplete
+		 * 
+		 * Sets any null cells back to being blank, dismisses any "Working..." 
+		 * messages, resets the facet count limit and performs an update.
+		 */
 		onComplete:function(){
-			Refine.update({modelsChanged:true},function(){
-				LinkedGov._setNullsToBlank(theProject.columnModel.columns,0,function(){
-					DialogSystem.dismissAll();
-					LinkedGov._setFacetCountLimit(100);
-				});
+			LinkedGov.setNullsToBlank(theProject.columnModel.columns,0,function(){
+				DialogSystem.dismissAll();
+				LinkedGov.setFacetCountLimit(100);
+				Refine.update({everythingChanged:true});
 			});
 			return false;
 		}		
 
 }
 
+/*
+ * DOM.loadHTML
+ * 
+ * An overriding function that allows a callback function
+ * to be called on the success of any HTML injection.
+ * 
+ * Overriding the main DOM.loadHTML function allows us to inject 
+ * our own JS whenever Refine injects HTML.
+ */
 DOM.loadHTML = function(module, path) {
 
 	if(path == ""){
@@ -949,6 +1019,12 @@ DOM.loadHTML = function(module, path) {
 	return DOM._loadedHTML[fullPath];
 };
 
+/*
+ * resizeAll
+ * 
+ * Another overriding function that includes our custom "typingPanel"
+ * object.
+ */
 function resizeAll() {
 	resize();
 	resizeTabs();
@@ -961,11 +1037,12 @@ function resizeAll() {
 }
 
 function log(str) {
-	window.console && console.log && console.log(str);
+	window.console && console.log && LinkedGov.vars.debug && console.log(str);
 }
 
+/*
+ * Initialise our code once the page has fully loaded.
+ */
 $(document).ready(function(){
-
-	LinkedGov._initialise();
-
+	LinkedGov.initialise();
 });

@@ -61,6 +61,7 @@ TypingPanel.prototype._render = function () {
 };
 
 TypingPanel.prototype._dateTimeWizard = function(elmts) {
+	
 	if ($(elmts.moreComplicated).attr('checked')) {
 
 		// var expression =
@@ -112,29 +113,29 @@ TypingPanel.prototype._dateTimeWizard = function(elmts) {
 			}, null, {
 				cellsChanged: true
 			});
-			/*
-			 * http://127.0.0.1:3333/command/rdf-extension/save-rdf-schema?project=1702403439701
-			 *
-			 * var rdfSchemaPost = schema = { "prefixes":[ {
-			 * "name":"rdfs",
-			 * "uri":"http://www.w3.org/2000/01/rdf-schema#" }, {
-			 * "name":"foaf", "uri":"http://xmlns.com/foaf/0.1/" }, {
-			 * "name":"xsd", "uri":"http://www.w3.org/2001/XMLSchema#" }, {
-			 * "name":"owl", "uri":"http://www.w3.org/2002/07/owl#" }, {
-			 * "name":"rdf",
-			 * "uri":"http://www.w3.org/1999/02/22-rdf-syntax-ns#" } ],
-			 * "baseUri":"http://localhost:3333/", "rootNodes":[ {
-			 * "nodeType":"cell-as-resource", "expression":"value",
-			 * "isRowNumberCell":true, "rdfTypes":[
-			 *  ], "links":[ {
-			 * "uri":"http://www.w3.org/2001/XMLSchema#date",
-			 * "curie":"xsd:date", "target":{
-			 * "nodeType":"cell-as-literal", "expression":"value.(d)",
-			 * "columnName":$(this).html(), "isRowNumberCell":false } } ] } ] }
-			 *
-			 * &engine={"facets":[],"mode":"row-based"};
-			 *
-			 */
+
+//			http://127.0.0.1:3333/command/rdf-extension/save-rdf-schema?project=1702403439701
+
+//			var rdfSchemaPost = schema = { "prefixes":[ {
+//			"name":"rdfs",
+//			"uri":"http://www.w3.org/2000/01/rdf-schema#" }, {
+//			"name":"foaf", "uri":"http://xmlns.com/foaf/0.1/" }, {
+//			"name":"xsd", "uri":"http://www.w3.org/2001/XMLSchema#" }, {
+//			"name":"owl", "uri":"http://www.w3.org/2002/07/owl#" }, {
+//			"name":"rdf",
+//			"uri":"http://www.w3.org/1999/02/22-rdf-syntax-ns#" } ],
+//			"baseUri":"http://localhost:3333/", "rootNodes":[ {
+//			"nodeType":"cell-as-resource", "expression":"value",
+//			"isRowNumberCell":true, "rdfTypes":[
+//			], "links":[ {
+//			"uri":"http://www.w3.org/2001/XMLSchema#date",
+//			"curie":"xsd:date", "target":{
+//			"nodeType":"cell-as-literal", "expression":"value.(d)",
+//			"columnName":$(this).html(), "isRowNumberCell":false } } ] } ] }
+
+//			&engine={"facets":[],"mode":"row-based"};
+
+
 		});
 	}	
 }
@@ -291,13 +292,13 @@ TypingPanel.prototype._multipleColumnsWizard = function(elmts) {
 	var colName = window.prompt("New column name:", theProject.metadata.name);
 	var startColumnName = $(elmts.multipleColumnsColumns).children("li").eq(0).find("span").html();
 	var columnCount = $(elmts.multipleColumnsColumns).children("li").length;
-	
-	LinkedGov.multipleColumnsOperation.intialise(startColumnName, columnCount, colName);
+
+	LinkedGov.multipleColumnsOperation.initialise(startColumnName, columnCount, colName);
 
 }
 
 TypingPanel.prototype._multipleValuesWizard = function(elmts) {
-	
+
 	$(elmts.multipleValuesColumns).html($(elmts.multipleValuesColumns).children().eq(0));
 	$(elmts.multipleValuesColumns2).html($(elmts.multipleValuesColumns2).children().eq(0));
 
@@ -305,9 +306,9 @@ TypingPanel.prototype._multipleValuesWizard = function(elmts) {
 	var valuesColName = $(elmts.multipleValuesColumns2).children("li").eq(0).find("span").html();
 	var colsToExclude = [];
 	$(elmts.multipleValuesColumns3).children("li").each(function(){
-	    colsToExclude.push($(this).find("span").html())
+		colsToExclude.push($(this).find("span").html())
 	});
-	
+
 	LinkedGov.multipleValuesOperation.initialise(headersColName, valuesColName, colsToExclude);
 
 }
