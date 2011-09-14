@@ -1,8 +1,36 @@
+/*
+ * LinkedGov UI skin for Google Refine
+ * 
+ * Author: Dan Smith
+ * 
+ * The "Typing" panel object
+ * 
+ * Follows the same structure as the facet and history
+ * panels.
+ * 
+ * Contents:
+ * - Resize function
+ * - Update function
+ * - Render function
+ * - Interaction handler for the wizards
+ * - Interaction for column selection
+ * 
+ * Notes:
+ * 
+ * 
+ */
+
+/*
+ * Constructor for the typing panel
+ */
 function TypingPanel(div) {
 	this._div = div;
 	this.update();
 }
 
+/*
+ * Resize function - similar to the other panels
+ */
 TypingPanel.prototype.resize = function () {
 	var body = this._div.find(".typing-panel-body");
 
@@ -11,309 +39,82 @@ TypingPanel.prototype.resize = function () {
 	body[0].scrollTop = body[0].offsetHeight;
 };
 
+/*
+ * Update function
+ */
 TypingPanel.prototype.update = function (onDone) {
 	var self = this;
 	self._render();
 };
 
+/*
+ * _render
+ * 
+ * - Initialises the autosuggestion box for the measurements wizard
+ * - Attachers listeners to the wizard "Update" buttons
+ * - Resizes the panel
+ */
 TypingPanel.prototype._render = function () {
 
 	var self = this;
 
 	var elmts = DOM.bind(this._div);
 
-	// make the units text field auto suggest
+	// make the measurements text field auto suggest
 	$("#unitInputField").suggest().bind("fb-select", function (e, data) {
 		// alert(data.name + ", " + data.id);
 	});
 
+	/*
+	 * When each wizards' "Update" button is clicked, 
+	 * their corresponding wizard function is called. Each of the 
+	 * wizards have "bind" attributes in their HTML code, which 
+	 * allows access to the individual elements through the object
+	 * "elmts".
+	 */
 	elmts.dateTimeButton.click(function () {
 		self._destroyColumnSelector();
-		self._dateTimeWizard(elmts);
+		LinkedGov.dateTimeWizard.initialise(elmts);
 	});
 
-	elmts.measurementButton.click(function () {
+	elmts.measurementsButton.click(function () {
 		self._destroyColumnSelector();
-		self._measurementsWizard(elmts);
+		LinkedGov.measurementsWizard.initialise(elmts);
 	});
 
 	elmts.latLongButton.click(function(){
 		self._destroyColumnSelector();
-		self._latLongWizard(elmts);	 
+		LinkedGov.latLongWizard.initialise(elmts);	 
 	});
 
 	elmts.addressButton.click(function () {
 		self._destroyColumnSelector();
-		self.__addressWizard(elmts);
-	});
-
-	elmts.multipleValuesButton.click(function () {
-		self._destroyColumnSelector();
-		self._multipleValuesWizard(elmts);
+		LinkedGov.addressWizard.initialise(elmts);
 	});
 
 	elmts.multipleColumnsButton.click(function () {
 		self._destroyColumnSelector();
-		self._multipleColumnsWizard(elmts);
+		LinkedGov.multipleColumnsWizard.initialise(elmts);
+	});
+	
+	elmts.multipleValuesButton.click(function () {
+		self._destroyColumnSelector();
+		LinkedGov.multipleValuesWizard.initialise(elmts);
 	});
 
 	this.resize();
 };
 
-TypingPanel.prototype._dateTimeWizard = function(elmts) {
-	
-	if ($(elmts.moreComplicated).attr('checked')) {
-
-		// var expression =
-		// 'cells["year"].value+"-"+cells["day"].value+"-"+cells["month"].value';
-		var expression = "";
-		var dateOrder = ["Year", "Month", "Day", "Hours", "Minutes", "Seconds"];
-		for (var i in dateOrder) {
-			$(elmts.colsComplicated).children().each(function () {
-				var colname = $(this).children("span").html();
-				var datepart = $(this).children("select").val();
-				if (datepart == dateOrder[i]) {
-					expression += 'cells["' + colname + '"].value+"-"+';
-				}
-			});
-		}
-		try {
-			expression = expression.substring(0, expression.length - 5);
-		} catch (e) {
-
-		}
-
-		var colName = window.prompt("New column name:", theProject.metadata.name);
-		Refine.postCoreProcess("add-column", {
-			baseColumnName: "year",
-			expression: expression,
-			newColumnName: colName,
-			columnInsertIndex: theProject.columnModel.columns.length + "",
-			onError: "keep-original"
-		}, null, {
-			modelsChanged: true
-		});
-		Refine.postCoreProcess("text-transform", {
-			columnName: colName,
-			expression: "value.toDate()",
-			repeat: false,
-			repeatCount: ""
-		}, null, {
-			cellsChanged: true
-		});
-
-	} else {
-		$(elmts.dateTimeColumns).children().each(function () {
-
-			Refine.postCoreProcess("text-transform", {
-				columnName: $(this).children("span").html(),
-				expression: "value.toDate()",
-				repeat: false,
-				repeatCount: ""
-			}, null, {
-				cellsChanged: true
-			});
-
-//			http://127.0.0.1:3333/command/rdf-extension/save-rdf-schema?project=1702403439701
-
-//			var rdfSchemaPost = schema = { "prefixes":[ {
-//			"name":"rdfs",
-//			"uri":"http://www.w3.org/2000/01/rdf-schema#" }, {
-//			"name":"foaf", "uri":"http://xmlns.com/foaf/0.1/" }, {
-//			"name":"xsd", "uri":"http://www.w3.org/2001/XMLSchema#" }, {
-//			"name":"owl", "uri":"http://www.w3.org/2002/07/owl#" }, {
-//			"name":"rdf",
-//			"uri":"http://www.w3.org/1999/02/22-rdf-syntax-ns#" } ],
-//			"baseUri":"http://localhost:3333/", "rootNodes":[ {
-//			"nodeType":"cell-as-resource", "expression":"value",
-//			"isRowNumberCell":true, "rdfTypes":[
-//			], "links":[ {
-//			"uri":"http://www.w3.org/2001/XMLSchema#date",
-//			"curie":"xsd:date", "target":{
-//			"nodeType":"cell-as-literal", "expression":"value.(d)",
-//			"columnName":$(this).html(), "isRowNumberCell":false } } ] } ] }
-
-//			&engine={"facets":[],"mode":"row-based"};
-
-
-		});
-	}	
-}
-
-TypingPanel.prototype._measurementsWizard = function(elmts) {
-
-	var prefix = "fb";
-	var namespaceURI = "http://rdf.freebase.com/ns/";
-
-	var uri = elmts.unitInputField.data("data.suggest").id;
-	uri = uri.replace(/\//g, ".");
-	uri = namespaceURI + uri.substring(1, measurementURI.length);
-
-	var curie = measurementURI.split(".");
-	curie = curie[curie.length - 1];
-	curie = prefix + ":" + curie;
-
-	$(elmts.measurementsColumns).children().each(function () {
-
-		var jsonObj = {
-				"prefixes": [{
-					"name": prefix,
-					"uri": namespaceURI
-				}],
-				"baseUri": "http://127.0.0.1:3333/",
-				"rootNodes": [{
-					"nodeType": "cell-as-resource",
-					"expression": "value",
-					"isRowNumberCell": true,
-					"rdfTypes": [],
-					"links": [{
-						"uri": uri,
-						"curie": curie,
-						"target": {
-							"nodeType": "cell-as-literal",
-							"expression": "value",
-							"valueType": "http://www.w3.org/2001/XMLSchema#int",
-							"columnName": $(this).children("span").html(),
-							"isRowNumberCell": false
-						}
-					}]
-				}]
-		};
-
-		Refine.postProcess("rdf-extension", "save-rdf-schema", {}, {
-			schema: JSON.stringify(jsonObj)
-		}, {}, {
-			onDone: function () {
-				//DialogSystem.dismissUntil(self._level - 1);
-				theProject.overlayModels.rdfSchema = jsonObj;
-			}
-		});
-
-	});
-
-}
-
-TypingPanel.prototype._latLongWizard = function(elmts) {
-
-}
-
-TypingPanel.prototype._addressWizard = function(elmts) {
-
-	this._destroyColumnSelector();
-
-	var prefix = "ospc";
-	var namespaceURI = "http://data.ordnancesurvey.co.uk/ontology/postcode/";
-	var type = "postcode";
-	var uri = namespaceURI + type;
-	var curie = prefix + ":" + type;
-
-	$(elmts.addressColumns).children().each(function () {
-
-		var colName = window.prompt("New column name:", theProject.metadata.name);
-		Refine.postCoreProcess("add-column", {
-			baseColumnName: $(this).children("span").html(),
-			expression: "partition(value,/[A-Z]{1,2}[0-9R][0-9A-Z]? {0,1}[0-9][ABD-HJLNP-UW-Z]{2}/)[1]",
-			newColumnName: colName,
-			columnInsertIndex: theProject.columnModel.columns.length + "",
-			onError: "keep-original"
-		}, null, {
-			modelsChanged: true
-		});
-
-		var jsonObj = {
-				"prefixes": [{
-					"name": "rdfs",
-					"uri": "http://www.w3.org/2000/01/rdf-schema#"
-				},
-				{
-					"name": "ospc",
-					"uri": "http://data.ordnancesurvey.co.uk/ontology/postcode/"
-				},
-				{
-					"name": "vcard",
-					"uri": "http://www.w3.org/2006/vcard/ns#"
-				}],
-				"baseUri": "http://127.0.0.1:3333/",
-				"rootNodes": [{
-					"nodeType": "cell-as-resource",
-					"expression": "value",
-					"isRowNumberCell": true,
-					"rdfTypes": [],
-					"links": [{
-						"uri": "http://www.w3.org/2006/vcard/ns#adr",
-						"curie": "vcard:adr",
-						"target": {
-							"nodeType": "cell-as-resource",
-							"expression": "value+\"#address\"",
-							"isRowNumberCell": true,
-							"rdfTypes": [{
-								"uri": "http://www.w3.org/2006/vcard/ns#Address",
-								"curie": "vcard:Address"
-							}],
-							"links": [{
-								"uri": "http://data.ordnancesurvey.co.uk/ontology/postcode/postcode",
-								"curie": "ospc:postcode",
-								"target": {
-									"nodeType": "cell-as-resource",
-									"expression": "\"http://data.ordnancesurvey.co.uk/id/postcodeunit/\"+value.replace(\" \",\"\")",
-									"columnName": colName,
-									"isRowNumberCell": false,
-									"rdfTypes": [],
-									"links": [{
-										"uri": "http://www.w3.org/2000/01/rdf-schema#label",
-										"curie": "rdfs:label",
-										"target": {
-											"nodeType": "cell-as-literal",
-											"expression": "value",
-											"columnName": colName,
-											"isRowNumberCell": false
-										}
-									}]
-								}
-							}]
-						}
-					}]
-				}]
-		};
-
-		Refine.postProcess("rdf-extension", "save-rdf-schema", {}, {
-			schema: JSON.stringify(jsonObj)
-		}, {}, {
-			onDone: function () {
-				//DialogSystem.dismissUntil(self._level - 1);
-				theProject.overlayModels.rdfSchema = jsonObj;
-			}
-		});
-	});	
-}
-
-TypingPanel.prototype._multipleColumnsWizard = function(elmts) {
-
-	var colName = window.prompt("New column name:", theProject.metadata.name);
-	var startColumnName = $(elmts.multipleColumnsColumns).children("li").eq(0).find("span").html();
-	var columnCount = $(elmts.multipleColumnsColumns).children("li").length;
-
-	LinkedGov.multipleColumnsOperation.initialise(startColumnName, columnCount, colName);
-
-}
-
-TypingPanel.prototype._multipleValuesWizard = function(elmts) {
-
-	$(elmts.multipleValuesColumns).html($(elmts.multipleValuesColumns).children().eq(0));
-	$(elmts.multipleValuesColumns2).html($(elmts.multipleValuesColumns2).children().eq(0));
-
-	var headersColName = $(elmts.multipleValuesColumns).children("li").eq(0).find("span").html();
-	var valuesColName = $(elmts.multipleValuesColumns2).children("li").eq(0).find("span").html();
-	var colsToExclude = [];
-	$(elmts.multipleValuesColumns3).children("li").each(function(){
-		colsToExclude.push($(this).find("span").html())
-	});
-
-	LinkedGov.multipleValuesOperation.initialise(headersColName, valuesColName, colsToExclude);
-
-}
-
-TypingPanel.prototype.questionInteraction = function(el) {
+/*
+ * wizardInteraction
+ * 
+ * Handles the opening & closing of wizard panels and what to conceal/
+ * reveal to the user.
+ * 
+ * Also populates the range selector inputs with column names on the 
+ * callback of opening up.
+ */
+TypingPanel.prototype.wizardInteraction = function(el) {
 
 	if ($(el).hasClass("exp")) {
 		$(el).removeClass("exp");
@@ -358,6 +159,14 @@ TypingPanel.prototype.questionInteraction = function(el) {
 	});	
 }
 
+/*
+ * columnSelector
+ * 
+ * Upon clicking the "Select" button in each wizard to select columns, 
+ * the jQuery UI "selectable" plugin is invoked and the callbacks for 
+ * for the selection actions populate a list in the wizard.
+ * 
+ */
 TypingPanel.prototype.columnSelector = function(button) {
 
 	if ($(button).html() == "Start Select") {
@@ -403,6 +212,15 @@ TypingPanel.prototype.columnSelector = function(button) {
 	}	
 }
 
+/*
+ * rangeSelector
+ * 
+ * On the range selects' input change, rangeSelector is called.
+ * 
+ * It adds basic validation to the select inputs so that when 
+ * a value is picked in the "From" range select, all values before 
+ * that value in the "To" range select are disabled, and vice versa.
+ */
 TypingPanel.prototype.rangeSelector = function(select) {
 
 	$cols = $(select).parent().parent().children("ul.column-display");
@@ -445,6 +263,10 @@ TypingPanel.prototype.rangeSelector = function(select) {
 	$cols.html(colsHTML);	
 }
 
+/*
+ * Destroys the jQuery UI 'selectable' object when a new wizard 
+ * is started/finished.
+ */
 TypingPanel.prototype._destroyColumnSelector = function() {
 	$("div.selector a.button").html("Start Select");
 	$("table.data-table").selectable("destroy");
@@ -465,8 +287,6 @@ $(document).ready(function () {
 			log("ui.typingPanelDiv is undefined.")
 		} else {
 
-			clearInterval(interval);
-
 			ui.typingPanel = new TypingPanel(ui.typingPanelDiv);
 
 			ui.leftPanelTabs.unbind('tabsshow');
@@ -482,15 +302,17 @@ $(document).ready(function () {
 
 			$("div#left-panel div.refine-tabs").tabs('select', 1);
 			$("div#left-panel div.refine-tabs").css("visibility", "visible");
+			
+			clearInterval(interval);
 
 		}
 	}, 5);
 
 	/*
-	 * Interaction for clicking on a question.
+	 * Interaction when clicking on a wizard.
 	 */
 	$('a.question').click(function () {
-		ui.typingPanel.questionInteraction($(this));
+		ui.typingPanel.wizardInteraction($(this));
 	});
 
 	$("a.info").mouseover(function () {
@@ -513,9 +335,9 @@ $(document).ready(function () {
 		ui.typingPanel.rangeSelector($(this));
 	});
 
-	$("input.more-complicated").click(function () {
+	$("input.date-complicated").click(function () {
 
-		$colscopy = $(this).parent().children("div.more-complicated").children("ul.cols-copy");
+		$colscopy = $(this).parent().children("div.date-complicated").children("ul.cols-copy");
 
 		$("div.selector a.button").html("Start Select");
 		$("table.data-table").selectable("destroy");
@@ -536,10 +358,10 @@ $(document).ready(function () {
 		});
 
 		if (!$(this).attr("checked")) {
-			$(this).parent().children("div.more-complicated").slideUp();
+			$(this).parent().children("div.date-complicated").slideUp();
 			$(this).parent().children("div.selector").children("ul.column-display").slideDown();
 		} else {
-			$(this).parent().children("div.more-complicated").slideDown();
+			$(this).parent().children("div.date-complicated").slideDown();
 			$(this).parent().children("div.selector").children("ul.column-display").slideUp();
 		}
 	});

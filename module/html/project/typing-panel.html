@@ -4,10 +4,10 @@
 	<div class="grid-layout layout-tightest type question-input">
 
 		<ul class="checkboxes">
-			<li><input id="dates" type="checkbox" /><label for="dates"
+			<li><input id="dates" type="checkbox" bind="dateCheck" /><label for="dates"
 				title="Select both if a column contains a date and a time">Dates</label>
 			</li>
-			<li><input id="times" type="checkbox" /><label for="times"
+			<li><input id="times" type="checkbox" bind="timeCheck" /><label for="times"
 				title="Select both if a column contains a date and a time">Times</label>
 			</li>
 		</ul>
@@ -62,7 +62,7 @@
 			</li>
 		</ul>
 
-		<a href="javascript:{}" bind="measurementButton" class="button update" title="Update">Update</a>
+		<a href="javascript:{}" bind="measurementsButton" class="button update" title="Update">Update</a>
 
 	</div>
 
