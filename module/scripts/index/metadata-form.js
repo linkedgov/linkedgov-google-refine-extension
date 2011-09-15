@@ -1,3 +1,9 @@
+$(document).ready(function(){
+	LinkedGov.disableFeatures();
+});
+
+
+
 /*
  * If the user selects "other" when choosing a data license, then half  
  * of the form needs to be disabled and a license notice message displayed.
@@ -6,7 +12,12 @@ $("div.metadata input[name='data-license']").change(function(){
 	if($(this).val() === "other"){
 
 		$("div.metadata input#data-license-other-input").removeAttr("disabled");
-		// Disabled the rest of the form and display message
+
+		/*
+		 * Disable the rest of the form and display message.
+		 * 
+		 * Each form input is disabled, followed by hiding the <td> they live in.
+		 */
 		$("div.metadata input#data-webpage-input").attr("disabled","true").parent().parent().hide();
 		$("div.metadata input#data-license-webpage-input").attr("disabled","true").parent().parent().hide();
 		$("div.metadata input#data-organisation-input").attr("disabled","true").parent().parent().hide();
@@ -48,7 +59,8 @@ $("button#dummy").toggle(function(){
 
 	$("div.metadata input#data-name-input").val("Dummy");
 	//$("input.default-importing-web-url").val("http://mirrors.ctan.org/macros/latex/contrib/csvsimple/csvsimple-example.csv");
-	$("input.default-importing-web-url").val("https://github.com/mhausenblas/addrable/raw/master/data/table2.csv");
+	//$("input.default-importing-web-url").val("https://github.com/mhausenblas/addrable/raw/master/data/table2.csv");
+	$("input.default-importing-web-url").val("http://www.ecodriver.uk.com/eCMS/Files/MOD/ministryofdefence_may-2011.csv");
 	$("input[value='open-license']").attr("checked","true");
 	$("div.metadata input#data-license-other-input")
 	// Disabled the rest of the form and display message
@@ -83,3 +95,4 @@ $("button.proceed").click(function(){
 	LinkedGov.validateForm();
 
 });
+

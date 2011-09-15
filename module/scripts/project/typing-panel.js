@@ -59,7 +59,7 @@ TypingPanel.prototype._render = function () {
 	var self = this;
 
 	var elmts = DOM.bind(this._div);
-
+	
 	// make the measurements text field auto suggest
 	$("#unitInputField").suggest().bind("fb-select", function (e, data) {
 		// alert(data.name + ", " + data.id);

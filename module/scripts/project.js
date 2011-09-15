@@ -193,9 +193,9 @@ var LinkedGov = {
 
 			htmlPage = htmlPage.split("/");			
 			htmlPage = htmlPage[htmlPage.length-1];
-			htmlPage = htmlPage.replace(".html","");
+			var pageName = htmlPage.replace(".html","");
 
-			switch(htmlPage) {
+			switch(pageName) {
 
 			case 'typing-panel' :
 				break;

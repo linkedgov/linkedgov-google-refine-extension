@@ -24,15 +24,12 @@
 var LinkedGov = {
 
 		vars : {
-			debug:true
+			debug:false
 		},
 
-		/*
-		 * Kicks off the functions included on the index page
-		 */
 		initialise: function() {
 
-			this.disableFeatures();
+			//this.disableFeatures();
 			this.restyle();
 			this.injectMetaDataForm();
 		},
@@ -54,75 +51,69 @@ var LinkedGov = {
 		disableFeatures: function() {
 
 
-			// Set up a timer to wait until 
-			var interval = setInterval(function(){
+			//Refine.actionAreas[1].bodyElmt.hide().remove();
+			//Refine.actionAreas[2].bodyElmt.hide().remove();
+			
+			var createProjectArea = {};
 
-				if(typeof Refine.actionAreas[0].ui._sourceSelectionUIs[2] == 'undefined' 
-					&& typeof Refine.actionAreas[0].ui._sourceSelectionUIs[3] == 'undefined'){
-
-					log("Import source UIs are undefined...")
-
-				} else {
-
-					var createProjectArea = {};
-					var actionAreas = Refine.actionAreas;
-
-					for(var i=0, len=actionAreas.length; i<len; i++){				
-						switch(actionAreas[i].id) {
-						case "create-project" :
-							createProjectArea = actionAreas[i];
-							break;
-						case "open-project" || "import-project" :
-							actionAreas[i].bodyElmt.remove();
-							actionAreas[i].tabElmt.remove();
-							break;
-						default:
-							break;
-						}		
-					}
-
-					var sources = createProjectArea.ui._sourceSelectionUIs;
-
-					for(var j=0, len=sources.length; j<len; j++){
-						console.log(sources[j].id);
-						switch(sources[j].id) {		
-						case "clipboard" :
-							sources[j]._divBody.remove();
-							sources[j]._divHeader.remove();
-							break;		
-						case "gdata-source" : 
-							sources[j]._divBody.remove();
-							sources[j]._divHeader.remove();
-							break;					
-						default:
-							break;
-						}
-					}
-
-					// Make sure the create-project area is visible
-					$(createProjectArea.bodyElmt).css("visibility","visible");	
-
-					// Add our own window.resize function that needs to resize the metadata form panel
-					$(window).bind("resize",function(){
-						$("td#linkedgov-metadata-form").height($(window).height()-$("td#linkedgov-metadata-form").offset().top);
-					});		
-
-					// Invoke a window resize to make sure the form is sized properly
-					$(window).resize();
-
-					// Hide the "Add URL" button from the Web URL sources panel
-					$("button[bind='addButton']").hide();
-
-					/*
-					 * Hide the original proceed button because we want to place it
-					 * at the end of the metadata form.
-					 */ 
-					$("div.create-project-ui-source-selection-tab-body").find("button[bind='nextButton']").hide();
-
-					// Destroy the interval variable
-					clearInterval(interval);
+			/*
+			 * Loop through the index page action areas and 
+			 * remove the open & import areas and cache the create 
+			 * project area.
+			 */
+			for(var i=0;i<Refine.actionAreas.length;i++){
+				if(typeof Refine.actionAreas[i] != 'undefined' && Refine.actionAreas[i].id == "create-project"){
+					createProjectArea = Refine.actionAreas[i];
+					createProjectArea.bodyElmt.css("z-index","9999");
 				}
-			},1);
+			}
+
+			// Make sure the create-project area is visible
+			createProjectArea.bodyElmt.css("visibility","visible");
+			
+			var sources = Refine.DefaultImportingController.sources;
+
+			log("sources.length:");
+			log(sources.length);
+			
+			for(var j=0, len=sources.length; j<len; j++){
+				log(sources[j].id);
+				try{
+				switch(sources[j].id) {		
+					case "clipboard" :
+						sources[j]._divBody.remove();
+						sources[j]._divHeader.remove();
+						break;		
+					case "gdata-source" : 
+						sources[j]._divBody.remove();
+						sources[j]._divHeader.remove();
+						break;					
+					default:
+						break;
+					}
+				} catch(e){
+					log(e);
+				}
+			}
+		
+			// Add our own window.resize function that needs to resize the metadata form panel
+			$(window).bind("resize",function(){
+				$("td#linkedgov-metadata-form").height($(window).height()-$("td#linkedgov-metadata-form").offset().top);
+			});		
+
+			// Invoke a window resize to make sure the form is sized properly
+			$(window).resize();
+
+			// Hide the "Add URL" button from the Web URL sources panel
+			$("button[bind='addButton']").hide();
+
+			/*
+			 * Hide the original proceed button because we want to place it
+			 * at the end of the metadata form.
+			 */ 
+			$("div.create-project-ui-source-selection-tab-body").find("button[bind='nextButton']").hide();
+
+
 
 		},
 
@@ -242,13 +233,15 @@ var LinkedGov = {
 		 */		
 		loadHTMLCallback: function(htmlPage) {
 
+			var self = this;
+
 			//log(htmlPage+" has been loaded");
 
 			htmlPage = htmlPage.split("/");			
 			htmlPage = htmlPage[htmlPage.length-1];
-			htmlPage = htmlPage.replace(".html","");
+			var pageName = htmlPage.replace(".html","");
 
-			switch (htmlPage) {
+			switch (pageName) {
 
 			case 'metadata-form' :
 
@@ -303,8 +296,12 @@ DOM.loadHTML = function(module, path) {
 	} else if(path == "scripts/index/parser-interfaces/separator-based-parser-ui.html"){
 		module = "linkedgov";
 		path = "html/index/separator-based-parser-ui.html";		
+	} else if(path == "scripts/index/import-project-ui.html"){
+
+	} else if(path == "scripts/index/open-project-ui.html"){
+
 	}
-	
+
 	var fullPath = ModuleWirings[module] + path;
 	if (!(fullPath in DOM._loadedHTML)) {
 		$.ajax({
