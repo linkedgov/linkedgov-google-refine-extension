@@ -24,7 +24,7 @@
 var LinkedGov = {
 
 		vars : {
-			debug:false
+			debug:true
 		},
 
 		initialise: function() {
@@ -53,7 +53,7 @@ var LinkedGov = {
 
 			//Refine.actionAreas[1].bodyElmt.hide().remove();
 			//Refine.actionAreas[2].bodyElmt.hide().remove();
-			
+
 			var createProjectArea = {};
 
 			/*
@@ -65,21 +65,20 @@ var LinkedGov = {
 				if(typeof Refine.actionAreas[i] != 'undefined' && Refine.actionAreas[i].id == "create-project"){
 					createProjectArea = Refine.actionAreas[i];
 					createProjectArea.bodyElmt.css("z-index","9999");
+				} else {
+					Refine.actionAreas[i].bodyElmt.remove();
 				}
 			}
 
 			// Make sure the create-project area is visible
 			createProjectArea.bodyElmt.css("visibility","visible");
-			
+			createProjectArea.bodyElmt.show();
+
 			var sources = Refine.DefaultImportingController.sources;
 
-			log("sources.length:");
-			log(sources.length);
-			
 			for(var j=0, len=sources.length; j<len; j++){
-				log(sources[j].id);
 				try{
-				switch(sources[j].id) {		
+					switch(sources[j].id) {		
 					case "clipboard" :
 						sources[j]._divBody.remove();
 						sources[j]._divHeader.remove();
@@ -95,7 +94,7 @@ var LinkedGov = {
 					log(e);
 				}
 			}
-		
+
 			// Add our own window.resize function that needs to resize the metadata form panel
 			$(window).bind("resize",function(){
 				$("td#linkedgov-metadata-form").height($(window).height()-$("td#linkedgov-metadata-form").offset().top);
@@ -112,8 +111,6 @@ var LinkedGov = {
 			 * at the end of the metadata form.
 			 */ 
 			$("div.create-project-ui-source-selection-tab-body").find("button[bind='nextButton']").hide();
-
-
 
 		},
 
@@ -141,7 +138,7 @@ var LinkedGov = {
 			"</tr>");
 
 			$("table tr td#linkedgov-metadata-form").html(DOM.loadHTML("linkedgov", "html/index/metadata-form.html"));
-			$('div.metadata').parent().parent().scrollTop(0);
+			$("div#create-project-ui-source-selection").scrollTop(0);
 
 		},
 
@@ -164,7 +161,8 @@ var LinkedGov = {
 				// User is uploading data
 				source = "fileInput"
 			} else {
-				alert("Data source error");
+				//alert("Data source error");
+				errorMessages += "<li>You must specify a source to import data from. Please select a file to upload or enter a web address to download from.</li>";
 			}
 
 			if ($("input#data-name-input").val().length < 1) {
@@ -179,6 +177,12 @@ var LinkedGov = {
 				error = true;
 				errorMessages += "<li>You must choose a project license</li>";
 				$("div.metadata tr.license td").addClass("error");
+			} else if($("input[@name=project-license]:checked").val() == 'other'){
+				error = true;
+				/*
+				 * Send data off to LinkedGov to notify them that somebody has data with 
+				 * a special case of licensing.
+				 */
 			} else {
 				$("div.metadata tr.license td").removeClass("error");
 			}
@@ -222,6 +226,102 @@ var LinkedGov = {
 				$('div.metadata').parent().parent().scrollTop(0);
 				$("div.metadata ul.errorMessages").html(errorMessages).show().focus();
 			}	
+
+		},
+
+		resizeParsingPanel:function(){
+
+			log("resizeParsingPanel");
+			
+			var self = Refine.DefaultImportingController.sources[0].ui._controller;
+
+			self._parsingPanelResizer = function(){
+				
+				//log("parsingPanel is resizing...");
+				//log(self._parsingPanel);
+				/*
+				var elmts = self._parsingPanelElmts;
+				var width = $(window).width();
+				var height = $("div#right-panel").height()-15;
+				var headerHeight = elmts.wizardHeader.outerHeight(true);
+				var controlPanelHeight = 0; // DS
+				var cushion = 10;
+				
+				
+				$("div#right-panel").height($(window).height()-40);
+				$("div#right-panel-body").height($("div#right-panel").height()-5);				
+				
+				elmts.dataPanel
+				.css("left", "300px")
+				.css("top", headerHeight + "px")
+				.css("width", ((width - 305) + "px"))
+				.css("height", (height - headerHeight - controlPanelHeight - DOM.getVPaddings(elmts.dataPanel))+cushion + "px");
+				elmts.progressPanel
+				.css("left", "0px")
+				.css("top", headerHeight + "px")
+				.css("width", (width - DOM.getHPaddings(elmts.progressPanel)) + "px")
+				.css("height", (height - headerHeight - controlPanelHeight - DOM.getVPaddings(elmts.progressPanel)) + "px");
+				elmts.controlPanel
+				.css("left", "0px")
+				.css("top", headerHeight + "px")
+				.css("width", "300px")
+				.css("height", (height - headerHeight - controlPanelHeight - DOM.getVPaddings(elmts.dataPanel))+cushion + "px"); 
+*/
+				$("body.lg div.default-importing-parsing-control-panel")
+				.css("height","auto")
+				.css("bottom","0px")
+				.css("left","0px")
+				.css("padding-left","5px")
+				.css("top","34px")
+				.css("width","295px");
+
+				$("body.lg div.default-importing-progress-data-panel")
+			    .css("bottom", "0")
+			    .css("left","305px")
+			    .css("height","auto")
+			    .css("padding-top", "150px")
+			    .css("right", "0")
+			    .css("top", "34px")
+			   .css("width","auto");
+				
+				
+				$("body.lg div.default-importing-parsing-data-panel")
+				.css("height","auto")
+				.css("bottom","0px")
+				.css("left","300px")
+				.css("overflow-y","auto")
+				.css("right","0px")
+				.css("top","34px")
+				.css("width","auto");
+
+				$("body.lg div#right-panel-body")
+				.css("bottom","0px")
+				.css("overflow","auto")
+				.css("margin-left","5px")
+				.css("margin-top","5px")
+				.css("position","static")
+				.css("top","0px");
+
+				$("body.lg div#right-panel")
+				.css("left","0px !important")
+				.css("width","100% !important")
+				.css("bottom","0px")
+				.css("top","40px")
+				.css("visibility","visible")
+				.css("height","auto");
+				
+				// DS - alter the widths of the td elements that hold the checkboxes & inputs for the parsing panels
+				$('td.default-importing-parsing-control-panel-options-panel').children().find('div.grid-layout').children().find('td').each(function(){
+					if($(this).attr('width') === "1%"){
+						$(this).removeAttr('width').css('width','25px');
+					}
+				});
+				  
+			}
+			
+			$(window).unbind("resize");
+			$(window).bind("resize", self._parsingPanelResizer);
+			$(window).resize();
 
 		},
 
@@ -296,10 +396,6 @@ DOM.loadHTML = function(module, path) {
 	} else if(path == "scripts/index/parser-interfaces/separator-based-parser-ui.html"){
 		module = "linkedgov";
 		path = "html/index/separator-based-parser-ui.html";		
-	} else if(path == "scripts/index/import-project-ui.html"){
-
-	} else if(path == "scripts/index/open-project-ui.html"){
-
 	}
 
 	var fullPath = ModuleWirings[module] + path;
@@ -320,6 +416,21 @@ DOM.loadHTML = function(module, path) {
 function log(str) {
 	window.console && console.log && LinkedGov.vars.debug && console.log(str);
 }
+
+Refine.DefaultImportingController.prototype._onImportJobReady = function() {
+	this._prepareData();
+	if (this._job.config.retrievalRecord.files.length > 1) {
+		this._showFileSelectionPanel();
+	} else {
+		this._showParsingPanel(false);
+	}
+	
+	LinkedGov.resizeParsingPanel();
+	
+	$(window).unbind("resize");
+	$(window).bind("resize",Refine.DefaultImportingController.sources[0].ui._controller._parsingPanelResizer);
+	$(window).resize();
+};
 
 $(document).ready(function(){
 

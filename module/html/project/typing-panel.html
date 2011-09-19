@@ -1,142 +1,41 @@
 <div class="typing-panel-body" bind="bodyDiv">
 
-	<a class="question">Does the dataset include <b>dates</b> or <b>times</b>?</a>
-	<div class="grid-layout layout-tightest type question-input">
+	<a class="wizard-header">Is there a <b>range of columns</b> that could
+		fit into one column of the same type?</a>
 
-		<ul class="checkboxes">
-			<li><input id="dates" type="checkbox" bind="dateCheck" /><label for="dates"
-				title="Select both if a column contains a date and a time">Dates</label>
-			</li>
-			<li><input id="times" type="checkbox" bind="timeCheck" /><label for="times"
-				title="Select both if a column contains a date and a time">Times</label>
-			</li>
-		</ul>
-		<a class="info">
-			<!-- info -->
-		</a> 
-		<span class="note">Select both if a column contains a date and a time</span>
+	<div class="wizard-body rangeSelect" bind="multipleColumnsBody">
 
 		<div class="selector">
-			<a class="button" id="dateSelect">Start Select</a> 
-				<a class="info"><!-- info --></a>
-				<span class="note">To select multiple column headings, hold
-				down CTRL (Windows) or Apple (Mac). You can also drag your mouse
-				across multiple column headers while holding down the relevant key.</span>
 
-			<ul class="column-display" bind="dateTimeColumns">
-			</ul>
-		</div>
-
-		<input bind="dateComplicated" type="checkbox" class="date-complicated" id="date-complicated">
-			<label for="date-complicated"">It is a bit more complicated than that</label>
-		<div class="date-complicated">
-			<ul class="cols-copy column-display" bind="dateColsComplicated"></ul>
-		</div>
-		<a href="javascript:{}" bind="dateTimeButton" class="button update" title="Update">Update</a>
-
-	</div>
-
-	<a class="question">Does the dataset include <b>measurements</b>?</a>
-	<div class="grid-layout layout-tightest type question-input">
-		<a class="info">
-			<!-- info -->
-		</a> <span class="note">Search for a measurement</span> <input
-			class="text" id="unitInputField" type="text" autocomplete="on"
-			name="unitInputField" bind="unitInputField" />
-
-		<div class="selector">
-			<a class="button" id="measurementSelect">Start Select</a> <a
-				class="info">
-				<!-- info -->
-			</a> <span class="note">To select multiple column headings, hold
-				down CTRL (Windows) or Apple (Mac). You can also drag your mouse
-				across multiple column headers while holding down the relevant key.</span>
-
-			<ul class="column-display" bind="measurementsColumns">
-			</ul>
-		</div>
-
-		<ul class="checkboxes">
-			<li><input type="checkbox" /><label>It is a bit more
-					complicated than that</label>
-			</li>
-		</ul>
-
-		<a href="javascript:{}" bind="measurementsButton" class="button update" title="Update">Update</a>
-
-	</div>
-
-
-
-	<a class="question">Does the dataset include <b>latitude</b> or <b>longitude</b>
-		or <b>northing</b> or <b>easting</b>?</a>
-	<div class="grid-layout layout-tightest type question-input">
-
-		<ul class="checkboxes">
-			<li><input type="checkbox" /><label>Latitude</label>
-			</li>
-			<li><input type="checkbox" /><label>Longitude</label>
-			</li>
-			<li><input type="checkbox" /><label>Northing</label>
-			</li>
-			<li><input type="checkbox" /><label>Easting</label>
-			</li>
-		</ul>
-
-		<div class="selector">
-			<a class="button" id="latLongSelect">Start Select</a>
-			<a class="info"></a> 
-			<span class="note">To select multiple column headings, hold
-				down CTRL (Windows) or Apple (Mac). You can also drag your mouse
-				across multiple column headers while holding down the relevant key.<br />
-			<br />Click anywhere in the table to unselect the columns.</span>
-
-			<ul class="column-display" bind="latLongColumns">
-			</ul>
-		</div>
-
-		<span class="note">Select the format</span> 
-		<a class="info"><!-- info --></a> 
-		<select class="select">
-			<option>Lat, Long</option>
-			<option>Long, Lat</option>
-		</select> <a href="javascript:{}" bind="latLongButton" class="button update" title="Update">Update</a>
-
-	</div>
-
-	<a class="question">Does the dataset include <b>postcodes</b>?</a>
-
-	<div class="grid-layout layout-tightest type question-input">
-
-		<!-- ul class="checkboxes">
-            <li><input type="checkbox" /><label>House/Flat number</label></li>
-            <li><input type="checkbox" /><label>Street/Road name</label></li>
-            <li><input type="checkbox" /><label>Town/City</label></li>
-            <li><input type="checkbox" /><label>Postcode</label></li>
-		</ul -->
-
-		<div class="selector">
-			<a class="button" id="addressSelect">Start Select</a> <a class="info">
+			<a class="info">
 				<!-- info -->
 			</a> 
 			<span class="note">To select multiple column headings, hold
 				down CTRL (Windows) or Apple (Mac). You can also drag your mouse
-				across multiple column headers while holding down the relevant key.<br />
-			<br />Click anywhere in the table to unselect the columns.</span>
+				across multiple column headers while holding down the relevant key.
+				<br /><br />
+				Click anywhere in the table to unselect the columns.
+			</span> 
+			<a class="button" id="multipleColumnsSelect">Start Select</a>
+			<div class="range">
+				<span>From:</span> <select class="from"></select> <span>To:</span> <select
+					class="to"></select>
+			</div>
 
-			<ul class="column-display" bind="addressColumns">
+			<ul class="column-display" bind="multipleColumnsColumns">
 			</ul>
 		</div>
 
-		<a href="javascript:{}" bind="addressButton" class="button update"
-			title="Update">Update</a>
+		<a href="javascript:{}" bind="multipleColumnsButton"
+			class="button update" title="Update">Update</a>
 
 	</div>
-
-	<a class="question">Is there a column with <b>multiple
+	<!-- end multiple columns wizard -->
+	
+	<a class="wizard-header">Is there a column with <b>multiple
 			values</b> that could be used as <b>column headers</b>?</a>
 
-	<div class="grid-layout layout-tightest type question-input">
+	<div class="wizard-body" bind="multipleValuesBody">
 
 		<div class="selector">
 			<p>Select the column that has values to be used as headers:</p>
@@ -181,36 +80,151 @@
 			class="button update" title="Update">Update</a>
 
 	</div>
+	<!-- end multiple value wizard -->
 
-	<a class="question">Is there a <b>range of columns</b> that could
-		fit into one column of the same type?</a>
+	<a class="wizard-header">Does the dataset include <b>dates</b> or <b>times</b>?</a>
+	<div class="wizard-body" bind="dateTimeBody">
 
-	<div class="grid-layout layout-tightest type question-input rangeSelect">
+		<ul class="checkboxes">
+			<li><input id="dates" type="checkbox" bind="dateCheck" /><label for="dates"
+				title="Select both if a column contains a date and a time">Dates</label>
+			</li>
+			<li><input id="times" type="checkbox" bind="timeCheck" /><label for="times"
+				title="Select both if a column contains a date and a time">Times</label>
+			</li>
+		</ul>
+		<a class="info">
+			<!-- info -->
+		</a> 
+		<span class="note">Select both if a column contains a date and a time</span>
 
 		<div class="selector">
+			<a class="button" id="dateSelect">Start Select</a> 
+				<a class="info"><!-- info --></a>
+				<span class="note">To select multiple column headings, hold
+				down CTRL (Windows) or Apple (Mac). You can also drag your mouse
+				across multiple column headers while holding down the relevant key.</span>
 
-			<a class="info">
+			<ul class="column-display" bind="dateTimeColumns">
+			</ul>
+		</div>
+
+		<input bind="dateComplicated" type="checkbox" class="complicated" id="date-complicated">
+		<label for="date-complicated"">It is a bit more complicated than that</label>
+		<div class="complicated">
+			<ul class="cols-copy column-display" bind="dateColsComplicated"></ul>
+		</div>
+		
+		<a href="javascript:{}" bind="dateTimeButton" class="button update" title="Update">Update</a>
+	</div>
+	<!--  end date/time wizard -->
+
+	<a class="wizard-header">Does the dataset include <b>measurements</b>?</a>
+	<div class="wizard-body" bind="measurementsBody">
+		<a class="info">
+			<!-- info -->
+		</a> <span class="note">Search for a measurement</span> <input
+			class="text" id="unitInputField" type="text" autocomplete="on"
+			name="unitInputField" bind="unitInputField" />
+
+		<div class="selector">
+			<a class="button" id="measurementSelect">Start Select</a> <a
+				class="info">
+				<!-- info -->
+			</a> <span class="note">To select multiple column headings, hold
+				down CTRL (Windows) or Apple (Mac). You can also drag your mouse
+				across multiple column headers while holding down the relevant key.</span>
+
+			<ul class="column-display" bind="measurementsColumns">
+			</ul>
+		</div>
+
+		<ul class="checkboxes">
+			<li><input type="checkbox" /><label>It is a bit more
+					complicated than that</label>
+			</li>
+		</ul>
+
+		<a href="javascript:{}" bind="measurementsButton" class="button update" title="Update">Update</a>
+
+	</div>
+	<!-- end measurements wizard -->
+
+
+	<a class="wizard-header">Does the dataset include <b>latitude</b> or <b>longitude</b>
+		or <b>northing</b> or <b>easting</b>?</a>
+	<div class="wizard-body" bind="latLongBody">
+
+		<ul class="checkboxes">
+			<li><input type="checkbox" /><label>Latitude</label>
+			</li>
+			<li><input type="checkbox" /><label>Longitude</label>
+			</li>
+			<li><input type="checkbox" /><label>Northing</label>
+			</li>
+			<li><input type="checkbox" /><label>Easting</label>
+			</li>
+		</ul>
+
+		<div class="selector">
+			<a class="button" id="latLongSelect">Start Select</a>
+			<a class="info"></a> 
+			<span class="note">To select multiple column headings, hold
+				down CTRL (Windows) or Apple (Mac). You can also drag your mouse
+				across multiple column headers while holding down the relevant key.<br />
+			<br />Click anywhere in the table to unselect the columns.</span>
+
+			<ul class="column-display" bind="latLongColumns">
+			</ul>
+		</div>
+
+		<span class="note">Select the format</span> 
+		<a class="info"><!-- info --></a> 
+		<select class="select">
+			<option>Lat, Long</option>
+			<option>Long, Lat</option>
+		</select> <a href="javascript:{}" bind="latLongButton" class="button update" title="Update">Update</a>
+
+	</div>
+	<!-- end lat long wizard -->
+
+	<a class="wizard-header">Does the dataset include <b>addresses</b>?</a>
+
+	<div class="wizard-body" bind="addressBody">
+
+		<!-- ul class="checkboxes">
+            <li><input type="checkbox" /><label>House/Flat number</label></li>
+            <li><input type="checkbox" /><label>Street/Road name</label></li>
+            <li><input type="checkbox" /><label>Town/City</label></li>
+            <li><input type="checkbox" /><label>Postcode</label></li>
+		</ul -->
+
+		<div class="selector">
+			<a class="button" id="addressSelect">Start Select</a> <a class="info">
 				<!-- info -->
 			</a> 
 			<span class="note">To select multiple column headings, hold
 				down CTRL (Windows) or Apple (Mac). You can also drag your mouse
-				across multiple column headers while holding down the relevant key.
-				<br /><br />
-				Click anywhere in the table to unselect the columns.
-			</span> 
-			<a class="button" id="multipleColumnsSelect">Start Select</a>
-			<div class="range">
-				<span>From:</span> <select class="from"></select> <span>To:</span> <select
-					class="to"></select>
-			</div>
+				across multiple column headers while holding down the relevant key.<br />
+			<br />Click anywhere in the table to unselect the columns.</span>
 
-			<ul class="column-display" bind="multipleColumnsColumns">
+			<ul class="column-display" bind="addressColumns">
 			</ul>
 		</div>
 
-		<a href="javascript:{}" bind="multipleColumnsButton"
-			class="button update" title="Update">Update</a>
+		<input bind="addressComplicated" type="checkbox" class="complicated" id="address-complicated">
+		<label for="address-complicated"">It is a bit more complicated than that</label>
+		<div class="complicated">
+			<ul class="cols-copy column-display" bind="addressColsComplicated"></ul>
+		</div>
+		
+		<a href="javascript:{}" bind="addressButton" class="button update"
+			title="Update">Update</a>
 
 	</div>
+	<!-- end address wizard -->
+
+
+
 
 </div>

@@ -1,5 +1,5 @@
 // DS - Question expanding javascript
-$('a.question').click(function(){
+$('a.question').live("click", function(){
 	  if($(this).hasClass("exp")){
 		$(this).removeClass("exp");
 		$(this).next('div.question-input').slideUp();
@@ -11,7 +11,7 @@ $('a.question').click(function(){
 	  }
 }); 
 
-$("button.create-project").click(function(){
+$("button.create-project").live("click",function(){
 		$("button.yes-success").click();
 });
   

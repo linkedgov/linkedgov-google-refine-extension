@@ -1,3 +1,10 @@
+LinkedGov.resizeParsingPanel();
+
+$("button[bind='startOverButton']").live("click",function(){
+	$("div#create-project-ui-source-selection").scrollTop(0);
+})
+
+/*
 var parserResizer = function(){
 	
 	var self = Refine.DefaultImportingController.sources[0].ui._controller;
@@ -37,3 +44,4 @@ Refine.DefaultImportingController.sources[0].ui._controller._parsingPanelResizer
 Refine.DefaultImportingController.sources[1].ui._controller._parsingPanelResizer = parserResizer();
 $(window).unbind("resize");
 $(window).bind("resize", parserResizer);
+*/

@@ -59,7 +59,7 @@ TypingPanel.prototype._render = function () {
 	var self = this;
 
 	var elmts = DOM.bind(this._div);
-	
+
 	// make the measurements text field auto suggest
 	$("#unitInputField").suggest().bind("fb-select", function (e, data) {
 		// alert(data.name + ", " + data.id);
@@ -96,7 +96,7 @@ TypingPanel.prototype._render = function () {
 		self._destroyColumnSelector();
 		LinkedGov.multipleColumnsWizard.initialise(elmts);
 	});
-	
+
 	elmts.multipleValuesButton.click(function () {
 		self._destroyColumnSelector();
 		LinkedGov.multipleValuesWizard.initialise(elmts);
@@ -119,16 +119,16 @@ TypingPanel.prototype.wizardInteraction = function(el) {
 	if ($(el).hasClass("exp")) {
 		$(el).removeClass("exp");
 		$("a.info").hide();
-		$(el).next('div.question-input').slideUp(function () {
+		$(el).next('div.wizard-body').slideUp(function () {
 			$(this).find("div.selector").children("div.range").hide();
 		});
 	} else {
 		$("a.info").hide();
-		$('div.question-input').slideUp(function () {
+		$('div.wizard-body').slideUp(function () {
 			$(this).find("div.selector").children("div.range").hide();
 		});
-		$('a.question.exp').removeClass("exp");
-		$(el).next('div.question-input').slideDown(function () {
+		$('a.wizard-header.exp').removeClass("exp");
+		$(el).next('div.wizard-body').slideDown(function () {
 			$("a.info").show();
 			//populate the select inputs with column headers
 			if ($(this).hasClass("rangeSelect")) {
@@ -189,7 +189,7 @@ TypingPanel.prototype.columnSelector = function(button) {
 			selected: function (event, ui) {
 				// include 'data-' attributes on <li> here about cell
 				// information
-				$cols.html($cols.html() + "<li><span>" + $(ui.selected).children().find(".column-header-name").html() + "</span></li>").show();
+				$cols.html($cols.html() + "<li><span class='col'>" + $(ui.selected).children().find(".column-header-name").html() + "</span><span class='remove'>X</span></li>").show();
 			},
 			unselected: function (event, ui) {
 				// console.log("unselected");
@@ -233,7 +233,7 @@ TypingPanel.prototype.rangeSelector = function(select) {
 		// Check to see if the other input has been set and
 		// adjust the column list
 		from = parseInt($(select).find("option[value='" + $(select).val() + "']").attr("data-id"));
-		$(select).parent().find("select.to").children("option").each(function () {
+		$(select).parent().find("select.to").children("option").each(function() {
 			if (parseInt($(this).attr("data-id")) <= from) {
 				$(this).attr("disabled", "true");
 			} else {
@@ -256,7 +256,7 @@ TypingPanel.prototype.rangeSelector = function(select) {
 
 	$(select).find("option").each(function () {
 		if (parseInt($(this).attr("data-id")) >= parseInt($(this).parent().parent().children("select.from").find("option[value='" + $(this).parent().parent().children("select.from").val() + "']").attr("data-id")) && parseInt($(this).attr("data-id")) <= parseInt($(this).parent().parent().children("select.to").find("option[value='" + $(this).parent().parent().children("select.to").val() + "']").attr("data-id"))) {
-			colsHTML += "<li><span>" + $(this).val() + "</span></li>";
+			colsHTML += "<li><span class='col'>" + $(this).val() + "</span><span class='remove'>X</span></li>";
 		}
 	});
 
@@ -302,7 +302,7 @@ $(document).ready(function () {
 
 			$("div#left-panel div.refine-tabs").tabs('select', 1);
 			$("div#left-panel div.refine-tabs").css("visibility", "visible");
-			
+
 			clearInterval(interval);
 
 		}
@@ -311,14 +311,24 @@ $(document).ready(function () {
 	/*
 	 * Interaction when clicking on a wizard.
 	 */
-	$('a.question').click(function () {
+	$('a.wizard-header').click(function () {
 		ui.typingPanel.wizardInteraction($(this));
 	});
 
+	/*
+	 * Show tooltips
+	 */
 	$("a.info").mouseover(function () {
 		$(this).next("span").show();
 	}).mouseout(function () {
 		$(this).next("span").hide();
+	});
+
+	/*
+	 * Remove column interaction for column lists
+	 */
+	$("ul.column-display li span.remove").live("click",function(){
+		$(this).parent().slideUp(250,function(){$(this).remove()});
 	});
 
 	/*
@@ -335,9 +345,47 @@ $(document).ready(function () {
 		ui.typingPanel.rangeSelector($(this));
 	});
 
-	$("input.date-complicated").click(function () {
+	/*
+	 * "It's more complicated than that" interaction
+	 */
+	$("input.complicated").click(function () {
 
-		$colscopy = $(this).parent().children("div.date-complicated").children("ul.cols-copy");
+		var fragmentSelectHTML = "";
+
+		switch($(this).attr("id")){
+
+			case 'date-complicated' :
+			fragmentSelectHTML =  "<select class='date-select'>" + 
+			"<option value='Day'>Day</option>" + 
+			"<option value='Month'>Month</option>" + 
+			"<option value='Year'>Year</option>" + 
+			"<option value='DayMonth'>Day-Month</option>" + 
+			"<option value='MonthYear'>Month-Year</option>" + 
+			"</select>";
+			break;
+		
+			case 'address-complicated' : 
+			fragmentSelectHTML = "<select class='address-select'>" + 
+			"<option value='House_Flat_number'>House/Flat number</option>" + 
+			"<option value='Street_Road'>Street/Road name</option>" +
+			"<option value='House_and_Street'>House num & Street name</option>" + 
+			"<option value='District'>District</option>" + 
+			"<option value='Suburb'>Suburb</option>" + 
+			"<option value='Region'>Region</option>" + 
+			"<option value='Town'>Town</option>" + 
+			"<option value='City'>City</option>" + 
+			"<option value='County'>County</option>" + 
+			"<option value='Country'>Country</option>" + 
+			"<option value='Postcode'>Postcode</option>" + 
+			"</select>";
+			break;
+			
+			default:
+				break;
+
+		}
+
+		$colscopy = $(this).parent().children("div.complicated").children("ul.cols-copy");
 
 		$("div.selector a.button").html("Start Select");
 		$("table.data-table").selectable("destroy");
@@ -348,20 +396,14 @@ $(document).ready(function () {
 		$colscopy.html($(this).parent().children("div.selector").children("ul.column-display").html());
 
 		$colscopy.children("li").each(function () {
-			$(this).html($(this).html() + "<select class='date-select'>" + 
-					"<option value='Day'>Day</option>" + 
-					"<option value='Month'>Month</option>" + 
-					"<option value='Year'>Year</option>" + 
-					"<option value='DayMonth'>Day-Month</option>" + 
-					"<option value='MonthYear'>Month-Year</option>" + 
-			"</select>");
+			$(this).html($(this).html() + fragmentSelectHTML);
 		});
 
 		if (!$(this).attr("checked")) {
-			$(this).parent().children("div.date-complicated").slideUp();
+			$(this).parent().children("div.complicated").slideUp();
 			$(this).parent().children("div.selector").children("ul.column-display").slideDown();
 		} else {
-			$(this).parent().children("div.date-complicated").slideDown();
+			$(this).parent().children("div.complicated").slideDown();
 			$(this).parent().children("div.selector").children("ul.column-display").slideUp();
 		}
 	});

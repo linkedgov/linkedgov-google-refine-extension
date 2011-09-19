@@ -182,6 +182,41 @@ var LinkedGov = {
 		},
 
 		/*
+		 * resetWizard
+		 * 
+		 * Called once a wizard is complete.
+		 * 
+		 * Takes a wizard's body HTML element as a parameter 
+		 * and resets it's options and settings.
+		 */
+		resetWizard: function(wizardBody){
+
+			log("Resetting wizard, using body:");
+
+			log(wizardBody);
+
+			//Clear checkboxes
+			$(wizardBody).find(":input").removeAttr('checked').removeAttr('selected');
+			//Clear column selections
+			$(wizardBody).find("ul.column-display").html("");
+			//Clear text fields
+			$(wizardBody).find(":text").val("");
+
+			//Make sure the wizard is displayed so the user can repeat the 
+			//task if they wish
+			$("a.wizard-header").removeClass("exp");
+			$(wizardBody).prev("a.wizard-header").addClass("exp");
+			$("div.wizard-body").hide();
+			$(wizardBody).show();
+
+			//Display the typing panel
+			ui.leftPanelTabs.tabs({ selected: 1 });	
+
+			$(wizardBody).parent().scrollTop($(wizardBody).prev("a.wizard-header").offset().top)
+
+		},
+
+		/*
 		 * loadHTMLCallback
 		 * 
 		 * Called each time HTML is loaded, either through LinkedGov or 
@@ -189,7 +224,7 @@ var LinkedGov = {
 		 */
 		loadHTMLCallback: function(htmlPage) {
 
-			log(htmlPage+" has been loaded");
+			//log(htmlPage+" has been loaded");
 
 			htmlPage = htmlPage.split("/");			
 			htmlPage = htmlPage[htmlPage.length-1];
@@ -209,456 +244,6 @@ var LinkedGov = {
 
 };
 
-/*
- * dateTimeOperation
- * 
- * simpleDate
- * 
- * fragmentedDate
- * 
- * simpleTime
- * 
- * fragmentedTime
- * 
- * buildExpression
- * 
- */
-LinkedGov.dateTimeWizard = {
-
-		vars:{
-			columns:"",
-			elmts:{}
-		},
-
-		/*
-		 * initialise
-		 * 
-		 * Detects whether the user has chosen to clean up 
-		 * dates, times or both.
-		 * 
-		 * Also detects whether the user has said that the clean 
-		 * up operation might be more complicated (fragmented values)
-		 */
-		initialise: function(elmts) {
-
-			this.vars.elmts = elmts;
-
-			var cols = [];
-
-			$(elmts.dateTimeColumns).children().each(function(){
-				cols.push($(this).children("span").html());
-			});
-
-			var checkedDate = $(elmts.dateCheck).attr("checked");
-			var checkedTime = $(elmts.timeCheck).attr("checked");
-			var checkedMoreComplicated = $(elmts.dateComplicated).attr('checked');
-
-			this.vars.columns = cols;
-
-			if(checkedDate && !checkedTime){
-				// Just dates
-
-				if(checkedMoreComplicated) {
-					this.fragmentedDate();
-				} else {
-					this.simpleDate();
-				}
-
-			} else if(!checkedDate && checkedTime){
-				// Just times
-
-				if(checkedMoreComplicated) {
-					this.fragmentedTime();
-				} else {
-					this.simpleTime();
-				}
-
-			} else if(checkedDate && checkedTime){
-				// Dates and times
-
-				if(checkedMoreComplicated) {
-					this.fragmentedDate();
-					this.fragmentedTime();
-				} else {
-					this.simpleDate();
-					this.simpleTime();
-				}
-
-			} else {
-				alert("You need to specify if the columns you have selected contain dates, times or both");
-			}
-
-		},
-		
-		/*
-		 * simpleDate
-		 * 
-		 * Properly types a column using the value.toDate() expression 
-		 * for Refine and produces RDF.
-		 */
-		simpleDate:function() {
-
-			var cols = self.vars.columns;
-
-			for(var i=0, len=cols.length; i<len; i++){
-
-				Refine.postCoreProcess("text-transform", {
-					columnName: cols[i],
-					expression: "value.toDate()",
-					repeat: false,
-					repeatCount: ""
-				}, null, {
-					cellsChanged: true
-				});
-
-//				http://127.0.0.1:3333/command/rdf-extension/save-rdf-schema?project=1702403439701
-
-//				var rdfSchemaPost = schema = { "prefixes":[ {
-//				"name":"rdfs",
-//				"uri":"http://www.w3.org/2000/01/rdf-schema#" }, {
-//				"name":"foaf", "uri":"http://xmlns.com/foaf/0.1/" }, {
-//				"name":"xsd", "uri":"http://www.w3.org/2001/XMLSchema#" }, {
-//				"name":"owl", "uri":"http://www.w3.org/2002/07/owl#" }, {
-//				"name":"rdf",
-//				"uri":"http://www.w3.org/1999/02/22-rdf-syntax-ns#" } ],
-//				"baseUri":"http://localhost:3333/", "rootNodes":[ {
-//				"nodeType":"cell-as-resource", "expression":"value",
-//				"isRowNumberCell":true, "rdfTypes":[
-//				], "links":[ {
-//				"uri":"http://www.w3.org/2001/XMLSchema#date",
-//				"curie":"xsd:date", "target":{
-//				"nodeType":"cell-as-literal", "expression":"value.(d)",
-//				"columnName":$(this).html(), "isRowNumberCell":false } } ] } ] }
-
-//				&engine={"facets":[],"mode":"row-based"};
-
-
-			}		
-		},
-
-		/*
-		 * fragmentedDate
-		 * 
-		 * Takes a number of columns that contain parts of a date, 
-		 * attempts to concatenate them together and applies the 
-		 * value.toDate() expression to the combined column. Finally 
-		 * it produces RDF.
-		 */
-		fragmentedDate:function(){
-
-			var self = this;
-
-			var expression = this.buildExpression();
-
-			var colName = window.prompt("New column name:", theProject.metadata.name);
-
-			Refine.postCoreProcess("add-column", {
-				baseColumnName: self.vars.columns[0],
-				expression: expression,
-				newColumnName: colName,
-				columnInsertIndex: theProject.columnModel.columns.length + "",
-				onError: "keep-original"
-			}, null, {
-				modelsChanged: true
-			}, {
-				onDone:function(){
-					Refine.postCoreProcess("text-transform", {
-						columnName: colName,
-						expression: "value.toDate()",
-						repeat: false,
-						repeatCount: ""
-					}, null, {
-						cellsChanged: true
-					});
-				}
-			});
-
-		},
-
-		/*
-		 * Properly formats a timestamp within Refine and produces
-		 * RDF.
-		 */
-		simpleTime:function(){
-
-		},
-
-		/*
-		 * Takes a number of columns that contain part of a timestamp 
-		 * and concatenates them together using the iterated expression 
-		 * builder.
-		 */
-		fragmentedTime:function(){
-
-		},
-		
-		/*
-		 * Used in conjunction with fragmented date and time, it 
-		 * takes a number of columns and attempts to build a 
-		 * concatenation expression for date or time in the correct 
-		 * order.
-		 * 
-		 * E.g. if the columns picked were "Year, Month, Day", the 
-		 * expression built would produce a date in the order 
-		 * "Day-Month-Year".
-		 */
-		buildExpression:function(){
-			// expression =
-			// 'cells["year"].value+"-"+cells["day"].value+"-"+cells["month"].value';
-
-			var self = this;
-			var expression = "";
-			var dateOrder = ["Year", "Month", "Day", "Hours", "Minutes", "Seconds"];
-			var cols = self.vars.columns;
-
-			for (var i=0, len=dateOrder.length; i<len; i++) {
-				for(var j=0, len2=cols.length; j<len2; j++) {
-					if (cols[j] == dateOrder[i]) {
-						expression += 'cells["' + cols[j] + '"].value+"-"+';
-					}
-				}
-			}
-
-			try {
-				expression = expression.substring(0, expression.length - 5);
-				log(expression);
-			} catch (e) {
-				log(e);
-				log("Error formatting date");
-			}
-
-			return expression;
-
-		}
-
-};
-
-/*
- * measurementsWizard
- * 
- * Allows the user to select a column for typing against 
- * a particular measurement.
- * 
- * Once the user has selected a column, they are able to 
- * reconcile what type of measurement it is against the Freebase 
- * database, by typing into an autosuggestion box. The information 
- * returned by the Freebase API lets us store a URI, label and class 
- * for the measurement.
- * 
- * initialise
- * 
- * saveRDF
- * 
- * 
- * 
- */
-LinkedGov.measurementsWizard = {
-
-		vars:{
-			elmts:{}
-		},
-
-		initialise: function(elmts) {
-			this.vars.elmts = elmts;
-			this.saveRDF();
-		},
-
-		saveRDF:function(){
-
-			var elmts = this.vars.elmts;
-
-			var prefix = "fb";
-			var namespaceURI = "http://rdf.freebase.com/ns/";
-
-			var uri = elmts.unitInputField.data("data.suggest").id;
-			uri = uri.replace(/\//g, ".");
-			uri = namespaceURI + uri.substring(1, uri.length);
-
-			var curie = uri.split(".");
-			curie = curie[curie.length - 1];
-			curie = prefix + ":" + curie;
-
-			$(elmts.measurementsColumns).children().each(function () {
-
-				var jsonObj = {
-						"prefixes": [{
-							"name": prefix,
-							"uri": namespaceURI
-						}],
-						"baseUri": "http://127.0.0.1:3333/",
-						"rootNodes": [{
-							"nodeType": "cell-as-resource",
-							"expression": "value",
-							"isRowNumberCell": true,
-							"rdfTypes": [],
-							"links": [{
-								"uri": uri,
-								"curie": curie,
-								"target": {
-									"nodeType": "cell-as-literal",
-									"expression": "value",
-									"valueType": "http://www.w3.org/2001/XMLSchema#int",
-									"columnName": $(this).children("span").html(),
-									"isRowNumberCell": false
-								}
-							}]
-						}]
-				};
-
-				Refine.postProcess("rdf-extension", "save-rdf-schema", {}, {
-					schema: JSON.stringify(jsonObj)
-				}, {}, {
-					onDone: function () {
-						//DialogSystem.dismissUntil(self._level - 1);
-						theProject.overlayModels.rdfSchema = jsonObj;
-					}
-				});
-
-			});
-
-		}
-
-};
-
-/*
- * addressWizard
- * 
- * The address wizard helps to clean up addresses, with 
- * the postcode being the high priority.
- * 
- * A user is able to select one column containing a full address, 
- * in which case, a regular expression is used to separate the 
- * different parts of the address into separate columns, so types 
- * can be applied to those columns.
- * 
- * The user is also able to select multiple columns that contain 
- * fragments of an address, in which case typing is applied to the 
- * columns.
- * 
- * 
- * initialise 
- * 
- * extractPostCode
- * 
- * saveRDF
- * 
- */
-LinkedGov.addressWizard = {
-
-		vars: {
-			elmts:{},
-			postCodeRegex:"[A-Z]{1,2}[0-9R][0-9A-Z]? {0,1}[0-9][ABD-HJLNP-UW-Z]{2}/)[1]"
-		},
-
-		initialise: function(elmts){
-			this.vars.elmts = elmts;
-		},
-
-		extractPostCode: function(){
-
-			var self = this;
-			var elmts = this.vars.elmts;
-
-			var colName = window.prompt("New column name:", "");
-
-			$(elmts.addressColumns).children().each(function () {
-
-				Refine.postCoreProcess("add-column", {
-					baseColumnName: $(this).children("span").html(),
-					expression: "partition(value,/"+self.vars.postCodeRegex+"",
-					newColumnName: colName,
-					columnInsertIndex: theProject.columnModel.columns.length + "",
-					onError: "keep-original"
-				}, null, {
-					modelsChanged: true
-				}, {
-					onDone:function(){
-						self.saveRDF(colName);
-					}
-				});		
-
-			});
-
-		},
-
-		saveRDF: function(colName){
-
-			var self = this;
-			var elmts = this.vars.elmts;
-
-			var prefix = "ospc";
-			var namespaceURI = "http://data.ordnancesurvey.co.uk/ontology/postcode/";
-			var type = "postcode";
-			var uri = namespaceURI + type;
-			var curie = prefix + ":" + type;
-
-			var jsonObj = {
-					"prefixes": [{
-						"name": "rdfs",
-						"uri": "http://www.w3.org/2000/01/rdf-schema#"
-					},
-					{
-						"name": "ospc",
-						"uri": "http://data.ordnancesurvey.co.uk/ontology/postcode/"
-					},
-					{
-						"name": "vcard",
-						"uri": "http://www.w3.org/2006/vcard/ns#"
-					}],
-					"baseUri": "http://127.0.0.1:3333/",
-					"rootNodes": [{
-						"nodeType": "cell-as-resource",
-						"expression": "value",
-						"isRowNumberCell": true,
-						"rdfTypes": [],
-						"links": [{
-							"uri": "http://www.w3.org/2006/vcard/ns#adr",
-							"curie": "vcard:adr",
-							"target": {
-								"nodeType": "cell-as-resource",
-								"expression": "value+\"#address\"",
-								"isRowNumberCell": true,
-								"rdfTypes": [{
-									"uri": "http://www.w3.org/2006/vcard/ns#Address",
-									"curie": "vcard:Address"
-								}],
-								"links": [{
-									"uri": "http://data.ordnancesurvey.co.uk/ontology/postcode/postcode",
-									"curie": "ospc:postcode",
-									"target": {
-										"nodeType": "cell-as-resource",
-										"expression": "\"http://data.ordnancesurvey.co.uk/id/postcodeunit/\"+value.replace(\" \",\"\")",
-										"columnName": colName,
-										"isRowNumberCell": false,
-										"rdfTypes": [],
-										"links": [{
-											"uri": "http://www.w3.org/2000/01/rdf-schema#label",
-											"curie": "rdfs:label",
-											"target": {
-												"nodeType": "cell-as-literal",
-												"expression": "value",
-												"columnName": colName,
-												"isRowNumberCell": false
-											}
-										}]
-									}
-								}]
-							}
-						}]
-					}]
-			};
-
-			Refine.postProcess("rdf-extension", "save-rdf-schema", {}, {
-				schema: JSON.stringify(jsonObj)
-			}, {}, {
-				onDone: function () {
-					//DialogSystem.dismissUntil(self._level - 1);
-					theProject.overlayModels.rdfSchema = jsonObj;
-				}
-			});
-
-		}
-};
 
 /*
  * multipleColumnsWizard
@@ -698,7 +283,8 @@ LinkedGov.multipleColumnsWizard = {
 		vars : {
 			startColName:"",
 			newColName:"",
-			colCount:0
+			colCount:0,
+			elmts:{}
 		},
 
 		/*
@@ -711,7 +297,8 @@ LinkedGov.multipleColumnsWizard = {
 
 			var self = this;
 
-			self.vars.startColName = $(elmts.multipleColumnsColumns).children("li").eq(0).find("span").html();
+			self.vars.elmts = elmts;
+			self.vars.startColName = $(elmts.multipleColumnsColumns).children("li").eq(0).find("span.col").html();
 			self.vars.colCount = $(elmts.multipleColumnsColumns).children("li").length;
 			self.vars.newColName = window.prompt("New column name:", "");
 
@@ -864,10 +451,15 @@ LinkedGov.multipleColumnsWizard = {
 		 * update.
 		 */
 		onComplete:function(){
+
+			var self = this;
+
 			LinkedGov.setNullsToBlank(theProject.columnModel.columns,0,function(){
 				log("multipleColumnsOperation complete");
 				Refine.update({everythingChanged:true});
+				LinkedGov.resetWizard(self.vars.elmts.multipleColumnsBody);
 			});
+
 			return false;
 		}
 };
@@ -922,7 +514,8 @@ LinkedGov.multipleValuesWizard = {
 			headersColName:"",
 			valuesColName:"",
 			colsToExclude:[],
-			newHeaders:[]
+			newHeaders:[],
+			elmts:{}
 		},
 
 		/*
@@ -936,14 +529,15 @@ LinkedGov.multipleValuesWizard = {
 		initialise: function(elmts) {
 
 			var self = this;
+			self.vars.elmts = elmts;
 
 			LinkedGov.setFacetCountLimit(1000);
 
-			self.vars.headersColName = $(elmts.multipleValuesColumns).children("li").eq(0).find("span").html();
-			self.vars.valuesColName = $(elmts.multipleValuesColumns2).children("li").eq(0).find("span").html();
+			self.vars.headersColName = $(elmts.multipleValuesColumns).children("li").eq(0).find("span.col").html();
+			self.vars.valuesColName = $(elmts.multipleValuesColumns2).children("li").eq(0).find("span.col").html();
 
 			$(elmts.multipleValuesColumns3).children("li").each(function(){
-				self.vars.colsToExclude.push($(this).find("span").html())
+				self.vars.colsToExclude.push($(this).find("span.col").html())
 			});
 
 			LinkedGov.setBlanksToNull(theProject.columnModel.columns,0,function(){
@@ -1429,14 +1023,502 @@ LinkedGov.multipleValuesWizard = {
 		 * messages, resets the facet count limit and performs an update.
 		 */
 		onComplete:function(){
+
+			var self = this;
+
 			LinkedGov.setNullsToBlank(theProject.columnModel.columns,0,function(){
 				DialogSystem.dismissAll();
 				LinkedGov.setFacetCountLimit(100);
 				Refine.update({everythingChanged:true});
+				LinkedGov.resetWizard(self.vars.elmts.multipleValuesBody);
 			});
+
 			return false;
 		}		
 
+};
+
+
+/*
+ * dateTimeOperation
+ * 
+ * simpleDate
+ * 
+ * fragmentedDate
+ * 
+ * simpleTime
+ * 
+ * fragmentedTime
+ * 
+ * buildExpression
+ * 
+ */
+LinkedGov.dateTimeWizard = {
+
+		vars:{
+			columns:[],
+			colFragments:[],
+			elmts:{}
+		},
+
+		/*
+		 * initialise
+		 * 
+		 * Detects whether the user has chosen to clean up 
+		 * dates, times or both.
+		 * 
+		 * Also detects whether the user has said that the clean 
+		 * up operation might be more complicated (fragmented values)
+		 */
+		initialise: function(elmts) {
+
+			log("dateTimeWizard initialising");
+
+			var self = this;
+			self.vars.elmts = elmts;
+			
+			var checkedDate = $(elmts.dateCheck).attr("checked");
+			var checkedTime = $(elmts.timeCheck).attr("checked");
+			var checkedMoreComplicated = $(elmts.dateComplicated).attr('checked');
+			
+			if(checkedDate || checkedTime){
+
+				if(checkedMoreComplicated){
+
+					// Store the columns to be operated on
+					$(elmts.dateColsComplicated).children().each(function(){
+						self.vars.columns.push($(this).children("span.col").html());
+					});
+
+					if(checkedDate && !checkedTime){
+						this.fragmentedDate();					
+					} else if(!checkedDate && checkedTime){
+						this.fragmentedTime();					
+					} else if(checkedDate && checkedTime){
+						this.fragmentedDate();
+						this.fragmentedTime();					
+					}
+
+				} else {
+
+					// Store the columns to be operated on
+					$(elmts.dateTimeColumns).children().each(function(){
+						self.vars.columns.push($(this).children("span.col").html());
+					});
+
+					if(checkedDate && !checkedTime){
+						this.simpleDate();					
+					} else if(!checkedDate && checkedTime){
+						this.simpleTime();				
+					} else if(checkedDate && checkedTime){
+						this.simpleDate();
+						this.simpleTime();					
+					}				
+				}
+
+			} else {
+				alert("You need to specify if the columns you have selected contain dates, times or both");
+			}
+
+		},
+
+		/*
+		 * simpleDate
+		 * 
+		 * Properly types a column using the value.toDate() expression 
+		 * for Refine and produces RDF.
+		 */
+		simpleDate:function() {
+
+			var self = this;
+
+			var cols = self.vars.columns;
+
+			for(var i=0, len=cols.length; i<len; i++){
+
+				Refine.postCoreProcess("text-transform", {
+					columnName: cols[i],
+					expression: "value.toDate()",
+					repeat: false,
+					repeatCount: ""
+				}, null, {
+					cellsChanged: true
+				});
+
+//				http://127.0.0.1:3333/command/rdf-extension/save-rdf-schema?project=1702403439701
+
+//				var rdfSchemaPost = schema = { "prefixes":[ {
+//				"name":"rdfs",
+//				"uri":"http://www.w3.org/2000/01/rdf-schema#" }, {
+//				"name":"foaf", "uri":"http://xmlns.com/foaf/0.1/" }, {
+//				"name":"xsd", "uri":"http://www.w3.org/2001/XMLSchema#" }, {
+//				"name":"owl", "uri":"http://www.w3.org/2002/07/owl#" }, {
+//				"name":"rdf",
+//				"uri":"http://www.w3.org/1999/02/22-rdf-syntax-ns#" } ],
+//				"baseUri":"http://localhost:3333/", "rootNodes":[ {
+//				"nodeType":"cell-as-resource", "expression":"value",
+//				"isRowNumberCell":true, "rdfTypes":[
+//				], "links":[ {
+//				"uri":"http://www.w3.org/2001/XMLSchema#date",
+//				"curie":"xsd:date", "target":{
+//				"nodeType":"cell-as-literal", "expression":"value.(d)",
+//				"columnName":$(this).html(), "isRowNumberCell":false } } ] } ] }
+
+//				&engine={"facets":[],"mode":"row-based"};
+
+
+			}		
+		},
+
+		/*
+		 * fragmentedDate
+		 * 
+		 * Takes a number of columns that contain parts of a date, 
+		 * attempts to concatenate them together and applies the 
+		 * value.toDate() expression to the combined column. Finally 
+		 * it produces RDF.
+		 */
+		fragmentedDate:function(){
+
+			var self = this;
+
+			$(self.vars.elmts.dateColsComplicated).children().each(function(){
+				self.vars.colFragments.push($(this).children("select").val());
+			});
+
+			var expression = this.buildExpression();
+
+			var colName = window.prompt("New column name:", theProject.metadata.name);
+
+			Refine.postCoreProcess("add-column", {
+				baseColumnName: self.vars.columns[0],
+				expression: expression,
+				newColumnName: colName,
+				columnInsertIndex: Refine.columnNameToColumnIndex(self.vars.columns[self.vars.columns.length-1])+1,
+				onError: "keep-original"
+			}, null, {
+				modelsChanged: true
+			}, {
+				onDone:function(){
+					Refine.postCoreProcess("text-transform", {
+						columnName: colName,
+						expression: "value.toDate()",
+						repeat: false,
+						repeatCount: ""
+					}, null, {
+						cellsChanged: true
+					});
+				}
+			});
+
+		},
+
+		/*
+		 * Properly formats a timestamp within Refine and produces
+		 * RDF.
+		 */
+		simpleTime:function(){
+
+		},
+
+		/*
+		 * Takes a number of columns that contain part of a timestamp 
+		 * and concatenates them together using the iterated expression 
+		 * builder.
+		 */
+		fragmentedTime:function(){
+
+		},
+
+		/*
+		 * Used in conjunction with fragmented date and time, it 
+		 * takes a number of columns and attempts to build a 
+		 * concatenation expression for date or time in the correct 
+		 * order.
+		 * 
+		 * E.g. if the columns picked were "Year, Month, Day", the 
+		 * expression built would produce a date in the order 
+		 * "Day-Month-Year".
+		 */
+		buildExpression:function(){
+
+			var self = this;
+			var expression = "";
+			var dateOrder = ["Year", "Month", "Day", "Hours", "Minutes", "Seconds"];
+			var cols = self.vars.columns;
+			var colFragments = self.vars.colFragments;
+
+			for (var i=0, len=dateOrder.length; i<len; i++) {
+				for(var j=0, len2=colFragments.length; j<len2; j++) {
+
+					log(colFragments[j]);
+					log(dateOrder[i]);
+
+					if (colFragments[j] == dateOrder[i]) {
+						expression += 'cells["' + cols[j] + '"].value+"-"+';
+					}
+				}
+			}
+
+			try {
+				expression = expression.substring(0, expression.length - 5);
+				log(expression);
+			} catch (e) {
+				log(e);
+				log("Error formatting date");
+			}
+
+			return expression;
+
+		},
+
+		onComplete:function(){
+			var self = this;
+			LinkedGov.resetWizard(self.vars.elmts.dateTimeBody);
+		}
+
+};
+
+/*
+ * measurementsWizard
+ * 
+ * Allows the user to select a column for typing against 
+ * a particular measurement.
+ * 
+ * Once the user has selected a column, they are able to 
+ * reconcile what type of measurement it is against the Freebase 
+ * database, by typing into an autosuggestion box. The information 
+ * returned by the Freebase API lets us store a URI, label and class 
+ * for the measurement.
+ * 
+ * initialise
+ * 
+ * saveRDF
+ * 
+ * 
+ * 
+ */
+LinkedGov.measurementsWizard = {
+
+		vars:{
+			elmts:{}
+		},
+
+		initialise: function(elmts) {
+			var self = this;
+			self.vars.elmts = elmts;
+			self.saveRDF();
+		},
+
+		saveRDF:function(){
+
+			var self = this;
+			var elmts = self.vars.elmts;
+
+			var prefix = "fb";
+			var namespaceURI = "http://rdf.freebase.com/ns/";
+
+			var uri = elmts.unitInputField.data("data.suggest").id;
+			uri = uri.replace(/\//g, ".");
+			uri = namespaceURI + uri.substring(1, uri.length);
+
+			var curie = uri.split(".");
+			curie = curie[curie.length - 1];
+			curie = prefix + ":" + curie;
+
+			$(elmts.measurementsColumns).children().each(function () {
+
+				var jsonObj = {
+						"prefixes": [{
+							"name": prefix,
+							"uri": namespaceURI
+						}],
+						"baseUri": "http://127.0.0.1:3333/",
+						"rootNodes": [{
+							"nodeType": "cell-as-resource",
+							"expression": "value",
+							"isRowNumberCell": true,
+							"rdfTypes": [],
+							"links": [{
+								"uri": uri,
+								"curie": curie,
+								"target": {
+									"nodeType": "cell-as-literal",
+									"expression": "value",
+									"valueType": "http://www.w3.org/2001/XMLSchema#int",
+									"columnName": $(this).children("span.col").html(),
+									"isRowNumberCell": false
+								}
+							}]
+						}]
+				};
+
+				Refine.postProcess("rdf-extension", "save-rdf-schema", {}, {
+					schema: JSON.stringify(jsonObj)
+				}, {}, {
+					onDone: function () {
+						//DialogSystem.dismissUntil(self._level - 1);
+						self.onComplete();
+						theProject.overlayModels.rdfSchema = jsonObj;
+					}
+				});
+
+			});
+
+		},
+
+		onComplete:function(){
+			var self = this;
+			LinkedGov.resetWizard(self.vars.elmts.measurementsBody);
+		}
+
+};
+
+/*
+ * addressWizard
+ * 
+ * The address wizard helps to clean up addresses, with 
+ * the postcode being the high priority.
+ * 
+ * A user is able to select one column containing a full address, 
+ * in which case, a regular expression is used to separate the 
+ * different parts of the address into separate columns, so types 
+ * can be applied to those columns.
+ * 
+ * The user is also able to select multiple columns that contain 
+ * fragments of an address, in which case typing is applied to the 
+ * columns.
+ * 
+ * 
+ * initialise 
+ * 
+ * extractPostCode
+ * 
+ * saveRDF
+ * 
+ */
+LinkedGov.addressWizard = {
+
+		vars: {
+			elmts:{},
+			postCodeRegex:"[A-Z]{1,2}[0-9R][0-9A-Z]? {0,1}[0-9][ABD-HJLNP-UW-Z]{2}/)[1]"
+		},
+
+		initialise: function(elmts){
+			var self = this;
+			self.vars.elmts = elmts;
+			self.extractPostCode();
+		},
+
+		extractPostCode: function(){
+
+			var self = this;
+			var elmts = this.vars.elmts;
+
+			var colName = window.prompt("New column name:", "");
+
+			$(elmts.addressColumns).children().each(function () {
+
+				Refine.postCoreProcess("add-column", {
+					baseColumnName: $(this).children("span.col").html(),
+					expression: "partition(value,/"+self.vars.postCodeRegex+"",
+					newColumnName: colName,
+					columnInsertIndex: theProject.columnModel.columns.length + "",
+					onError: "keep-original"
+				}, null, {
+					modelsChanged: true
+				}, {
+					onDone:function(){
+						self.saveRDF(colName);
+					}
+				});		
+
+			});
+
+		},
+
+		saveRDF: function(colName){
+
+			var self = this;
+			var elmts = this.vars.elmts;
+
+			var prefix = "ospc";
+			var namespaceURI = "http://data.ordnancesurvey.co.uk/ontology/postcode/";
+			var type = "postcode";
+			var uri = namespaceURI + type;
+			var curie = prefix + ":" + type;
+
+			var jsonObj = {
+					"prefixes": [{
+						"name": "rdfs",
+						"uri": "http://www.w3.org/2000/01/rdf-schema#"
+					},
+					{
+						"name": "ospc",
+						"uri": "http://data.ordnancesurvey.co.uk/ontology/postcode/"
+					},
+					{
+						"name": "vcard",
+						"uri": "http://www.w3.org/2006/vcard/ns#"
+					}],
+					"baseUri": "http://127.0.0.1:3333/",
+					"rootNodes": [{
+						"nodeType": "cell-as-resource",
+						"expression": "value",
+						"isRowNumberCell": true,
+						"rdfTypes": [],
+						"links": [{
+							"uri": "http://www.w3.org/2006/vcard/ns#adr",
+							"curie": "vcard:adr",
+							"target": {
+								"nodeType": "cell-as-resource",
+								"expression": "value+\"#address\"",
+								"isRowNumberCell": true,
+								"rdfTypes": [{
+									"uri": "http://www.w3.org/2006/vcard/ns#Address",
+									"curie": "vcard:Address"
+								}],
+								"links": [{
+									"uri": "http://data.ordnancesurvey.co.uk/ontology/postcode/postcode",
+									"curie": "ospc:postcode",
+									"target": {
+										"nodeType": "cell-as-resource",
+										"expression": "\"http://data.ordnancesurvey.co.uk/id/postcodeunit/\"+value.replace(\" \",\"\")",
+										"columnName": colName,
+										"isRowNumberCell": false,
+										"rdfTypes": [],
+										"links": [{
+											"uri": "http://www.w3.org/2000/01/rdf-schema#label",
+											"curie": "rdfs:label",
+											"target": {
+												"nodeType": "cell-as-literal",
+												"expression": "value",
+												"columnName": colName,
+												"isRowNumberCell": false
+											}
+										}]
+									}
+								}]
+							}
+						}]
+					}]
+			};
+
+			Refine.postProcess("rdf-extension", "save-rdf-schema", {}, {
+				schema: JSON.stringify(jsonObj)
+			}, {}, {
+				onDone: function () {
+					//DialogSystem.dismissUntil(self._level - 1);
+					theProject.overlayModels.rdfSchema = jsonObj;
+				}
+			});
+
+		},
+
+		onComplete:function(){
+			var self = this;
+			LinkedGov.resetWizard(self.vars.elmts.addressBody);
+		}
 };
 
 /*

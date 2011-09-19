@@ -6,7 +6,14 @@ body.lg #right-panel {
 	width:100% !important;
 }
 body.lg #right-panel-body {
-/*	width:100% !important;*/
+    bottom: 0;
+    height: auto;
+    margin-left: 5px;
+    margin-top: 5px;
+    overflow: auto;
+    position: static;
+    top: 0;
+    width: auto;
 }
 body.lg .create-project-ui-source-selection-tab-body {
 	height:100px !important;
@@ -16,6 +23,7 @@ body.lg #create-project-ui-source-selection-layout {
 }
 body.lg div.action-area-tab-body {
 	visibility:visible !important;
+	display:none;
 }
 
 /* ---- */
@@ -26,30 +34,39 @@ body.lg div.action-area-tab-body {
  */
 
 body.lg #header {
-    height: 40px;
-    margin-bottom: 10px;
-    margin-left: 10px;
-    margin-right: 10px;
-    margin-top: 8px;
-    overflow-x: hidden;
-    overflow-y: hidden;
+    border-bottom: 3px solid #EBEEF8;
+    height: 32px;
+    margin: 0;
+    overflow: hidden;
+    padding-left: 10px;
+    padding-top: 5px;
     position: relative;
 }
 body.lg div#left-panel {
-display: none;
+	display: none;
 }
 body.lg div#right-panel {
-left:0px;
+    bottom: 0;
+    height: auto;
+    top: 40px;
+    visibility: visible;
+    width: 100%;
 }
 body.lg .clear {
-clear:both;
+	clear:both;
 }
 body.lg .hide {
-display: none;
+	display: none;
 }
 
 /**** Upload data from source & metadata forms ****/
 
+body.lg #create-project-ui-source-selection {
+    background: none repeat scroll 0 0 white;
+    font-size: 1.3em;
+    overflow-y: scroll;
+    visibility: visible; 
+}
 body.lg #lg-logo {
     background: url("../images/logo-linkedgov.png") no-repeat scroll right top transparent;
     height: 135px;
@@ -74,10 +91,10 @@ body.lg td.spacer {
 body.lg td#linkedgov-metadata-form {
 	bottom: 0;
     display: block;
-    height: 200px;
+    height: auto !important;
     left: 0;
     overflow-x: hidden;
-    overflow-y: scroll;
+    overflow-y: hidden;
     right: 0;
     border-top:1px solid #bbccff;
 }
@@ -250,6 +267,17 @@ body.lg .default-importing-parsing-control-panel div.successQuestion ul {
 }
 body.lg .default-importing-parsing-control-panel div.successQuestion ul li {
 	padding-bottom: 10px;
+}
+body.lg div.default-importing-progress-data-panel {
+    bottom: 0;
+    display: block;
+    left: 305px;
+    height:auto !important;
+    padding-top: 150px;
+    right: 0;
+    top: 34px;
+    vertical-align: middle;
+    width: auto;
 }
 body.lg div.primary-buttons {
     background: none repeat scroll 0 0 #BBCCFF;

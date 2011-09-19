@@ -56,4 +56,10 @@ $("button.no-success").click(function(){
 	$("div.successQ").hide();
 	$("div.default-importing-parsing-control-panel table").show();
 });
+
+if(typeof parserResizer != "undefined"){
+	$(window).unbind("resize");
+	$(window).bind("resize", parserResizer);
+	$(window).resize();
+}
 </script>
