@@ -33,19 +33,19 @@
 var LinkedGov = {
 
 		/*
-		 * Variables used in multiple operations
+		 * Global variables used across multiple wizards
 		 */
 		vars : {
 			debug:true,
 			separator: "<LG>",
 			nullValue:"<LG_NULL>",
-			cellsSetToBlank:false
+			blanksSetToNulls:false
 		},
 
 		/*
 		 * initialise
 		 * 
-		 * Initial styles and injections
+		 * Initial styling and injections
 		 */
 		initialise: function() {
 			this.restyle();
@@ -58,6 +58,9 @@ var LinkedGov = {
 		 * Any major initial restyling
 		 */
 		restyle: function() {
+			/*
+			 * Giving the body our own class applies our CSS rules.
+			 */
 			$("body").addClass("lg");
 		},
 
@@ -74,18 +77,52 @@ var LinkedGov = {
 			$("div.refine-tabs").append('<div id="refine-tabs-typing" bind="typingPanelDiv"><!-- spacer --></div>');
 			// Load LinkedGov's Typing panel HTML into the div
 			$("div#refine-tabs-typing").html(DOM.loadHTML("linkedgov", "html/project/typing-panel.html"));
-			// Inject LinkedGov's Typing panel JS into the page
-			$.getScript(ModuleWirings["linkedgov"] + 'scripts/project/typing-panel.js');
 
+			$(window).unbind("resize");
+			$(window).bind("resize",LinkedGov.resizeAll_LG);
+			
+		},
+		
+		/*
+		 * 
+		 * resizeAll
+		 * 
+		 * 
+		 * The top-level resizeAll function doesn't resize our typing panel, so 
+		 * we need to include the typing panel's resize function in this function.
+		 * 
+		 * This function is bound to the $(window).resize() function in the 
+		 * $(document).ready block at the end of this file.
+		 */
+		resizeAll_LG: function() {
+			
+			/*
+			 * Call the old resizeAll function - found in the 
+			 * core project.js file.
+			 */
+			resizeAll();
+			/*
+			 * Call our additional resize functions.
+			 */
+			
+			/*
+			 *  Use this CSS instead of a JS resize:
+			 *  bottom: 0;
+    			height: auto !important;
+    			top: 28px;
+			 */
+			ui.typingPanel.resize(); 
 		},
 
 		/*
 		 * setFacetCountLimit
 		 * 
 		 * Sets the facet count limit. 
-		 * If a column has more than 100 unique values, the facet UI 
-		 * returns an error, which we don't want when sorting columns 
-		 * during the operations.
+		 * 
+		 * If a facet has more than 100 values - it won't display / 
+		 * return an error in the JSON object.
+		 * 
+		 * Sometimes we will need to adjust this to perform operations.
 		 */
 		setFacetCountLimit: function(n){
 			$.post(
@@ -106,61 +143,45 @@ var LinkedGov = {
 		},
 
 		/*
-		 * setBlanksToNull
+		 * setBlanksToNulls
 		 * 
 		 * Recursive function that applies a text-transform expression to each 
-		 * column cell, setting any blank cells to the global nullValue variable.
+		 * column cell, setting any blank cells to the LinkdeGov's global 'nullValue' variable.
+		 * 
 		 * Usually called at the start of a wizard to avoid "fill-down" and "row-
 		 * remove" issues.
 		 */
-		setBlanksToNull: function(columns,i,callback){
+		setBlanksToNulls: function(toNulls,columns,i,callback){
 
 			var self = this;
+			var expr = "";
 
-			if(i < columns.length){
-
-				$.post(
-						"/command/" + "core" + "/" + "text-transform" + "?" + $.param({
-							columnName: columns[i].name, 
-							expression: "if(isBlank(value),\""+LinkedGov.vars.nullValue+"\",value)", 
-							onError: "set-to-blank",
-							repeat: false,
-							repeatCount: 10,
-							project:theProject.id
-						}),
-						null,
-						function(){
-							i = i+1;
-							self.setBlanksToNull(columns,i,callback);
-						},
-						"json"
-				);
-
+			/*
+			 * Change the expression used depending on the boolean "toNulls" passed 
+			 * to the function.
+			 */
+			if(toNulls){
+				// Set cells to null
+				expr = "if(isBlank(value),\""+LinkedGov.vars.nullValue+"\",value)";
 			} else {
-				log("setBlanksToNull complete");
-				self.vars.cellsSetToBlank = true;
-				Refine.update({cellsChanged:true},callback);
+				// Set cells to blank
+				expr = "if(value==\""+LinkedGov.vars.nullValue+"\",blank,value)";				
 			}
 
-		},
-
-		/*
-		 * setNullsToBlank
-		 * 
-		 * Recursive function that restores any "nullValue" cells back to 
-		 * blanks - usually called at the end of a wizard.
-		 */
-		setNullsToBlank: function(columns,i,callback){
-
-			var self = this;
-
+			/*
+			 * If we haven't iterated through all of the columns yet
+			 */
 			if(i < columns.length){
 
+				/*
+				 * Post a text-transform process using the isBlank expression, replacing 
+				 * any blanks with our separator.
+				 */
 				$.post(
 						"/command/" + "core" + "/" + "text-transform" + "?" + $.param({
 							columnName: columns[i].name, 
-							expression: "if(value==\""+LinkedGov.vars.nullValue+"\",blank,value)", 
-							onError: "set-to-blank",
+							expression: expr, 
+							onError: "keep-original",
 							repeat: false,
 							repeatCount: 10,
 							project:theProject.id
@@ -168,14 +189,22 @@ var LinkedGov = {
 						null,
 						function(){
 							i = i+1;
-							self.setNullsToBlank(columns,i,callback);
+							self.setBlanksToNulls(toNulls,columns,i,callback);
 						},
 						"json"
 				);
 
 			} else {
-				log("setNullsToBlank complete");
-				self.vars.cellsSetToBlank = true;
+				log("setBlanksToNulls complete");
+				/*
+				 * Set a global flag that we have set blanks to null
+				 */
+				if(toNulls){
+					self.vars.blanksSetToNulls = true;
+				} else {
+					self.vars.blanksSetToNulls = false;
+				}
+
 				Refine.update({cellsChanged:true},callback);
 			}
 
@@ -190,10 +219,6 @@ var LinkedGov = {
 		 * and resets it's options and settings.
 		 */
 		resetWizard: function(wizardBody){
-
-			log("Resetting wizard, using body:");
-
-			log(wizardBody);
 
 			//Clear checkboxes
 			$(wizardBody).find(":input").removeAttr('checked').removeAttr('selected');
@@ -212,6 +237,7 @@ var LinkedGov = {
 			//Display the typing panel
 			ui.leftPanelTabs.tabs({ selected: 1 });	
 
+			// Scroll the top of the wizard into view.
 			$(wizardBody).parent().scrollTop($(wizardBody).prev("a.wizard-header").offset().top)
 
 		},
@@ -225,7 +251,9 @@ var LinkedGov = {
 		loadHTMLCallback: function(htmlPage) {
 
 			//log(htmlPage+" has been loaded");
-
+			/*
+			 * Strip the HTML location down to it's name
+			 */
 			htmlPage = htmlPage.split("/");			
 			htmlPage = htmlPage[htmlPage.length-1];
 			var pageName = htmlPage.replace(".html","");
@@ -233,6 +261,8 @@ var LinkedGov = {
 			switch(pageName) {
 
 			case 'typing-panel' :
+				// Inject LinkedGov's Typing panel JS into the page
+				$.getScript(ModuleWirings["linkedgov"] + 'scripts/project/typing-panel.js');
 				break;
 
 			default:
@@ -266,16 +296,20 @@ var LinkedGov = {
  * Store global variables, set facet limit and check for blank cells 
  * before beginning the operation.
  * 
- * 2. transposeColumns()
- * Transposes the range of columns into one column using the global
- * LinkedGov 'separator' variable and the operation's global parameters.
+ * 2. reorderColumns()
+ * If there are any gaps in the range of columns, we move the columns to 
+ * skip to the beginning of the range before transposing.
  * 
- * 3. splitColumns()
+ * 3. transposeColumns()
+ * Transposes the range of column headers into one column, with each cell 
+ * using the global LinkedGov 'separator' variable and each column's value.
+ * 
+ * 4. splitColumns()
  * Splits the newly created column into two columns using the global 
  * LinkedGov 'separator' variable.
  * 
- * 4. fillDownColumns()
- * Fills in all the blank cells as a result of the transpose.
+ * 5. fillDownColumns()
+ * Fills in all the blank cells as a result of the rotate.
  *
  */
 LinkedGov.multipleColumnsWizard = {
@@ -284,6 +318,8 @@ LinkedGov.multipleColumnsWizard = {
 			startColName:"",
 			newColName:"",
 			colCount:0,
+			gapInRange:false,
+			colsToSkip:[],
 			elmts:{}
 		},
 
@@ -291,40 +327,113 @@ LinkedGov.multipleColumnsWizard = {
 		 * initialise
 		 * 
 		 * Fills any blank cells with null values before beginning 
-		 * the transpose operation.
+		 * the rotate operation.
 		 */
 		initialise: function(elmts){
 
 			var self = this;
-
+			
+			log("Starting multipleColumnsWizard");
+			
 			self.vars.elmts = elmts;
 			self.vars.startColName = $(elmts.multipleColumnsColumns).children("li").eq(0).find("span.col").html();
 			self.vars.colCount = $(elmts.multipleColumnsColumns).children("li").length;
 			self.vars.newColName = window.prompt("New column name:", "");
-
-			log("Starting multipleColumnsOperation");
+			
+			/*
+			 * Check to see if there are any gaps in the range of columns and 
+			 * populate the array of the columns to skip.
+			 */
+			$(elmts.multipleColumnsColumns).children("li").each(function(){
+				if($(this).hasClass("skip")){
+					self.vars.colsToSkip.push($(this).find("span.col").html());
+					self.vars.gapInRange = true;
+				}
+			});
 
 			/*
-			 * Pass the project column data as a parameter, the index 0 to begin with, 
-			 * and a callback function that commences the operation.
+			 * Set any blank cells to null to protect them from being filled down into 
+			 * after the transpose operation (which produces blank cells).
 			 * 
 			 * Passing self.transpose() as a parameter calls it immediately for some reason.
 			 */
-			LinkedGov.setBlanksToNull(theProject.columnModel.columns,0,function(){
-				self.transposeColumns();
+			LinkedGov.setBlanksToNulls(true,theProject.columnModel.columns,0,function(){
+				/*
+				 * If a gap has been detected, reorder the columns first.
+				 */
+				if(self.vars.gapInRange){
+					self.reorderColumns(Refine.columnNameToColumnIndex(self.vars.startColName),function(){
+						self.transposeColumns();
+					});
+				} else {
+					self.transposeColumns();
+				}
 			});
 
+		},
+		
+		/*
+		 * reorderColumns
+		 * 
+		 * Recursive function. 
+		 * 
+		 * In case there is a gap in the range of columns selected,
+		 * the columns will have to be reordered before the transpose 
+		 * can begin.
+		 * 
+		 * Takes the index to start moving the columns to and a callback to 
+		 * call once complete.
+		 * 
+		 * Once complete, this should result in all "skipped" columns appearing 
+		 * to the left of the columns to transpose.
+		 */
+		reorderColumns: function(colIndex,callback){
+			
+			var self = this;
+			
+			log("reorderColumns");
+			
+			if(self.vars.colsToSkip.length > 0){
+
+				/*
+				 * Post a minimal "move-column" call, moving each skipped 
+				 * column to the start of the column range.
+				 */
+				$.post(
+						"/command/" + "core" + "/" + "move-column" + "?" + $.param({
+							columnName:self.vars.colsToSkip[0],
+							index:colIndex,
+							project:theProject.id
+						}),
+						null,
+						function(){
+							/*
+							 * Increment the index to move the next column to.
+							 * Remove the column that's just been moved from the 
+							 * "colsToSkip" array.
+							 * Recurse.
+							 */
+							colIndex = colIndex+1;
+							self.vars.colsToSkip.splice(0,1);
+							self.reorderColumns(colIndex,callback);
+						},
+						"json"
+				);
+			    
+			} else {
+				/*
+				 * Perform a model UI update (when columns change) and proceed 
+				 * to the next operation.
+				 */
+				Refine.update({modelsChanged:true},callback);
+			}
 		},
 
 		/*
 		 * transposeColumns
 		 * 
-		 * Uses the operation's global variables to transpose 
-		 * the selected column - using the global LinkedGov separator 
-		 * as the separator value. 
-		 * 
-		 * Performs a necessary minimal UI update before calling the 
-		 * next operation.
+		 * Create a transpose config object using the wizard's 
+		 * global column name variables and posts it to Refine.
 		 * 
 		 */
 		transposeColumns: function(){
@@ -343,11 +452,19 @@ LinkedGov.multipleColumnsWizard = {
 					project:theProject.id
 			};
 
+			/* 
+			 * Instead of using Refine.postCoreProcess(), we post the transpose 
+			 * process as a more minimal "AJAX" call without the default UI update 
+			 * callbacks.
+			 */
 			$.post(
 					"/command/" + "core" + "/" + "transpose-columns-into-rows" + "?" + $.param(config),
 					null,
 					function(){
-						// The most minimal yet fully-functional UI update 
+						/*
+						 * Perform a minimal UI update before calling the 
+						 * next operation.
+						 */
 						Refine.reinitializeProjectData(function(){
 							ui.dataTableView.update(function(){
 								ui.browsingEngine.update(self.splitColumns());
@@ -381,6 +498,12 @@ LinkedGov.multipleColumnsWizard = {
 					project:theProject.id
 			};
 
+			/*
+			 * Post a minimal "split-column" process call (without the default UI update callbacks).
+			 * 
+			 * After splitting the columns, the transpose has left us with lots of blank cells 
+			 * which need to be filled down.
+			 */
 			$.post(
 					"/command/" + "core" + "/" + "split-column" + "?" + $.param(config),
 					null,
@@ -399,26 +522,27 @@ LinkedGov.multipleColumnsWizard = {
 		 * list of columns and an iterator as parameters.
 		 * 
 		 * Only fills a column if it's name is not equal to the columns being 
-		 * operated on. The +" 1" and +" 2" are always the same after a 
+		 * operated on. The column suffixes +" 1" and +" 2" are always the same after a 
 		 * column split.
 		 * 
-		 * $.post() used to avoid multiple UI "Working" messages.
 		 */
 		fillDownColumns:function(columns,i){
 
 			var self = this;
 
-//			log("fillDownColumns");
-//			log(i);
-//			log(columns);
-//			log("-----------------------------");
+			//log("fillDownColumns");
+			//log(i);
+			//log(columns);
+			//log("-----------------------------");
 
 			if(i < columns.length) {
 
-//				log("columns[i].name: "+columns[i].name);
-//				log("self.vars.newColName: "+self.vars.newColName);
+				//log("columns[i].name: "+columns[i].name);
+				//log("self.vars.newColName: "+self.vars.newColName);
 
-				if(columns[i].name != self.vars.newColName && columns[i].name != self.vars.newColName+" 1" && columns[i].name != self.vars.newColName+" 2"){
+				if(columns[i].name != self.vars.newColName 
+						&& columns[i].name != self.vars.newColName+" 1" 
+						&& columns[i].name != self.vars.newColName+" 2"){
 
 					$.post(
 							"/command/" + "core" + "/" + "fill-down" + "?" + $.param({
@@ -454,14 +578,30 @@ LinkedGov.multipleColumnsWizard = {
 
 			var self = this;
 
-			LinkedGov.setNullsToBlank(theProject.columnModel.columns,0,function(){
-				log("multipleColumnsOperation complete");
+			/*
+			 * Reset any null cells to blanks again, using the "false" flag
+			 */
+			LinkedGov.setBlanksToNulls(false,theProject.columnModel.columns,0,function(){
+				log("Multiple columns wizard complete");
 				Refine.update({everythingChanged:true});
 				LinkedGov.resetWizard(self.vars.elmts.multipleColumnsBody);
 			});
 
 			return false;
+		},
+
+		onFail:function(){
+			var self = this;
+			/*
+			 * Reset any null cells to blanks again, using the "false" flag
+			 */
+			LinkedGov.setBlanksToNulls(false,theProject.columnModel.columns,0,function(){
+				log("Multiple columns wizard failed.");
+				Refine.update({everythingChanged:true});
+				LinkedGov.resetWizard(self.vars.elmts.multipleColumnsBody);
+			});			
 		}
+
 };
 
 /*
@@ -478,7 +618,7 @@ LinkedGov.multipleColumnsWizard = {
  * Store variables, set facet limit and check for blank cells 
  * before beginning the operation.
  * 
- * 2. getSortableColumnHeaders()
+ * 2. findSortableColumnHeaders()
  * Find out which column headers are to be used in the "sort", 
  * which allows us to create a patterned situation for the transpose.
  * 
@@ -515,6 +655,8 @@ LinkedGov.multipleValuesWizard = {
 			valuesColName:"",
 			colsToExclude:[],
 			newHeaders:[],
+			abortOperation:false,
+			abortMessage:"",
 			elmts:{}
 		},
 
@@ -531,23 +673,31 @@ LinkedGov.multipleValuesWizard = {
 			var self = this;
 			self.vars.elmts = elmts;
 
-			LinkedGov.setFacetCountLimit(1000);
+			//LinkedGov.setFacetCountLimit(1000);
 
+			// Store the column containing the new column header values
 			self.vars.headersColName = $(elmts.multipleValuesColumns).children("li").eq(0).find("span.col").html();
+			// Store the column containing the values for the new columns
 			self.vars.valuesColName = $(elmts.multipleValuesColumns2).children("li").eq(0).find("span.col").html();
-
+			/*
+			 * Store the columns to exclude from the operation (e.g. a totals column)
+			 */ 
 			$(elmts.multipleValuesColumns3).children("li").each(function(){
 				self.vars.colsToExclude.push($(this).find("span.col").html())
 			});
 
-			LinkedGov.setBlanksToNull(theProject.columnModel.columns,0,function(){
-				self.getSortableColumnHeaders();
+			/*
+			 * Set blank cells to bull before starting the operation, call the first wizard 
+			 * operation once complete.
+			 */
+			LinkedGov.setBlanksToNulls(true,theProject.columnModel.columns,0,function(){
+				self.findSortableColumnHeaders();
 			});
 
 		},
 
 		/*
-		 * getSortableColumnHeaders
+		 * findSortableColumnHeaders
 		 * 
 		 * For each column header that isn't involved in the transpose 
 		 * - Find out how many unique values each column has
@@ -555,16 +705,16 @@ LinkedGov.multipleValuesWizard = {
 		 * with the column with the highest number of unique values.
 		 * 
 		 */
-		getSortableColumnHeaders: function(){
+		findSortableColumnHeaders: function(){
 
-			log("getSortableColumnHeaders");
+			log("findSortableColumnHeaders");
 
 			var self = this;
 
 			var colHeaders = [];
 
 			/*
-			 * - Loop through each columns object
+			 * - Loop through each of the project's column objects
 			 * - Check to see if the column name is not equal to the column 
 			 * we're operating on and whether there are any column names to 
 			 * exclude, otherwise store it as a good column name to sort on.
@@ -574,19 +724,19 @@ LinkedGov.multipleValuesWizard = {
 			 */
 			$.each(theProject.columnModel.columns,function(key,value){
 
-//				log("self.vars.valuesColName:");
-//				log(self.vars.valuesColName);
-//				log("self.vars.headersColName:");
-//				log(self.vars.headersColName);
-//				log("value.name");
-//				log(value.name);
+				//log("self.vars.valuesColName:");
+				//log(self.vars.valuesColName);
+				//log("self.vars.headersColName:");
+				//log(self.vars.headersColName);
+				//log("value.name");
+				//log(value.name);
 
 				if(value.name != self.vars.valuesColName && $.inArray(value.name, self.vars.colsToExclude) < 0){
 					colHeaders.push(value.name);
 				}
 			});
 
-			log("colHeaders");
+			log("Sortable column headers");
 			log(colHeaders);
 
 			/*
@@ -595,47 +745,18 @@ LinkedGov.multipleValuesWizard = {
 			 * Pass a callback function that reorders the columns by the number of 
 			 * their unique values.
 			 */
-			self.sortColumnsByUniqueValues(colHeaders,function(colCountObj){
-
-				log('colCountObj');
-				log(colCountObj);
-
-				var highest=0;
-				var columnHeadersByUniqueValue = [];
-				var len = colCountObj.length;
-				for(var a=0;a<len;a++){
-					if(colCountObj[a].count > highest){
-						columnHeadersByUniqueValue.splice(0,0,colCountObj[a].name);
-						highest = colCountObj[a].count;
-					} else {
-						columnHeadersByUniqueValue.splice(1,0,colCountObj[a].name);
-					}
-				}
-
-				log('columnHeadersByUniqueValue');
-				log(columnHeadersByUniqueValue);
-
-				self.reorderRows(columnHeadersByUniqueValue);
-
+			self.columnCountUniqueValues(colHeaders,[],function(colCountObj){
+				self.sortColumnsByUniqueValue(colCountObj);
 			});
-		},
-
-		/*
-		 * sortColumnsByUniqueValues
-		 * 
-		 * 
-		 */
-		sortColumnsByUniqueValues: function (colHeaders,callback){
-			this.columnCountUniqueValues(colHeaders,[],callback);
 		},
 
 		/*
 		 * columnCountUniqueValues
 		 * 
-		 * A recursive function that posts a quick "compute-facet" call to 
+		 * A recursive function that posts a minimal "compute-facet" call to 
 		 * retrieve information about the number of unique values in each 
-		 * column. This avoids any facets being created and removed on the 
-		 * screen, thus saving time.
+		 * column. The minimal call avoids any facets being created and removed 
+		 * on the screen.
 		 * 
 		 * When done, it passes an array of object key-value pairs containing 
 		 * the column names and their unique values to the next operation.
@@ -646,13 +767,20 @@ LinkedGov.multipleValuesWizard = {
 
 			var colCountObj = colCountObj || [];
 
-//			log("-----------------------------------")
-//			log("columnCountUniqueValues:");
-//			log(colHeaders);
-//			log(ans);
+			//log("-----------------------------------")
+			//log("columnCountUniqueValues:");
+			//log(colHeaders);
+			//log(ans);
 
+			/*
+			 * While we still have columns to iterate through
+			 */
 			if(colHeaders.length > 0){
-				var values=0;
+
+				/*
+				 * Build a parameter object using the first of the column
+				 * names.
+				 */
 				var facetParams = {
 						"facets":[
 						          {"type":"list",
@@ -670,39 +798,113 @@ LinkedGov.multipleValuesWizard = {
 						          "mode":"row-based"
 				};
 
+				/*
+				 * Post a minimal call (remembering to include 'theProject' parameter for 
+				 * minimal calls).
+				 */
 				$.post(
 						"/command/core/compute-facets?" + $.param({ project: theProject.id }),
 						{ engine: JSON.stringify(facetParams) },
 						function(data) {
 
-							for(var h=0;h<data.facets.length;h++){
+							// Initialise column's unique value count at 0
+							var values = 0;
+
+							/*
+							 * Loop through the UI facets
+							 */
+							for(var h=0; h<data.facets.length; h++){
+								/*
+								 * If the facet matches the column name and has choices returned
+								 */
 								if(data.facets[h].columnName == colHeaders[0] && typeof data.facets[h].choices != 'undefined'){
+									/*
+									 * Store the number of facets choices as the number of the column's 
+									 * unique values
+									 */
 									values = data.facets[h].choices.length;
 								}
 							}
 
+							/*
+							 * If the "compute-facets" post returns an error because a column has 
+							 * more than 100 unique values in, set the column's unique value count 
+							 * to "9999" (similar to placing the column at the front of the sorting 
+							 * order).
+							 */
+							if(values == 0){
+								values = "9999";
+							}
+
+							/*
+							 * Push the name/unique value count object into 
+							 * an array.
+							 */
 							colCountObj.push({
 								name: colHeaders[0],
 								count: values
 							});
 
-//							log('colHeaders');
-//							log(colHeaders);
-//							log('ans');
-//							log(ans);
-//							log('colHeaders.length');
-//							log(colHeaders.length);
+							//log('colHeaders');
+							//log(colHeaders);
+							//log('ans');
+							//log(ans);
+							//log('colHeaders.length');
+							//log(colHeaders.length);
 
-							colHeaders.splice(0,1);					
+							/*
+							 * Remove the column that's just been used
+							 */
+							colHeaders.splice(0,1);
+
 							self.columnCountUniqueValues(colHeaders,colCountObj,callback);
 
 						}
 				);	
 
 			} else {
-				log("colHeaders length is 0");
+				//log("colHeaders length is 0");
+				/*
+				 * Call the callback function using the array of column 
+				 * names/unique value objects.
+				 */
 				callback(colCountObj);
 			}
+		},
+
+		/*
+		 * sortColumnsByUniqueValue
+		 * 
+		 * Takes an array of column objects {name, unique value count} 
+		 * and creates a new array of just column names in order of 
+		 * their unique values.
+		 * 
+		 * Passes the array to the reordering operation.
+		 */
+		sortColumnsByUniqueValue:function(colCountObj){
+
+			//log('colCountObj');
+			//log(colCountObj);
+
+			// Temp var for storing the highest unique value
+			var highest = 0;
+			// The new array of column names
+			var columnHeadersByUniqueValue = [];
+
+			var len = colCountObj.length;
+			for(var a=0; a<len; a++){
+				if(colCountObj[a].count > highest){
+					columnHeadersByUniqueValue.splice(0,0,colCountObj[a].name);
+					highest = colCountObj[a].count;
+				} else {
+					columnHeadersByUniqueValue.splice(1,0,colCountObj[a].name);
+				}
+			}
+
+			log('Column headers by unique value');
+			log(columnHeadersByUniqueValue);
+
+			self.reorderRows(columnHeadersByUniqueValue);
 		},
 
 		/*
@@ -714,21 +916,25 @@ LinkedGov.multipleValuesWizard = {
 		 * A sorting object has to be created with the relevant "sort criteria" 
 		 * objects inside it - in order. This is passed as a parameter to the 
 		 * "reorder-rows" process post.
+		 * 
+		 * TODO : Issue with there not being an even number of unique value
+		 * rows. A Java servlet will provide functionality to "add" any missing 
+		 * rows of data - essentially "filling" out the dataset with missing data 
+		 * dependent on the column the user has selected for transposing (headersCol).
 		 */
 		reorderRows: function(columnHeadersByUniqueValue){
 
 			var self = this;
 
-			// sort columns using the correct order
-			// carry on with operation
-
-			log("columnHeadersByUniqueValue 2");
-			log(columnHeadersByUniqueValue);
-
 			var sortingObject = {
 					criteria:[]
 			};
 
+			/*
+			 * Create an array of sorting configurations, at the 
+			 * same time as checking the column exists in the column 
+			 * data.
+			 */
 			var columns = theProject.columnModel.columns;
 			for(var h=0; h<columnHeadersByUniqueValue.length;h++){
 				for(var i=0; i<columns.length; i++){				
@@ -749,6 +955,10 @@ LinkedGov.multipleValuesWizard = {
 			log('sortingObject:');
 			log(sortingObject);
 
+			/*
+			 * Post a minimal "reorder-rows" call - remembering to include the 'theProject' 
+			 * parameter.
+			 */
 			$.post(
 					"/command/" + "core" + "/" + "reorder-rows" + "?" + $.param({ 
 						sorting : JSON.stringify(sortingObject), 
@@ -773,7 +983,7 @@ LinkedGov.multipleValuesWizard = {
 		 * The facet functionality from before is used to get this number.
 		 * 
 		 * The labels of the unique values in the facet are also extracted 
-		 * and used as the new headers for the new columns.
+		 * and used as the new headers for renaming the new columns later on.
 		 */
 		multiValueTranspose:function(){
 
@@ -781,6 +991,10 @@ LinkedGov.multipleValuesWizard = {
 
 			log("multiValueTranspose beginning");
 
+			/*
+			 * Create a facet parameter object using the global 
+			 * column name to transpose.
+			 */
 			var facetParams = {
 					"facets":[
 					          {"type":"list",
@@ -803,28 +1017,62 @@ LinkedGov.multipleValuesWizard = {
 					{ engine: JSON.stringify(facetParams) },
 					function(data) {
 
+						//log("data");
+						//log(data);
+
 						for(var h=0;h<data.facets.length;h++){
 							if(data.facets[h].columnName == self.vars.headersColName){
-								for(var i=0;i<data.facets[h].choices.length;i++){
-									self.vars.newHeaders.push(data.facets[h].choices[i].v.l);
-								}										
-							}
-						}								
+								if(typeof data.facets[h].choices != 'undefined'){
 
-						$.post(
-								"/command/" + "core" + "/" + "transpose-rows-into-columns" + "?" + $.param({
-									columnName:self.vars.valuesColName,
-									rowCount:self.vars.newHeaders.length,
-									project: theProject.id
-								}),
-								null,
-								function(){
-									Refine.update({modelsChanged:true},function(){
-										self.removeBlankRows();				
-									});
-								},
-								"json"
-						);
+									/*
+									 * If there are less than 100 unique values in the column to transpose, 
+									 * store them as column names in an array to use to rename the newly 
+									 * transposed columns.
+									 */
+									for(var i=0;i<data.facets[h].choices.length;i++){
+										self.vars.newHeaders.push(data.facets[h].choices[i].v.l);
+									}
+								} else {
+									/*
+									 * If there are more than 100 unique values in the column to transpose, 
+									 * abort and tell the user they can't proceed with the wizard because they 
+									 * are trying to transpose too many rows to columns.
+									 */
+									log("Aborting multiple values wizard - facet count limit reached.")
+									self.vars.abortOperation = true;
+									self.vars.abortMessage = "There are too many values being transposed. The maximum " +
+									"number of unique values (or rows) to transpose is 100";					
+								}
+							}
+						}
+
+						/*
+						 * If there was an issue with using the facet, abort, otherwise continue.
+						 */
+						if(!self.vars.abortOperation){
+							log("transposing...");
+							/*
+							 * Post a minimal "transpose" call, performing a minor UI update as a callback,
+							 * before proceeding the next operation.
+							 */
+							$.post(
+									"/command/" + "core" + "/" + "transpose-rows-into-columns" + "?" + $.param({
+										columnName:self.vars.valuesColName,
+										rowCount:self.vars.newHeaders.length,
+										project: theProject.id
+									}),
+									null,
+									function(){
+										Refine.update({modelsChanged:true},function(){
+											self.removeBlankRows();				
+										});
+									},
+									"json"
+							);
+						} else {
+							log("failing...");
+							self.onFail();
+						}
 					},
 					"json"
 			);					
@@ -832,12 +1080,17 @@ LinkedGov.multipleValuesWizard = {
 		},
 
 		/*
+		 * removeBlankRows
+		 * 
 		 * A large number of blank rows have been generated from the transpose
 		 * which need to be removed.
 		 * 
 		 * Facet functionality is used again. By creating a facet on one of the new 
 		 * columns using the "isBlank" expression, the data table is updated to show 
 		 * only the blank rows which are to be removed.
+		 * 
+		 * Because the facet generated will only display "true" and "false" choices, 
+		 * there's no worry of the facet count limit being reached.
 		 */
 		removeBlankRows:function(){
 
@@ -861,21 +1114,25 @@ LinkedGov.multipleValuesWizard = {
 			// For each possible facet on the screen
 			for(var i=0; i < facets.length; i++){
 
-				// Find the facet that we have just created
 				log(facets[i].facet._config.columnName);
 
+				// Find the facet that we have just created.
 				// The first of the transposed columns will not have the same name
-				// as the value stored in the column we
+				// as the value stored in the column we the user selected to transpose.
 				if(facets[i].facet._config.columnName == self.vars.valuesColName+" 1"){
 
-					// Store it as a variable
+					// Store the facet so we can remove it later
 					var blankFacet = facets[i].facet;
 
-					// Check that the UI has been created using an interval
+					// Check that the facet UI has been created using an interval
+					// TODO: Try to remove the use of an interval.
 					var myInterval = setInterval(function(){
 						if(blankFacet._data != null){
 
 							// Check to see if there are both true and false values
+							// The only case where there would be one "true" or "false" 
+							// value, is where only a single value was transposed.
+							// E.g. "electricity" as opposed to "electricity, gas, heat".
 							if(blankFacet._data.choices.length > 1){
 
 								// Find the "true" value					
@@ -887,13 +1144,11 @@ LinkedGov.multipleValuesWizard = {
 
 										// Remove the matching rows
 										// Have to use the postCoreProcess function here as 
-										// the rows are removed while using Refine's facet list JSON object
+										// the rows are removed using Refine's facet-list JSON object
 										Refine.postCoreProcess("remove-rows", {}, null, { rowMetadataChanged: true }, {
 											onDone:function(){
-												// Pass a count beginning of "1" if multi-values are transposed.
-												// Refine adds incremental int's to newly created columns with the same
-												// name.
-												self.getNewColumnHeaders(blankFacet,1);
+												// Pass boolean "true" if multi-values are transposed.
+												self.getNewColumnHeaders(blankFacet,true);
 											}
 										});
 									}
@@ -902,7 +1157,7 @@ LinkedGov.multipleValuesWizard = {
 								// Only one choice, must have been a single value type, 
 								// so no rows to remove.
 								// Pass a count of 0 if a single value is transposed
-								self.getNewColumnHeaders(blankFacet,0);
+								self.getNewColumnHeaders(blankFacet,false);
 							}
 							clearInterval(myInterval);
 						} else {
@@ -922,16 +1177,31 @@ LinkedGov.multipleValuesWizard = {
 		 * which is then passed to the renameMultipleColumns function so they 
 		 * can be renamed using the unique values in the "headers" column.
 		 */
-		getNewColumnHeaders:function(blankFacet, count){
+		getNewColumnHeaders:function(blankFacet, multiValues){
 
 			var self = this;
+			
+			/* 
+			 * Remove the "isBlank" facet to bring the remaning rows back 
+			 * into view.
+			 */
 			ui.browsingEngine.removeFacet(blankFacet);
+			
+			/* 
+			 * Perform a UI update to make sure the rows have reappeared.
+			 * 
+			 * Create an array of old column names. Refine suffixes an int  
+			 * beginning at '1' for each transposed column.
+			 */
 			Refine.update({ everythingChanged: true },function(){
 
 				var oldHeaders = [];
 				var columns = theProject.columnModel.columns;
+				// Refine adds incremental int's to newly created columns with the same
+				// name.
+				var count = 1;
 				for(var k=0; k<columns.length;k++){
-					if(count > 0){
+					if(multiValues){
 						if(columns[k].name == self.vars.valuesColName+" "+count){
 							oldHeaders.push(columns[k].name);
 							count++;
@@ -944,7 +1214,14 @@ LinkedGov.multipleValuesWizard = {
 					}
 				}
 
+				/*
+				 * Sort the array of new header names (unique values from the headers 
+				 * column), so they map correctly to the newly created transposed 
+				 * columns (which were sorted into alphabetical order during the sort 
+				 * operation).
+				 */
 				self.vars.newHeaders.sort();
+				
 				self.renameMultipleColumns(oldHeaders,self.vars.newHeaders);
 			});
 		},
@@ -961,13 +1238,19 @@ LinkedGov.multipleValuesWizard = {
 
 			var self = this;
 
-//			log('oldNames');
-//			log(oldNames);
-//			log('newNames');
-//			log(newNames);
+			//log('oldNames');
+			//log(oldNames);
+			//log('newNames');
+			//log(newNames);
 
+			/*
+			 * If there are still column names to rename
+			 */
 			if(oldNames.length > 0 && newNames.length > 0){
 
+				/*
+				 * Post a minimal "rename" call
+				 */
 				$.post(
 						"/command/" + "core" + "/" + "rename-column" + "?" + $.param({
 							oldColumnName: oldNames[0],
@@ -976,8 +1259,17 @@ LinkedGov.multipleValuesWizard = {
 						}),
 						null,
 						function(){
+							/*
+							 * Removes the two column names that have just been used from 
+							 * the arrays.
+							 */
 							oldNames.splice(0,1);
 							newNames.splice(0,1);
+							/*
+							 * Check if those were the last values in the arrays,
+							 * if so, proceed to the next operation, otherwise, 
+							 * recurse.
+							 */
 							if(oldNames.length > 0 && newNames.length > 0){
 								self.renameMultipleColumns(oldNames,newNames);
 							} else {
@@ -1001,8 +1293,11 @@ LinkedGov.multipleValuesWizard = {
 
 			var self = this;
 
-			log("Removing last column");
+			log("removeHeadersColumn");
 
+			/*
+			 * Post a minimal "remove-column" call.
+			 */
 			$.post(
 					"/command/" + "core" + "/" + "remove-column" + "?" + $.param({
 						columnName: self.vars.headersColName,
@@ -1026,21 +1321,34 @@ LinkedGov.multipleValuesWizard = {
 
 			var self = this;
 
-			LinkedGov.setNullsToBlank(theProject.columnModel.columns,0,function(){
+			LinkedGov.setBlanksToNulls(false,theProject.columnModel.columns,0,function(){
 				DialogSystem.dismissAll();
-				LinkedGov.setFacetCountLimit(100);
+				//LinkedGov.setFacetCountLimit(100);
 				Refine.update({everythingChanged:true});
 				LinkedGov.resetWizard(self.vars.elmts.multipleValuesBody);
 			});
 
 			return false;
-		}		
+		},
+
+		onFail:function(){
+			var self = this;
+			log("onFail");
+			LinkedGov.setBlanksToNulls(false,theProject.columnModel.columns,0,function(){
+				alert("Multiple Values wizard failed. \n\n"+self.vars.abortMessage);
+				LinkedGov.resetWizard(self.vars.elmts.multipleValuesBody);	
+			});
+
+		}
 
 };
 
 
 /*
- * dateTimeOperation
+ * dateTimeWizard
+ * 
+ * TODO: When producing RDF or exporting the dates into any format,
+ * Refine's "date" object doesn't output as a string correctly.
  * 
  * simpleDate
  * 
@@ -1076,15 +1384,17 @@ LinkedGov.dateTimeWizard = {
 
 			var self = this;
 			self.vars.elmts = elmts;
-			
+
 			var checkedDate = $(elmts.dateCheck).attr("checked");
 			var checkedTime = $(elmts.timeCheck).attr("checked");
 			var checkedMoreComplicated = $(elmts.dateComplicated).attr('checked');
-			
+
 			if(checkedDate || checkedTime){
 
 				if(checkedMoreComplicated){
-
+					
+					// Perform the fragmented* operations.
+					
 					// Store the columns to be operated on
 					$(elmts.dateColsComplicated).children().each(function(){
 						self.vars.columns.push($(this).children("span.col").html());
@@ -1096,11 +1406,17 @@ LinkedGov.dateTimeWizard = {
 						this.fragmentedTime();					
 					} else if(checkedDate && checkedTime){
 						this.fragmentedDate();
-						this.fragmentedTime();					
+						this.fragmentedTime();
+						/*
+						 * Join the two date and time columns together to 
+						 * produce a proper date-time value.
+						 */
 					}
 
 				} else {
 
+					// Perform the simple* operations.
+					
 					// Store the columns to be operated on
 					$(elmts.dateTimeColumns).children().each(function(){
 						self.vars.columns.push($(this).children("span.col").html());
@@ -1112,7 +1428,11 @@ LinkedGov.dateTimeWizard = {
 						this.simpleTime();				
 					} else if(checkedDate && checkedTime){
 						this.simpleDate();
-						this.simpleTime();					
+						this.simpleTime();	
+						/*
+						 * Join the two date and time columns together to 
+						 * produce a proper date-time value.
+						 */						
 					}				
 				}
 
@@ -1182,14 +1502,28 @@ LinkedGov.dateTimeWizard = {
 
 			var self = this;
 
+			/*
+			 * Store the "should-be" date fragments in an array, which will 
+			 * be in the same order as the columns the user has selected.
+			 */
 			$(self.vars.elmts.dateColsComplicated).children().each(function(){
 				self.vars.colFragments.push($(this).children("select").val());
 			});
 
-			var expression = this.buildExpression();
+			/*
+			 * Build a GREL expression that concatenates the date parts in the 
+			 * correct order.
+			 */
+			var expression = self.buildExpression();
 
 			var colName = window.prompt("New column name:", theProject.metadata.name);
 
+			/*
+			 * Post an "add-column" call, based on the first column the 
+			 * user selected, using the expression we've just built, 
+			 * the new column name that the user has just entered and inserting 
+			 * the new date column just after the columns the user has selected.
+			 */
 			Refine.postCoreProcess("add-column", {
 				baseColumnName: self.vars.columns[0],
 				expression: expression,
@@ -1200,6 +1534,10 @@ LinkedGov.dateTimeWizard = {
 				modelsChanged: true
 			}, {
 				onDone:function(){
+					/*
+					 * Once we've created the new date column, type the column as an 
+					 * ISO date internally within Refine.
+					 */
 					Refine.postCoreProcess("text-transform", {
 						columnName: colName,
 						expression: "value.toDate()",
@@ -1214,7 +1552,7 @@ LinkedGov.dateTimeWizard = {
 		},
 
 		/*
-		 * Properly formats a timestamp within Refine and produces
+		 * Properly types a timestamp within Refine and produces
 		 * RDF.
 		 */
 		simpleTime:function(){
@@ -1244,14 +1582,23 @@ LinkedGov.dateTimeWizard = {
 
 			var self = this;
 			var expression = "";
+			// Set up the order of date parts for the new date
 			var dateOrder = ["Year", "Month", "Day", "Hours", "Minutes", "Seconds"];
+			// Array of selected columns
 			var cols = self.vars.columns;
+			// Array of the selected column "should-be" date fragments (from the select inputs)
 			var colFragments = self.vars.colFragments;
 
+			/*
+			 * Build a GREL expression string that concatenates the columns 
+			 * in the correct order, ready to be converted to an ISO date.
+			 */
 			for (var i=0, len=dateOrder.length; i<len; i++) {
 				for(var j=0, len2=colFragments.length; j<len2; j++) {
 
+					log('colFragments[j]:');
 					log(colFragments[j]);
+					log('dateOrder[i]:');
 					log(dateOrder[i]);
 
 					if (colFragments[j] == dateOrder[i]) {
@@ -1259,7 +1606,10 @@ LinkedGov.dateTimeWizard = {
 					}
 				}
 			}
-
+			
+			/*
+			 * Remove the 'joining' tail of the expression - ( +"-" ).
+			 */
 			try {
 				expression = expression.substring(0, expression.length - 5);
 				log(expression);
@@ -1272,6 +1622,9 @@ LinkedGov.dateTimeWizard = {
 
 		},
 
+		/*
+		 * Returns the wizard to its original state
+		 */
 		onComplete:function(){
 			var self = this;
 			LinkedGov.resetWizard(self.vars.elmts.dateTimeBody);
@@ -1300,16 +1653,33 @@ LinkedGov.dateTimeWizard = {
  */
 LinkedGov.measurementsWizard = {
 
+		/*
+		 * elmts: an object that contains the bound HTML elements 
+		 * for the measurements wizard panel.
+		 */
 		vars:{
 			elmts:{}
 		},
 
+		/*
+		 * The HTML input fields and options for the wizard are passed to 
+		 * the wizard object through the parameter "elmts" and are stored 
+		 * globally within the wizard.
+		 * 
+		 * Begins the wizard operation.
+		 * 
+		 */
 		initialise: function(elmts) {
 			var self = this;
 			self.vars.elmts = elmts;
 			self.saveRDF();
 		},
 
+		/*
+		 * Prepare the returned data from Freebase (measurement URI and label),
+		 * and use the columns the user has selected to post an "RDF Schema" object 
+		 * to the RDF plugin extension.
+		 */
 		saveRDF:function(){
 
 			var self = this;
@@ -1318,7 +1688,22 @@ LinkedGov.measurementsWizard = {
 			var prefix = "fb";
 			var namespaceURI = "http://rdf.freebase.com/ns/";
 
+			/*
+			 * E.g. 
+			 * 
+			 * Returned by API: en/celsius
+			 * 
+			 * We want,
+			 * 
+			 * uri = http://rdf.freebase.com/ns/en.celsius
+			 * curie = fb:celsius
+			 * 
+			 */
+
 			var uri = elmts.unitInputField.data("data.suggest").id;
+
+			// Replacing the "/" with a "." in the returned slug for the measurement to 
+			// prepare it for it's RDF location, which uses ".".
 			uri = uri.replace(/\//g, ".");
 			uri = namespaceURI + uri.substring(1, uri.length);
 
@@ -1326,6 +1711,11 @@ LinkedGov.measurementsWizard = {
 			curie = curie[curie.length - 1];
 			curie = prefix + ":" + curie;
 
+			/*
+			 * Loop through each of the selected columns (that are passed to the 
+			 * wizard through the elmts object, and create an RDF Schema JSON object 
+			 * for each of them, and store their measurement data in RDF).
+			 */
 			$(elmts.measurementsColumns).children().each(function () {
 
 				var jsonObj = {
@@ -1353,6 +1743,9 @@ LinkedGov.measurementsWizard = {
 						}]
 				};
 
+				/*
+				 * Save the RDF
+				 */
 				Refine.postProcess("rdf-extension", "save-rdf-schema", {}, {
 					schema: JSON.stringify(jsonObj)
 				}, {}, {
@@ -1367,6 +1760,9 @@ LinkedGov.measurementsWizard = {
 
 		},
 
+		/*
+		 * Returns the wizard to it's original state at the end of it's operations.
+		 */
 		onComplete:function(){
 			var self = this;
 			LinkedGov.resetWizard(self.vars.elmts.measurementsBody);
@@ -1378,7 +1774,7 @@ LinkedGov.measurementsWizard = {
  * addressWizard
  * 
  * The address wizard helps to clean up addresses, with 
- * the postcode being the high priority.
+ * the postcode being the highest priority.
  * 
  * A user is able to select one column containing a full address, 
  * in which case, a regular expression is used to separate the 
@@ -1396,9 +1792,16 @@ LinkedGov.measurementsWizard = {
  * 
  * saveRDF
  * 
+ * 
  */
 LinkedGov.addressWizard = {
 
+		/*
+		 * Regex obtained from Wikipedia (inc link).
+		 * 
+		 * Modified to account for a space in the middle of postcodes:
+		 * "Z]?{0" to "Z]? {0".
+		 */
 		vars: {
 			elmts:{},
 			postCodeRegex:"[A-Z]{1,2}[0-9R][0-9A-Z]? {0,1}[0-9][ABD-HJLNP-UW-Z]{2}/)[1]"
@@ -1410,6 +1813,12 @@ LinkedGov.addressWizard = {
 			self.extractPostCode();
 		},
 
+		/*
+		 * Asks the user for a new column name (to name the column with the newly 
+		 * extracted postcode) and creates a new column based on extracting the 
+		 * postcode from the column the user has selected.
+		 * 
+		 */
 		extractPostCode: function(){
 
 			var self = this;
@@ -1417,6 +1826,10 @@ LinkedGov.addressWizard = {
 
 			var colName = window.prompt("New column name:", "");
 
+			/*
+			 * Loop through the columns the user has selected and create a 
+			 * new column using the regular expression for matching postcodes.
+			 */
 			$(elmts.addressColumns).children().each(function () {
 
 				Refine.postCoreProcess("add-column", {
@@ -1437,6 +1850,11 @@ LinkedGov.addressWizard = {
 
 		},
 
+		/*
+		 * Take the newly created postcode column name as parameter and 
+		 * substitute it into the RDF schema object to post and store the postcode
+		 * RDF.
+		 */
 		saveRDF: function(colName){
 
 			var self = this;
@@ -1445,65 +1863,131 @@ LinkedGov.addressWizard = {
 			var prefix = "ospc";
 			var namespaceURI = "http://data.ordnancesurvey.co.uk/ontology/postcode/";
 			var type = "postcode";
+
+			/*
+			 * We want,
+			 * 
+			 * uri = http://data.ordnancesurvey.co.uk/ontology/postcode/postcode
+			 * curie = ospc:postcode
+			 */
 			var uri = namespaceURI + type;
 			var curie = prefix + ":" + type;
 
+			/*
+			 * Setup the possible vCard property mappings to column names
+			 * 
+			 * 
+			 */
+			// TODO : baseURI needs to be dynamic
+			var streetAddressCol, extendedAddressCol, postcodeCol, localityCol, countryCol = "";
+
 			var jsonObj = {
-					"prefixes": [{
-						"name": "rdfs",
-						"uri": "http://www.w3.org/2000/01/rdf-schema#"
+					"prefixes":[{
+						"name":"rdfs",
+						"uri":"http://www.w3.org/2000/01/rdf-schema#"
 					},
 					{
-						"name": "ospc",
-						"uri": "http://data.ordnancesurvey.co.uk/ontology/postcode/"
+						"name":"vcard",
+						"uri":"http://www.w3.org/2006/vcard/ns#"
 					},
 					{
-						"name": "vcard",
-						"uri": "http://www.w3.org/2006/vcard/ns#"
-					}],
-					"baseUri": "http://127.0.0.1:3333/",
-					"rootNodes": [{
-						"nodeType": "cell-as-resource",
-						"expression": "value",
-						"isRowNumberCell": true,
-						"rdfTypes": [],
-						"links": [{
-							"uri": "http://www.w3.org/2006/vcard/ns#adr",
-							"curie": "vcard:adr",
-							"target": {
-								"nodeType": "cell-as-resource",
-								"expression": "value+\"#address\"",
-								"isRowNumberCell": true,
-								"rdfTypes": [{
-									"uri": "http://www.w3.org/2006/vcard/ns#Address",
-									"curie": "vcard:Address"
-								}],
-								"links": [{
-									"uri": "http://data.ordnancesurvey.co.uk/ontology/postcode/postcode",
-									"curie": "ospc:postcode",
-									"target": {
-										"nodeType": "cell-as-resource",
-										"expression": "\"http://data.ordnancesurvey.co.uk/id/postcodeunit/\"+value.replace(\" \",\"\")",
-										"columnName": colName,
-										"isRowNumberCell": false,
-										"rdfTypes": [],
-										"links": [{
-											"uri": "http://www.w3.org/2000/01/rdf-schema#label",
-											"curie": "rdfs:label",
-											"target": {
-												"nodeType": "cell-as-literal",
-												"expression": "value",
-												"columnName": colName,
-												"isRowNumberCell": false
-											}
-										}]
-									}
-								}]
-							}
-						}]
-					}]
+						"name":"ospc",
+						"uri":"http://data.ordnancesurvey.co.uk/ontology/postcode/"
+					}
+					],
+					"baseUri":"http://localhost:3333/",
+					"rootNodes":[
+					             {
+					            	 "nodeType":"cell-as-resource",
+					            	 "expression":"value",
+					            	 "isRowNumberCell":true,
+					            	 "rdfTypes":[
+					            	             {
+					            	            	 "uri":"http://www.w3.org/2006/vcard/ns#VCard",
+					            	            	 "curie":"vcard:VCard"
+					            	             }
+					            	             ],
+					            	             "links":[
+					            	                      {
+					            	                    	  "uri":"http://www.w3.org/2006/vcard/ns#adr",
+					            	                    	  "curie":"vcard:adr",
+					            	                    	  "target":{
+					            	                    		  "nodeType":"cell-as-resource",
+					            	                    		  "expression":"value+\"#address\"",
+					            	                    		  "isRowNumberCell":true,
+					            	                    		  "rdfTypes":[
+					            	                    		              {
+					            	                    		            	  "uri":"http://www.w3.org/2006/vcard/ns#Address",
+					            	                    		            	  "curie":"vcard:Address"
+					            	                    		              }
+					            	                    		              ],
+					            	                    		              "links":[
+					            	                    		                       {
+					            	                    		                    	   "uri":"http://www.w3.org/2006/vcard/ns#street-address",
+					            	                    		                    	   "curie":"vcard:street-address",
+					            	                    		                    	   "target":{
+					            	                    		                    		   "nodeType":"cell-as-literal",
+					            	                    		                    		   "expression":"value",
+					            	                    		                    		   "columnName":streetAddressCol,
+					            	                    		                    		   "isRowNumberCell":false
+					            	                    		                    	   }
+					            	                    		                       },
+					            	                    		                       {
+					            	                    		                    	   "uri":"http://www.w3.org/2006/vcard/ns#postal-code",
+					            	                    		                    	   "curie":"vcard:postal-code",
+					            	                    		                    	   "target":{
+					            	                    		                    		   "nodeType":"cell-as-literal",
+					            	                    		                    		   "expression":"value",
+					            	                    		                    		   "columnName":postcodeCol,
+					            	                    		                    		   "isRowNumberCell":false
+					            	                    		                    	   }
+					            	                    		                       },
+					            	                    		                       {
+					            	                    		                    	   "uri":"http://www.w3.org/2006/vcard/ns#locality",
+					            	                    		                    	   "curie":"vcard:locality",
+					            	                    		                    	   "target":{
+					            	                    		                    		   "nodeType":"cell-as-literal",
+					            	                    		                    		   "expression":"value",
+					            	                    		                    		   "columnName":localityCol,
+					            	                    		                    		   "isRowNumberCell":false
+					            	                    		                    	   }
+					            	                    		                       },
+					            	                    		                       {
+					            	                    		                    	   "uri":"http://data.ordnancesurvey.co.uk/ontology/postcode/postcode",
+					            	                    		                    	   "curie":"ospc:postcode",
+					            	                    		                    	   "target":{
+					            	                    		                    		   "nodeType":"cell-as-resource",
+					            	                    		                    		   "expression":"\"http://data.ordnancesurvey.co.uk/id/postcodeunit/\"+value.replace(\" \",\"\")",
+					            	                    		                    		   "columnName":postcodeCol,
+					            	                    		                    		   "isRowNumberCell":false,
+					            	                    		                    		   "rdfTypes":[
+
+					            	                    		                    		               ],
+					            	                    		                    		               "links":[
+					            	                    		                    		                        {
+					            	                    		                    		                        	"uri":"http://www.w3.org/2000/01/rdf-schema#label",
+					            	                    		                    		                        	"curie":"rdfs:label",
+					            	                    		                    		                        	"target":{
+					            	                    		                    		                        		"nodeType":"cell-as-literal",
+					            	                    		                    		                        		"expression":"value",
+					            	                    		                    		                        		"columnName":postcodeCol,
+					            	                    		                    		                        		"isRowNumberCell":false
+					            	                    		                    		                        	}
+					            	                    		                    		                        }
+					            	                    		                    		                        ]
+					            	                    		                    	   }
+					            	                    		                       }
+					            	                    		                       ]
+					            	                    	  }
+					            	                      }
+					            	                      ]
+					             }
+					             ]
 			};
 
+			/*
+			 * Save the RDF.
+			 */
 			Refine.postProcess("rdf-extension", "save-rdf-schema", {}, {
 				schema: JSON.stringify(jsonObj)
 			}, {}, {
@@ -1515,6 +1999,9 @@ LinkedGov.addressWizard = {
 
 		},
 
+		/*
+		 * Return the wizard to its original state.
+		 */
 		onComplete:function(){
 			var self = this;
 			LinkedGov.resetWizard(self.vars.elmts.addressBody);
@@ -1550,23 +2037,6 @@ DOM.loadHTML = function(module, path) {
 	}
 	return DOM._loadedHTML[fullPath];
 };
-
-/*
- * resizeAll
- * 
- * Another overriding function that includes our custom "typingPanel"
- * object.
- */
-function resizeAll() {
-	resize();
-	resizeTabs();
-	ui.extensionBar.resize();
-	ui.typingPanel.resize(); 
-	ui.browsingEngine.resize();
-	ui.processPanel.resize();
-	ui.historyPanel.resize();
-	ui.dataTableView.resize();
-}
 
 function log(str) {
 	window.console && console.log && LinkedGov.vars.debug && console.log(str);

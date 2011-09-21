@@ -1,6 +1,10 @@
 body.lg div#left-panel div.refine-tabs {
 	visibility:hidden;
 }
+body.lg table.data-table tr td.skip {
+	background-color: #F4F4F4;
+	opacity:0.3;
+}
 body.lg div.typing-panel-body {
     overflow-y: auto;
 	padding: 5px 5px 10px 10px;
@@ -51,15 +55,16 @@ body.lg div.wizard-body label {
 }
 body.lg div.wizard-body span.note {
     background: none repeat scroll 0 0 #FDFFA9;
-    border: 2px solid #F8FF00;
+    border: 1px solid #999999;
     box-shadow: 0 0 10px #7D7D7D;
     color: #000000;
     display:none;
+    font-size: 11px;
     left: 315px;
     margin: 5px 0;
     padding: 15px 20px;
     position: fixed;
-    text-align: center;
+    text-align: justify;
     width: 300px;
     z-index: 9999;
 }
@@ -77,21 +82,25 @@ body.lg a.info:hover {
 }
 body.lg div.wizard-body div.selector {
     border-bottom: 1px solid #EEEEEE;
-    border-top: 1px solid #EEEEEE;
     clear: both;
     margin: 5px 0;
     padding: 10px 0;
     text-align: center;
+}
+body.lg div.wizard-body div.selector p {
+	padding-bottom: 10px;
+    text-align: left;
 }
 body.lg div.wizard-body div.selector a.button {
     /*background: -moz-linear-gradient(center top , #E8FFED, #A1DEAA) repeat scroll 0 0 transparent !important;*/
 }
 body.lg div.wizard-body ul.column-display {
     background: none repeat scroll 0 0 #FFFFFF;
+    /*border: 1px solid #CCCCCC;*/
     margin-top: 10px;
-    max-height: 107px;
+    max-height: 121px;
     overflow-y: auto;
-    padding: 1px;
+    padding: 0 1px;
     text-align: left;
 }
 body.lg div.wizard-body ul.column-display li {
@@ -101,8 +110,10 @@ body.lg div.wizard-body ul.column-display li {
     height: 17px;
     line-height: 17px;
     list-style-type: none;
-    margin-bottom: 3px;
+    margin-bottom: 1px;
+    margin-top: 1px;
     overflow: hidden;
+    padding-left: 3px;
     vertical-align: middle;
 }
 body.lg div.wizard-body ul.cols-copy li {
@@ -114,7 +125,7 @@ body.lg div.wizard-body ul.column-display li span.col {
 }
 body.lg div.wizard-body ul.cols-copy li span.col {
     float: left;
-    width: 60%;
+    width: 55%;
 }
 body.lg div.wizard-body ul.column-display li span.remove {
     color: #A94D4D;
@@ -128,6 +139,11 @@ body.lg div.wizard-body ul.column-display li span.remove {
 }
 body.lg div.wizard-body ul.column-display li span.remove:hover {
 }
+body.lg div.wizard-body ul.column-display li.skip {
+	opacity:0.5;
+	background-color:#EEEEEE;
+	border:1px solid #CCCCCC;	
+}
 body.lg div.wizard-body ul.column-display li select {
     float: right;
     font-size: 10px;
@@ -135,7 +151,7 @@ body.lg div.wizard-body ul.column-display li select {
     margin-right: 0;
     margin-top: -1px;
     padding: 0;
-    width: 70px;
+    width: 38%;
 }
 body.lg div.wizard-body div.more-complicated {
     border-bottom: 1px solid #EEEEEE;

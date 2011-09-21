@@ -256,7 +256,23 @@ TypingPanel.prototype.rangeSelector = function(select) {
 
 	$(select).find("option").each(function () {
 		if (parseInt($(this).attr("data-id")) >= parseInt($(this).parent().parent().children("select.from").find("option[value='" + $(this).parent().parent().children("select.from").val() + "']").attr("data-id")) && parseInt($(this).attr("data-id")) <= parseInt($(this).parent().parent().children("select.to").find("option[value='" + $(this).parent().parent().children("select.to").val() + "']").attr("data-id"))) {
+			/*
+			 * Populate the wizards column display
+			 */
 			colsHTML += "<li><span class='col'>" + $(this).val() + "</span><span class='remove'>X</span></li>";
+			/*
+			 * Add jQuery UI's "selected" styles to the column headers in the
+			 * data table.
+			 * 
+			 * TODO: Inefficient iteration.
+			 */
+			$colName = $(this).val();
+			$("table.data-table tr td.column-header span.column-header-name").each(function(){
+				if($(this).html() == $colName){
+					$(this).parent().parent("td").addClass("ui-selected");
+					$("table.data-table").addClass("ui-selectable");
+				}
+			});
 		}
 	});
 
@@ -328,7 +344,52 @@ $(document).ready(function () {
 	 * Remove column interaction for column lists
 	 */
 	$("ul.column-display li span.remove").live("click",function(){
-		$(this).parent().slideUp(250,function(){$(this).remove()});
+		if($(this).parent().parent("ul").hasClass("range")){
+			/*
+			 * Check to see if column being removed is the first or last 
+			 * in column selection, in which case it is ok to remove from 
+			 * the range.
+			 */
+			if($(this).parent("li")[0] === $(this).parent().parent("ul").children().eq(0)[0] || $(this).parent("li")[0] == $(this).parent("li").parent("ul").children("li").eq($(this).parent("li").parent("ul").children("li").length-1)[0]){
+				$(this).parent().slideUp(250,function(){$(this).remove();});
+				/*
+				 * Remove the "selected" styling for the removed columns in the data table
+				 */
+				$li_el = $(this).parent("li");
+				
+				$("td.column-header div.column-header-title span.column-header-name").each(function(){
+					if($(this).html() == $li_el.find("span.col").html()){
+						$(this).parent().parent("td").removeClass("ui-selected").removeClass("skip");
+					}
+				});
+			} else {
+				/*
+				 * If the column is within the range, add the class "skip" to 
+				 * the <li> element to hook on to during the wizard.
+				 */
+				if($(this).parent("li").hasClass("skip")){
+					$(this).parent().removeClass("skip");
+					$li_el = $(this).parent("li");
+					
+					$("td.column-header div.column-header-title span.column-header-name").each(function(){
+						if($(this).html() == $li_el.find("span.col").html()){
+							$(this).parent().parent("td").addClass("ui-selectee ui-selected").removeClass("skip");
+						}
+					});
+				} else {			
+					$(this).parent().addClass("skip");
+					$li_el = $(this).parent("li");
+					
+					$("td.column-header div.column-header-title span.column-header-name").each(function(){
+						if($(this).html() == $li_el.find("span.col").html()){
+							$(this).parent().parent("td").removeClass("ui-selectee ui-selected").addClass("skip");
+						}
+					});	
+				}
+			}
+		} else {
+			$(this).parent().slideUp(250,function(){$(this).remove();});
+		}
 	});
 
 	/*
@@ -354,7 +415,7 @@ $(document).ready(function () {
 
 		switch($(this).attr("id")){
 
-			case 'date-complicated' :
+		case 'date-complicated' :
 			fragmentSelectHTML =  "<select class='date-select'>" + 
 			"<option value='Day'>Day</option>" + 
 			"<option value='Month'>Month</option>" + 
@@ -363,9 +424,10 @@ $(document).ready(function () {
 			"<option value='MonthYear'>Month-Year</option>" + 
 			"</select>";
 			break;
-		
-			case 'address-complicated' : 
-			fragmentSelectHTML = "<select class='address-select'>" + 
+
+		case 'address-complicated' : 
+			/*
+				fragmentSelectHTML = "<select class='address-select'>" + 
 			"<option value='House_Flat_number'>House/Flat number</option>" + 
 			"<option value='Street_Road'>Street/Road name</option>" +
 			"<option value='House_and_Street'>House num & Street name</option>" + 
@@ -378,10 +440,26 @@ $(document).ready(function () {
 			"<option value='Country'>Country</option>" + 
 			"<option value='Postcode'>Postcode</option>" + 
 			"</select>";
+			 */
+
+			fragmentSelectHTML = "<select class='address-select'>" + 
+			"<option value='House_Flat_number'>House/Flat number</option>" + 
+			"<option value='Street_Road'>Street/Road name</option>" +
+			"<option value='Street_Address'>Street Address</option>" + 
+			"<option value='District'>District</option>" + 
+			"<option value='Suburb'>Suburb</option>" + 
+			"<option value='Region'>Region</option>" + 
+			"<option value='Town'>Town</option>" + 
+			"<option value='City'>City</option>" + 
+			"<option value='County'>County</option>" + 
+			"<option value='Country'>Country</option>" + 
+			"<option value='Postcode'>Postcode</option>" + 
+			"</select>";
+
 			break;
-			
-			default:
-				break;
+
+		default:
+			break;
 
 		}
 
