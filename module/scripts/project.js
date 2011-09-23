@@ -50,6 +50,83 @@ var LinkedGov = {
 		initialise: function() {
 			this.restyle();
 			this.injectTypingPanel();
+			this.quickTools();
+		},
+
+		/*
+		 * Initialises the quick tools for column headings.
+		 */
+		quickTools:function(){
+
+			/*
+			 * Quick tools
+			 * TODO: Show & hide using CSS.
+			 */
+			$("td.column-header").live("hover",function(){
+				//if doesn't have a quick tool
+				//then insert
+				//else show or hide
+				if($(this).hasClass("show")){
+					$(this).find(".quick-tool").hide();
+					$(this).addClass("hide").removeClass("show");
+				}else if($(this).hasClass("hide")){
+					$(this).find(".quick-tool").show();
+					$(this).addClass("show").removeClass("hide");
+				}else{
+					if(!$("table.data-table").hasClass("ui-selectable")){
+
+						var html = 
+							"<div class='quick-tool'>" +
+							"<ul>" +
+							"<li class='rename'>Rename</li>" +
+							"<li class='remove'>Remove</li>" +
+							"<li class='move-left'>Move left</li>" +
+							"<li class='move-right'>Move right</li>" +
+							"</ul>" +
+							"</div>";
+
+						$(this).append(html);
+						$(this).find(".quick-tool").show();
+						$(this).addClass("qt").addClass("show");
+					}
+				}
+			});
+
+			$("div.quick-tool").find("li").live("click",function(e){
+
+				var td = e.target.parentNode.parentNode.parentNode;
+				var colName = $(td).find("span.column-header-name").html();
+
+				switch($(this).attr("class")){
+
+				case "rename" :
+					var name = window.prompt("Name:","");
+					LinkedGov.renameColumn(colName,name,function(){
+						Refine.update({modelsChanged:true});
+					});
+					break;
+				case "remove" : 
+					LinkedGov.removeColumn(colName,function(){
+						Refine.update({modelsChanged:true});
+					});
+					break;
+				case "move-left" :
+					LinkedGov.moveColumn(colName,"left",function(){
+						Refine.update({modelsChanged:true});
+					});
+					break;
+				case "move-right" :
+					LinkedGov.moveColumn(colName,"right",function(){
+						Refine.update({modelsChanged:true});
+					});
+					break;
+				default : 
+					break;
+
+				}
+
+			});
+
 		},
 
 		/*
@@ -80,9 +157,9 @@ var LinkedGov = {
 
 			$(window).unbind("resize");
 			$(window).bind("resize",LinkedGov.resizeAll_LG);
-			
+
 		},
-		
+
 		/*
 		 * 
 		 * resizeAll
@@ -95,7 +172,7 @@ var LinkedGov = {
 		 * $(document).ready block at the end of this file.
 		 */
 		resizeAll_LG: function() {
-			
+
 			/*
 			 * Call the old resizeAll function - found in the 
 			 * core project.js file.
@@ -104,7 +181,7 @@ var LinkedGov = {
 			/*
 			 * Call our additional resize functions.
 			 */
-			
+
 			/*
 			 *  Use this CSS instead of a JS resize:
 			 *  bottom: 0;
@@ -207,6 +284,58 @@ var LinkedGov = {
 
 				Refine.update({cellsChanged:true},callback);
 			}
+
+		},
+
+		/*
+		 * Renames a column
+		 */
+		renameColumn:function(oldName,newName,callback){
+			$.post(
+					"/command/" + "core" + "/" + "rename-column" + "?" + $.param({
+						oldColumnName: oldName,
+						newColumnName: newName,
+						project: theProject.id
+					}),
+					null,
+					callback(),
+					"json"
+			);
+		},
+
+		/*
+		 * Removes a column
+		 */
+		removeColumn:function(colName,callback){
+			$.post(
+					"/command/" + "core" + "/" + "remove-column" + "?" + $.param({
+						columnName: colName,
+						project: theProject.id
+					}),
+					null,
+					callback,
+					"json"
+			);
+		},
+
+		/*
+		 * Moves a column left or right
+		 */
+		moveColumn:function(colName,dir,callback){
+
+			var i = Refine.columnNameToColumnIndex(colName)+(dir == "left" ? -1 : 1);
+			log(i);
+
+			$.post(
+					"/command/" + "core" + "/" + "move-column" + "?" + $.param({
+						columnName:colName,
+						index:i,
+						project:theProject.id
+					}),
+					null,
+					callback,
+					"json"
+			);
 
 		},
 
@@ -332,24 +461,15 @@ LinkedGov.multipleColumnsWizard = {
 		initialise: function(elmts){
 
 			var self = this;
-			
-			log("Starting multipleColumnsWizard");
-			
 			self.vars.elmts = elmts;
-			self.vars.startColName = $(elmts.multipleColumnsColumns).children("li").eq(0).find("span.col").html();
-			self.vars.colCount = $(elmts.multipleColumnsColumns).children("li").length;
-			self.vars.newColName = window.prompt("New column name:", "");
-			
+
+			log("Starting multipleColumnsWizard");
+
 			/*
-			 * Check to see if there are any gaps in the range of columns and 
-			 * populate the array of the columns to skip.
+			 * Recalculate which columns are going to be transposed, 
+			 * taking into account any columns the user wants to skip.
 			 */
-			$(elmts.multipleColumnsColumns).children("li").each(function(){
-				if($(this).hasClass("skip")){
-					self.vars.colsToSkip.push($(this).find("span.col").html());
-					self.vars.gapInRange = true;
-				}
-			});
+			self.checkSkippedColumns();
 
 			/*
 			 * Set any blank cells to null to protect them from being filled down into 
@@ -371,7 +491,70 @@ LinkedGov.multipleColumnsWizard = {
 			});
 
 		},
-		
+
+		/*
+		 * Recalculates the parameters for the transpose process such as 
+		 * how many columns to transpose, the start index and any columns 
+		 * to skip.
+		 */
+		checkSkippedColumns:function(){
+
+			var self = this;
+			var elmts = self.vars.elmts;
+
+			log("Before:");
+			log($(elmts.multipleColumnsColumns).children("li"));
+
+			/*
+			 * Loop through the user's selected columns and trim any 
+			 * columns that have been marked as "skip" from the beginning
+			 * and end.
+			 */
+			for(var i=0; i<$(elmts.multipleColumnsColumns).children("li").length; i++){				
+				/*
+				 * If a selected column has been removed, but was at the beginning, remove it from the 
+				 * array of columns.
+				 */
+				if($($(elmts.multipleColumnsColumns).children("li")[i]).hasClass("skip") && i == 0){
+					$($(elmts.multipleColumnsColumns).children("li")[i]).remove();
+					i--;
+					/*
+					 * If a selected column has been removed, but was at the end, remove it from the array 
+					 * of columns.
+					 */
+				} else if($($(elmts.multipleColumnsColumns).children("li")[i]).hasClass("skip") 
+						&& i == $(elmts.multipleColumnsColumns).children("li").length-1){
+					$($(elmts.multipleColumnsColumns).children("li")[i]).remove();
+					i--;
+					i--;
+				}
+			}
+			log("After:");
+			log($(elmts.multipleColumnsColumns).children("li"));
+
+			/*
+			 * Once trimmed, the array should only contain columns to skip after and before the start 
+			 * and end columns, so reassess which columns need to be skipped and populate the 
+			 * "colsToSkip" array.
+			 */
+			for(var j=0, len=$(elmts.multipleColumnsColumns).children("li").length; j<len; j++){
+				if($($(elmts.multipleColumnsColumns).children("li")[j]).hasClass("skip")){
+					self.vars.colsToSkip.push($($(elmts.multipleColumnsColumns).children("li")[j]).find("span.col").html());
+					self.vars.gapInRange = true;					
+				}
+			}
+
+			log("colsToSkip:");
+			log(self.vars.colsToSkip);
+
+			/*
+			 * Recalculate how many columns to transpose.
+			 */
+			self.vars.startColName = $(elmts.multipleColumnsColumns).children("li").eq(0).find("span.col").html();
+			self.vars.colCount = $(elmts.multipleColumnsColumns).children("li").length - self.vars.colsToSkip.length;
+			self.vars.newColName = window.prompt("New column name:", "");
+		},
+
 		/*
 		 * reorderColumns
 		 * 
@@ -388,11 +571,11 @@ LinkedGov.multipleColumnsWizard = {
 		 * to the left of the columns to transpose.
 		 */
 		reorderColumns: function(colIndex,callback){
-			
+
 			var self = this;
-			
+
 			log("reorderColumns");
-			
+
 			if(self.vars.colsToSkip.length > 0){
 
 				/*
@@ -419,7 +602,7 @@ LinkedGov.multipleColumnsWizard = {
 						},
 						"json"
 				);
-			    
+
 			} else {
 				/*
 				 * Perform a model UI update (when columns change) and proceed 
@@ -584,6 +767,8 @@ LinkedGov.multipleColumnsWizard = {
 			LinkedGov.setBlanksToNulls(false,theProject.columnModel.columns,0,function(){
 				log("Multiple columns wizard complete");
 				Refine.update({everythingChanged:true});
+				// Refresh the content of the select inputs
+				ui.typingPanel.rangeSelector($(self.vars.elmts.multipleColumnsBody).find("div.range").find("select").eq(0));
 				LinkedGov.resetWizard(self.vars.elmts.multipleColumnsBody);
 			});
 
@@ -1180,13 +1365,13 @@ LinkedGov.multipleValuesWizard = {
 		getNewColumnHeaders:function(blankFacet, multiValues){
 
 			var self = this;
-			
+
 			/* 
 			 * Remove the "isBlank" facet to bring the remaning rows back 
 			 * into view.
 			 */
 			ui.browsingEngine.removeFacet(blankFacet);
-			
+
 			/* 
 			 * Perform a UI update to make sure the rows have reappeared.
 			 * 
@@ -1221,7 +1406,7 @@ LinkedGov.multipleValuesWizard = {
 				 * operation).
 				 */
 				self.vars.newHeaders.sort();
-				
+
 				self.renameMultipleColumns(oldHeaders,self.vars.newHeaders);
 			});
 		},
@@ -1387,14 +1572,13 @@ LinkedGov.dateTimeWizard = {
 
 			var checkedDate = $(elmts.dateCheck).attr("checked");
 			var checkedTime = $(elmts.timeCheck).attr("checked");
-			var checkedMoreComplicated = $(elmts.dateComplicated).attr('checked');
 
 			if(checkedDate || checkedTime){
 
 				if(checkedMoreComplicated){
-					
+
 					// Perform the fragmented* operations.
-					
+
 					// Store the columns to be operated on
 					$(elmts.dateColsComplicated).children().each(function(){
 						self.vars.columns.push($(this).children("span.col").html());
@@ -1416,7 +1600,7 @@ LinkedGov.dateTimeWizard = {
 				} else {
 
 					// Perform the simple* operations.
-					
+
 					// Store the columns to be operated on
 					$(elmts.dateTimeColumns).children().each(function(){
 						self.vars.columns.push($(this).children("span.col").html());
@@ -1606,7 +1790,7 @@ LinkedGov.dateTimeWizard = {
 					}
 				}
 			}
-			
+
 			/*
 			 * Remove the 'joining' tail of the expression - ( +"-" ).
 			 */
@@ -1785,10 +1969,15 @@ LinkedGov.measurementsWizard = {
  * fragments of an address, in which case typing is applied to the 
  * columns.
  * 
- * 
  * initialise 
  * 
- * extractPostCode
+ * getFragments
+ * 
+ * checkPostCode
+ * 
+ * makeOSPCFragment
+ * 
+ * makeVCardFragment
  * 
  * saveRDF
  * 
@@ -1797,91 +1986,229 @@ LinkedGov.measurementsWizard = {
 LinkedGov.addressWizard = {
 
 		/*
-		 * Regex obtained from Wikipedia (inc link).
+		 * Regex obtained from Wikipedia:
+		 * http://en.wikipedia.org/wiki/Postcodes_in_the_United_Kingdom#Validation
 		 * 
 		 * Modified to account for a space in the middle of postcodes:
 		 * "Z]?{0" to "Z]? {0".
 		 */
 		vars: {
 			elmts:{},
-			postCodeRegex:"[A-Z]{1,2}[0-9R][0-9A-Z]? {0,1}[0-9][ABD-HJLNP-UW-Z]{2}/)[1]"
-		},
-
-		initialise: function(elmts){
-			var self = this;
-			self.vars.elmts = elmts;
-			self.extractPostCode();
+			postCodeRegex:"[A-Z]{1,2}[0-9R][0-9A-Z]? {0,1}[0-9][ABD-HJLNP-UW-Z]{2}",
+			fragmentsToColumns:[]
 		},
 
 		/*
+		 * 
+		 */
+		initialise: function(elmts){
+
+			var self = this;
+			self.vars.elmts = elmts;
+
+			/*
+			 * Build the fragment/column array and check if a 
+			 * postcode has been selected, in which case perform 
+			 * a regex match to verify.
+			 */
+			self.vars.fragmentsToColumns = self.getFragments();
+
+			log('self.vars.fragmentsToColumns:');
+			log(self.vars.fragmentsToColumns);
+
+			for(var i=0;i<self.vars.fragmentsToColumns.length;i++){
+				log(self.vars.fragmentsToColumns[i]);
+				if(self.vars.fragmentsToColumns[i].type == "postcode"){
+					self.checkPostCode(self.vars.fragmentsToColumns[i].name,function(){
+						self.saveRDF();
+					});
+				}
+			}
+
+		},
+
+		/*
+		 * getFragments
+		 * 
+		 * Creates an array of fragment/column name objects.
+		 */
+		getFragments:function(){
+
+			log("getFragments");
+
+			var self = this;
+			var array = [];
+
+			/*
+			 * If there are columns that have been selected
+			 */
+			if($(self.vars.elmts.addressColumns).children("li").length > 0){
+				$(self.vars.elmts.addressColumns).children("li").each(function(){
+					var el = $(this);
+					/*
+					 * Skip any columns that have been removed
+					 */
+					if(!$(this).hasClass("skip")){
+						array.push({
+							type:el.find("select").val(),
+							name:el.find("span.col").html()
+						});
+					}
+				});
+
+				return array;
+			} else {
+				return array;
+			}
+		},
+
+
+		/*
+		 * checkPostCode
+		 * 
 		 * Asks the user for a new column name (to name the column with the newly 
 		 * extracted postcode) and creates a new column based on extracting the 
 		 * postcode from the column the user has selected.
 		 * 
 		 */
-		extractPostCode: function(){
+		checkPostCode: function(postCodeCol,callback){
+
+			//log("checkPostCode");
+			//log("postCodeCol:");
+			//log(postCodeCol);
 
 			var self = this;
 			var elmts = this.vars.elmts;
 
-			var colName = window.prompt("New column name:", "");
+			var colName = window.prompt("Enter a new postcode column name:", "");
 
 			/*
-			 * Loop through the columns the user has selected and create a 
-			 * new column using the regular expression for matching postcodes.
+			 * The expression ends with "[1]" so we grab the middle element
+			 * (the postcode value) of the returned 3-part regex result.
 			 */
-			$(elmts.addressColumns).children().each(function () {
-
-				Refine.postCoreProcess("add-column", {
-					baseColumnName: $(this).children("span.col").html(),
-					expression: "partition(value,/"+self.vars.postCodeRegex+"",
-					newColumnName: colName,
-					columnInsertIndex: theProject.columnModel.columns.length + "",
-					onError: "keep-original"
-				}, null, {
-					modelsChanged: true
-				}, {
-					onDone:function(){
-						self.saveRDF(colName);
+			Refine.postCoreProcess("add-column", {
+				baseColumnName: postCodeCol,
+				expression: "partition(value,/"+self.vars.postCodeRegex+"/)[1]",
+				newColumnName: colName,
+				columnInsertIndex: Refine.columnNameToColumnIndex(postCodeCol)+1,
+				onError: "keep-original"
+			}, null, {
+				modelsChanged: true
+			}, {
+				onDone:function(){
+					/*
+					 * Change the "postcode" fragment column to the new 
+					 * postcode column as a result of the regex match
+					 * 
+					 * TODO: This doesn't look like it's working. And the stage
+					 * at which the postcode is corrected should be thought about.
+					 */
+					for(var i=0;i<self.vars.fragmentsToColumns;i++){
+						if(fragmentsToColumns[i].type == "postcode"){
+							log("fragmentsToColumns[i].name = "+fragmentsToColumns[i].name);
+							fragmentsToColumns[i].name = colName;
+							log("fragmentsToColumns[i].name = "+fragmentsToColumns[i].name);
+						}
 					}
-				});		
-
-			});
+					callback();
+				}
+			});	
 
 		},
 
 		/*
-		 * Take the newly created postcode column name as parameter and 
-		 * substitute it into the RDF schema object to post and store the postcode
-		 * RDF.
+		 * saveRDF
+		 * 
+		 * Figures out what address fragments there are to save and saves them.
+		 * 
+		 * The passed 'fragments' object should be in the form of key-value pairs, 
+		 * key = address fragment type
+		 * value = column name
+		 * 
+		 * E.g. {type:street-address,name:col1},{type:city,name:col3}
 		 */
-		saveRDF: function(colName){
+		saveRDF: function(){
+
+			log("saveRDF");
 
 			var self = this;
 			var elmts = this.vars.elmts;
 
-			var prefix = "ospc";
-			var namespaceURI = "http://data.ordnancesurvey.co.uk/ontology/postcode/";
-			var type = "postcode";
+			var fragments = self.vars.fragmentsToColumns;
+			var schemaFragmentArray = [];
 
 			/*
-			 * We want,
-			 * 
-			 * uri = http://data.ordnancesurvey.co.uk/ontology/postcode/postcode
-			 * curie = ospc:postcode
+			 * Store the URIs & namespaces
 			 */
-			var uri = namespaceURI + type;
-			var curie = prefix + ":" + type;
+			var vcardURI = "http://www.w3.org/2006/vcard/ns#";
+			var vcardCURIE = "vcard";
+			var ospcURI = "http://data.ordnancesurvey.co.uk/ontology/postcode/";
+			var ospcCURIE = "ospc";
+			var ospcResourceURI = "http://data.ordnancesurvey.co.uk/id/postcodeunit/";
+
+			var uri, curie = "";
+
+			//log("fragments:");
+			//log(fragments);
+
+			
+			/*
+			 * Loop through the fragments, the type value can be:
+			 * 
+			 * - postcode (make an OSPC RDF fragment)
+			 * - street-address
+			 * - extended-address
+			 * - postal-code
+			 * - locality
+			 * - country-name
+			 */
+			for(var i=0,len=fragments.length;i<len;i++){
+
+				switch(fragments[i].type){
+				case "postcode" :
+					/*
+					 * Create the vCard postcode RDF
+					 */
+					uri = vcardURI+fragments[i].type;
+					curie = vcardCURIE+":"+fragments[i].type;
+					schemaFragmentArray.push(self.makeVCardFragment(fragments[i].name,uri,curie));
+					/*
+					 * Create the OSPC postcode RDF
+					 */
+					uri = ospcURI+fragments[i].type;
+					curie = ospcCURIE+":"+fragments[i].type;
+					schemaFragmentArray.push(self.makeOSPCFragment(fragments[i].name,uri,curie,ospcResourceURI));
+					break;
+				default : 
+					/*
+					 * Create the other vCard address fragments
+					 */
+					uri = vcardURI+fragments[i].type;
+					curie = vcardCURIE+":"+fragments[i].type;
+					schemaFragmentArray.push(self.makeVCardFragment(fragments[i].name,uri,curie));
+
+				}
+			}
 
 			/*
-			 * Setup the possible vCard property mappings to column names
+			 * The RDF plugin's schema object that's posted to the save-rdf-schema 
+			 * process.
 			 * 
+			 * Note the substition of the schemaFragmentArray variable as the last 
+			 * links value for the vCard Address.
 			 * 
+			 * This object declares that :
+			 * - every row in the dataset is a vCard
+			 * - every vCard has an address
+			 * - every address has whatever address fragments the user has said 
+			 * exist in their data.
+			 * - postcodes are stored using the OSPC description, given a resolvable 
+			 * URI and an rdfs:label.
+			 * 
+			 * TODO: Base URI needs to be dynamic.
+			 * TODO: Other URIs should be dynamic.
 			 */
-			// TODO : baseURI needs to be dynamic
-			var streetAddressCol, extendedAddressCol, postcodeCol, localityCol, countryCol = "";
-
-			var jsonObj = {
+			var schemaObj = {
 					"prefixes":[{
 						"name":"rdfs",
 						"uri":"http://www.w3.org/2000/01/rdf-schema#"
@@ -1921,63 +2248,7 @@ LinkedGov.addressWizard = {
 					            	                    		            	  "curie":"vcard:Address"
 					            	                    		              }
 					            	                    		              ],
-					            	                    		              "links":[
-					            	                    		                       {
-					            	                    		                    	   "uri":"http://www.w3.org/2006/vcard/ns#street-address",
-					            	                    		                    	   "curie":"vcard:street-address",
-					            	                    		                    	   "target":{
-					            	                    		                    		   "nodeType":"cell-as-literal",
-					            	                    		                    		   "expression":"value",
-					            	                    		                    		   "columnName":streetAddressCol,
-					            	                    		                    		   "isRowNumberCell":false
-					            	                    		                    	   }
-					            	                    		                       },
-					            	                    		                       {
-					            	                    		                    	   "uri":"http://www.w3.org/2006/vcard/ns#postal-code",
-					            	                    		                    	   "curie":"vcard:postal-code",
-					            	                    		                    	   "target":{
-					            	                    		                    		   "nodeType":"cell-as-literal",
-					            	                    		                    		   "expression":"value",
-					            	                    		                    		   "columnName":postcodeCol,
-					            	                    		                    		   "isRowNumberCell":false
-					            	                    		                    	   }
-					            	                    		                       },
-					            	                    		                       {
-					            	                    		                    	   "uri":"http://www.w3.org/2006/vcard/ns#locality",
-					            	                    		                    	   "curie":"vcard:locality",
-					            	                    		                    	   "target":{
-					            	                    		                    		   "nodeType":"cell-as-literal",
-					            	                    		                    		   "expression":"value",
-					            	                    		                    		   "columnName":localityCol,
-					            	                    		                    		   "isRowNumberCell":false
-					            	                    		                    	   }
-					            	                    		                       },
-					            	                    		                       {
-					            	                    		                    	   "uri":"http://data.ordnancesurvey.co.uk/ontology/postcode/postcode",
-					            	                    		                    	   "curie":"ospc:postcode",
-					            	                    		                    	   "target":{
-					            	                    		                    		   "nodeType":"cell-as-resource",
-					            	                    		                    		   "expression":"\"http://data.ordnancesurvey.co.uk/id/postcodeunit/\"+value.replace(\" \",\"\")",
-					            	                    		                    		   "columnName":postcodeCol,
-					            	                    		                    		   "isRowNumberCell":false,
-					            	                    		                    		   "rdfTypes":[
-
-					            	                    		                    		               ],
-					            	                    		                    		               "links":[
-					            	                    		                    		                        {
-					            	                    		                    		                        	"uri":"http://www.w3.org/2000/01/rdf-schema#label",
-					            	                    		                    		                        	"curie":"rdfs:label",
-					            	                    		                    		                        	"target":{
-					            	                    		                    		                        		"nodeType":"cell-as-literal",
-					            	                    		                    		                        		"expression":"value",
-					            	                    		                    		                        		"columnName":postcodeCol,
-					            	                    		                    		                        		"isRowNumberCell":false
-					            	                    		                    		                        	}
-					            	                    		                    		                        }
-					            	                    		                    		                        ]
-					            	                    		                    	   }
-					            	                    		                       }
-					            	                    		                       ]
+					            	                    		              "links":schemaFragmentArray
 					            	                    	  }
 					            	                      }
 					            	                      ]
@@ -1997,6 +2268,63 @@ LinkedGov.addressWizard = {
 				}
 			});
 
+		},
+
+		/*
+		 * Returns part of the RDF plugin's schema
+		 * for a fragment of a vCard address.
+		 */
+		makeVCardFragment:function(colName,uri,curie){
+			var o = {
+					"uri":uri,
+					"curie":curie,
+					"target":{
+						"nodeType":"cell-as-literal",
+						"expression":"value",
+						"columnName":colName,
+						"isRowNumberCell":false
+					}
+			}
+
+			return o;
+		},
+
+		/*
+		 * Returns part of the RDF plugin's schema
+		 * for a postcode using the OSPC ontology.
+		 * 
+		 *  It has two levels to the object as we also give the postcode
+		 *  a label.
+		 */
+		makeOSPCFragment:function(colName,uri,curie,pcodeURI){
+			
+			var o = {
+					"uri":uri,
+					"curie":curie,
+					"target":{
+						"nodeType":"cell-as-resource",
+						"expression":"\""+pcodeURI+"\"+value.replace(\" \",\"\")",
+						"columnName":colName,
+						"isRowNumberCell":false,
+						"rdfTypes":[
+
+						            ],
+						            "links":[
+						                     {
+						                    	 "uri":"http://www.w3.org/2000/01/rdf-schema#label",
+						                    	 "curie":"rdfs:label",
+						                    	 "target":{
+						                    		 "nodeType":"cell-as-literal",
+						                    		 "expression":"value",
+						                    		 "columnName":colName,
+						                    		 "isRowNumberCell":false
+						                    	 }
+						                     }
+						                     ]
+					}
+			}
+
+			return o;
 		},
 
 		/*
@@ -2047,4 +2375,5 @@ function log(str) {
  */
 $(document).ready(function(){
 	LinkedGov.initialise();
+
 });

@@ -2,13 +2,13 @@
 
 	<a class="wizard-header">Is there a <b>range of columns</b> that could
 		fit into one column of the same type?</a>
-
 	<div class="wizard-body rangeSelect" bind="multipleColumnsBody">
 
 		<div class="selector">
-
+			
+			<!-- 
 			<a class="info">
-				<!-- info -->
+
 			</a> 
 			<span class="note">To select multiple column headings, hold
 				down CTRL (Windows) or Apple (Mac). You can also drag your mouse
@@ -17,6 +17,8 @@
 				Click anywhere in the table to unselect the columns.
 			</span> 
 			<a class="button" id="multipleColumnsSelect">Start Select</a>
+			-->
+			
 			<div class="range">
 				<span>From:</span> <select class="from"></select> <span>To:</span> <select
 					class="to"></select>
@@ -34,7 +36,6 @@
 	
 	<a class="wizard-header">Is there a column with <b>multiple
 			values</b> that could be used as <b>column headers</b>?</a>
-
 	<div class="wizard-body" bind="multipleValuesBody">
 
 		<div class="selector">
@@ -109,11 +110,11 @@
 			</ul>
 		</div>
 
-		<input bind="dateComplicated" type="checkbox" class="complicated" id="date-complicated">
+		<!-- input bind="dateComplicated" type="checkbox" class="complicated" id="date-complicated">
 		<label for="date-complicated">It is a bit more complicated than that</label>
 		<div class="complicated">
 			<ul class="cols-copy column-display" bind="dateColsComplicated"></ul>
-		</div>
+		</div -->
 		
 		<a href="javascript:{}" bind="dateTimeButton" class="button update" title="Update">Update</a>
 	</div>
@@ -149,7 +150,6 @@
 
 	</div>
 	<!-- end measurements wizard -->
-
 
 	<a class="wizard-header">Does the dataset include <b>latitude</b> or <b>longitude</b>
 		or <b>northing</b> or <b>easting</b>?</a>
@@ -189,7 +189,6 @@
 	<!-- end lat long wizard -->
 
 	<a class="wizard-header">Does the dataset include <b>addresses</b>?</a>
-
 	<div class="wizard-body" bind="addressBody">
 
 		<!-- ul class="checkboxes">
@@ -212,19 +211,16 @@
 			</ul>
 		</div>
 
-		<input bind="addressComplicated" type="checkbox" class="complicated" id="address-complicated">
+		<!-- input bind="addressComplicated" type="checkbox" class="complicated" id="address-complicated">
 		<label for="address-complicated"">It is a bit more complicated than that</label>
 		<div class="complicated">
 			<ul class="cols-copy column-display" bind="addressColsComplicated"></ul>
-		</div>
+		</div-->
 		
 		<a href="javascript:{}" bind="addressButton" class="button update"
 			title="Update">Update</a>
 
 	</div>
 	<!-- end address wizard -->
-
-
-
 
 </div>

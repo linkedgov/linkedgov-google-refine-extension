@@ -1,3 +1,43 @@
+body.lg div.quick-tool {
+    background: none repeat scroll 0 0 #F6FF9F;
+    border: 1px solid #CFCFC3;
+    height: 60px;
+    margin-left: -5px;
+    margin-top: 6px;
+    padding: 1px;
+    position: absolute;
+    width: 120px;
+    z-index: 9999;
+}
+body.lg div.quick-tool ul {
+	list-style-type:none;
+}
+body.lg div.quick-tool ul li {
+    background: none repeat scroll 0 0 #FDFFD6;
+    border: 1px solid #EFEFAE;
+    color: #737444;
+    display: inline-block;
+    float: left;
+    font-size: 9px;
+    height: 16px;
+    line-height: 16px;
+    margin: 1px;
+    padding: 5px;
+    text-align: center;
+    width: 46px;
+}
+body.lg div.quick-tool ul li:hover {
+    background: none repeat scroll 0 0 #FEFFFB;
+    border: 1px solid #EFEFAE;
+    color: #737444;
+    cursor:pointer;
+}
+body.lg div.quick-tool ul li:active {
+    background: none repeat scroll 0 0 #FFFFFF;
+    border: 1px solid #EFEFAE;
+    color: #333333;
+    cursor:pointer;
+}
 body.lg div#left-panel div.refine-tabs {
 	visibility:hidden;
 }
@@ -116,14 +156,14 @@ body.lg div.wizard-body ul.column-display li {
     padding-left: 3px;
     vertical-align: middle;
 }
-body.lg div.wizard-body ul.cols-copy li {
+body.lg div.wizard-body ul.fragments li {
 	padding: 2px 0 1px 5px;
 }
 body.lg div.wizard-body ul.column-display li span.col {
     float: left;
     width: 92%;
 }
-body.lg div.wizard-body ul.cols-copy li span.col {
+body.lg div.wizard-body ul.fragments li span.col {
     float: left;
     width: 55%;
 }
@@ -140,9 +180,10 @@ body.lg div.wizard-body ul.column-display li span.remove {
 body.lg div.wizard-body ul.column-display li span.remove:hover {
 }
 body.lg div.wizard-body ul.column-display li.skip {
-	opacity:0.5;
+	/*opacity:0.5;
 	background-color:#EEEEEE;
-	border:1px solid #CCCCCC;	
+	border:1px solid #CCCCCC;*/
+	display:none;	
 }
 body.lg div.wizard-body ul.column-display li select {
     float: right;

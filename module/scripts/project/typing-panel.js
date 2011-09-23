@@ -15,9 +15,6 @@
  * - Interaction handler for the wizards
  * - Interaction for column selection
  * 
- * Notes:
- * 
- * 
  */
 
 /*
@@ -30,6 +27,8 @@ function TypingPanel(div) {
 
 /*
  * Resize function - similar to the other panels
+ * 
+ * TODO: Perhaps use CSS instead of a resize function?
  */
 TypingPanel.prototype.resize = function () {
 	var body = this._div.find(".typing-panel-body");
@@ -73,35 +72,38 @@ TypingPanel.prototype._render = function () {
 	 * "elmts".
 	 */
 	elmts.dateTimeButton.click(function () {
-		self._destroyColumnSelector();
+		self.destroyColumnSelector();
 		LinkedGov.dateTimeWizard.initialise(elmts);
 	});
 
 	elmts.measurementsButton.click(function () {
-		self._destroyColumnSelector();
+		self.destroyColumnSelector();
 		LinkedGov.measurementsWizard.initialise(elmts);
 	});
 
 	elmts.latLongButton.click(function(){
-		self._destroyColumnSelector();
+		self.destroyColumnSelector();
 		LinkedGov.latLongWizard.initialise(elmts);	 
 	});
 
 	elmts.addressButton.click(function () {
-		self._destroyColumnSelector();
+		self.destroyColumnSelector();
 		LinkedGov.addressWizard.initialise(elmts);
 	});
 
 	elmts.multipleColumnsButton.click(function () {
-		self._destroyColumnSelector();
+		self.destroyColumnSelector();
 		LinkedGov.multipleColumnsWizard.initialise(elmts);
 	});
 
 	elmts.multipleValuesButton.click(function () {
-		self._destroyColumnSelector();
+		self.destroyColumnSelector();
 		LinkedGov.multipleValuesWizard.initialise(elmts);
 	});
 
+	/*
+	 * Called similarly to Refine's panels.
+	 */
 	this.resize();
 };
 
@@ -114,14 +116,21 @@ TypingPanel.prototype._render = function () {
  * Also populates the range selector inputs with column names on the 
  * callback of opening up.
  */
-TypingPanel.prototype.wizardInteraction = function(el) {
+TypingPanel.prototype.openWizard = function(el) {
 
+	/*
+	 * If the wizard is already open, close it.
+	 */
 	if ($(el).hasClass("exp")) {
 		$(el).removeClass("exp");
 		$("a.info").hide();
 		$(el).next('div.wizard-body').slideUp(function () {
 			$(this).find("div.selector").children("div.range").hide();
 		});
+		/*
+		 * otherwise, make sure all other wizards are closed and open 
+		 * the one that's just been clicked.
+		 */
 	} else {
 		$("a.info").hide();
 		$('div.wizard-body').slideUp(function () {
@@ -129,18 +138,31 @@ TypingPanel.prototype.wizardInteraction = function(el) {
 		});
 		$('a.wizard-header.exp').removeClass("exp");
 		$(el).next('div.wizard-body').slideDown(function () {
+			// show the info icon
 			$("a.info").show();
-			//populate the select inputs with column headers
+			/*
+			 * If the wizard contains a range selector, retrieve the 
+			 * column header names and populate the select inputs.
+			 */
 			if ($(this).hasClass("rangeSelect")) {
 				$(this).find("div.selector").children("div.range").hide();
 				var columnHeaders = "";
 				var i = 0;
+				/*
+				 * Grab the column names from the data table and present 
+				 * them as <option> elements.
+				 * TODO: Perhaps grab the names from Refine's DOM object 
+				 * instead.
+				 */
 				$("div.column-header-title span.column-header-name").each(function () {
 					if ($(this).html() != "All") {
 						columnHeaders += "<option data-id='" + i + "' value='" + $(this).html() + "'>" + $(this).html() + "</option>";
 						i++;
 					}
 				});
+				/*
+				 * Populate the select inputs with the <option> elements.
+				 */
 				$(this).find("div.selector").children("div.range").children("select").each(function () {
 					$(this).html(columnHeaders);
 					$(this).val($(this).find("option").eq(0).val());
@@ -159,6 +181,7 @@ TypingPanel.prototype.wizardInteraction = function(el) {
 	});	
 }
 
+
 /*
  * columnSelector
  * 
@@ -167,14 +190,14 @@ TypingPanel.prototype.wizardInteraction = function(el) {
  * for the selection actions populate a list in the wizard.
  * 
  */
-TypingPanel.prototype.columnSelector = function(button) {
+TypingPanel.prototype.buttonSelector = function(button) {
 
 	if ($(button).html() == "Start Select") {
 
 		$("div.selector a.button").html("Start Select");
 		$("table.data-table").selectable("destroy");
 		$("table.data-table .column-header").each(function () {
-			$(this).removeClass("ui-selected");
+			$(this).removeClass("ui-selected").removeClass("skip");
 		});
 
 		$(button).parent().parent().children("div.more-complicated").slideUp();
@@ -184,12 +207,34 @@ TypingPanel.prototype.columnSelector = function(button) {
 		$cols = $(button).parent().children("ul.column-display");
 		$cols.html("");
 		$(button).html("End Select");
+
+		var RefineUI = ui;
+
 		$("table.data-table").selectable({
 			filter: 'td.column-header',
 			selected: function (event, ui) {
-				// include 'data-' attributes on <li> here about cell
-				// information
-				$cols.html($cols.html() + "<li><span class='col'>" + $(ui.selected).children().find(".column-header-name").html() + "</span><span class='remove'>X</span></li>").show();
+				if($(ui.selected).children().find(".column-header-name").html() != "All"){
+					var addToList = true;
+					$cols.children("li").children("span.col").each(function(){
+						/*
+						 * Check if column has already been selected.
+						 */
+						if($(this).html() == $(ui.selected).children().find(".column-header-name").html()){
+							addToList = false;
+						}
+					});
+					if(addToList){
+						$cols.html($cols.html() + 
+								"<li>" +
+								"<span class='col'>" + 
+								$(ui.selected).children().find(".column-header-name").html() + 
+								"</span>" + 
+								"<span class='remove'>X</span>" +
+								RefineUI.typingPanel.getFragmentData($cols) +
+						"</li>")
+						.show();
+					}
+				}
 			},
 			unselected: function (event, ui) {
 				// console.log("unselected");
@@ -212,6 +257,8 @@ TypingPanel.prototype.columnSelector = function(button) {
 	}	
 }
 
+
+
 /*
  * rangeSelector
  * 
@@ -222,6 +269,12 @@ TypingPanel.prototype.columnSelector = function(button) {
  * that value in the "To" range select are disabled, and vice versa.
  */
 TypingPanel.prototype.rangeSelector = function(select) {
+
+	$("div.selector a.button").html("Start Select");
+	$("table.data-table").selectable("destroy");
+	$("table.data-table .column-header").each(function () {
+		$(this).removeClass("ui-selected");
+	});
 
 	$cols = $(select).parent().parent().children("ul.column-display");
 	$cols.html("");
@@ -255,11 +308,17 @@ TypingPanel.prototype.rangeSelector = function(select) {
 	}
 
 	$(select).find("option").each(function () {
-		if (parseInt($(this).attr("data-id")) >= parseInt($(this).parent().parent().children("select.from").find("option[value='" + $(this).parent().parent().children("select.from").val() + "']").attr("data-id")) && parseInt($(this).attr("data-id")) <= parseInt($(this).parent().parent().children("select.to").find("option[value='" + $(this).parent().parent().children("select.to").val() + "']").attr("data-id"))) {
+		if (parseInt($(this).attr("data-id")) >= parseInt($(this).parent().parent().children("select.from").find("option[value='" + $(this).parent().parent().children("select.from").val() + "']").attr("data-id")) 
+				&& parseInt($(this).attr("data-id")) <= parseInt($(this).parent().parent().children("select.to").find("option[value='" + $(this).parent().parent().children("select.to").val() + "']").attr("data-id"))) {
 			/*
-			 * Populate the wizards column display
+			 * Populate the wizards column display.
+			 * <li><span>Column Name</span><select>Fragment data</select><span>Remove column</span></li>
 			 */
-			colsHTML += "<li><span class='col'>" + $(this).val() + "</span><span class='remove'>X</span></li>";
+			colsHTML += "<li>" +
+			"<span class='col'>" + $(this).val() + "</span>" +  
+			"<span class='remove'>X</span>" +
+			ui.typingPanel.getFragmentData($cols) +
+			"</li>";
 			/*
 			 * Add jQuery UI's "selected" styles to the column headers in the
 			 * data table.
@@ -283,15 +342,159 @@ TypingPanel.prototype.rangeSelector = function(select) {
  * Destroys the jQuery UI 'selectable' object when a new wizard 
  * is started/finished.
  */
-TypingPanel.prototype._destroyColumnSelector = function() {
+TypingPanel.prototype.destroyColumnSelector = function() {
 	$("div.selector a.button").html("Start Select");
 	$("table.data-table").selectable("destroy");
 	$("table.data-table .column-header").each(function () {
-		$(this).removeClass("ui-selected");
+		$(this).removeClass("ui-selected").removeClass("skip");
 	});	
 }
 
-$(document).ready(function () {
+/*
+ * removeColumn
+ * 
+ * Updates column selector when removing a column
+ */
+TypingPanel.prototype.removeColumn = function(el) {
+
+	/*
+	 * Slide up column, apply "skip" class which has display:none.
+	 * Remove ui-selected from column header.
+	 */
+
+	//if($(el).parent().parent("ul").hasClass("range")){
+	/*
+	 * Check to see if column being removed is the first or last 
+	 * in column selection, in which case it is ok to remove from 
+	 * the range.
+	 */
+	if($(el).parent("li")[0] === $(el).parent().parent("ul").children().eq(0)[0] || $(el).parent("li")[0] == $(el).parent("li").parent("ul").children("li").eq($(el).parent("li").parent("ul").children("li").length-1)[0]){
+		$(el).parent().slideUp(250,function(){$(this).remove();});
+		/*
+		 * Remove the "selected" styling for the removed columns in the data table
+		 */
+		$li_el = $(el).parent("li");
+
+		$("td.column-header div.column-header-title span.column-header-name").each(function(){
+			if($(this).html() == $li_el.find("span.col").html()){
+				$(this).parent().parent("td").removeClass("ui-selected");
+			}
+		});
+	} else {
+		/*
+		 * If the column is within the range, add the class "skip" to 
+		 * the <li> element to hook on to during the wizard.
+		 */
+		if($(el).parent("li").hasClass("skip")){
+			$(el).parent().removeClass("skip");
+			$li_el = $(el).parent("li");
+
+			$("td.column-header div.column-header-title span.column-header-name").each(function(){
+				if($(this).html() == $li_el.find("span.col").html()){
+					$(this).parent().parent("td").addClass("ui-selectee ui-selected");
+				}
+			});
+		} else {			
+			$li_el = $(el).parent("li");
+
+			$li_el.slideUp(250,function(){
+				$(this).addClass("skip");
+			});
+
+			$("td.column-header div.column-header-title span.column-header-name").each(function(){
+				if($(this).html() == $li_el.find("span.col").html()){
+					$(this).parent().parent("td").removeClass("ui-selectee ui-selected");
+				}
+			});	
+		}
+	}
+	//} else {
+	//	$(el).parent().slideUp(250,function(){
+	//		$(this).remove();
+	//	});
+	//}	
+}
+
+/*
+ * getFragmentData
+ * 
+ * Returns the HTML for the select inputs for certain wizards 
+ * if the user is required to map data fragments for columns.
+ */
+TypingPanel.prototype.getFragmentData = function(columnList) {
+
+	var fragmentHTML = "";
+
+	switch (columnList.attr("bind")) {
+	case "dateTimeColumns" :
+		fragmentHTML = 
+			"<select class='date-select'>" + 
+			"<optgroup label='Date'>" + 
+			"<option value='Date1'>Day-Month-Year</option>" +
+			"<option value='Date2'>Month-Year</option>" + 
+			"<option value='Date3'>Day-Month</option>" + 
+			"<option value='Day'>Day</option>" + 
+			"<option value='Month'>Month</option>" + 
+			"<option value='Year'>Year</option>" + 
+			"</optgroup>" + 
+			"<optgroup label='Time'>" +
+			"<option value='Time1'>Hours-Minutes-Seconds</option>" + 
+			"<option value='Time2'>Hours-Minutes</option>" + 
+			"<option value='Time3'>Minutes-Seconds</option>" + 
+			"<option value='Hours'>Hours</option>" + 
+			"<option value='Minutes'>Minutes</option>" + 
+			"<option value='Seconds'>Seconds</option>" + 
+			"</optgroup>" + 
+			"</select>";	
+		/*
+		 * Add the "fragments" class to the list of columns so CSS styles can 
+		 * be applied.
+		 */
+		columnList.addClass("fragments");
+		break;
+	case "addressColumns" :
+		/*fragmentHTML = 
+			"<select class='address-select'>" + 
+			"<option value='House_Flat_number'>House/Flat number</option>" + 
+			"<option value='Street_Road'>Street/Road name</option>" +
+			"<option value='Street_Address'>Street Address</option>" + 
+			"<option value='District'>District</option>" + 
+			"<option value='Suburb'>Suburb</option>" + 
+			"<option value='Region'>Region</option>" + 
+			"<option value='Town'>Town</option>" + 
+			"<option value='City'>City</option>" + 
+			"<option value='County'>County</option>" + 
+			"<option value='Country'>Country</option>" + 
+			"<option value='Postcode'>Postcode</option>" + 
+			"</select>";*/	
+		fragmentHTML = 
+			"<select class='address-select'>" + 
+			"<option value='street-address'>Street Address</option>" + 
+			"<option value='extended-address'>Extended Address</option>" +
+			"<option value='locality'>Locality</option>" + 
+			"<option value='postcode'>Postcode</option>" + 
+			"<option value='country-name'>Country name</option>" + 
+			"</select>";	
+		
+		
+		/*
+		 * Add the "fragments" class to the list of columns so CSS styles can 
+		 * be applied.
+		 */
+		columnList.addClass("fragments");
+		break;
+	default :
+		break;
+	}
+
+	return fragmentHTML;
+
+}
+
+/*
+ * 
+ */
+$(document).ready(function() {
 
 	/*
 	 * Interval set to check when the ui.typingPanelDiv HTML element is created
@@ -320,15 +523,36 @@ $(document).ready(function () {
 			$("div#left-panel div.refine-tabs").css("visibility", "visible");
 
 			clearInterval(interval);
-
 		}
+
 	}, 5);
 
 	/*
-	 * Interaction when clicking on a wizard.
+	 * Interaction when clicking on a wizard header
 	 */
 	$('a.wizard-header').click(function () {
-		ui.typingPanel.wizardInteraction($(this));
+		ui.typingPanel.openWizard($(this));
+	});
+
+	/*
+	 * Interaction for the column selector button
+	 */
+	$("div.selector a.button").click(function () {
+		ui.typingPanel.buttonSelector($(this));
+	});
+
+	/*
+	 * Interaction for the column range select inputs
+	 */
+	$("div.selector div.range select").change(function () {
+		ui.typingPanel.rangeSelector($(this));
+	});
+
+	/*
+	 * 'Remove column' interaction for column lists
+	 */
+	$("ul.column-display li span.remove").live("click",function(){
+		ui.typingPanel.removeColumn($(this));
 	});
 
 	/*
@@ -340,149 +564,4 @@ $(document).ready(function () {
 		$(this).next("span").hide();
 	});
 
-	/*
-	 * Remove column interaction for column lists
-	 */
-	$("ul.column-display li span.remove").live("click",function(){
-		if($(this).parent().parent("ul").hasClass("range")){
-			/*
-			 * Check to see if column being removed is the first or last 
-			 * in column selection, in which case it is ok to remove from 
-			 * the range.
-			 */
-			if($(this).parent("li")[0] === $(this).parent().parent("ul").children().eq(0)[0] || $(this).parent("li")[0] == $(this).parent("li").parent("ul").children("li").eq($(this).parent("li").parent("ul").children("li").length-1)[0]){
-				$(this).parent().slideUp(250,function(){$(this).remove();});
-				/*
-				 * Remove the "selected" styling for the removed columns in the data table
-				 */
-				$li_el = $(this).parent("li");
-				
-				$("td.column-header div.column-header-title span.column-header-name").each(function(){
-					if($(this).html() == $li_el.find("span.col").html()){
-						$(this).parent().parent("td").removeClass("ui-selected").removeClass("skip");
-					}
-				});
-			} else {
-				/*
-				 * If the column is within the range, add the class "skip" to 
-				 * the <li> element to hook on to during the wizard.
-				 */
-				if($(this).parent("li").hasClass("skip")){
-					$(this).parent().removeClass("skip");
-					$li_el = $(this).parent("li");
-					
-					$("td.column-header div.column-header-title span.column-header-name").each(function(){
-						if($(this).html() == $li_el.find("span.col").html()){
-							$(this).parent().parent("td").addClass("ui-selectee ui-selected").removeClass("skip");
-						}
-					});
-				} else {			
-					$(this).parent().addClass("skip");
-					$li_el = $(this).parent("li");
-					
-					$("td.column-header div.column-header-title span.column-header-name").each(function(){
-						if($(this).html() == $li_el.find("span.col").html()){
-							$(this).parent().parent("td").removeClass("ui-selectee ui-selected").addClass("skip");
-						}
-					});	
-				}
-			}
-		} else {
-			$(this).parent().slideUp(250,function(){$(this).remove();});
-		}
-	});
-
-	/*
-	 * Interaction for the column selector button
-	 */
-	$("div.selector a.button").click(function () {
-		ui.typingPanel.columnSelector($(this));
-	});
-
-	/*
-	 * Interaction for the column range select inputs
-	 */
-	$("div.selector div.range select").change(function () {
-		ui.typingPanel.rangeSelector($(this));
-	});
-
-	/*
-	 * "It's more complicated than that" interaction
-	 */
-	$("input.complicated").click(function () {
-
-		var fragmentSelectHTML = "";
-
-		switch($(this).attr("id")){
-
-		case 'date-complicated' :
-			fragmentSelectHTML =  "<select class='date-select'>" + 
-			"<option value='Day'>Day</option>" + 
-			"<option value='Month'>Month</option>" + 
-			"<option value='Year'>Year</option>" + 
-			"<option value='DayMonth'>Day-Month</option>" + 
-			"<option value='MonthYear'>Month-Year</option>" + 
-			"</select>";
-			break;
-
-		case 'address-complicated' : 
-			/*
-				fragmentSelectHTML = "<select class='address-select'>" + 
-			"<option value='House_Flat_number'>House/Flat number</option>" + 
-			"<option value='Street_Road'>Street/Road name</option>" +
-			"<option value='House_and_Street'>House num & Street name</option>" + 
-			"<option value='District'>District</option>" + 
-			"<option value='Suburb'>Suburb</option>" + 
-			"<option value='Region'>Region</option>" + 
-			"<option value='Town'>Town</option>" + 
-			"<option value='City'>City</option>" + 
-			"<option value='County'>County</option>" + 
-			"<option value='Country'>Country</option>" + 
-			"<option value='Postcode'>Postcode</option>" + 
-			"</select>";
-			 */
-
-			fragmentSelectHTML = "<select class='address-select'>" + 
-			"<option value='House_Flat_number'>House/Flat number</option>" + 
-			"<option value='Street_Road'>Street/Road name</option>" +
-			"<option value='Street_Address'>Street Address</option>" + 
-			"<option value='District'>District</option>" + 
-			"<option value='Suburb'>Suburb</option>" + 
-			"<option value='Region'>Region</option>" + 
-			"<option value='Town'>Town</option>" + 
-			"<option value='City'>City</option>" + 
-			"<option value='County'>County</option>" + 
-			"<option value='Country'>Country</option>" + 
-			"<option value='Postcode'>Postcode</option>" + 
-			"</select>";
-
-			break;
-
-		default:
-			break;
-
-		}
-
-		$colscopy = $(this).parent().children("div.complicated").children("ul.cols-copy");
-
-		$("div.selector a.button").html("Start Select");
-		$("table.data-table").selectable("destroy");
-		$("table.data-table .column-header").each(function () {
-			$(this).removeClass("ui-selected");
-		});
-
-		$colscopy.html($(this).parent().children("div.selector").children("ul.column-display").html());
-
-		$colscopy.children("li").each(function () {
-			$(this).html($(this).html() + fragmentSelectHTML);
-		});
-
-		if (!$(this).attr("checked")) {
-			$(this).parent().children("div.complicated").slideUp();
-			$(this).parent().children("div.selector").children("ul.column-display").slideDown();
-		} else {
-			$(this).parent().children("div.complicated").slideDown();
-			$(this).parent().children("div.selector").children("ul.column-display").slideUp();
-		}
-	});
 });
