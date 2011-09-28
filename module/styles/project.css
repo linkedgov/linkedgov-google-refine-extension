@@ -68,6 +68,27 @@ body.lg div.wizard-body {
     width: auto;
     display: none;
 }
+body.lg div.wizard-body div.split {
+	display:none;
+    background: none repeat scroll 0 0 #F9F9F9;
+    border: 1px solid #AAAAAA;
+    margin-bottom: 0;
+    margin-top: 5px;
+    padding: 0 10px;
+}
+body.lg div.wizard-body div.split div.selector label {
+    float: left;
+    margin-bottom: 5px;
+    margin-top: 5px;
+    padding-left: 0;
+    width: 219px;
+}
+body.lg div.wizard-body div.split div.selector input.splitCharacter {
+    background-color: #FFFFC8;
+    margin-top: 5px;
+    text-align: center;
+    width: 15px;
+}
 body.lg a.wizard-header {
     background: url("../images/arrow.png") no-repeat scroll 10px 11px #EBEEF8;
     border: 1px solid #BBCCFF;
@@ -117,6 +138,9 @@ body.lg a.info {
     width: 16px;
     display:none;
 }
+body.lg div.split a.info {
+    right: 30px;
+}
 body.lg a.info:hover {
 	cursor:pointer;	
 }
@@ -125,7 +149,6 @@ body.lg div.wizard-body div.selector {
     clear: both;
     margin: 5px 0;
     padding: 10px 0;
-    text-align: center;
 }
 body.lg div.wizard-body div.selector p {
 	padding-bottom: 10px;
@@ -207,8 +230,8 @@ body.lg div.wizard-body input.more-complicated {
 	padding:0px;
 }
 body.lg div.wizard-body a.update {
-	margin-top: 10px;
-	margin-left: 5px;
+margin-left: 0;
+    margin-top: 5px;
 }
 body.lg div.wizard-body div.updateBG {
 	background: none repeat scroll 0 0 #BBCCFF;

@@ -50,7 +50,7 @@ var LinkedGov = {
 		initialise: function() {
 			this.restyle();
 			this.injectTypingPanel();
-			this.quickTools();
+			//this.quickTools();
 		},
 
 		/*
@@ -318,6 +318,33 @@ var LinkedGov = {
 			);
 		},
 
+		/*
+		 * Split a column
+		 */
+		splitColumn:function(colName,separator,callback){
+			
+			var config = {
+					columnName: colName,
+					mode: "separator",
+					separator: separator,
+					guessCellType: true,
+					removeOriginalColumn: true,
+					regex:false,
+					project:theProject.id
+			};
+			
+			$.post(
+					"/command/" + "core" + "/" + "split-column" + "?" + $.param(config),
+					null,
+					function(){
+						Refine.update({modelsChanged:true},function(){
+							callback();	
+						});
+					},
+					"json"
+			);
+		},
+		
 		/*
 		 * Moves a column left or right
 		 */
@@ -691,7 +718,9 @@ LinkedGov.multipleColumnsWizard = {
 					"/command/" + "core" + "/" + "split-column" + "?" + $.param(config),
 					null,
 					function(){
-						self.fillDownColumns(theProject.columnModel.columns,0);					
+						Refine.update({modelsChanged:true},function(){
+							self.fillDownColumns(theProject.columnModel.columns,0);	
+						});
 					},
 					"json"
 			);
@@ -1008,6 +1037,25 @@ LinkedGov.multipleValuesWizard = {
 									 * unique values
 									 */
 									values = data.facets[h].choices.length;
+									
+									/*
+									 * Check that the headersCol's values have the same number of values each, 
+									 * if they don't, then the transpose will not work unless the 'missing' 
+									 * rows are added.
+									 */
+									log(data.facets[h].columnName + '==' + self.vars.headersColName);
+									if(data.facets[h].columnName == self.vars.headersColName){
+										log("here");
+										for(var i=0; i<(values-1); i++){
+											log("i="+i);
+											if(data.facets[h].choices[i].c != data.facets[h].choices[i+1].c){
+												self.vars.abortMessage = "Cannot proceed. There aren't an even number of " +
+														"values in the "+self.vars.headersColName+" column.";
+												self.vars.abortOperation = true;
+											}
+										}
+										
+									}
 								}
 							}
 
@@ -1042,8 +1090,12 @@ LinkedGov.multipleValuesWizard = {
 							 */
 							colHeaders.splice(0,1);
 
-							self.columnCountUniqueValues(colHeaders,colCountObj,callback);
-
+							if(!self.vars.abortOperation){
+								self.columnCountUniqueValues(colHeaders,colCountObj,callback);
+							} else {
+								colHeaders = [];
+								self.onFail();
+							}
 						}
 				);	
 
@@ -1068,6 +1120,8 @@ LinkedGov.multipleValuesWizard = {
 		 */
 		sortColumnsByUniqueValue:function(colCountObj){
 
+			var self = this;
+			
 			//log('colCountObj');
 			//log(colCountObj);
 
@@ -1086,8 +1140,7 @@ LinkedGov.multipleValuesWizard = {
 				}
 			}
 
-			log('Column headers by unique value');
-			log(columnHeadersByUniqueValue);
+			log('Column headers by unique value: '+columnHeadersByUniqueValue);
 
 			self.reorderRows(columnHeadersByUniqueValue);
 		},
@@ -1109,6 +1162,8 @@ LinkedGov.multipleValuesWizard = {
 		 */
 		reorderRows: function(columnHeadersByUniqueValue){
 
+			log("reorderRows");
+			
 			var self = this;
 
 			var sortingObject = {

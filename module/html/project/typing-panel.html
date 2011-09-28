@@ -40,7 +40,7 @@
 
 		<div class="selector">
 			<p>Select the column that has values to be used as headers:</p>
-			<a class="button" id="multipleValuesSelect">Start Select</a>
+			<a class="button selectColumn" id="multipleValuesSelect">Start Select</a>
 			<a class="info"><!-- info --></a> 
 			<span class="note">To select multiple column headings, hold
 				down CTRL (Windows) or Apple (Mac). You can also drag your mouse
@@ -53,7 +53,7 @@
 
 		<div class="selector">
 			<p>Select the column that contains the values/measurements for the new headed columns:</p>
-			<a class="button 2" id="multipleValuesSelect2">Start Select</a>
+			<a class="button 2 selectColumn" id="multipleValuesSelect2">Start Select</a>
 			<a class="info"><!-- info --></a> 
 			<span class="note">To select multiple column headings, hold
 				down CTRL (Windows) or Apple (Mac). You can also drag your mouse
@@ -66,7 +66,7 @@
 
 		<div class="selector">
 			<p>Select any columns that contain values/measurements that do not fit under the new headed columns:</p>
-			<a class="button 3" id="multipleValuesSelect3">Start Select</a>
+			<a class="button 3 selectColumn" id="multipleValuesSelect3">Start Select</a>
 			<a class="info"><!-- info --></a> 
 			<span class="note">To select multiple column headings, hold
 				down CTRL (Windows) or Apple (Mac). You can also drag your mouse
@@ -83,9 +83,9 @@
 	</div>
 	<!-- end multiple value wizard -->
 
-	<a class="wizard-header">Does the dataset include <b>dates</b> or <b>times</b>?</a>
+	<a class="wizard-header">Do any columns contain <b>dates</b> or <b>times</b>?</a>
 	<div class="wizard-body" bind="dateTimeBody">
-
+ 
 		<ul class="checkboxes">
 			<li><input id="dates" type="checkbox" bind="dateCheck" /><label for="dates"
 				title="Select both if a column contains a date and a time">Dates</label>
@@ -95,13 +95,13 @@
 			</li>
 		</ul>
 		<a class="info">
-			<!-- info -->
+			
 		</a> 
 		<span class="note">Select both if a column contains a date and a time</span>
 
-		<div class="selector">
-			<a class="button" id="dateSelect">Start Select</a> 
-				<a class="info"><!-- info --></a>
+		<div class="selector date">
+			<a class="button selectColumn" id="dateSelect">Start Select</a> 
+				<a class="info"></a>
 				<span class="note">To select multiple column headings, hold
 				down CTRL (Windows) or Apple (Mac). You can also drag your mouse
 				across multiple column headers while holding down the relevant key.</span>
@@ -109,6 +109,18 @@
 			<ul class="column-display" bind="dateTimeColumns">
 			</ul>
 		</div>
+		
+		<div class="selector time">
+			<a class="button selectColumn" id="dateSelect">Start Select</a> 
+				<a class="info"></a>
+				<span class="note">To select multiple column headings, hold
+				down CTRL (Windows) or Apple (Mac). You can also drag your mouse
+				across multiple column headers while holding down the relevant key.</span>
+
+			<ul class="column-display" bind="dateTimeColumns">
+			</ul>
+		</div>
+
 
 		<!-- input bind="dateComplicated" type="checkbox" class="complicated" id="date-complicated">
 		<label for="date-complicated">It is a bit more complicated than that</label>
@@ -120,16 +132,12 @@
 	</div>
 	<!--  end date/time wizard -->
 
-	<a class="wizard-header">Does the dataset include <b>measurements</b>?</a>
+	<a class="wizard-header">Do any columns contain a <b>measurement</b>?</a>
 	<div class="wizard-body" bind="measurementsBody">
-		<a class="info">
-			<!-- info -->
-		</a> <span class="note">Search for a measurement</span> <input
-			class="text" id="unitInputField" type="text" autocomplete="on"
-			name="unitInputField" bind="unitInputField" />
-
+	<label for="unitInputField">Search for a measurement:</label>
+		<input class="text" id="unitInputField" type="text" autocomplete="on" name="unitInputField" bind="unitInputField" />
 		<div class="selector">
-			<a class="button" id="measurementSelect">Start Select</a> <a
+			<a class="button selectColumn" id="measurementSelect">Start Select</a> <a
 				class="info">
 				<!-- info -->
 			</a> <span class="note">To select multiple column headings, hold
@@ -140,19 +148,18 @@
 			</ul>
 		</div>
 
-		<ul class="checkboxes">
+		<!-- ul class="checkboxes">
 			<li><input type="checkbox" /><label>It is a bit more
 					complicated than that</label>
 			</li>
-		</ul>
+		</ul -->
 
 		<a href="javascript:{}" bind="measurementsButton" class="button update" title="Update">Update</a>
 
 	</div>
 	<!-- end measurements wizard -->
 
-	<a class="wizard-header">Does the dataset include <b>latitude</b> or <b>longitude</b>
-		or <b>northing</b> or <b>easting</b>?</a>
+	<a class="wizard-header">Do any columns contain <b>latitude</b>, <b>longitude</b>, <b>northing</b> or <b>easting</b> values?</a>
 	<div class="wizard-body" bind="latLongBody">
 
 		<ul class="checkboxes">
@@ -167,7 +174,7 @@
 		</ul>
 
 		<div class="selector">
-			<a class="button" id="latLongSelect">Start Select</a>
+			<a class="button selectColumn" id="latLongSelect">Start Select</a>
 			<a class="info"></a> 
 			<span class="note">To select multiple column headings, hold
 				down CTRL (Windows) or Apple (Mac). You can also drag your mouse
@@ -188,18 +195,39 @@
 	</div>
 	<!-- end lat long wizard -->
 
-	<a class="wizard-header">Does the dataset include <b>addresses</b>?</a>
+	<a class="wizard-header">Do any columns contain parts of or a full <b>address</b>?</a>
 	<div class="wizard-body" bind="addressBody">
+		
+		<input bind="addressSplit" type="checkbox" class="split" id="address-split">
+		<label for="address-split"">Split address</label>
+		<a class="info">
+			<!-- info -->
+		</a> 
+		<span class="note">To properly format an address, the address parts need to exist in their own columns.<br /><br />If a column contains multiple address parts in each cell, e.g. "Street, District, City", you can specify what type of character (",") to split the column by.</span>
+		<div class="split">
+			<div class="selector">
+				<a class="button selectColumn splitter">Start Select</a>
+				<a class="info">
+					<!-- info -->
+				</a> 
+				<span class="note">To select multiple column headings, hold
+					down CTRL (Windows) or Apple (Mac). You can also drag your mouse
+					across multiple column headers while holding down the relevant key.<br />
+				<br />Click anywhere in the table to unselect the columns.</span>
+		
+				<ul class="column-display" bind="splitColumn">
+				</ul>
+				
+				<label for="splitCharacter">What are the parts of the address separated by? (e.g. "," or ";")</label>
+				<input class="splitCharacter" bind="splitCharacter" id="splitCharacter" type="text" />
+				<!-- preview? -->
+				<a class="button splitter-split" id="addressSplit">Split</a>
+			</div>
+		</div>
 
-		<!-- ul class="checkboxes">
-            <li><input type="checkbox" /><label>House/Flat number</label></li>
-            <li><input type="checkbox" /><label>Street/Road name</label></li>
-            <li><input type="checkbox" /><label>Town/City</label></li>
-            <li><input type="checkbox" /><label>Postcode</label></li>
-		</ul -->
 
 		<div class="selector">
-			<a class="button" id="addressSelect">Start Select</a> <a class="info">
+			<a class="button selectColumn" id="addressSelect">Start Select</a> <a class="info">
 				<!-- info -->
 			</a> 
 			<span class="note">To select multiple column headings, hold

@@ -174,7 +174,7 @@ TypingPanel.prototype.openWizard = function(el) {
 		$(el).addClass("exp");
 	}
 
-	$("div.selector a.button").html("Start Select");
+	$("div.selector a.selectColumn").html("Start Select");
 	$("table.data-table").selectable("destroy");
 	$("table.data-table .column-header").each(function () {
 		$(this).removeClass("ui-selected");
@@ -190,19 +190,21 @@ TypingPanel.prototype.openWizard = function(el) {
  * for the selection actions populate a list in the wizard.
  * 
  */
-TypingPanel.prototype.buttonSelector = function(button) {
+TypingPanel.prototype.buttonSelector = function(button, selectType) {
+
+	var mode = selectType || "default";
 
 	if ($(button).html() == "Start Select") {
 
-		$("div.selector a.button").html("Start Select");
+		$("div.selector a.selectColumn").html("Start Select");
 		$("table.data-table").selectable("destroy");
 		$("table.data-table .column-header").each(function () {
 			$(this).removeClass("ui-selected").removeClass("skip");
 		});
 
-		$(button).parent().parent().children("div.more-complicated").slideUp();
-		$(button).parent().parent().children("div.more-complicated").children("ul.cols-copy").html();
-		$(button).parent().parent().children("input.more-complicated").removeAttr("checked");
+		//$(button).parent().parent().children("div.more-complicated").slideUp();
+		//$(button).parent().parent().children("div.more-complicated").children("ul.cols-copy").html();
+		//$(button).parent().parent().children("input.more-complicated").removeAttr("checked");
 
 		$cols = $(button).parent().children("ul.column-display");
 		$cols.html("");
@@ -224,15 +226,28 @@ TypingPanel.prototype.buttonSelector = function(button) {
 						}
 					});
 					if(addToList){
-						$cols.html($cols.html() + 
-								"<li>" +
-								"<span class='col'>" + 
-								$(ui.selected).children().find(".column-header-name").html() + 
-								"</span>" + 
-								"<span class='remove'>X</span>" +
-								RefineUI.typingPanel.getFragmentData($cols) +
-						"</li>")
-						.show();
+						switch(mode){
+						case "default" :
+							$cols.html($cols.html() + 
+									"<li>" +
+									"<span class='col'>" + 
+									$(ui.selected).children().find(".column-header-name").html() + 
+									"</span>" + 
+									"<span class='remove'>X</span>" +
+									RefineUI.typingPanel.getFragmentData($cols) +
+							"</li>")
+							.show();
+							break;
+						case "splitter" :
+							$cols.html(
+									"<li>" +
+									"<span class='col'>" + 
+									$(ui.selected).children().find(".column-header-name").html() + 
+									"</span>" + 
+									"<span class='remove'>X</span>" +
+							"</li>")
+							.show();							
+						}
 					}
 				}
 			},
@@ -249,7 +264,7 @@ TypingPanel.prototype.buttonSelector = function(button) {
 			}
 		});
 	} else {
-		$("div.selector a.button").html("Start Select");
+		$("div.selector a.selectColumn").html("Start Select");
 		$("table.data-table").selectable("destroy");
 		$("table.data-table .column-header").each(function () {
 			$(this).removeClass("ui-selected");
@@ -270,7 +285,7 @@ TypingPanel.prototype.buttonSelector = function(button) {
  */
 TypingPanel.prototype.rangeSelector = function(select) {
 
-	$("div.selector a.button").html("Start Select");
+	$("div.selector a.selectColumn").html("Start Select");
 	$("table.data-table").selectable("destroy");
 	$("table.data-table .column-header").each(function () {
 		$(this).removeClass("ui-selected");
@@ -343,7 +358,7 @@ TypingPanel.prototype.rangeSelector = function(select) {
  * is started/finished.
  */
 TypingPanel.prototype.destroyColumnSelector = function() {
-	$("div.selector a.button").html("Start Select");
+	$("div.selector a.selectColumn").html("Start Select");
 	$("table.data-table").selectable("destroy");
 	$("table.data-table .column-header").each(function () {
 		$(this).removeClass("ui-selected").removeClass("skip");
@@ -475,8 +490,8 @@ TypingPanel.prototype.getFragmentData = function(columnList) {
 			"<option value='postcode'>Postcode</option>" + 
 			"<option value='country-name'>Country name</option>" + 
 			"</select>";	
-		
-		
+
+
 		/*
 		 * Add the "fragments" class to the list of columns so CSS styles can 
 		 * be applied.
@@ -535,10 +550,39 @@ $(document).ready(function() {
 	});
 
 	/*
-	 * Interaction for the column selector button
+	 * Interaction for the column selector button. 
+	 * 
+	 * Slight differences with how the select input is displayed 
+	 * depends on what type of "mode" is passed as a parameter.
+	 * 
+	 * Modes:
+	 * default - produces column list with select inputs for fragments
+	 * splitter - produces a single column with no select inputs for fragments
+	 * 
 	 */
-	$("div.selector a.button").click(function () {
-		ui.typingPanel.buttonSelector($(this));
+	$("div.selector a.selectColumn").click(function () {
+		if($(this).hasClass("splitter")){
+			ui.typingPanel.buttonSelector($(this),"splitter");			
+		} else {
+			ui.typingPanel.buttonSelector($(this),"default");			
+		}
+	});
+
+	/*
+	 * Interaction for "split" button in address wizard.
+	 */
+	$("div.selector a.splitter-split").click(function(){
+		var name = $(this).parent().children("ul.column-display").children("li").eq(0).children("span.col").html();
+		var separator = $(this).parent().children("input.splitCharacter").val();
+		
+		if(separator.length < 1 || name.length < 1){
+			alert("You need to make sure you have selected a column to split and entered a character to split by.");
+		} else {
+			LinkedGov.splitColumn(name,separator,function(){
+				$("input.split").removeAttr("checked");
+				$("div.split").hide();
+			});
+		}
 	});
 
 	/*
@@ -546,6 +590,14 @@ $(document).ready(function() {
 	 */
 	$("div.selector div.range select").change(function () {
 		ui.typingPanel.rangeSelector($(this));
+	});
+
+	$('div.wizard-body input.split').change(function(){
+		if($(this).attr("checked")){
+			$(this).parent().children("div.split").slideDown();
+		} else {
+			$(this).parent().children("div.split").slideUp();
+		}
 	});
 
 	/*
