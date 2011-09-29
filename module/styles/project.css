@@ -1,42 +1,36 @@
+body.lg td.column-header.typed {
+	background:url("../images/rdf-small.png") no-repeat scroll right center transparent;
+}
 body.lg div.quick-tool {
-    background: none repeat scroll 0 0 #F6FF9F;
-    border: 1px solid #CFCFC3;
-    height: 60px;
-    margin-left: -5px;
-    margin-top: 6px;
+    background: none repeat scroll 0 0 #FFFFFF;
+    border-color: #B5B5B5 #777777 #777777 #B5B5B5;
+    border-style: solid;
+    border-width: 1px;
+    font-size: 1.1em;
+    font-weight: normal;
+    margin-left: 0;
+    margin-top: 1px;
     padding: 1px;
     position: absolute;
-    width: 120px;
+    width: 80px;
     z-index: 9999;
 }
 body.lg div.quick-tool ul {
 	list-style-type:none;
 }
 body.lg div.quick-tool ul li {
-    background: none repeat scroll 0 0 #FDFFD6;
-    border: 1px solid #EFEFAE;
-    color: #737444;
+    cursor: pointer;
     display: inline-block;
     float: left;
-    font-size: 9px;
-    height: 16px;
-    line-height: 16px;
     margin: 1px;
     padding: 5px;
-    text-align: center;
-    width: 46px;
+    width: 68px;
 }
 body.lg div.quick-tool ul li:hover {
-    background: none repeat scroll 0 0 #FEFFFB;
-    border: 1px solid #EFEFAE;
-    color: #737444;
-    cursor:pointer;
+    background: none repeat scroll 0 0 #DBE8F8;
 }
 body.lg div.quick-tool ul li:active {
-    background: none repeat scroll 0 0 #FFFFFF;
-    border: 1px solid #EFEFAE;
-    color: #333333;
-    cursor:pointer;
+    /*background: none repeat scroll 0 0 #FFFFFF;*/
 }
 body.lg div#left-panel div.refine-tabs {
 	visibility:hidden;
@@ -239,11 +233,19 @@ body.lg div.wizard-body div.updateBG {
     padding: 5px 10px 5px 5px;
     text-align: right;
 }
-body.lg input#unitInputField {
-	 width: 88%;
+body.lg div.wizard-body div.measurementSearch {
+	
+}
+body.lg div.wizard-body div.measurementSearch label {
+    display: block;
+    margin-bottom: 5px;
+    padding: 0;
+}
+body.lg div.wizard-body div.measurementSearch input#unitInputField {
+	width: 208px;
 }
 body.lg .fbs-pane {
-     width: 238px
+     width: 210px;
 }
 body.lg div.rangeSelect div.range {
 	text-align:left;

@@ -253,14 +253,14 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 			},
 			unselected: function (event, ui) {
 				// console.log("unselected");
-				$cols.html("").hide();
+				$cols.html("");
 			},
 			selecting: function (event, ui) {
 				// console.log("selecting");
 			},
 			unselecting: function (event, ui) {
 				// console.log("unselecting");
-				$cols.html("").hide();
+				$cols.html("");
 			}
 		});
 	} else {
@@ -461,11 +461,7 @@ TypingPanel.prototype.getFragmentData = function(columnList) {
 			"<option value='Seconds'>Seconds</option>" + 
 			"</optgroup>" + 
 			"</select>";	
-		/*
-		 * Add the "fragments" class to the list of columns so CSS styles can 
-		 * be applied.
-		 */
-		columnList.addClass("fragments");
+
 		break;
 	case "addressColumns" :
 		/*fragmentHTML = 
@@ -491,17 +487,28 @@ TypingPanel.prototype.getFragmentData = function(columnList) {
 			"<option value='country-name'>Country name</option>" + 
 			"</select>";	
 
+		break;
+	case "latLongColumns" :
 
-		/*
-		 * Add the "fragments" class to the list of columns so CSS styles can 
-		 * be applied.
-		 */
-		columnList.addClass("fragments");
+		fragmentHTML = 
+			"<select class='latlong-select'>" + 
+			"<option value='lat'>Latitude</option>" + 
+			"<option value='long'>Longitude</option>" +
+			"<option value='northing'>Northing</option>" + 
+			"<option value='easting'>Easting</option>" + 
+			"</select>";	
+
 		break;
 	default :
 		break;
 	}
 
+	/*
+	 * Add the "fragments" class to the list of columns so CSS styles can 
+	 * be applied.
+	 */
+	columnList.addClass("fragments");
+	
 	return fragmentHTML;
 
 }

@@ -134,8 +134,10 @@
 
 	<a class="wizard-header">Do any columns contain a <b>measurement</b>?</a>
 	<div class="wizard-body" bind="measurementsBody">
-	<label for="unitInputField">Search for a measurement:</label>
-		<input class="text" id="unitInputField" type="text" autocomplete="on" name="unitInputField" bind="unitInputField" />
+		<div class="measurementSearch">
+			<label for="unitInputField">Search for a measurement:</label>
+			<input class="text" id="unitInputField" type="text" autocomplete="on" name="unitInputField" bind="unitInputField" />
+		</div>
 		<div class="selector">
 			<a class="button selectColumn" id="measurementSelect">Start Select</a> <a
 				class="info">
@@ -162,7 +164,7 @@
 	<a class="wizard-header">Do any columns contain <b>latitude</b>, <b>longitude</b>, <b>northing</b> or <b>easting</b> values?</a>
 	<div class="wizard-body" bind="latLongBody">
 
-		<ul class="checkboxes">
+		<!-- ul class="checkboxes">
 			<li><input type="checkbox" /><label>Latitude</label>
 			</li>
 			<li><input type="checkbox" /><label>Longitude</label>
@@ -171,7 +173,7 @@
 			</li>
 			<li><input type="checkbox" /><label>Easting</label>
 			</li>
-		</ul>
+		</ul -->
 
 		<div class="selector">
 			<a class="button selectColumn" id="latLongSelect">Start Select</a>
@@ -185,12 +187,7 @@
 			</ul>
 		</div>
 
-		<span class="note">Select the format</span> 
-		<a class="info"><!-- info --></a> 
-		<select class="select">
-			<option>Lat, Long</option>
-			<option>Long, Lat</option>
-		</select> <a href="javascript:{}" bind="latLongButton" class="button update" title="Update">Update</a>
+		<a href="javascript:{}" bind="latLongButton" class="button update" title="Update">Update</a>
 
 	</div>
 	<!-- end lat long wizard -->

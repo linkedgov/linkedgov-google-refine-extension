@@ -50,7 +50,7 @@ var LinkedGov = {
 		initialise: function() {
 			this.restyle();
 			this.injectTypingPanel();
-			//this.quickTools();
+			this.quickTools();
 		},
 
 		/*
@@ -1860,6 +1860,13 @@ LinkedGov.dateTimeWizard = {
 			return expression;
 
 		},
+		
+		/*
+		 * Saves the finialised date format in RDF.
+		 */
+		saveRDF:function(){
+			//Add typed class to column header
+		},
 
 		/*
 		 * Returns the wizard to its original state
@@ -2005,6 +2012,7 @@ LinkedGov.measurementsWizard = {
 		onComplete:function(){
 			var self = this;
 			LinkedGov.resetWizard(self.vars.elmts.measurementsBody);
+			//Add typed class to column header
 		}
 
 };
@@ -2135,7 +2143,7 @@ LinkedGov.addressWizard = {
 			var self = this;
 			var elmts = this.vars.elmts;
 
-			var colName = window.prompt("Enter a new postcode column name:", "");
+			//var colName = window.prompt("Enter a new postcode column name:", "");
 
 			/*
 			 * The expression ends with "[1]" so we grab the middle element
@@ -2144,28 +2152,57 @@ LinkedGov.addressWizard = {
 			Refine.postCoreProcess("add-column", {
 				baseColumnName: postCodeCol,
 				expression: "partition(value,/"+self.vars.postCodeRegex+"/)[1]",
-				newColumnName: colName,
+				newColumnName: postCodeCol+" LG",
 				columnInsertIndex: Refine.columnNameToColumnIndex(postCodeCol)+1,
 				onError: "keep-original"
 			}, null, {
 				modelsChanged: true
 			}, {
 				onDone:function(){
-					/*
-					 * Change the "postcode" fragment column to the new 
-					 * postcode column as a result of the regex match
-					 * 
-					 * TODO: This doesn't look like it's working. And the stage
-					 * at which the postcode is corrected should be thought about.
-					 */
-					for(var i=0;i<self.vars.fragmentsToColumns;i++){
-						if(fragmentsToColumns[i].type == "postcode"){
-							log("fragmentsToColumns[i].name = "+fragmentsToColumns[i].name);
-							fragmentsToColumns[i].name = colName;
-							log("fragmentsToColumns[i].name = "+fragmentsToColumns[i].name);
-						}
-					}
-					callback();
+					
+					// Remove the old postcode column
+					$.post(
+							"/command/" + "core" + "/" + "remove-column" + "?" + $.param({
+								columnName: postCodeCol,
+								project: theProject.id
+							}),
+							null,
+							function(){
+								
+								// Rename new column to old column name
+								$.post(
+										"/command/" + "core" + "/" + "rename-column" + "?" + $.param({
+											oldColumnName: postCodeCol+" LG",
+											newColumnName: postCodeCol,
+											project: theProject.id
+										}),
+										null,
+										function(){
+											/*
+											 * Change the "postcode" fragment column to the new 
+											 * postcode column as a result of the regex match
+											 * 
+											 * TODO: This doesn't look like it's working. And the stage
+											 * at which the postcode is corrected should be thought about.
+											 */
+											/*
+											for(var i=0;i<self.vars.fragmentsToColumns;i++){
+												if(fragmentsToColumns[i].type == "postcode"){
+													log("fragmentsToColumns[i].name = "+fragmentsToColumns[i].name);
+													fragmentsToColumns[i].name = colName;
+													log("fragmentsToColumns[i].name = "+fragmentsToColumns[i].name);
+												}
+											}
+											*/
+											callback();															
+										},
+										"json"
+								);		
+							},
+							"json"
+					);
+					
+
 				}
 			});	
 
@@ -2315,11 +2352,11 @@ LinkedGov.addressWizard = {
 			 * Save the RDF.
 			 */
 			Refine.postProcess("rdf-extension", "save-rdf-schema", {}, {
-				schema: JSON.stringify(jsonObj)
+				schema: JSON.stringify(schemaObj)
 			}, {}, {
 				onDone: function () {
 					//DialogSystem.dismissUntil(self._level - 1);
-					theProject.overlayModels.rdfSchema = jsonObj;
+					theProject.overlayModels.rdfSchema = schemaObj;
 				}
 			});
 
@@ -2388,6 +2425,461 @@ LinkedGov.addressWizard = {
 		onComplete:function(){
 			var self = this;
 			LinkedGov.resetWizard(self.vars.elmts.addressBody);
+			//Add typed class to column headers
+		}
+};
+
+
+
+/*
+ * latLongWizard
+ * 
+ * The address wizard helps to clean up addresses, with 
+ * the postcode being the highest priority.
+ * 
+ * A user is able to select one column containing a full address, 
+ * in which case, a regular expression is used to separate the 
+ * different parts of the address into separate columns, so types 
+ * can be applied to those columns.
+ * 
+ * The user is also able to select multiple columns that contain 
+ * fragments of an address, in which case typing is applied to the 
+ * columns.
+ * 
+ * initialise 
+ * 
+ * getFragments
+ * 
+ * makeFragmentRDF
+ * 
+ * saveRDF
+ * 
+ * 
+ */
+LinkedGov.latLongWizard = {
+
+
+		vars: {
+			elmts:{},
+			fragmentsToColumns:[]
+		},
+
+		/*
+		 * 
+		 */
+		initialise: function(elmts){
+
+			var self = this;
+			self.vars.elmts = elmts;
+
+			/*
+			 * Build the fragment/column array and check if a 
+			 * postcode has been selected, in which case perform 
+			 * a regex match to verify.
+			 */
+			self.vars.fragmentsToColumns = self.getFragments();
+
+			log('self.vars.fragmentsToColumns:');
+			log(self.vars.fragmentsToColumns);
+			
+			self.saveRDF();
+
+		},
+
+		/*
+		 * getFragments
+		 * 
+		 * Creates an array of fragment/column name objects.
+		 */
+		getFragments:function(){
+
+			log("getFragments");
+
+			var self = this;
+			var array = [];
+
+			/*
+			 * If there are columns that have been selected
+			 */
+			if($(self.vars.elmts.latLongColumns).children("li").length > 0){
+				$(self.vars.elmts.latLongColumns).children("li").each(function(){
+					var el = $(this);
+					/*
+					 * Skip any columns that have been removed
+					 */
+					if(!$(this).hasClass("skip")){
+						array.push({
+							type:el.find("select").val(),
+							name:el.find("span.col").html()
+						});
+					}
+				});
+
+				return array;
+			} else {
+				return array;
+			}
+		},
+
+
+
+		/*
+		 * saveRDF
+		 * 
+		 */
+		saveRDF: function(){
+
+			log("saveRDF");
+
+			var self = this;
+			var elmts = this.vars.elmts;
+
+			var fragments = self.vars.fragmentsToColumns;
+			var schemaFragmentArray = [];
+
+			/*
+			 * Store the URIs & namespaces
+			 */
+			var geoURI = "http://www.w3.org/2003/01/geo/wgs84_pos#";
+			var geoCURIE = "geo";
+
+			var spatialrelationsURI = "http://data.ordnancesurvey.co.uk/ontology/spatialrelations/";
+			var spatialrelationsCURIE = "spatialrelations"
+			var uri, curie = "";
+
+			//log("fragments:");
+			//log(fragments);
+			
+			/*
+			 * Loop through the fragments, the type value can be:
+			 * 
+			 * - postcode (make an OSPC RDF fragment)
+			 * - street-address
+			 * - extended-address
+			 * - postal-code
+			 * - locality
+			 * - country-name
+			 */
+			for(var i=0,len=fragments.length;i<len;i++){
+
+				switch(fragments[i].type){
+				case "long" :
+					/*
+					 * Create the longitude RDF
+					 */
+					uri = geoURI+fragments[i].type;
+					curie = geoCURIE+":"+fragments[i].type;
+					schemaFragmentArray.push(self.makeFragmentRDF(fragments[i].name,uri,curie));
+
+					break;
+				case "lat" : 
+					/*
+					 * Create the latitude RDF
+					 */
+					uri = geoURI+fragments[i].type;
+					curie = geoCURIE+":"+fragments[i].type;
+					schemaFragmentArray.push(self.makeFragmentRDF(fragments[i].name,uri,curie));
+
+					break;
+				case "northing" :
+					/*
+					 * Create the northing RDF
+					 */
+					uri = spatialrelationsURI+fragments[i].type;
+					curie = spatialrelationsCURIE+":"+fragments[i].type;
+					schemaFragmentArray.push(self.makeFragmentRDF(fragments[i].name,uri,curie));
+
+					break;
+				case "easting" : 
+					/*
+					 * Create the easting RDF
+					 */
+					uri = spatialrelationsURI+fragments[i].type;
+					curie = spatialrelationsCURIE+":"+fragments[i].type;
+					schemaFragmentArray.push(self.makeFragmentRDF(fragments[i].name,uri,curie));
+
+					break;	
+				default:
+					break;
+				}
+			}
+
+			
+			
+			
+			
+			
+			
+			
+	/*		
+			
+			
+			{
+				   "prefixes":[
+				      {
+				         "name":"rdfs",
+				         "uri":"http://www.w3.org/2000/01/rdf-schema#"
+				      },
+				      {
+				         "name":"ospc",
+				         "uri":"http://data.ordnancesurvey.co.uk/ontology/postcode/"
+				      },
+				      {
+				         "name":"vcard",
+				         "uri":"http://www.w3.org/2006/vcard/ns#"
+				      },
+				      {
+				         "name":"geo",
+				         "uri":"http://www.w3.org/2003/01/geo/wgs84_pos#"
+				      }
+				   ],
+				   "baseUri":"http://localhost:3333/",
+				   "rootNodes":[
+				      {
+				         "nodeType":"cell-as-resource",
+				         "expression":"value",
+				         "isRowNumberCell":true,
+				         "rdfTypes":[
+				            {
+				               "uri":"http://www.w3.org/2006/vcard/ns#VCard",
+				               "curie":"vcard:VCard"
+				            }
+				         ],
+				         "links":[
+				            {
+				               "uri":"http://www.w3.org/2006/vcard/ns#adr",
+				               "curie":"vcard:adr",
+				               "target":{
+				                  "nodeType":"cell-as-resource",
+				                  "expression":"value+\"#address\"",
+				                  "isRowNumberCell":true,
+				                  "rdfTypes":[
+				                     {
+				                        "uri":"http://www.w3.org/2006/vcard/ns#Address",
+				                        "curie":"vcard:Address"
+				                     }
+				                  ],
+				                  "links":[
+				                     {
+				                        "uri":"http://www.w3.org/2006/vcard/ns#postcode",
+				                        "curie":"vcard:postcode",
+				                        "target":{
+				                           "nodeType":"cell-as-literal",
+				                           "expression":"value",
+				                           "columnName":"SCHOOL - POSTCODE",
+				                           "isRowNumberCell":false
+				                        }
+				                     },
+				                     {
+				                        "uri":"http://data.ordnancesurvey.co.uk/ontology/postcode/postcode",
+				                        "curie":"ospc:postcode",
+				                        "target":{
+				                           "nodeType":"cell-as-resource",
+				                           "expression":"\"http://data.ordnancesurvey.co.uk/id/postcodeunit/\"+value.replace(\" \",\"\")",
+				                           "columnName":"SCHOOL - POSTCODE",
+				                           "isRowNumberCell":false,
+				                           "rdfTypes":[
+
+				                           ],
+				                           "links":[
+				                              {
+				                                 "uri":"http://www.w3.org/2000/01/rdf-schema#label",
+				                                 "curie":"rdfs:label",
+				                                 "target":{
+				                                    "nodeType":"cell-as-literal",
+				                                    "expression":"value",
+				                                    "columnName":"SCHOOL - POSTCODE",
+				                                    "isRowNumberCell":false
+				                                 }
+				                              }
+				                           ]
+				                        }
+				                     },
+				                     {
+				                        "uri":"http://www.w3.org/2006/vcard/ns#street-address",
+				                        "curie":"vcard:street-address",
+				                        "target":{
+				                           "nodeType":"cell-as-literal",
+				                           "expression":"value",
+				                           "columnName":"SCHOOL - ADDRESS_1",
+				                           "isRowNumberCell":false
+				                        }
+				                     },
+				                     {
+				                        "uri":"http://www.w3.org/2006/vcard/ns#extended-address",
+				                        "curie":"vcard:extended-address",
+				                        "target":{
+				                           "nodeType":"cell-as-literal",
+				                           "expression":"value",
+				                           "columnName":"SCHOOL - ADDRESS_2",
+				                           "isRowNumberCell":false
+				                        }
+				                     },
+				                     {
+				                        "uri":"http://www.w3.org/2006/vcard/ns#locality",
+				                        "curie":"vcard:locality",
+				                        "target":{
+				                           "nodeType":"cell-as-literal",
+				                           "expression":"value",
+				                           "columnName":"SCHOOL - ADDRESS_3",
+				                           "isRowNumberCell":false
+				                        }
+				                     }
+				                  ]
+				               }
+				            }
+				         ]
+				      },
+				      {
+				         "nodeType":"cell-as-resource",
+				         "expression":"value",
+				         "isRowNumberCell":true,
+				         "rdfTypes":[
+
+				         ],
+				         "links":[
+				            {
+				               "uri":"http://www.w3.org/2003/01/geo/wgs84_pos#location",
+				               "curie":"geo:location",
+				               "target":{
+				                  "nodeType":"cell-as-resource",
+				                  "expression":"value+\"#point\"",
+				                  "isRowNumberCell":true,
+				                  "rdfTypes":[
+				                     {
+				                        "uri":"http://www.w3.org/2003/01/geo/wgs84_pos#Point",
+				                        "curie":"geo:Point"
+				                     }
+				                  ],
+				                  "links":[
+				                     {
+				                        "uri":"http://www.w3.org/2003/01/geo/wgs84_pos#lat",
+				                        "curie":"geo:lat",
+				                        "target":{
+				                           "nodeType":"cell-as-literal",
+				                           "expression":"value",
+				                           "columnName":"SCHOOL - LATTIUDE",
+				                           "isRowNumberCell":false
+				                        }
+				                     },
+				                     {
+				                        "uri":"http://www.w3.org/2003/01/geo/wgs84_pos#long",
+				                        "curie":"geo:long",
+				                        "target":{
+				                           "nodeType":"cell-as-literal",
+				                           "expression":"value",
+				                           "columnName":"SCHOOL - LONGITUDE",
+				                           "isRowNumberCell":false
+				                        }
+				                     }
+				                  ]
+				               }
+				            }
+				         ]
+				      }
+				   ]
+				}		
+			
+			
+			
+			
+			
+			
+			
+		*/	
+			
+			
+			
+			
+			
+			
+			
+			
+			/*
+			 * The RDF plugin's schema object that's posted to the save-rdf-schema 
+			 * process.
+			 * 
+			 * Note the substition of the schemaFragmentArray variable as the last 
+			 * links value for the vCard Address.
+			 * 
+			 * This object declares that :
+			 * - every row in the dataset has a geo:point
+			 * - the point has a latitude, longitude, northing or easting
+			 * 
+			 * TODO: Base URI needs to be dynamic.
+			 * TODO: Other URIs should be dynamic.
+			 */
+
+			var schemaObj = {
+					   "prefixes":[
+					               {
+					                  "name":geoCURIE,
+					                  "uri":geoURI
+					               },
+					               {
+						               "name":spatialrelationsCURIE,
+						               "uri":spatialrelationsURI
+						            }
+					               
+					            ],
+					            "baseUri":"http://localhost:3333/",
+					            "rootNodes":[
+					               {
+					                  "nodeType":"cell-as-resource",
+					                  "expression":"value+\"#point\"",
+					                  "isRowNumberCell":true,
+					                  "rdfTypes":[{
+					                	  "uri":"http://www.w3.org/2003/01/geo/wgs84_pos#Point",
+					                	  "curie":"geo:Point"
+					                  }],
+					                  "links":schemaFragmentArray
+					               }
+					            ]
+					         };
+
+			/*
+			 * Save the RDF.
+			 */
+			Refine.postProcess("rdf-extension", "save-rdf-schema", {}, {
+				schema: JSON.stringify(schemaObj)
+			}, {}, {
+				onDone: function () {
+					//DialogSystem.dismissUntil(self._level - 1);
+					theProject.overlayModels.rdfSchema = schemaObj;
+				}
+			});
+
+		},
+
+		/*
+		 * Returns part of the RDF plugin's schema
+		 * for a fragment of a vCard address.
+		 */
+		makeFragmentRDF:function(colName,uri,curie){
+			
+			var o = {
+                    "uri":uri,
+                    "curie":curie,
+                    "target":{
+                       "nodeType":"cell-as-literal",
+                       "expression":"value",
+                       "columnName":colName,
+                       "isRowNumberCell":false
+                    }
+			};
+	                  
+
+			return o;
+		},
+
+
+		/*
+		 * Return the wizard to its original state.
+		 */
+		onComplete:function(){
+			var self = this;
+			LinkedGov.resetWizard(self.vars.elmts.latLongBody);
+			//Add typed class to column headers
 		}
 };
 
