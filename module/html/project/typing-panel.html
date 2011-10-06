@@ -1,23 +1,30 @@
 <div class="typing-panel-body" bind="bodyDiv">
 
-	<a class="wizard-header" rel="rangecolumns-wizard">Is there a <b>range of columns</b> that could
-		fit into one column of the same type?</a>
+	<a class="wizard-header" rel="rangecolumns-wizard">
+		Are there <span class="highlight">multiple columns</span> that could be placed into a single column of the <span class="highlight">same type</span>?
+		<!-- <span class="help">i</span>  -->
+	</a>
 
-	
-	<a class="wizard-header" rel="multiplevalues-wizard">Is there a column with <b>multiple
-			values</b> that could be used as <b>column headers</b>?</a>
+	<a class="wizard-header" rel="multiplevalues-wizard">
+		Does a column contain <span class="highlight">multiple types (as values)</span> that could be used as columns to store <span class="highlight">existing values</span>?
+		<!--  <span class="help">i</span>  -->
+	</a>
 
-	<a class="wizard-header" rel="datetime-wizard">Do any columns contain <b>dates</b> or <b>times</b>?</a>
+	<a class="wizard-header" rel="datetime-wizard">
+		Do any columns contain <span class="highlight">dates</span> or <span class="highlight">times</span>?
+	</a>
 
+	<a class="wizard-header" rel="measurement-wizard">
+		Do any columns contain a <span class="highlight">measurement</span>?
+	</a>
 
-	<a class="wizard-header" rel="measurement-wizard">Do any columns contain a <b>measurement</b>?</a>
+	<a class="wizard-header" rel="latlong-wizard">
+		Do any columns contain <span class="highlight">latitude</span>, <span class="highlight">longitude</span>, <span class="highlight">northing</span> or <span class="highlight">easting</span> values?
+	</a>
 
-
-	<a class="wizard-header" rel="latlong-wizard">Do any columns contain <b>latitude</b>, <b>longitude</b>, <b>northing</b> or <b>easting</b> values?</a>
-
-
-	<a class="wizard-header" rel="address-wizard">Do any columns contain parts of or a full <b>address</b>?</a>
-
+	<a class="wizard-header" rel="address-wizard">
+		Do any columns contain parts of or a full <span class="highlight">address</span>?
+	</a>
 
 </div> <!-- end typing-panel body -->
 
@@ -29,4 +36,6 @@
 	
 </div>
 
+<div class="update-button"><a class="button update" title="Update">Update</a></div>
+	
 <div class="cancel-button"><a class="button">Return to wizards</a></div>

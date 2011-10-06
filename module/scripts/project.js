@@ -22,12 +22,12 @@
  * often strung together and executed rapidly, resulting in flashes of
  * "updating" and "working" messages while operations are performed. To 
  * avoid this, the function call is skipped when possible and replaced 
- * using the minimal AJAX $.post() function, which doesn't carry with it 
- * any of Refine's UI update functions. This replacement has to be used 
- * carefully though as some operations rely on previous updates being 
- * made (i.e. row-removals and row/column transposes require the 
- * data-table to be updated otherwise successive operations will fail 
- * to realise the old rows/columns have been changed).
+ * using a more silent AJAX call with LinkedGov.silentProcessCall function, 
+ * which doesn't carry with it any of Refine's UI update functions. This 
+ * replacement has to be used carefully though as some operations rely on 
+ * previous updates being made (i.e. row-removals and row/column transposes 
+ * require the data-table to be updated otherwise successive operations 
+ * will fail to realise the old rows/columns have been changed).
  * 
  */
 var LinkedGov = {
@@ -39,12 +39,7 @@ var LinkedGov = {
 			debug:true,
 			separator: "<LG>",
 			nullValue:"<LG_NULL>",
-			blanksSetToNulls:false,
-			rdfSchemaObject:{
-				prefixes:[],
-				baseUri:"http://localhost:3333/",
-				rootNodes:[]
-			}
+			blanksSetToNulls:false
 		},
 
 		/*
@@ -53,26 +48,48 @@ var LinkedGov = {
 		 * Initial styling and injections
 		 */
 		initialise: function() {
+
 			this.restyle();
 			this.injectTypingPanel();
 			this.quickTools();
 			this.wizardProgressMessage();
+			this.applyTypeIcons.init();
 		},
 
-		wizardProgressMessage:function(){
-			$("body").append("<div class='wizardProgressMessage'><div class='overlay'><!-- --></div><p>Wizard in progress...<img src='images/large-spinner.gif' /></p></div>");
+		/*
+		 * restyle
+		 * 
+		 * Any major initial restyling
+		 */
+		restyle: function() {
+			/*
+			 * Giving the body our own class applies our CSS rules.
+			 */
+			$("body").addClass("lg");
+			$("a#app-home-button img").attr("src","extension/linkedgov/images/duck.jpg")
+			.attr("width","35")
+			.css("margin-left","10px")
+			.css("margin-top","-4px");
 		},
 
-		showWizardProgress:function(show){
-			if(show){
-				$('div.wizardProgressMessage').show();
-				$("body").addClass("wizard-progress");
-			}else{
-				$('div.wizardProgressMessage').hide();
-				$("body").removeClass("wizard-progress");
-			}
-		},
+		/*
+		 * injectTypingPanel
+		 * 
+		 * Injects the Typing panel HTML and JS into the page
+		 */
+		injectTypingPanel: function() {
 
+			// Create the Typing tab
+			$(".refine-tabs ul li").eq(0).after('<li><a href="#refine-tabs-typing">Typing</a></li>');
+			// Create the Typing panel div
+			$("div.refine-tabs").append('<div id="refine-tabs-typing" bind="typingPanelDiv"><!-- spacer --></div>');
+			// Load LinkedGov's Typing panel HTML into the div
+			$("div#refine-tabs-typing").html(DOM.loadHTML("linkedgov", "html/project/typing-panel.html"));
+
+			$(window).unbind("resize");
+			$(window).bind("resize",LinkedGov.resizeAll_LG);
+
+		},
 
 		/*
 		 * Initialises the quick tools for column headings.
@@ -151,38 +168,22 @@ var LinkedGov = {
 			});
 
 		},
+		
 
-		/*
-		 * restyle
-		 * 
-		 * Any major initial restyling
-		 */
-		restyle: function() {
-			/*
-			 * Giving the body our own class applies our CSS rules.
-			 */
-			$("body").addClass("lg");
+		wizardProgressMessage:function(){
+			$("body").append("<div class='wizardProgressMessage'><div class='overlay'><!-- --></div><p>Wizard in progress...<img src='images/large-spinner.gif' /></p></div>");
 		},
 
-		/*
-		 * injectTypingPanel
-		 * 
-		 * Injects the Typing panel HTML and JS into the page
-		 */
-		injectTypingPanel: function() {
-
-			// Create the Typing tab
-			$(".refine-tabs ul li").eq(0).after('<li><a href="#refine-tabs-typing">Typing</a></li>');
-			// Create the Typing panel div
-			$("div.refine-tabs").append('<div id="refine-tabs-typing" bind="typingPanelDiv"><!-- spacer --></div>');
-			// Load LinkedGov's Typing panel HTML into the div
-			$("div#refine-tabs-typing").html(DOM.loadHTML("linkedgov", "html/project/typing-panel.html"));
-
-			$(window).unbind("resize");
-			$(window).bind("resize",LinkedGov.resizeAll_LG);
-
+		showWizardProgress:function(show){
+			if(show){
+				$('div.wizardProgressMessage').show();
+				$("body").addClass("wizard-progress");
+			}else{
+				$('div.wizardProgressMessage').hide();
+				$("body").removeClass("wizard-progress");
+			}
 		},
-
+		
 		/*
 		 * 
 		 * resizeAll
@@ -226,21 +227,26 @@ var LinkedGov = {
 		 * Sometimes we will need to adjust this to perform operations.
 		 */
 		setFacetCountLimit: function(n){
-			$.post(
-					"/command/core/set-preference",
-					{
-						name : "ui.browsing.listFacet.limit",
-						value : n
-					},
-					function(o) {
-						if (o.code == "ok") {
-							ui.browsingEngine.update();
-						} else if (o.code == "error") {
-							alert(o.message);
-						}
-					},
-					"json"
-			);			
+
+			LinkedGov.silentProcessCall({
+				type:"POST",
+				url:"/command/" + "core" + "/" + "set-preference",
+				data:{
+					name : "ui.browsing.listFacet.limit",
+					value : n
+				},
+				success:function(o) {
+					if (o.code == "ok") {
+						ui.browsingEngine.update();
+					} else if (o.code == "error") {
+						alert(o.message);
+					}
+				},
+				error:function(){
+					alert("A problem was encountered when setting the facet count limit.");
+				}
+			});
+
 		},
 
 		/*
@@ -278,22 +284,24 @@ var LinkedGov = {
 				 * Post a text-transform process using the isBlank expression, replacing 
 				 * any blanks with our separator.
 				 */
-				$.post(
-						"/command/" + "core" + "/" + "text-transform" + "?" + $.param({
-							columnName: columns[i].name, 
-							expression: expr, 
-							onError: "keep-original",
-							repeat: false,
-							repeatCount: 10,
-							project:theProject.id
-						}),
-						null,
-						function(){
-							i = i+1;
-							self.setBlanksToNulls(toNulls,columns,i,callback);
-						},
-						"json"
-				);
+				LinkedGov.silentProcessCall({
+					type:"POST",
+					url:"/command/" + "core" + "/" + "text-transform",
+					data:{
+						columnName: columns[i].name, 
+						expression: expr, 
+						onError: "keep-original",
+						repeat: false,
+						repeatCount: 10
+					},
+					success:function(){
+						i = i+1;
+						self.setBlanksToNulls(toNulls,columns,i,callback);
+					},
+					error:function(){
+						alert("A problem was encountered when performing a text-transform on the column: \""+columns[i].name+"\".");
+					}
+				});
 
 			} else {
 				log("setBlanksToNulls complete");
@@ -315,31 +323,35 @@ var LinkedGov = {
 		 * Renames a column
 		 */
 		renameColumn:function(oldName,newName,callback){
-			$.post(
-					"/command/" + "core" + "/" + "rename-column" + "?" + $.param({
-						oldColumnName: oldName,
-						newColumnName: newName,
-						project: theProject.id
-					}),
-					null,
-					callback(),
-					"json"
-			);
+			LinkedGov.silentProcessCall({
+				type:"POST",
+				url:"/command/" + "core" + "/" + "rename-column",
+				data:{
+					oldColumnName: oldName,
+					newColumnName: newName
+				},
+				success:callback,
+				error:function(){
+					alert("A problem was encountered when renaming the column: \""+oldName+"\".");
+				}
+			});
 		},
 
 		/*
 		 * Removes a column
 		 */
 		removeColumn:function(colName,callback){
-			$.post(
-					"/command/" + "core" + "/" + "remove-column" + "?" + $.param({
-						columnName: colName,
-						project: theProject.id
-					}),
-					null,
-					callback,
-					"json"
-			);
+			LinkedGov.silentProcessCall({
+				type:"POST",
+				url:"/command/" + "core" + "/" + "remove-column",
+				data:{
+					columnName: colName
+				},
+				success:callback,
+				error:function(){
+					alert("A problem was encountered when removing the column: \""+colName+"\".");
+				}
+			});
 		},
 
 		/*
@@ -347,26 +359,26 @@ var LinkedGov = {
 		 */
 		splitColumn:function(colName,separator,callback){
 
-			var config = {
+			LinkedGov.silentProcessCall({
+				type:"POST",
+				url:"/command/" + "core" + "/" + "split-column",
+				data:{
 					columnName: colName,
 					mode: "separator",
 					separator: separator,
 					guessCellType: true,
 					removeOriginalColumn: true,
-					regex:false,
-					project:theProject.id
-			};
-
-			$.post(
-					"/command/" + "core" + "/" + "split-column" + "?" + $.param(config),
-					null,
-					function(){
-						Refine.update({modelsChanged:true},function(){
-							callback();	
-						});
-					},
-					"json"
-			);
+					regex:false
+				},
+				success:function(){
+					Refine.update({modelsChanged:true},function(){
+						callback();	
+					});
+				},
+				error:function(){
+					alert("A problem was encountered when splitting the column: \""+colName+"\".");
+				}
+			});
 		},
 
 		/*
@@ -375,18 +387,19 @@ var LinkedGov = {
 		moveColumn:function(colName,dir,callback){
 
 			var i = Refine.columnNameToColumnIndex(colName)+(dir == "left" ? -1 : 1);
-			log(i);
 
-			$.post(
-					"/command/" + "core" + "/" + "move-column" + "?" + $.param({
-						columnName:colName,
-						index:i,
-						project:theProject.id
-					}),
-					null,
-					callback,
-					"json"
-			);
+			LinkedGov.silentProcessCall({
+				type:"POST",
+				url:"/command/" + "core" + "/" + "move-column",
+				data:{
+					columnName:colName,
+					index:i
+				},
+				success:callback,
+				error:function(){
+					alert("A problem was encountered when moving the column: \""+colName+"\".");
+				}
+			});
 
 		},
 
@@ -420,6 +433,35 @@ var LinkedGov = {
 
 			// Scroll the top of the wizard into view.
 			//$(wizardBody).parent().scrollTop($(wizardBody).prev("a.wizard-header").offset().top)
+
+		},
+
+		/*
+		 * silentProcessCall
+		 * 
+		 * Performs an AJAX call to a Refine process without incurring a 
+		 * UI update unless specified in the callback.
+		 * 
+		 * This is helpful when stringing together lots of process calls at once,
+		 * where only one UI update is needed to reflect the changes made in the table.
+		 * 
+		 * o = the ajax object
+		 */
+		silentProcessCall: function(o){
+
+			o.type = o.type || "POST";
+			o.dataType = o.dataType || "json";
+			o.url = o.url || "";
+			o.data = o.data || "";			
+			o.success = o.success || {};
+			o.error = o.error || {};
+
+			o.data.project = theProject.id;
+			o.data = $.param(o.data);
+
+			$.ajax(o);
+
+			return false;
 
 		},
 
@@ -628,34 +670,32 @@ LinkedGov.multipleColumnsWizard = {
 
 			var self = this;
 
-			log("reorderColumns");
+			//log("reorderColumns");
 
 			if(self.vars.colsToSkip.length > 0){
 
-				/*
-				 * Post a minimal "move-column" call, moving each skipped 
-				 * column to the start of the column range.
-				 */
-				$.post(
-						"/command/" + "core" + "/" + "move-column" + "?" + $.param({
-							columnName:self.vars.colsToSkip[0],
-							index:colIndex,
-							project:theProject.id
-						}),
-						null,
-						function(){
-							/*
-							 * Increment the index to move the next column to.
-							 * Remove the column that's just been moved from the 
-							 * "colsToSkip" array.
-							 * Recurse.
-							 */
-							colIndex = colIndex+1;
-							self.vars.colsToSkip.splice(0,1);
-							self.reorderColumns(colIndex,callback);
-						},
-						"json"
-				);
+				LinkedGov.silentProcessCall({
+					type:"POST",
+					url:"/command/" + "core" + "/" + "move-column",
+					data:{
+						columnName:self.vars.colsToSkip[0],
+						index:colIndex,
+					},
+					success:function(){
+						/*
+						 * Increment the index to move the next column to.
+						 * Remove the column that's just been moved from the 
+						 * "colsToSkip" array.
+						 * Recurse.
+						 */
+						colIndex = colIndex+1;
+						self.vars.colsToSkip.splice(0,1);
+						self.reorderColumns(colIndex,callback);
+					},
+					error:function(){
+						self.onFail("A problem was encountered when reordering the columns.");
+					}
+				});
 
 			} else {
 				/*
@@ -679,37 +719,37 @@ LinkedGov.multipleColumnsWizard = {
 
 			var self = this;
 
-			var config = {
+			/* 
+			 * Instead of using Refine.postCoreProcess(), we post the transpose 
+			 * process as a more silent "AJAX" call without the default UI update 
+			 * callbacks.
+			 */			
+			LinkedGov.silentProcessCall({
+				type:"POST",
+				url:"/command/" + "core" + "/" + "transpose-columns-into-rows",
+				data:{
 					startColumnName: self.vars.startColName,
 					columnCount: self.vars.colCount,
 					combinedColumnName: self.vars.newColName,
 					prependColumnName: true,
 					separator: LinkedGov.vars.separator,
-					ignoreBlankCells: true,
-					project:theProject.id
-			};
-
-			/* 
-			 * Instead of using Refine.postCoreProcess(), we post the transpose 
-			 * process as a more minimal "AJAX" call without the default UI update 
-			 * callbacks.
-			 */
-			$.post(
-					"/command/" + "core" + "/" + "transpose-columns-into-rows" + "?" + $.param(config),
-					null,
-					function(){
-						/*
-						 * Perform a minimal UI update before calling the 
-						 * next operation.
-						 */
-						Refine.reinitializeProjectData(function(){
-							ui.dataTableView.update(function(){
-								ui.browsingEngine.update(self.splitColumns());
-							});
+					ignoreBlankCells: true
+				},
+				success:function(){
+					/*
+					 * Perform a silent UI update before calling the 
+					 * next operation.
+					 */
+					Refine.reinitializeProjectData(function(){
+						ui.dataTableView.update(function(){
+							ui.browsingEngine.update(self.splitColumns());
 						});
-					},
-					"json"
-			);
+					});
+				},
+				error:function(){
+					self.onFail("A problem was encountered when transposing the columns.");
+				}
+			});
 
 		},
 
@@ -725,32 +765,33 @@ LinkedGov.multipleColumnsWizard = {
 
 			var self = this;
 
-			var config = {
+			/*
+			 * Post a silent "split-column" process call (without the default UI update callbacks).
+			 * 
+			 * After splitting the columns, the transpose has left us with lots of blank cells 
+			 * which need to be filled down.
+			 */
+
+			LinkedGov.silentProcessCall({
+				type:"POST",
+				url:"/command/" + "core" + "/" + "split-column",
+				data:{
 					columnName: self.vars.newColName,
 					mode: "separator",
 					separator: LinkedGov.vars.separator,
 					guessCellType: true,
 					removeOriginalColumn: true,
-					regex:false,
-					project:theProject.id
-			};
-
-			/*
-			 * Post a minimal "split-column" process call (without the default UI update callbacks).
-			 * 
-			 * After splitting the columns, the transpose has left us with lots of blank cells 
-			 * which need to be filled down.
-			 */
-			$.post(
-					"/command/" + "core" + "/" + "split-column" + "?" + $.param(config),
-					null,
-					function(){
-						Refine.update({modelsChanged:true},function(){
-							self.fillDownColumns(theProject.columnModel.columns,0);	
-						});
-					},
-					"json"
-			);
+					regex:false
+				},
+				success:function(){
+					Refine.update({modelsChanged:true},function(){
+						self.fillDownColumns(theProject.columnModel.columns,0);	
+					});
+				},
+				error:function(){
+					self.onFail("A problem was encountered when splitting the columns.");
+				}
+			});
 
 		},
 
@@ -783,18 +824,20 @@ LinkedGov.multipleColumnsWizard = {
 						&& columns[i].name != self.vars.newColName+" 1" 
 						&& columns[i].name != self.vars.newColName+" 2"){
 
-					$.post(
-							"/command/" + "core" + "/" + "fill-down" + "?" + $.param({
-								columnName: columns[i].name,
-								project:theProject.id
-							}),
-							null,
-							function(){
-								i = i+1;
-								self.fillDownColumns(columns,i);
-							},
-							"json"
-					);
+					LinkedGov.silentProcessCall({
+						type:"POST",
+						url:"/command/" + "core" + "/" + "fill-down",
+						data:{
+							columnName: columns[i].name
+						},
+						success:function(){
+							i = i+1;
+							self.fillDownColumns(columns,i);
+						},
+						error:function(){
+							self.onFail("A problem was encountered when filling-down the columns.");
+						}
+					});
 
 				} else {
 					i = i+1;
@@ -826,19 +869,20 @@ LinkedGov.multipleColumnsWizard = {
 				// Refresh the content of the select inputs
 				ui.typingPanel.rangeSelector($(self.vars.elmts.multipleColumnsBody).find("div.range").find("select").eq(0));
 				LinkedGov.resetWizard(self.vars.elmts.multipleColumnsBody);
+				ui.typingPanel.populateRangeSelector();
 				LinkedGov.showWizardProgress(false);
 			});
 
 			return false;
 		},
 
-		onFail:function(){
+		onFail:function(message){
 			var self = this;
 			/*
 			 * Reset any null cells to blanks again, using the "false" flag
 			 */
 			LinkedGov.setBlanksToNulls(false,theProject.columnModel.columns,0,function(){
-				log("Multiple columns wizard failed.");
+				log("Multiple columns wizard failed.\n\n"+message);
 				Refine.update({everythingChanged:true});
 				LinkedGov.resetWizard(self.vars.elmts.multipleColumnsBody);
 				LinkedGov.showWizardProgress(false);
@@ -998,9 +1042,9 @@ LinkedGov.multipleValuesWizard = {
 		/*
 		 * columnCountUniqueValues
 		 * 
-		 * A recursive function that posts a minimal "compute-facet" call to 
+		 * A recursive function that posts a silent "compute-facet" call to 
 		 * retrieve information about the number of unique values in each 
-		 * column. The minimal call avoids any facets being created and removed 
+		 * column. The silent call avoids any facets being created and removed 
 		 * on the screen.
 		 * 
 		 * When done, it passes an array of object key-value pairs containing 
@@ -1043,92 +1087,96 @@ LinkedGov.multipleValuesWizard = {
 						          "mode":"row-based"
 				};
 
-				/*
-				 * Post a minimal call (remembering to include 'theProject' parameter for 
-				 * minimal calls).
-				 */
-				$.post(
-						"/command/core/compute-facets?" + $.param({ project: theProject.id }),
-						{ engine: JSON.stringify(facetParams) },
-						function(data) {
 
-							// Initialise column's unique value count at 0
-							var values = 0;
 
+				LinkedGov.silentProcessCall({
+					type:"POST",
+					url:"/command/" + "core" + "/" + "compute-facets",
+					data:{
+						engine: JSON.stringify(facetParams)
+					},
+					success:function(data) {
+
+						// Initialise column's unique value count at 0
+						var values = 0;
+
+						/*
+						 * Loop through the UI facets
+						 */
+						for(var h=0; h<data.facets.length; h++){
 							/*
-							 * Loop through the UI facets
+							 * If the facet matches the column name and has choices returned
 							 */
-							for(var h=0; h<data.facets.length; h++){
+							if(data.facets[h].columnName == colHeaders[0] && typeof data.facets[h].choices != 'undefined'){
 								/*
-								 * If the facet matches the column name and has choices returned
+								 * Store the number of facets choices as the number of the column's 
+								 * unique values
 								 */
-								if(data.facets[h].columnName == colHeaders[0] && typeof data.facets[h].choices != 'undefined'){
-									/*
-									 * Store the number of facets choices as the number of the column's 
-									 * unique values
-									 */
-									values = data.facets[h].choices.length;
+								values = data.facets[h].choices.length;
 
-									/*
-									 * Check that the headersCol's values have the same number of values each, 
-									 * if they don't, then the transpose will not work unless the 'missing' 
-									 * rows are added.
-									 */
-									log(data.facets[h].columnName + '==' + self.vars.headersColName);
-									if(data.facets[h].columnName == self.vars.headersColName){
-										log("here");
-										for(var i=0; i<(values-1); i++){
-											log("i="+i);
-											if(data.facets[h].choices[i].c != data.facets[h].choices[i+1].c){
-												self.vars.abortMessage = "Cannot proceed. There aren't an even number of " +
-												"values in the "+self.vars.headersColName+" column.";
-												self.vars.abortOperation = true;
-											}
+								/*
+								 * Check that the headersCol's values have the same number of values each, 
+								 * if they don't, then the transpose will not work unless the 'missing' 
+								 * rows are added.
+								 */
+								//log(data.facets[h].columnName + '==' + self.vars.headersColName);
+								if(data.facets[h].columnName == self.vars.headersColName){
+									log("here");
+									for(var i=0; i<(values-1); i++){
+										log("i="+i);
+										if(data.facets[h].choices[i].c != data.facets[h].choices[i+1].c){
+											self.vars.abortMessage = "Cannot proceed. There aren't an even number of " +
+											"values in the "+self.vars.headersColName+" column.";
+											self.vars.abortOperation = true;
 										}
-
 									}
+
 								}
 							}
-
-							/*
-							 * If the "compute-facets" post returns an error because a column has 
-							 * more than 100 unique values in, set the column's unique value count 
-							 * to "9999" (similar to placing the column at the front of the sorting 
-							 * order).
-							 */
-							if(values == 0){
-								values = "9999";
-							}
-
-							/*
-							 * Push the name/unique value count object into 
-							 * an array.
-							 */
-							colCountObj.push({
-								name: colHeaders[0],
-								count: values
-							});
-
-							//log('colHeaders');
-							//log(colHeaders);
-							//log('ans');
-							//log(ans);
-							//log('colHeaders.length');
-							//log(colHeaders.length);
-
-							/*
-							 * Remove the column that's just been used
-							 */
-							colHeaders.splice(0,1);
-
-							if(!self.vars.abortOperation){
-								self.columnCountUniqueValues(colHeaders,colCountObj,callback);
-							} else {
-								colHeaders = [];
-								self.onFail();
-							}
 						}
-				);	
+
+						/*
+						 * If the "compute-facets" post returns an error because a column has 
+						 * more than 100 unique values in, set the column's unique value count 
+						 * to "9999" (similar to placing the column at the front of the sorting 
+						 * order).
+						 */
+						if(values == 0){
+							values = "9999";
+						}
+
+						/*
+						 * Push the name/unique value count object into 
+						 * an array.
+						 */
+						colCountObj.push({
+							name: colHeaders[0],
+							count: values
+						});
+
+						//log('colHeaders');
+						//log(colHeaders);
+						//log('ans');
+						//log(ans);
+						//log('colHeaders.length');
+						//log(colHeaders.length);
+
+						/*
+						 * Remove the column that's just been used
+						 */
+						colHeaders.splice(0,1);
+
+						if(!self.vars.abortOperation){
+							self.columnCountUniqueValues(colHeaders,colCountObj,callback);
+						} else {
+							colHeaders = [];
+							self.onFail("A problem was encountered when computing facets.");
+						}
+					},
+					error:function(){
+						self.onFail("A problem was encountered when computing facets.");
+					}
+				});
 
 			} else {
 				//log("colHeaders length is 0");
@@ -1226,25 +1274,24 @@ LinkedGov.multipleValuesWizard = {
 			log('sortingObject:');
 			log(sortingObject);
 
+
 			/*
-			 * Post a minimal "reorder-rows" call - remembering to include the 'theProject' 
+			 * Post a silent "reorder-rows" call - remembering to include the 'theProject' 
 			 * parameter.
-			 */
-			$.ajax({
+			 */			
+			LinkedGov.silentProcessCall({
+				type:"POST",
 				url:"/command/" + "core" + "/" + "reorder-rows",
-				data:$.param({ 
-					sorting : JSON.stringify(sortingObject), 
-					project: theProject.id 
-				}),
-				dataType:"json",
+				data:{
+					sorting : JSON.stringify(sortingObject)
+				},
 				success:function(){
 					self.multiValueTranspose();
 				},
 				error:function(){
-					self.onFail();
+					self.onFail("A problem was encountered when reordering rows.");
 				}
-
-			});
+			});		
 
 		},
 
@@ -1287,70 +1334,77 @@ LinkedGov.multipleValuesWizard = {
 					          "mode":"row-based"
 			};
 
-			$.post(
-					"/command/core/compute-facets?" + $.param({ project: theProject.id }),
-					{ engine: JSON.stringify(facetParams) },
-					function(data) {
 
-						//log("data");
-						//log(data);
 
-						for(var h=0;h<data.facets.length;h++){
-							if(data.facets[h].columnName == self.vars.headersColName){
-								if(typeof data.facets[h].choices != 'undefined'){
+			LinkedGov.silentProcessCall({
+				type:"POST",
+				url:"/command/" + "core" + "/" + "compute-facets",
+				data:{
+					engine: JSON.stringify(facetParams)
+				},
+				success:function(data) {
 
-									/*
-									 * If there are less than 100 unique values in the column to transpose, 
-									 * store them as column names in an array to use to rename the newly 
-									 * transposed columns.
-									 */
-									for(var i=0;i<data.facets[h].choices.length;i++){
-										self.vars.newHeaders.push(data.facets[h].choices[i].v.l);
-									}
-								} else {
-									/*
-									 * If there are more than 100 unique values in the column to transpose, 
-									 * abort and tell the user they can't proceed with the wizard because they 
-									 * are trying to transpose too many rows to columns.
-									 */
-									log("Aborting multiple values wizard - facet count limit reached.")
-									self.vars.abortOperation = true;
-									self.vars.abortMessage = "There are too many values being transposed. The maximum " +
-									"number of unique values (or rows) to transpose is 100";					
+					//log("data");
+					//log(data);
+
+					for(var h=0;h<data.facets.length;h++){
+						if(data.facets[h].columnName == self.vars.headersColName){
+							if(typeof data.facets[h].choices != 'undefined'){
+
+								/*
+								 * If there are less than 100 unique values in the column to transpose, 
+								 * store them as column names in an array to use to rename the newly 
+								 * transposed columns.
+								 */
+								for(var i=0;i<data.facets[h].choices.length;i++){
+									self.vars.newHeaders.push(data.facets[h].choices[i].v.l);
 								}
+							} else {
+								/*
+								 * If there are more than 100 unique values in the column to transpose, 
+								 * abort and tell the user they can't proceed with the wizard because they 
+								 * are trying to transpose too many rows to columns.
+								 */
+								log("Aborting multiple values wizard - facet count limit reached.")
+								self.vars.abortOperation = true;
 							}
 						}
+					}
 
+					/*
+					 * If there was an issue with using the facet, abort, otherwise continue.
+					 */
+					if(!self.vars.abortOperation){
+						log("transposing...");
 						/*
-						 * If there was an issue with using the facet, abort, otherwise continue.
-						 */
-						if(!self.vars.abortOperation){
-							log("transposing...");
-							/*
-							 * Post a minimal "transpose" call, performing a minor UI update as a callback,
-							 * before proceeding the next operation.
-							 */
-							$.post(
-									"/command/" + "core" + "/" + "transpose-rows-into-columns" + "?" + $.param({
-										columnName:self.vars.valuesColName,
-										rowCount:self.vars.newHeaders.length,
-										project: theProject.id
-									}),
-									null,
-									function(){
-										Refine.update({modelsChanged:true},function(){
-											self.removeBlankRows();				
-										});
-									},
-									"json"
-							);
-						} else {
-							log("failing...");
-							self.onFail();
-						}
-					},
-					"json"
-			);					
+						 * Post a silent "transpose" call, performing a minor UI update as a callback,
+						 * before proceeding the next operation.
+						 */						
+						LinkedGov.silentProcessCall({
+							type:"POST",
+							url:"/command/" + "core" + "/" + "transpose-rows-into-columns",
+							data:{
+								columnName:self.vars.valuesColName,
+								rowCount:self.vars.newHeaders.length
+							},
+							success:function(){
+								Refine.update({modelsChanged:true},function(){
+									self.removeBlankRows();				
+								});
+							},
+							error:function(){
+								self.onFail("A problem was encountered when transposing rows.");
+							}
+						});	
+					} else {
+						self.onFail("A problem was encountered when computing facets.\n\nThere are too many values being transposed. " +
+						"The maximum number of unique values (or rows) to transpose is 100");
+					}
+				},
+				error:function(){
+					self.onFail("A problem was encountered when computing facets.");
+				}
+			});		
 
 		},
 
@@ -1524,35 +1578,38 @@ LinkedGov.multipleValuesWizard = {
 			if(oldNames.length > 0 && newNames.length > 0){
 
 				/*
-				 * Post a minimal "rename" call
+				 * Post a silent "rename" call
 				 */
-				$.post(
-						"/command/" + "core" + "/" + "rename-column" + "?" + $.param({
-							oldColumnName: oldNames[0],
-							newColumnName: newNames[0],
-							project: theProject.id
-						}),
-						null,
-						function(){
-							/*
-							 * Removes the two column names that have just been used from 
-							 * the arrays.
-							 */
-							oldNames.splice(0,1);
-							newNames.splice(0,1);
-							/*
-							 * Check if those were the last values in the arrays,
-							 * if so, proceed to the next operation, otherwise, 
-							 * recurse.
-							 */
-							if(oldNames.length > 0 && newNames.length > 0){
-								self.renameMultipleColumns(oldNames,newNames);
-							} else {
-								self.removeHeadersColumn();
-							}				
-						},
-						"json"
-				);
+				LinkedGov.silentProcessCall({
+					type:"POST",
+					url:"/command/" + "core" + "/" + "rename-column",
+					data:{
+						oldColumnName: oldNames[0],
+						newColumnName: newNames[0]
+					},
+					success:function(){
+						/*
+						 * Removes the two column names that have just been used from 
+						 * the arrays.
+						 */
+						oldNames.splice(0,1);
+						newNames.splice(0,1);
+						/*
+						 * Check if those were the last values in the arrays,
+						 * if so, proceed to the next operation, otherwise, 
+						 * recurse.
+						 */
+						if(oldNames.length > 0 && newNames.length > 0){
+							self.renameMultipleColumns(oldNames,newNames);
+						} else {
+							self.removeHeadersColumn();
+						}				
+					},
+					error:function(){
+						self.onFail("A problem was encountered when renaming the column: \""+oldNames[0]+"\" to \""+newNames[0]+"\".");
+					}
+				});	
+
 			} else {
 				log("No more columns to rename");
 			}
@@ -1571,19 +1628,21 @@ LinkedGov.multipleValuesWizard = {
 			log("removeHeadersColumn");
 
 			/*
-			 * Post a minimal "remove-column" call.
+			 * Post a silent "remove-column" call.
 			 */
-			$.post(
-					"/command/" + "core" + "/" + "remove-column" + "?" + $.param({
-						columnName: self.vars.headersColName,
-						project: theProject.id
-					}),
-					null,
-					function(){
-						self.onComplete();			
-					},
-					"json"
-			);
+			LinkedGov.silentProcessCall({
+				type:"POST",
+				url:"/command/" + "core" + "/" + "remove-column",
+				data:{
+					columnName: self.vars.headersColName
+				},
+				success:function(){
+					self.onComplete();			
+				},
+				error:function(){
+					self.onFail("A problem was encountered when removing the column: \""+self.vars.headersColName+"\".");
+				}
+			});	
 		},
 
 		/*
@@ -1607,11 +1666,10 @@ LinkedGov.multipleValuesWizard = {
 			return false;
 		},
 
-		onFail:function(){
+		onFail:function(message){
 			var self = this;
-			log("onFail");
 			LinkedGov.setBlanksToNulls(false,theProject.columnModel.columns,0,function(){
-				alert("Multiple Values wizard failed. \n\n"+self.vars.abortMessage);
+				alert("Multiple Values wizard failed. \n\n"+message);
 				LinkedGov.resetWizard(self.vars.elmts.multipleValuesBody);	
 				LinkedGov.showWizardProgress(false);
 			});
@@ -1655,10 +1713,11 @@ LinkedGov.dateTimeWizard = {
 
 			log("here");
 			log(elmts);
-			
+
 			var self = this;
 			self.vars.elmts = elmts;
-
+			self.vars.columns = [];
+			self.vars.colFragments = [];
 			LinkedGov.showWizardProgress(true);
 
 			/*
@@ -1976,7 +2035,7 @@ LinkedGov.dateTimeWizard = {
 		 * concatenating those columns in order.
 		 */
 		createNewColumn:function(cols,monthBeforeDay,callback){
-			
+
 			var self = this;
 			var expr = "";
 			var newName = "";
@@ -1997,19 +2056,19 @@ LinkedGov.dateTimeWizard = {
 			}
 
 			try{
-			Refine.postCoreProcess("add-column", {
-				baseColumnName: cols[0],
-				expression: expr,
-				newColumnName: newName,
-				columnInsertIndex: Refine.columnNameToColumnIndex(cols[0])+1,
-				onError: "keep-original"
-			}, null, {
-				modelsChanged: true
-			}, {
-				onDone:function(){
-					callback(newName,monthBeforeDay);
-				}
-			});
+				Refine.postCoreProcess("add-column", {
+					baseColumnName: cols[0],
+					expression: expr,
+					newColumnName: newName,
+					columnInsertIndex: Refine.columnNameToColumnIndex(cols[0])+1,
+					onError: "keep-original"
+				}, null, {
+					modelsChanged: true
+				}, {
+					onDone:function(){
+						callback(newName,monthBeforeDay);
+					}
+				});
 			}catch(e){
 				log("Error: dateTimeWizard: createNewColumn()");
 				log(e);
@@ -2034,28 +2093,31 @@ LinkedGov.dateTimeWizard = {
 		/*
 		 * typeAsXSDDate
 		 * 
-		 * Posts a minimal text-transform process call 
+		 * Posts a silent text-transform process call 
 		 * (i.e. without a noticeable UI update)
 		 */
 		typeAsXSDDate:function(colName,expr){
 
 			var self = this;
 
-			$.post(
-					"/command/" + "core" + "/" + "text-transform" + "?" + $.param({
-						columnName: colName,
-						expression: expr,
-						repeat: false,
-						repeatCount: "",
-						project: theProject.id
-					}),
-					null,
-					function(){
-						Refine.update({cellsChanged:true},function(){
-							self.saveRDF(colName);
-						});
-					}
-			);
+			LinkedGov.silentProcessCall({
+				type:"POST",
+				url:"/command/" + "core" + "/" + "text-transform",
+				data:{
+					columnName: colName,
+					expression: expr,
+					repeat: false,
+					repeatCount: ""
+				},
+				success:function(){
+					Refine.update({cellsChanged:true},function(){
+						self.saveRDF(colName);
+					});
+				},
+				error:function(){
+					self.onFail("A problem was encountered when performing a text transform on the column: \""+colName+"\".");
+				}
+			});	
 
 			return false;
 
@@ -2076,7 +2138,7 @@ LinkedGov.dateTimeWizard = {
 			var timeURI = "http://www.w3.org/2006/time#";
 			var timeCURIE = "time";
 
-			var schema = LinkedGov.vars.rdfSchemaObject;
+			var schema = theProject.overlayModels.rdfSchema;
 
 			/*
 			 * Remove any existing "date" prefixes
@@ -2177,6 +2239,7 @@ LinkedGov.dateTimeWizard = {
 			var self = this;
 			LinkedGov.resetWizard(self.vars.elmts.dateTimeBody);
 			LinkedGov.showWizardProgress(false);
+			LinkedGov.applyTypeIcons.init();
 		}
 
 };
@@ -2207,7 +2270,8 @@ LinkedGov.measurementsWizard = {
 		 * for the measurements wizard panel.
 		 */
 		vars:{
-			elmts:{}
+			elmts:{},
+			cols:[]
 		},
 
 		/*
@@ -2219,10 +2283,16 @@ LinkedGov.measurementsWizard = {
 		 * 
 		 */
 		initialise: function(elmts) {
-			LinkedGov.showWizardProgress(true);
-
 			var self = this;
 			self.vars.elmts = elmts;
+			self.vars.cols = [];
+
+			LinkedGov.showWizardProgress(true);
+
+			$(elmts.measurementsColumns).find("span.col").each(function() {
+				self.vars.cols.push($(this).html());
+			});
+
 			self.saveRDF();
 		},
 
@@ -2236,8 +2306,6 @@ LinkedGov.measurementsWizard = {
 			var self = this;
 			var elmts = self.vars.elmts;
 
-			var prefix = "fb";
-			var namespaceURI = "http://rdf.freebase.com/rdf/";
 
 			/*
 			 * E.g. 
@@ -2250,7 +2318,8 @@ LinkedGov.measurementsWizard = {
 			 * curie = fb:celsius
 			 * 
 			 */
-
+			var prefix = "fb";
+			var namespaceURI = "http://rdf.freebase.com/rdf/";
 			var uri = elmts.unitInputField.data("data.suggest").id;
 
 			// Replacing the "/" with a "." in the returned slug for the measurement to 
@@ -2268,38 +2337,21 @@ LinkedGov.measurementsWizard = {
 			 * for each of them, and store their measurement data in RDF).
 			 */
 
-			var schema = LinkedGov.vars.rdfSchemaObject;
+			var schema = theProject.overlayModels.rdfSchema;
 
-			for(var i=0;i<schema.rootNodes.length;i++){
-				if(schema.rootNodes[i].id == "lat-long"){
-					//log("Found existing lat-long RDF mappings, removing...");
-					schema.rootNodes.splice(i,1);
-					i--;
-				}
-			}
-			for(var i=0;i<schema.prefixes.length;i++){
-				if(schema.prefixes[i].name == geoCURIE || schema.prefixes[i].name == spatialrelationsCURIE){
-					//log("Found existing lat-long RDF prefixes, removing...");
-					schema.prefixes.splice(i,1);
-					i--;
-				}
-			}						
-			$(elmts.measurementsColumns).children().each(function () {
+			var cols = self.vars.cols;
+			for(var i=0;i<cols.length;i++){
 
-				var schema = LinkedGov.vars.rdfSchemaObject;
-
-				for(var i=0;i<schema.rootNodes.length;i++){
-					if(schema.rootNodes[i].id == "measurements-"+$(this).children("span.col").html()){
-						//log("Found existing lat-long RDF mappings, removing...");
-						schema.rootNodes.splice(i,1);
-						i--;
+				for(var j=0;j<schema.rootNodes.length;j++){
+					if(schema.rootNodes[j].id == "measurements-"+cols[i]){
+						schema.rootNodes.splice(j,1);
+						j--;
 					}
 				}
-				for(var i=0;i<schema.prefixes.length;i++){
-					if(schema.prefixes[i].name == prefix){
-						//log("Found existing lat-long RDF prefixes, removing...");
-						schema.prefixes.splice(i,1);
-						i--;
+				for(var j=0;j<schema.prefixes.length;j++){
+					if(schema.prefixes[j].name == prefix){
+						schema.prefixes.splice(j,1);
+						j--;
 					}
 				}			
 
@@ -2308,7 +2360,7 @@ LinkedGov.measurementsWizard = {
 					"uri": namespaceURI
 				});
 				schema.rootNodes.push({
-					"id":"measurements-"+$(this).children("span.col").html(),
+					"id":"measurements-"+cols[i],
 					"nodeType": "cell-as-resource",
 					"expression": "value",
 					"isRowNumberCell": true,
@@ -2320,7 +2372,7 @@ LinkedGov.measurementsWizard = {
 							"nodeType": "cell-as-literal",
 							"expression": "value",
 							"valueType": "http://www.w3.org/2001/XMLSchema#int",
-							"columnName": $(this).children("span.col").html(),
+							"columnName": cols[i],
 							"isRowNumberCell": false
 						}
 					}]
@@ -2339,8 +2391,13 @@ LinkedGov.measurementsWizard = {
 					}
 				});
 
-			});
+			}
 
+		},
+
+
+		onFail:function(message){
+			alert("Measurments wizard failed.\n\n"+message);
 		},
 
 		/*
@@ -2349,8 +2406,8 @@ LinkedGov.measurementsWizard = {
 		onComplete:function(){
 			var self = this;
 			LinkedGov.resetWizard(self.vars.elmts.measurementsBody);
-			//Add typed class to column header
 			LinkedGov.showWizardProgress(false);
+			LinkedGov.applyTypeIcons.init();
 		}
 
 };
@@ -2430,7 +2487,7 @@ LinkedGov.addressWizard = {
 			}
 
 			if(postcodePresent > 0){
-				self.checkPostCode(self.vars.fragmentsToColumns[postcodePresent].name,function(){
+				self.validatePostCode(self.vars.fragmentsToColumns[postcodePresent].name,function(){
 					self.saveRDF();
 				});
 			}else {
@@ -2483,16 +2540,14 @@ LinkedGov.addressWizard = {
 		 * postcode from the column the user has selected.
 		 * 
 		 */
-		checkPostCode: function(postCodeCol,callback){
+		validatePostCode: function(postCodeCol,callback){
 
-			//log("checkPostCode");
+			//log("validatePostCode");
 			//log("postCodeCol:");
 			//log(postCodeCol);
 
 			var self = this;
-			var elmts = this.vars.elmts;
-
-			//var colName = window.prompt("Enter a new postcode column name:", "");
+			var elmts = self.vars.elmts;
 
 			/*
 			 * The expression ends with "[1]" so we grab the middle element
@@ -2510,47 +2565,32 @@ LinkedGov.addressWizard = {
 				onDone:function(){
 
 					// Remove the old postcode column
-					$.post(
-							"/command/" + "core" + "/" + "remove-column" + "?" + $.param({
-								columnName: postCodeCol,
-								project: theProject.id
-							}),
-							null,
-							function(){
+					LinkedGov.silentProcessCall({
+						type:"POST",
+						url:"/command/" + "core" + "/" + "remove-column",
+						data:{
+							columnName: postCodeCol
+						},
+						success:function(){
 
-								// Rename new column to old column name
-								$.post(
-										"/command/" + "core" + "/" + "rename-column" + "?" + $.param({
-											oldColumnName: postCodeCol+" LG",
-											newColumnName: postCodeCol,
-											project: theProject.id
-										}),
-										null,
-										function(){
-											/*
-											 * Change the "postcode" fragment column to the new 
-											 * postcode column as a result of the regex match
-											 * 
-											 * TODO: This doesn't look like it's working. And the stage
-											 * at which the postcode is corrected should be thought about.
-											 */
-											/*
-											for(var i=0;i<self.vars.fragmentsToColumns;i++){
-												if(fragmentsToColumns[i].type == "postcode"){
-													log("fragmentsToColumns[i].name = "+fragmentsToColumns[i].name);
-													fragmentsToColumns[i].name = colName;
-													log("fragmentsToColumns[i].name = "+fragmentsToColumns[i].name);
-												}
-											}
-											 */
-											callback();															
-										},
-										"json"
-								);		
-							},
-							"json"
-					);
-
+							// Rename new column to old column name
+							LinkedGov.silentProcessCall({
+								type:"POST",
+								url:"/command/" + "core" + "/" + "rename-column",
+								data:{
+									oldColumnName: postCodeCol+" LG",
+									newColumnName: postCodeCol
+								},
+								success:callback,
+								error:function(){
+									self.onFail("A problem was encountered when renaming the column: \""+postCodeCol+" LG\".");
+								}
+							});	
+						},
+						error:function(){
+							self.onFail("A problem was encountered when removing the column: \""+postCodeCol+"\".");
+						}
+					});	
 
 				}
 			});	
@@ -2629,8 +2669,9 @@ LinkedGov.addressWizard = {
 					uri = vcardURI+fragments[i].type;
 				curie = vcardCURIE+":"+fragments[i].type;
 				schemaFragmentArray.push(self.makeVCardFragment(fragments[i].name,uri,curie));
-
+				break;
 				}
+
 			}
 
 			/*
@@ -2647,12 +2688,9 @@ LinkedGov.addressWizard = {
 			 * exist in their data.
 			 * - postcodes are stored using the OSPC description, given a resolvable 
 			 * URI and an rdfs:label.
-			 * 
-			 * TODO: Base URI needs to be dynamic.
-			 * TODO: Other URIs should be dynamic.
 			 */
 
-			var schema = LinkedGov.vars.rdfSchemaObject;
+			var schema = theProject.overlayModels.rdfSchema;
 
 			/*
 			 * Remove any existing "address" prefixes
@@ -2790,8 +2828,10 @@ LinkedGov.addressWizard = {
 		onComplete:function(){
 			var self = this;
 			LinkedGov.resetWizard(self.vars.elmts.addressBody);
-			//Add typed class to column headers
-			LinkedGov.showWizardProgress(false);
+			Refine.update({modelsChanged:true},function(){
+				LinkedGov.showWizardProgress(false);
+				LinkedGov.applyTypeIcons.init();				
+			});
 		}
 };
 
@@ -2970,12 +3010,10 @@ LinkedGov.latLongWizard = {
 				default:
 					break;
 				}
+
+
 			}
 
-
-			//for(var i=0;i<LinkedGov.vars.rdfSchemaObject.prefixes.length;i++){
-			//	if(LinkedGov.vars.rdfSchemaObject.prefixes[i].name != "")
-			//}
 			var geoURI = "http://www.w3.org/2003/01/geo/wgs84_pos#";
 			var geoCURIE = "geo";
 
@@ -2998,7 +3036,7 @@ LinkedGov.latLongWizard = {
 			 * TODO: Other URIs should be dynamic.
 			 */
 
-			var schema = LinkedGov.vars.rdfSchemaObject;
+			var schema = theProject.overlayModels.rdfSchema;
 
 			for(var i=0;i<schema.rootNodes.length;i++){
 				if(schema.rootNodes[i].id == "lat-long"){
@@ -3081,6 +3119,7 @@ LinkedGov.latLongWizard = {
 			LinkedGov.resetWizard(self.vars.elmts.latLongBody);
 			//Add typed class to column headers
 			LinkedGov.showWizardProgress(false);
+			LinkedGov.applyTypeIcons.init();
 		}
 };
 
@@ -3129,44 +3168,53 @@ LinkedGov.splitVariablePartColumn = {
 			};
 
 			/*
-			 * Post a minimal call (remembering to include 'theProject' parameter for 
-			 * minimal calls).
+			 * Post a silent facet call.
 			 */
-			$.post(
-					"/command/core/compute-facets?" + $.param({ project: theProject.id }),
-					{ engine: JSON.stringify(facetParams) },
-					function(data) {
+			LinkedGov.silentProcessCall({
+				type:"POST",
+				url:"/command/" + "core" + "/" + "compute-facets",
+				data:{
+					engine: JSON.stringify(facetParams)
+				},
+				success:function(data) {
+					/*
+					 * Loop through the UI facets
+					 */
+					log("data.facets.length = "+data.facets.length);
+					for(var i=0; i<data.facets.length; i++){
+						log("i="+i);
 						/*
-						 * Loop through the UI facets
+						 * If the facet matches the column name and has choices returned
 						 */
-						log("data.facets.length = "+data.facets.length);
-						for(var i=0; i<data.facets.length; i++){
-							log("i="+i);
+						if(data.facets[i].columnName == self.vars.colName && typeof data.facets[i].choices != 'undefined'){
+							log("Facet data received successfully");
 							/*
-							 * If the facet matches the column name and has choices returned
+							 * Store the lowest number of parts
 							 */
-							if(data.facets[i].columnName == self.vars.colName && typeof data.facets[i].choices != 'undefined'){
-								log("Facet data received successfully");
-								var temp = 99;
-								for(var h=0; h<data.facets[i].choices.length;h++){
-									if(data.facets[i].choices[h].v.v < temp){
-										temp = data.facets[i].choices[h].v.v;
-									}
+							var temp = 9999999;
+							for(var h=0; h<data.facets[i].choices.length;h++){
+								if(data.facets[i].choices[h].v.v < temp){
+									temp = data.facets[i].choices[h].v.v;
 								}
-								self.vars.lowestNumberOfParts = temp;
-
-								log("Lowest number of parts for column "+self.vars.colName+": "+temp);
 							}
-						}
+							self.vars.lowestNumberOfParts = temp;
 
-						if(temp < 2){
-							self.onFail();
-						} else {
-							self.createNewColumns(1, self.vars.lowestNumberOfParts-1);
+							log("Lowest number of parts for column "+self.vars.colName+": "+temp);
 						}
-
 					}
-			);			
+
+					if(temp < 2){
+						self.onFail("This split will have no effect as there are single-part values in this column.");
+					} else {
+						self.createNewColumns(1, self.vars.lowestNumberOfParts-1);
+					}
+
+				},
+				error:function(){
+					self.onFail("A problem was encountered when computing facets.");
+				}
+			});
+
 		},
 
 		/*
@@ -3245,28 +3293,29 @@ LinkedGov.splitVariablePartColumn = {
 			// the last value we created a new colum for.
 			var self = this;
 
+			LinkedGov.silentProcessCall({
+				type:"POST",
+				url:"/command/" + "core" + "/" + "text-transform",
+				data:{
+					columnName: self.vars.colName, 
+					expression: 'partition(value,"'+self.vars.separator+'"+value.split("'+self.vars.separator+'")[value.split("'+self.vars.separator+'").length()-2])[0].trim()', 
+					onError: "keep-original",
+					repeat: false,
+					repeatCount: 10
+				},
+				success:function(){
+					self.onComplete();
+				},
+				error:function(){
+					self.onFail("A problem was encountered when performing a text-transform on the column: \""+self.vars.colName+"\".");
+				}
+			});
 
-
-			$.post(
-					"/command/" + "core" + "/" + "text-transform" + "?" + $.param({
-						columnName: self.vars.colName, 
-						expression: 'partition(value,"'+self.vars.separator+'"+value.split("'+self.vars.separator+'")[value.split("'+self.vars.separator+'").length()-2])[0].trim()', 
-						onError: "keep-original",
-						repeat: false,
-						repeatCount: 10,
-						project:theProject.id
-					}),
-					null,
-					function(){
-						self.onComplete();
-					},
-					"json"
-			);
 
 		},
 
-		onFail:function(){
-			alert("This split will have no effect as there are single-part values in this column.");
+		onFail:function(message){
+			alert("Column split failed.\n\n"+message);
 			self.vars.callback();
 		},
 
@@ -3277,12 +3326,64 @@ LinkedGov.splitVariablePartColumn = {
 			var self = this;
 
 			Refine.update({cellsChanged:true},function(){
+				LinkedGov.applyTypeIcons.init();
 				self.vars.callback();
 			});
 
 		}
 
 };
+
+/*
+ * 
+ */
+LinkedGov.applyTypeIcons = {
+
+		/*
+		 * Uses data stored in the RDF schema object to apply the RDF symbols 
+		 * to columns that have RDF data.
+		 */
+		init:function(){
+
+			//log("Applying type icons...");
+
+			var self = this;
+			if($("td.column-header").length < 1){
+				var t = setInterval(function(){
+					if($("td.column-header").length > 0){
+
+						clearInterval(t);
+						$.each(theProject.overlayModels.rdfSchema, function(key, val) { 
+							self.recursiveFunction(key, val) 
+						});
+					}
+				},100);
+			}
+
+		},
+
+		recursiveFunction: function(key, val) {
+			var self = this;
+			self.actualFunction(key, val);
+			if (val instanceof Object) {
+				$.each(val, function(key, value) {
+					self.recursiveFunction(key, value)
+				});
+			}
+		},
+
+		actualFunction: function(key,val){
+			if(key == "columnName"){
+				$("td.column-header").each(function(){
+					if($(this).find("span.column-header-name").html() == val){
+						$(this).addClass("typed");
+					}
+				});	
+			}
+		}
+
+}
+
 
 /*
  * DOM.loadHTML
@@ -3296,7 +3397,7 @@ LinkedGov.splitVariablePartColumn = {
 DOM.loadHTML = function(module, path, callback) {
 
 	callback = callback || function(){};
-	
+
 	if(path == ""){
 		module = "linkedgov";
 		path = "";
@@ -3329,5 +3430,4 @@ function log(str) {
  */
 $(document).ready(function(){
 	LinkedGov.initialise();
-
 });

@@ -2,11 +2,15 @@
 
 	<h2>Measurements wizard</h2>
 
-	<div class="measurementSearch">
-		<label for="unitInputField">Search for a measurement:</label> <input
-			class="text" id="unitInputField" type="text" autocomplete="on"
-			name="unitInputField" bind="unitInputField" />
-	</div>
+	<p class="description">
+		The measurements wizard lets us know what kind of measurements you have in your data. To apply a measurement to a column: 
+	</p>
+	<ol class="steps">
+		<li>Select a column containing measurement values</li>
+		<li>Search for that type of measurement</li>
+		<li>Click "Update"</li>
+	</ol>
+
 	<div class="selector">
 		<a class="button selectColumn" id="measurementSelect">Start Select</a>
 		<a class="info"> <!-- info --> </a> <span class="note">To
@@ -18,14 +22,13 @@
 		</ul>
 	</div>
 
-	<!-- ul class="checkboxes">
-			<li><input type="checkbox" /><label>It is a bit more
-					complicated than that</label>
-			</li>
-		</ul -->
+	<div class="measurementSearch">
+		<label for="unitInputField">Search for a measurement:</label> <input
+			class="text" id="unitInputField" type="text" autocomplete="on"
+			name="unitInputField" bind="unitInputField" />
+	</div>
 
-	<a href="javascript:{}" bind="measurementsButton" class="button update"
-		title="Update">Update</a>
-
+		<a href="javascript:{}" bind="measurementsButton"
+			class="button update" title="Update">Update</a>
 </div>
 <!-- end measurements wizard -->

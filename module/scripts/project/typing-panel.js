@@ -98,7 +98,6 @@ TypingPanel.prototype._render = function () {
 		LinkedGov.multipleValuesWizard.initialise(DOM.bind(self._div));
 	});
 
-
 	/*
 	 * Called similarly to Refine's panels.
 	 */
@@ -181,20 +180,24 @@ TypingPanel.prototype.openWizard = function(el) {
 }
 
 
-TypingPanel.prototype.enterWizard = function(el) {
+TypingPanel.prototype.enterWizard = function(wizardName) {
 
-	$("div.wizard-panel").html(DOM.loadHTML("linkedgov", "html/project/"+el.attr('rel')+".html",function(){		
+	$("div.wizard-panel").html(DOM.loadHTML("linkedgov", "html/project/"+wizardName+".html",function(){		
 		$("div.typing-panel-body").animate({"left":"-300px"},500);
 		$("div.cancel-button").animate({"left":"0px"},500);
+		$("div.update-button").animate({"left":"0px"},500);
 		$("div.wizard-panel").animate({"left":"0px"},500,function(){
 
 			// show the info icon
 			$("a.info").show();
 			
+			//Wire the sticky update button to the wizards specific update button
+			$("div.update-button a.button").attr("bind",$("div.wizard-body").find("a.update").attr("bind"));
+			
 			/*
 			 * Perform some JS initialisation specific to the wizard
 			 */
-			switch(el.attr('rel')){
+			switch(wizardName){
 			
 			case "measurement-wizard" : 
 				
@@ -211,29 +214,10 @@ TypingPanel.prototype.enterWizard = function(el) {
 				 * If the wizard contains a range selector, retrieve the 
 				 * column header names and populate the select inputs.
 				 */
-					$("div.rangeSelect").find("div.selector").children("div.range").hide();
-					var columnHeaders = "";
-					var i = 0;
-					/*
-					 * Grab the column names from the data table and present 
-					 * them as <option> elements.
-					 * TODO: Perhaps grab the names from Refine's DOM object 
-					 * instead.
-					 */
-					$("div.column-header-title span.column-header-name").each(function () {
-						if ($(this).html() != "All") {
-							columnHeaders += "<option data-id='" + i + "' value='" + $(this).html() + "'>" + $(this).html() + "</option>";
-							i++;
-						}
-					});
-					/*
-					 * Populate the select inputs with the <option> elements.
-					 */
-					$("div.rangeSelect").find("div.selector").children("div.range").children("select").each(function () {
-						$(this).html(columnHeaders);
-						$(this).val($(this).find("option").eq(0).val());
-					});
-					$("div.rangeSelect").find("div.selector").children("div.range").slideDown();
+				$("div.rangeSelect").find("div.selector").children("div.range").hide();
+				ui.typingPanel.populateRangeSelector(function(){
+					$("div.rangeSelect").find("div.selector").children("div.range").slideDown();					
+				});
 
 				break
 			default:
@@ -250,12 +234,43 @@ TypingPanel.prototype.exitWizard = function() {
 
 	$("div.typing-panel-body").animate({"left":"0px"},500);
 	$("div.cancel-button").animate({"left":"300px"},500);
+	$("div.update-button").animate({"left":"300px"},500);
 	$("div.wizard-panel").animate({"left":"300px"},500, function(){
 		$("div.wizard-panel").find("div.wizard-body").remove();
 	});
 }
 
 
+
+TypingPanel.prototype.populateRangeSelector = function(callback) {
+	
+	callback = callback || function(){return false};
+	
+	var columnHeaders = "";
+	var i = 0;
+	/*
+	 * Grab the column names from the data table and present 
+	 * them as <option> elements.
+	 * TODO: Perhaps grab the names from Refine's DOM object 
+	 * instead.
+	 */
+	$("div.column-header-title span.column-header-name").each(function () {
+		if ($(this).html() != "All") {
+			columnHeaders += "<option data-id='" + i + "' value='" + $(this).html() + "'>" + $(this).html() + "</option>";
+			i++;
+		}
+	});
+	/*
+	 * Populate the select inputs with the <option> elements.
+	 */
+	$("div.rangeSelect").find("div.selector").children("div.range").children("select").each(function () {
+		$(this).html(columnHeaders);
+		$(this).val($(this).find("option").eq(0).val());
+	});
+	
+	callback();
+	
+}
 
 /*
  * columnSelector
@@ -426,7 +441,12 @@ TypingPanel.prototype.rangeSelector = function(select) {
 		}
 	});
 
-	$cols.html(colsHTML).show();
+	if(colsHTML == ""){
+		
+	} else {
+		$cols.html(colsHTML).show();
+	}
+	
 }
 
 /*
@@ -615,8 +635,8 @@ $(document).ready(function() {
 			});
 
 			$("div#left-panel div.refine-tabs").tabs('select', 1);
-			$("div#left-panel div.refine-tabs").css("visibility", "visible");
-
+			$("div#left-panel div.refine-tabs").css("visibility", "visible");			
+			
 			clearInterval(interval);
 		}
 
@@ -629,8 +649,7 @@ $(document).ready(function() {
 	 * Interaction when clicking on a wizard header
 	 */
 	$('a.wizard-header').live("click",function() {
-		//ui.typingPanel.openWizard($(this));
-		ui.typingPanel.enterWizard($(this));
+		ui.typingPanel.enterWizard($(this).attr("rel"));
 	});
 
 	$("div.cancel-button a.button").live("click",function(){
