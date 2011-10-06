@@ -1,0 +1,31 @@
+<div class="wizard-body" bind="measurementsBody">
+
+	<h2>Measurements wizard</h2>
+
+	<div class="measurementSearch">
+		<label for="unitInputField">Search for a measurement:</label> <input
+			class="text" id="unitInputField" type="text" autocomplete="on"
+			name="unitInputField" bind="unitInputField" />
+	</div>
+	<div class="selector">
+		<a class="button selectColumn" id="measurementSelect">Start Select</a>
+		<a class="info"> <!-- info --> </a> <span class="note">To
+			select multiple column headings, hold down CTRL (Windows) or Apple
+			(Mac). You can also drag your mouse across multiple column headers
+			while holding down the relevant key.</span>
+
+		<ul class="column-display" bind="measurementsColumns">
+		</ul>
+	</div>
+
+	<!-- ul class="checkboxes">
+			<li><input type="checkbox" /><label>It is a bit more
+					complicated than that</label>
+			</li>
+		</ul -->
+
+	<a href="javascript:{}" bind="measurementsButton" class="button update"
+		title="Update">Update</a>
+
+</div>
+<!-- end measurements wizard -->

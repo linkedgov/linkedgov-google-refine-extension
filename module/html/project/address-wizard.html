@@ -1,0 +1,50 @@
+<div class="wizard-body" bind="addressBody">
+
+	<h2>Address wizard</h2>
+
+	<input bind="addressSplit" type="checkbox" class="split"
+		id="address-split"> <label for="address-split">Split
+		address</label> <a class="info"> <!-- info --> </a> <span class="note">To
+		properly format an address, the address parts need to exist in their
+		own columns.<br />
+		<br />If a column contains multiple address parts in each cell, e.g.
+		"Street, District, City", you can specify what type of character (",")
+		to split the column by.</span>
+	<div class="split">
+	
+		<div class="selector">
+			<a class="button selectColumn splitter">Start Select</a> <a
+				class="info"> <!-- info --> </a> <span class="note">To select
+				multiple column headings, hold down CTRL (Windows) or Apple (Mac).
+				You can also drag your mouse across multiple column headers while
+				holding down the relevant key.<br /> <br />Click anywhere in the
+				table to unselect the columns.</span>
+
+			<ul class="column-display" bind="splitColumn">
+			</ul>
+		</div>
+		
+		<label for="splitCharacter">What are the parts of the address
+			separated by? (e.g. "," or ";")</label> <input class="splitCharacter"
+			bind="splitCharacter" id="splitCharacter" type="text" />
+		<!-- preview? -->
+		<a class="button splitter-split" id="addressSplit">Split</a>
+
+	</div>
+
+	<div class="selector">
+		<a class="button selectColumn" id="addressSelect">Start Select</a> <a
+			class="info"> <!-- info --> </a> <span class="note">To select
+			multiple column headings, hold down CTRL (Windows) or Apple (Mac).
+			You can also drag your mouse across multiple column headers while
+			holding down the relevant key.<br /> <br />Click anywhere in the
+			table to unselect the columns.</span>
+
+		<ul class="column-display" bind="addressColumns">
+		</ul>
+	</div>
+
+	<a href="javascript:{}" bind="addressButton" class="button update"
+		title="Update">Update</a>
+
+</div><!-- end address wizard -->

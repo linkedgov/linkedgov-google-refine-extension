@@ -57,12 +57,7 @@ TypingPanel.prototype._render = function () {
 
 	var self = this;
 
-	var elmts = DOM.bind(this._div);
-
-	// make the measurements text field auto suggest
-	$("#unitInputField").suggest().bind("fb-select", function (e, data) {
-		// alert(data.name + ", " + data.id);
-	});
+	var elmts = DOM.bind(self._div);
 
 	/*
 	 * When each wizards' "Update" button is clicked, 
@@ -71,41 +66,45 @@ TypingPanel.prototype._render = function () {
 	 * allows access to the individual elements through the object
 	 * "elmts".
 	 */
-	elmts.dateTimeButton.click(function () {
+	
+	$("a[bind='dateTimeButton']").live("click",function () {
 		self.destroyColumnSelector();
-		LinkedGov.dateTimeWizard.initialise(elmts);
+		log(elmts);
+		LinkedGov.dateTimeWizard.initialise(DOM.bind(self._div));
 	});
 
-	elmts.measurementsButton.click(function () {
+	$("a[bind='measurementsButton']").live("click",function () {
 		self.destroyColumnSelector();
-		LinkedGov.measurementsWizard.initialise(elmts);
+		LinkedGov.measurementsWizard.initialise(DOM.bind(self._div));
 	});
 
-	elmts.latLongButton.click(function(){
+	$("a[bind='latLongButton']").live("click",function(){
 		self.destroyColumnSelector();
-		LinkedGov.latLongWizard.initialise(elmts);	 
+		LinkedGov.latLongWizard.initialise(DOM.bind(self._div));	 
 	});
 
-	elmts.addressButton.click(function () {
+	$("a[bind='addressButton']").live("click",function () {
 		self.destroyColumnSelector();
-		LinkedGov.addressWizard.initialise(elmts);
+		LinkedGov.addressWizard.initialise(DOM.bind(self._div));
 	});
 
-	elmts.multipleColumnsButton.click(function () {
+	$("a[bind='multipleColumnsButton']").live("click",function () {
 		self.destroyColumnSelector();
-		LinkedGov.multipleColumnsWizard.initialise(elmts);
+		LinkedGov.multipleColumnsWizard.initialise(DOM.bind(self._div));
 	});
 
-	elmts.multipleValuesButton.click(function () {
+	$("a[bind='multipleValuesButton']").live("click",function () {
 		self.destroyColumnSelector();
-		LinkedGov.multipleValuesWizard.initialise(elmts);
+		LinkedGov.multipleValuesWizard.initialise(DOM.bind(self._div));
 	});
+
 
 	/*
 	 * Called similarly to Refine's panels.
 	 */
 	this.resize();
 };
+
 
 /*
  * wizardInteraction
@@ -182,6 +181,82 @@ TypingPanel.prototype.openWizard = function(el) {
 }
 
 
+TypingPanel.prototype.enterWizard = function(el) {
+
+	$("div.wizard-panel").html(DOM.loadHTML("linkedgov", "html/project/"+el.attr('rel')+".html",function(){		
+		$("div.typing-panel-body").animate({"left":"-300px"},500);
+		$("div.cancel-button").animate({"left":"0px"},500);
+		$("div.wizard-panel").animate({"left":"0px"},500,function(){
+
+			// show the info icon
+			$("a.info").show();
+			
+			/*
+			 * Perform some JS initialisation specific to the wizard
+			 */
+			switch(el.attr('rel')){
+			
+			case "measurement-wizard" : 
+				
+				// make the measurements text field auto suggest
+				$("#unitInputField").suggest().bind("fb-select", function (e, data) {
+					//alert(data.name + ", " + data.id);
+				});
+				
+				break;
+				
+			case "rangecolumns-wizard" :
+				
+				/*
+				 * If the wizard contains a range selector, retrieve the 
+				 * column header names and populate the select inputs.
+				 */
+					$("div.rangeSelect").find("div.selector").children("div.range").hide();
+					var columnHeaders = "";
+					var i = 0;
+					/*
+					 * Grab the column names from the data table and present 
+					 * them as <option> elements.
+					 * TODO: Perhaps grab the names from Refine's DOM object 
+					 * instead.
+					 */
+					$("div.column-header-title span.column-header-name").each(function () {
+						if ($(this).html() != "All") {
+							columnHeaders += "<option data-id='" + i + "' value='" + $(this).html() + "'>" + $(this).html() + "</option>";
+							i++;
+						}
+					});
+					/*
+					 * Populate the select inputs with the <option> elements.
+					 */
+					$("div.rangeSelect").find("div.selector").children("div.range").children("select").each(function () {
+						$(this).html(columnHeaders);
+						$(this).val($(this).find("option").eq(0).val());
+					});
+					$("div.rangeSelect").find("div.selector").children("div.range").slideDown();
+
+				break
+			default:
+				break;
+				
+			}
+			
+		});
+	}));	
+
+}
+
+TypingPanel.prototype.exitWizard = function() {
+
+	$("div.typing-panel-body").animate({"left":"0px"},500);
+	$("div.cancel-button").animate({"left":"300px"},500);
+	$("div.wizard-panel").animate({"left":"300px"},500, function(){
+		$("div.wizard-panel").find("div.wizard-body").remove();
+	});
+}
+
+
+
 /*
  * columnSelector
  * 
@@ -202,12 +277,8 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 			$(this).removeClass("ui-selected").removeClass("skip");
 		});
 
-		//$(button).parent().parent().children("div.more-complicated").slideUp();
-		//$(button).parent().parent().children("div.more-complicated").children("ul.cols-copy").html();
-		//$(button).parent().parent().children("input.more-complicated").removeAttr("checked");
-
 		$cols = $(button).parent().children("ul.column-display");
-		$cols.html("");
+		$cols.html("").hide();
 		$(button).html("End Select");
 
 		var RefineUI = ui;
@@ -222,6 +293,11 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 						 * Check if column has already been selected.
 						 */
 						if($(this).html() == $(ui.selected).children().find(".column-header-name").html()){
+
+							if($(this).parent().hasClass("skip")){
+								$(this).parent().removeClass("skip").show();
+							}
+
 							addToList = false;
 						}
 					});
@@ -252,15 +328,15 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 				}
 			},
 			unselected: function (event, ui) {
-				// console.log("unselected");
-				$cols.html("");
+				// log("unselected");
+				$cols.html("").hide();
 			},
 			selecting: function (event, ui) {
-				// console.log("selecting");
+				// log("selecting");
 			},
 			unselecting: function (event, ui) {
-				// console.log("unselecting");
-				$cols.html("");
+				// log("unselecting");
+				$cols.html("").hide();
 			}
 		});
 	} else {
@@ -292,7 +368,7 @@ TypingPanel.prototype.rangeSelector = function(select) {
 	});
 
 	$cols = $(select).parent().parent().children("ul.column-display");
-	$cols.html("");
+	$cols.html("").hide();
 	var colsHTML = "";
 	var from = 0, to = 0;
 
@@ -350,7 +426,7 @@ TypingPanel.prototype.rangeSelector = function(select) {
 		}
 	});
 
-	$cols.html(colsHTML);	
+	$cols.html(colsHTML).show();
 }
 
 /*
@@ -377,14 +453,27 @@ TypingPanel.prototype.removeColumn = function(el) {
 	 * Remove ui-selected from column header.
 	 */
 
-	//if($(el).parent().parent("ul").hasClass("range")){
 	/*
 	 * Check to see if column being removed is the first or last 
 	 * in column selection, in which case it is ok to remove from 
 	 * the range.
 	 */
+	$cols = $(el).parent("li").parent("ul");
+	
 	if($(el).parent("li")[0] === $(el).parent().parent("ul").children().eq(0)[0] || $(el).parent("li")[0] == $(el).parent("li").parent("ul").children("li").eq($(el).parent("li").parent("ul").children("li").length-1)[0]){
-		$(el).parent().slideUp(250,function(){$(this).remove();});
+
+		$(el).parent().slideUp(250,function(){
+
+			$(this).remove();
+
+			while($cols.children("li").length > 0 && $cols.children("li").eq(0).hasClass("skip")){
+					$cols.children("li").eq(0).remove();
+			}
+			
+			if($cols.children("li").length < 1){
+				$cols.html("").hide();
+			}
+		});
 		/*
 		 * Remove the "selected" styling for the removed columns in the data table
 		 */
@@ -395,6 +484,7 @@ TypingPanel.prototype.removeColumn = function(el) {
 				$(this).parent().parent("td").removeClass("ui-selected");
 			}
 		});
+
 	} else {
 		/*
 		 * If the column is within the range, add the class "skip" to 
@@ -423,11 +513,7 @@ TypingPanel.prototype.removeColumn = function(el) {
 			});	
 		}
 	}
-	//} else {
-	//	$(el).parent().slideUp(250,function(){
-	//		$(this).remove();
-	//	});
-	//}	
+
 }
 
 /*
@@ -438,55 +524,41 @@ TypingPanel.prototype.removeColumn = function(el) {
  */
 TypingPanel.prototype.getFragmentData = function(columnList) {
 
-	var fragmentHTML = "";
+	var fragmentHTML = "<span class='dateFrags colOptions'>";
 
 	switch (columnList.attr("bind")) {
 	case "dateTimeColumns" :
-		fragmentHTML = 
-			"<select class='date-select'>" + 
-			"<optgroup label='Date'>" + 
-			"<option value='Date1'>Day-Month-Year</option>" +
-			"<option value='Date2'>Month-Year</option>" + 
-			"<option value='Date3'>Day-Month</option>" + 
-			"<option value='Day'>Day</option>" + 
-			"<option value='Month'>Month</option>" + 
-			"<option value='Year'>Year</option>" + 
-			"</optgroup>" + 
-			"<optgroup label='Time'>" +
-			"<option value='Time1'>Hours-Minutes-Seconds</option>" + 
-			"<option value='Time2'>Hours-Minutes</option>" + 
-			"<option value='Time3'>Minutes-Seconds</option>" + 
-			"<option value='Hours'>Hours</option>" + 
-			"<option value='Minutes'>Minutes</option>" + 
-			"<option value='Seconds'>Seconds</option>" + 
-			"</optgroup>" + 
-			"</select>";	
 
+		var symbols = ["Y","M","D","h","m","s"];
+		for(var i=0;i<symbols.length;i++){
+			fragmentHTML += '<input type="checkbox" class="date-checkbox" value="'+symbols[i]+'" /><span>'+symbols[i]+'</span>'
+		}
+
+		fragmentHTML += '</span><span class="colOptions mb4d"><input type="checkbox" class="mb4d" value="mb4d" /> <span>Month before day (e.g. 07/23/1994)</span></span>';
+
+		/*
+		 * Add the "fragments" class to the list of columns so CSS styles can 
+		 * be applied.
+		 */
+		columnList.addClass("date-checkboxes");
 		break;
 	case "addressColumns" :
-		/*fragmentHTML = 
-			"<select class='address-select'>" + 
-			"<option value='House_Flat_number'>House/Flat number</option>" + 
-			"<option value='Street_Road'>Street/Road name</option>" +
-			"<option value='Street_Address'>Street Address</option>" + 
-			"<option value='District'>District</option>" + 
-			"<option value='Suburb'>Suburb</option>" + 
-			"<option value='Region'>Region</option>" + 
-			"<option value='Town'>Town</option>" + 
-			"<option value='City'>City</option>" + 
-			"<option value='County'>County</option>" + 
-			"<option value='Country'>Country</option>" + 
-			"<option value='Postcode'>Postcode</option>" + 
-			"</select>";*/	
+
 		fragmentHTML = 
 			"<select class='address-select'>" + 
 			"<option value='street-address'>Street Address</option>" + 
 			"<option value='extended-address'>Extended Address</option>" +
 			"<option value='locality'>Locality</option>" + 
+			"<option value='region'>Region</option>" + 
 			"<option value='postcode'>Postcode</option>" + 
-			"<option value='country-name'>Country name</option>" + 
+			"<option value='country-name'>Country</option>" + 
 			"</select>";	
 
+		/*
+		 * Add the "fragments" class to the list of columns so CSS styles can 
+		 * be applied.
+		 */
+		columnList.addClass("fragments");
 		break;
 	case "latLongColumns" :
 
@@ -498,20 +570,21 @@ TypingPanel.prototype.getFragmentData = function(columnList) {
 			"<option value='easting'>Easting</option>" + 
 			"</select>";	
 
+		/*
+		 * Add the "fragments" class to the list of columns so CSS styles can 
+		 * be applied.
+		 */
+		columnList.addClass("fragments");
 		break;
 	default :
 		break;
 	}
 
-	/*
-	 * Add the "fragments" class to the list of columns so CSS styles can 
-	 * be applied.
-	 */
-	columnList.addClass("fragments");
-	
+
 	return fragmentHTML;
 
 }
+
 
 /*
  * 
@@ -549,11 +622,19 @@ $(document).ready(function() {
 
 	}, 5);
 
+
+
+
 	/*
 	 * Interaction when clicking on a wizard header
 	 */
-	$('a.wizard-header').click(function () {
-		ui.typingPanel.openWizard($(this));
+	$('a.wizard-header').live("click",function() {
+		//ui.typingPanel.openWizard($(this));
+		ui.typingPanel.enterWizard($(this));
+	});
+
+	$("div.cancel-button a.button").live("click",function(){
+		ui.typingPanel.exitWizard();
 	});
 
 	/*
@@ -567,7 +648,7 @@ $(document).ready(function() {
 	 * splitter - produces a single column with no select inputs for fragments
 	 * 
 	 */
-	$("div.selector a.selectColumn").click(function () {
+	$("div.selector a.selectColumn").live("click",function () {
 		if($(this).hasClass("splitter")){
 			ui.typingPanel.buttonSelector($(this),"splitter");			
 		} else {
@@ -576,16 +657,27 @@ $(document).ready(function() {
 	});
 
 	/*
+	 * "Split address" checkbox
+	 */
+	$('div.wizard-body input.split').live("change",function(){
+		if($(this).attr("checked")){
+			$(this).parent().children("div.split").slideDown();
+		} else {
+			$(this).parent().children("div.split").slideUp();
+		}
+	});
+
+	/*
 	 * Interaction for "split" button in address wizard.
 	 */
-	$("div.selector a.splitter-split").click(function(){
-		var name = $(this).parent().children("ul.column-display").children("li").eq(0).children("span.col").html();
-		var separator = $(this).parent().children("input.splitCharacter").val();
-		
+	$("div.split a.splitter-split").live("click",function(){
+		var name = $(this).parent().find("ul.column-display").children("li").eq(0).children("span.col").html();
+		var separator = $(this).parent().find("input.splitCharacter").val();
+
 		if(separator.length < 1 || name.length < 1){
 			alert("You need to make sure you have selected a column to split and entered a character to split by.");
 		} else {
-			LinkedGov.splitColumn(name,separator,function(){
+			LinkedGov.splitVariablePartColumn.initialise(name,separator,function(){
 				$("input.split").removeAttr("checked");
 				$("div.split").hide();
 			});
@@ -595,17 +687,10 @@ $(document).ready(function() {
 	/*
 	 * Interaction for the column range select inputs
 	 */
-	$("div.selector div.range select").change(function () {
+	$("div.selector div.range select").live("change",function () {
 		ui.typingPanel.rangeSelector($(this));
 	});
 
-	$('div.wizard-body input.split').change(function(){
-		if($(this).attr("checked")){
-			$(this).parent().children("div.split").slideDown();
-		} else {
-			$(this).parent().children("div.split").slideUp();
-		}
-	});
 
 	/*
 	 * 'Remove column' interaction for column lists
@@ -615,12 +700,54 @@ $(document).ready(function() {
 	});
 
 	/*
+	 * Date/time interaction for column lists
+	 */
+	$("ul.date-checkboxes li span.dateFrags input[type='checkbox']").live("change",function(){
+		if($(this).attr("checked")){
+
+			var inputs = $(this).parent("span").children("input");
+			var D_and_M = 0;
+			var h_and_m = 0;
+
+			for(var i=0;i<inputs.length;i++){
+				if(inputs.eq(i).attr("checked")){
+					if(inputs.eq(i).val() == "M" || inputs.eq(i).val() == "D"){
+						D_and_M++;
+					} else if(inputs.eq(i).val() == "h" || inputs.eq(i).val() == "m"){
+						h_and_m++;
+					}
+				}
+			}
+
+			if(D_and_M == 2){
+				//alert("day and month selected");
+				$(this).parent("span").parent("li").children("span.mb4d").slideDown();
+			} else {
+				$(this).parent("span").parent("li").children("span.mb4d").slideUp();
+			}
+			
+			if(h_and_m == 2){
+				//alert("hours and minutes selected");
+			} else {
+				
+			}
+			
+		} else {
+			if($(this).val() == "M" || $(this).val() == "D"){
+				$(this).parent("span").parent("li").children("span.mb4d").slideUp();
+			}
+		}
+	});
+
+	/*
 	 * Show tooltips
 	 */
-	$("a.info").mouseover(function () {
+	$("a.info").live("mouseover",function () {
 		$(this).next("span").show();
-	}).mouseout(function () {
+	}).live("mouseout",function () {
 		$(this).next("span").hide();
 	});
+
+
 
 });

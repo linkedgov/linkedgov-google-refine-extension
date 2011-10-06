@@ -39,7 +39,12 @@ var LinkedGov = {
 			debug:true,
 			separator: "<LG>",
 			nullValue:"<LG_NULL>",
-			blanksSetToNulls:false
+			blanksSetToNulls:false,
+			rdfSchemaObject:{
+				prefixes:[],
+				baseUri:"http://localhost:3333/",
+				rootNodes:[]
+			}
 		},
 
 		/*
@@ -51,7 +56,23 @@ var LinkedGov = {
 			this.restyle();
 			this.injectTypingPanel();
 			this.quickTools();
+			this.wizardProgressMessage();
 		},
+
+		wizardProgressMessage:function(){
+			$("body").append("<div class='wizardProgressMessage'><div class='overlay'><!-- --></div><p>Wizard in progress...<img src='images/large-spinner.gif' /></p></div>");
+		},
+
+		showWizardProgress:function(show){
+			if(show){
+				$('div.wizardProgressMessage').show();
+				$("body").addClass("wizard-progress");
+			}else{
+				$('div.wizardProgressMessage').hide();
+				$("body").removeClass("wizard-progress");
+			}
+		},
+
 
 		/*
 		 * Initialises the quick tools for column headings.
@@ -66,14 +87,14 @@ var LinkedGov = {
 				//if doesn't have a quick tool
 				//then insert
 				//else show or hide
-				if($(this).hasClass("show")){
-					$(this).find(".quick-tool").hide();
-					$(this).addClass("hide").removeClass("show");
-				}else if($(this).hasClass("hide")){
-					$(this).find(".quick-tool").show();
-					$(this).addClass("show").removeClass("hide");
-				}else{
-					if(!$("table.data-table").hasClass("ui-selectable")){
+				if(!$("table.data-table").hasClass("ui-selectable")){
+					if($(this).hasClass("show")){
+						$(this).find(".quick-tool").hide();
+						$(this).addClass("hide").removeClass("show");
+					} else if($(this).hasClass("hide")){
+						$(this).find(".quick-tool").show();
+						$(this).addClass("show").removeClass("hide");
+					} else {
 
 						var html = 
 							"<div class='quick-tool'>" +
@@ -100,10 +121,12 @@ var LinkedGov = {
 				switch($(this).attr("class")){
 
 				case "rename" :
-					var name = window.prompt("Name:","");
-					LinkedGov.renameColumn(colName,name,function(){
-						Refine.update({modelsChanged:true});
-					});
+					var name = window.prompt("Name:",colName);
+					if(name.length > 0){
+						LinkedGov.renameColumn(colName,name,function(){
+							Refine.update({modelsChanged:true});
+						});
+					}
 					break;
 				case "remove" : 
 					LinkedGov.removeColumn(colName,function(){
@@ -183,10 +206,11 @@ var LinkedGov = {
 			 */
 
 			/*
-			 *  Use this CSS instead of a JS resize:
-			 *  bottom: 0;
-    			height: auto !important;
-    			top: 28px;
+			 * TODO:
+			 * Use this CSS instead of a JS resize:
+			 * bottom: 0;
+			 * height: auto !important;
+			 * top: 28px;
 			 */
 			ui.typingPanel.resize(); 
 		},
@@ -322,7 +346,7 @@ var LinkedGov = {
 		 * Split a column
 		 */
 		splitColumn:function(colName,separator,callback){
-			
+
 			var config = {
 					columnName: colName,
 					mode: "separator",
@@ -332,7 +356,7 @@ var LinkedGov = {
 					regex:false,
 					project:theProject.id
 			};
-			
+
 			$.post(
 					"/command/" + "core" + "/" + "split-column" + "?" + $.param(config),
 					null,
@@ -344,7 +368,7 @@ var LinkedGov = {
 					"json"
 			);
 		},
-		
+
 		/*
 		 * Moves a column left or right
 		 */
@@ -379,12 +403,13 @@ var LinkedGov = {
 			//Clear checkboxes
 			$(wizardBody).find(":input").removeAttr('checked').removeAttr('selected');
 			//Clear column selections
-			$(wizardBody).find("ul.column-display").html("");
+			$(wizardBody).find("ul.column-display").html("").hide();
 			//Clear text fields
 			$(wizardBody).find(":text").val("");
 
 			//Make sure the wizard is displayed so the user can repeat the 
 			//task if they wish
+			//TODO: Don't need these any more
 			$("a.wizard-header").removeClass("exp");
 			$(wizardBody).prev("a.wizard-header").addClass("exp");
 			$("div.wizard-body").hide();
@@ -394,7 +419,7 @@ var LinkedGov = {
 			ui.leftPanelTabs.tabs({ selected: 1 });	
 
 			// Scroll the top of the wizard into view.
-			$(wizardBody).parent().scrollTop($(wizardBody).prev("a.wizard-header").offset().top)
+			//$(wizardBody).parent().scrollTop($(wizardBody).prev("a.wizard-header").offset().top)
 
 		},
 
@@ -486,6 +511,8 @@ LinkedGov.multipleColumnsWizard = {
 		 * the rotate operation.
 		 */
 		initialise: function(elmts){
+
+			LinkedGov.showWizardProgress(true);
 
 			var self = this;
 			self.vars.elmts = elmts;
@@ -799,6 +826,7 @@ LinkedGov.multipleColumnsWizard = {
 				// Refresh the content of the select inputs
 				ui.typingPanel.rangeSelector($(self.vars.elmts.multipleColumnsBody).find("div.range").find("select").eq(0));
 				LinkedGov.resetWizard(self.vars.elmts.multipleColumnsBody);
+				LinkedGov.showWizardProgress(false);
 			});
 
 			return false;
@@ -813,6 +841,7 @@ LinkedGov.multipleColumnsWizard = {
 				log("Multiple columns wizard failed.");
 				Refine.update({everythingChanged:true});
 				LinkedGov.resetWizard(self.vars.elmts.multipleColumnsBody);
+				LinkedGov.showWizardProgress(false);
 			});			
 		}
 
@@ -883,6 +912,8 @@ LinkedGov.multipleValuesWizard = {
 		 * 
 		 */
 		initialise: function(elmts) {
+
+			LinkedGov.showWizardProgress(true);
 
 			var self = this;
 			self.vars.elmts = elmts;
@@ -1037,7 +1068,7 @@ LinkedGov.multipleValuesWizard = {
 									 * unique values
 									 */
 									values = data.facets[h].choices.length;
-									
+
 									/*
 									 * Check that the headersCol's values have the same number of values each, 
 									 * if they don't, then the transpose will not work unless the 'missing' 
@@ -1050,11 +1081,11 @@ LinkedGov.multipleValuesWizard = {
 											log("i="+i);
 											if(data.facets[h].choices[i].c != data.facets[h].choices[i+1].c){
 												self.vars.abortMessage = "Cannot proceed. There aren't an even number of " +
-														"values in the "+self.vars.headersColName+" column.";
+												"values in the "+self.vars.headersColName+" column.";
 												self.vars.abortOperation = true;
 											}
 										}
-										
+
 									}
 								}
 							}
@@ -1121,7 +1152,7 @@ LinkedGov.multipleValuesWizard = {
 		sortColumnsByUniqueValue:function(colCountObj){
 
 			var self = this;
-			
+
 			//log('colCountObj');
 			//log(colCountObj);
 
@@ -1163,7 +1194,7 @@ LinkedGov.multipleValuesWizard = {
 		reorderRows: function(columnHeadersByUniqueValue){
 
 			log("reorderRows");
-			
+
 			var self = this;
 
 			var sortingObject = {
@@ -1199,17 +1230,21 @@ LinkedGov.multipleValuesWizard = {
 			 * Post a minimal "reorder-rows" call - remembering to include the 'theProject' 
 			 * parameter.
 			 */
-			$.post(
-					"/command/" + "core" + "/" + "reorder-rows" + "?" + $.param({ 
-						sorting : JSON.stringify(sortingObject), 
-						project: theProject.id 
-					}),
-					null,
-					function(){
-						self.multiValueTranspose();				
-					},
-					"json"
-			);
+			$.ajax({
+				url:"/command/" + "core" + "/" + "reorder-rows",
+				data:$.param({ 
+					sorting : JSON.stringify(sortingObject), 
+					project: theProject.id 
+				}),
+				dataType:"json",
+				success:function(){
+					self.multiValueTranspose();
+				},
+				error:function(){
+					self.onFail();
+				}
+
+			});
 
 		},
 
@@ -1566,6 +1601,7 @@ LinkedGov.multipleValuesWizard = {
 				//LinkedGov.setFacetCountLimit(100);
 				Refine.update({everythingChanged:true});
 				LinkedGov.resetWizard(self.vars.elmts.multipleValuesBody);
+				LinkedGov.showWizardProgress(false);
 			});
 
 			return false;
@@ -1577,6 +1613,7 @@ LinkedGov.multipleValuesWizard = {
 			LinkedGov.setBlanksToNulls(false,theProject.columnModel.columns,0,function(){
 				alert("Multiple Values wizard failed. \n\n"+self.vars.abortMessage);
 				LinkedGov.resetWizard(self.vars.elmts.multipleValuesBody);	
+				LinkedGov.showWizardProgress(false);
 			});
 
 		}
@@ -1612,260 +1649,525 @@ LinkedGov.dateTimeWizard = {
 		/*
 		 * initialise
 		 * 
-		 * Detects whether the user has chosen to clean up 
-		 * dates, times or both.
 		 * 
-		 * Also detects whether the user has said that the clean 
-		 * up operation might be more complicated (fragmented values)
 		 */
 		initialise: function(elmts) {
 
-			log("dateTimeWizard initialising");
-
+			log("here");
+			log(elmts);
+			
 			var self = this;
 			self.vars.elmts = elmts;
 
-			var checkedDate = $(elmts.dateCheck).attr("checked");
-			var checkedTime = $(elmts.timeCheck).attr("checked");
+			LinkedGov.showWizardProgress(true);
 
-			if(checkedDate || checkedTime){
-
-				if(checkedMoreComplicated){
-
-					// Perform the fragmented* operations.
-
-					// Store the columns to be operated on
-					$(elmts.dateColsComplicated).children().each(function(){
-						self.vars.columns.push($(this).children("span.col").html());
-					});
-
-					if(checkedDate && !checkedTime){
-						this.fragmentedDate();					
-					} else if(!checkedDate && checkedTime){
-						this.fragmentedTime();					
-					} else if(checkedDate && checkedTime){
-						this.fragmentedDate();
-						this.fragmentedTime();
-						/*
-						 * Join the two date and time columns together to 
-						 * produce a proper date-time value.
-						 */
-					}
-
+			/*
+			 * Remove any skipped columns or columns that have no date fragments
+			 * specified.
+			 */
+			self.vars.elmts.dateTimeColumns.children("li").each(function(){
+				if($(this).hasClass("skip")){
+					$(this).remove();
 				} else {
-
-					// Perform the simple* operations.
-
-					// Store the columns to be operated on
-					$(elmts.dateTimeColumns).children().each(function(){
-						self.vars.columns.push($(this).children("span.col").html());
-					});
-
-					if(checkedDate && !checkedTime){
-						this.simpleDate();					
-					} else if(!checkedDate && checkedTime){
-						this.simpleTime();				
-					} else if(checkedDate && checkedTime){
-						this.simpleDate();
-						this.simpleTime();	
-						/*
-						 * Join the two date and time columns together to 
-						 * produce a proper date-time value.
-						 */						
-					}				
+					var checkedInputs = $(this).find("input:checked");
+					if(checkedInputs.length < 1){
+						$(this).remove();
+					}
 				}
+			});
 
-			} else {
-				alert("You need to specify if the columns you have selected contain dates, times or both");
-			}
+			self.buildCombinationStrings();
 
 		},
 
 		/*
-		 * simpleDate
+		 * buildCombinationString
 		 * 
-		 * Properly types a column using the value.toDate() expression 
-		 * for Refine and produces RDF.
+		 * Construct a fragment string using the checked inputs.
 		 */
-		simpleDate:function() {
+		buildCombinationStrings:function(){
+
+			/*
+			 * Loop through each selected column and check for 
+			 * date fragments starting with the largest fragment 
+			 * first (i.e. Y,M,D,h,m,s).
+			 * 
+			 * We concatenate each date fragment into a string and then 
+			 * test whether the fragments resemble a valid date or time.
+			 * 
+			 */
 
 			var self = this;
 
-			var cols = self.vars.columns;
+			var cols = self.vars.elmts.dateTimeColumns.children("li");
+			var value = "";
+			var frags = ['Y','M','D','h','m','s'];
 
-			for(var i=0, len=cols.length; i<len; i++){
+			var columnCombinations = [];
 
-				Refine.postCoreProcess("text-transform", {
-					columnName: cols[i],
-					expression: "value.toDate()",
-					repeat: false,
-					repeatCount: ""
-				}, null, {
-					cellsChanged: true
+			/*
+			 * Loop through the selected columns
+			 */
+			for(var i=0;i<cols.length;i++){
+				/*
+				 * Loop through their checked date fragments
+				 */
+				var checkedInputs = cols.eq(i).children("span.dateFrags").children('input:checked');
+				//log("checkedInputs:");
+				//log(checkedInputs);
+				for(var j=0;j<checkedInputs.length;j++){
+					value += checkedInputs.eq(j).val()+"-";
+				}
+				value = value.substring(0,value.length-1);
+				//log(value);
+				var mb4d = cols.eq(i).children("span.mb4d").find('input.mb4d').attr('checked');
+
+				columnCombinations.push({
+					name:cols.eq(i).find('span.col').html(),
+					combi:value,
+					monthBeforeDay:mb4d
 				});
 
-//				http://127.0.0.1:3333/command/rdf-extension/save-rdf-schema?project=1702403439701
+				value = "";
+			}
 
-//				var rdfSchemaPost = schema = { "prefixes":[ {
-//				"name":"rdfs",
-//				"uri":"http://www.w3.org/2000/01/rdf-schema#" }, {
-//				"name":"foaf", "uri":"http://xmlns.com/foaf/0.1/" }, {
-//				"name":"xsd", "uri":"http://www.w3.org/2001/XMLSchema#" }, {
-//				"name":"owl", "uri":"http://www.w3.org/2002/07/owl#" }, {
-//				"name":"rdf",
-//				"uri":"http://www.w3.org/1999/02/22-rdf-syntax-ns#" } ],
-//				"baseUri":"http://localhost:3333/", "rootNodes":[ {
-//				"nodeType":"cell-as-resource", "expression":"value",
-//				"isRowNumberCell":true, "rdfTypes":[
-//				], "links":[ {
-//				"uri":"http://www.w3.org/2001/XMLSchema#date",
-//				"curie":"xsd:date", "target":{
-//				"nodeType":"cell-as-literal", "expression":"value.(d)",
-//				"columnName":$(this).html(), "isRowNumberCell":false } } ] } ] }
+			log("columnCombinations");
+			log(columnCombinations);
 
-//				&engine={"facets":[],"mode":"row-based"};
+			self.checkCombinations(columnCombinations);
 
-
-			}		
-		},
+		},		
 
 		/*
-		 * fragmentedDate
+		 * checkCombinations
 		 * 
-		 * Takes a number of columns that contain parts of a date, 
-		 * attempts to concatenate them together and applies the 
-		 * value.toDate() expression to the combined column. Finally 
-		 * it produces RDF.
+		 * Check the combination strings for the columns and decide 
+		 * what action to take.
+		 *  
+		 * toDate(value,boolean) - boolean signals whether the day is 
+		 * before the month.
 		 */
-		fragmentedDate:function(){
+		checkCombinations:function(colCombinations){
 
 			var self = this;
 
 			/*
-			 * Store the "should-be" date fragments in an array, which will 
-			 * be in the same order as the columns the user has selected.
+			 * Check for the 3 simplest combinations that have every fragment in a 
+			 * different column:
+			 * 
+			 * Y/M/D, h/m/s, and Y/M/D/h/m/s
 			 */
-			$(self.vars.elmts.dateColsComplicated).children().each(function(){
-				self.vars.colFragments.push($(this).children("select").val());
-			});
+			if(colCombinations.length == 3){
 
-			/*
-			 * Build a GREL expression that concatenates the date parts in the 
-			 * correct order.
-			 */
-			var expression = self.buildExpression();
+				/*
+				 * Check for a simple day, month, year combination
+				 */
+				if(colCombinations[0].combi == "Y" || colCombinations[0].combi == "M" || colCombinations[0].combi == "D"){
+					var fragCount=0;
+					var frags = ['Y','M','D'];
+					var fragmentArray = [];
+					for(var i=0;i<colCombinations.length;i++){
+						if(colCombinations[i].combi == frags[fragCount]){
+							fragmentArray.push(colCombinations[i].name);
+							var monthBeforeDay = colCombinations[i].monthBeforeDay;
+							fragCount++;
+							i=-1;
+							if(fragCount == 3){
+								// We have a year, month and day
+								log("Year, month and day.");
+								/*
+								 * Create a new column with the combined date fragments,
+								 * then type it as a date within Refine.
+								 * 
+								 * Need to pass the...
+								 * 
+								 * TODO
+								 */
+								self.createNewColumn(fragmentArray,monthBeforeDay,function(newColName,mb4d){
 
-			var colName = window.prompt("New column name:", theProject.metadata.name);
+									// Check order of month and day
+									if(mb4d){
+										self.typeAsXSDDate(newColName,"toDate(value,false)");
+									} else {
+										self.typeAsXSDDate(newColName,"toDate(value,true)");
+									}									
+								});
 
-			/*
-			 * Post an "add-column" call, based on the first column the 
-			 * user selected, using the expression we've just built, 
-			 * the new column name that the user has just entered and inserting 
-			 * the new date column just after the columns the user has selected.
-			 */
-			Refine.postCoreProcess("add-column", {
-				baseColumnName: self.vars.columns[0],
-				expression: expression,
-				newColumnName: colName,
-				columnInsertIndex: Refine.columnNameToColumnIndex(self.vars.columns[self.vars.columns.length-1])+1,
-				onError: "keep-original"
-			}, null, {
-				modelsChanged: true
-			}, {
-				onDone:function(){
+								// Break
+								i=colCombinations.length;
+							}
+						}
+					}							
+				} else {
 					/*
-					 * Once we've created the new date column, type the column as an 
-					 * ISO date internally within Refine.
+					 * Check for a simple hours, minutes, seconds combination
 					 */
-					Refine.postCoreProcess("text-transform", {
-						columnName: colName,
-						expression: "value.toDate()",
-						repeat: false,
-						repeatCount: ""
-					}, null, {
-						cellsChanged: true
-					});
+					var fragCount=0;
+					var frags = ['h','m','s'];
+					var fragmentArray = [];
+					for(var i=0;i<colCombinations.length;i++){
+						if(colCombinations[i].combi == frags[fragCount]){
+							fragmentArray.push(colCombinations[i].name);
+							fragCount++;
+							i=-1;
+							if(fragCount == 3){
+								// We have hours, minutes and seconds
+								log("Hours, minutes and seconds!");
+								/*
+								 * Create a new column with the combined date fragments,
+								 * then type it as a date within Refine.
+								 */
+								self.createNewColumn(fragmentArray,monthBeforeDay,function(newColName,mb4d){
+
+									// Check order of month and day
+									if(mb4d){
+										self.typeAsXSDDate(newColName,"toDate(value,false)");
+									} else {
+										self.typeAsXSDDate(newColName,"toDate(value,true)");
+									}									
+								});
+								// Break
+								i=colCombinations.length;
+							}
+						}
+					}
 				}
-			});
 
-		},
+			} else if(colCombinations.length == 6){
 
-		/*
-		 * Properly types a timestamp within Refine and produces
-		 * RDF.
-		 */
-		simpleTime:function(){
+				/*
+				 * Check for a full house
+				 */
+				var fragCount=0;
+				var frags = ['Y','M','D','h','m','s'];
+				var fragmentArray = [];
+				for(var i=0;i<colCombinations.length;i++){
+					if(colCombinations[i].combi == frags[fragCount]){
+						fragmentArray.push(colCombinations[i].name);
+						fragCount++;
+						i=-1;
+						if(fragCount == 3){
+							// We have years, months, days, hours, minutes and seconds
+							//log("Year, month, day, hours, minutes and seconds!");
+							/*
+							 * Create a new column with the combined date fragments,
+							 * then type it as a date within Refine.
+							 */
+							self.createNewColumn(fragmentArray,monthBeforeDay,function(newColName,mb4d){
 
-		},
+								// Check order of month and day
+								if(mb4d){
+									self.typeAsXSDDate(newColName,"toDate(value,false)");
+								} else {
+									self.typeAsXSDDate(newColName,"toDate(value,true)");
+								}									
+							});
+							// Break
+							i=colCombinations.length;
+						}
+					}
+				}				
+			} else {
 
-		/*
-		 * Takes a number of columns that contain part of a timestamp 
-		 * and concatenates them together using the iterated expression 
-		 * builder.
-		 */
-		fragmentedTime:function(){
+				/*
+				 * Otherwise check what we're dealing with
+				 */
+				for(var i=0; i<colCombinations.length;i++){
 
-		},
+					log("colCombinations[i].combi: "+colCombinations[i].combi)
 
-		/*
-		 * Used in conjunction with fragmented date and time, it 
-		 * takes a number of columns and attempts to build a 
-		 * concatenation expression for date or time in the correct 
-		 * order.
-		 * 
-		 * E.g. if the columns picked were "Year, Month, Day", the 
-		 * expression built would produce a date in the order 
-		 * "Day-Month-Year".
-		 */
-		buildExpression:function(){
+					/*
+					 * Any date/time that includes a year, day and month can be 
+					 * typed within Refine as a date.
+					 */
+					switch(colCombinations[i].combi){
 
-			var self = this;
-			var expression = "";
-			// Set up the order of date parts for the new date
-			var dateOrder = ["Year", "Month", "Day", "Hours", "Minutes", "Seconds"];
-			// Array of selected columns
-			var cols = self.vars.columns;
-			// Array of the selected column "should-be" date fragments (from the select inputs)
-			var colFragments = self.vars.colFragments;
+					case "s" :
+						break;
+					case "m" :
+						break;
+					case "m-s" :
+						break;
+					case "h" :
+						break;
+					case "h-m" :
+						//Special
+						break;
+					case "h-m-s" :
+						//Special
+						//Full time in one column
+						//Create new column called Time
+						alert("Full time");
+						break;
+					case "D" :
+						break;
+					case "D-h" :
+						break;
+					case "D-h-m" :
+						break;
+					case "D-h-m-s" :
+						break;
+					case "M" :
+						break;
+					case "M-D" :
+						// Check order of month and day
+						break;
+					case "M-D-h-m" :
+						// Check order of month and day
+						break;
+					case "M-D-h-m-s" :
+						// Check order of month and day
+						break;
+					case "Y" :
+						break;
+					case "Y-M" :
+						break;
+					case "Y-M-D" :
+						// Full date in one column
 
-			/*
-			 * Build a GREL expression string that concatenates the columns 
-			 * in the correct order, ready to be converted to an ISO date.
-			 */
-			for (var i=0, len=dateOrder.length; i<len; i++) {
-				for(var j=0, len2=colFragments.length; j<len2; j++) {
+						// Check order of month and day
+						if(colCombinations[i].monthBeforeDay){
+							self.typeAsXSDDate(colCombinations[i].name,"toDate(value,false)");
+						} else {
+							self.typeAsXSDDate(colCombinations[i].name,"toDate(value,true)");
+						}
 
-					log('colFragments[j]:');
-					log(colFragments[j]);
-					log('dateOrder[i]:');
-					log(dateOrder[i]);
+						break;
+					case "Y-M-D-h" :
+						// Check order of month and day
+						if(colCombinations[i].monthBeforeDay){
+							self.typeAsXSDDate(colCombinations[i].name,"toDate(value,false)");
+						} else {
+							self.typeAsXSDDate(colCombinations[i].name,"toDate(value,true)");
+						}
+						break;
+					case "Y-M-D-h-m" :
+						// Check order of month and day
+						if(colCombinations[i].monthBeforeDay){
+							self.typeAsXSDDate(colCombinations[i].name,"toDate(value,false)");
+						} else {
+							self.typeAsXSDDate(colCombinations[i].name,"toDate(value,true)");
+						}
+						break;
+					case "Y-M-D-h-m-s" :
+						// Check order of month and day
+						if(colCombinations[i].monthBeforeDay){
+							self.typeAsXSDDate(colCombinations[i].name,"toDate(value,false)");
+						} else {
+							self.typeAsXSDDate(colCombinations[i].name,"toDate(value,true)");
+						}
+						break;
+					default:
+						//Not a valid date or time.
+						alert("Sorry, the date that was selected for the \""+colCombinations[i].combi+"\" column cannot be processed.")
+						break;
 
-					if (colFragments[j] == dateOrder[i]) {
-						expression += 'cells["' + cols[j] + '"].value+"-"+';
 					}
 				}
 			}
 
+		},
+
+		/*
+		 * createNewColumn
+		 * 
+		 * Takes an array of columns in the order of 
+		 * "Y, M, D, h, m, s" and create a new column 
+		 * concatenating those columns in order.
+		 */
+		createNewColumn:function(cols,monthBeforeDay,callback){
+			
+			var self = this;
+			var expr = "";
+			var newName = "";
+			for(var i=0; i<cols.length; i++){
+				expr += 'cells["'+cols[i]+'"].value+"-"+';
+				newName += cols[i]+"-";
+			}
 			/*
 			 * Remove the 'joining' tail of the expression - ( +"-" ).
 			 */
 			try {
-				expression = expression.substring(0, expression.length - 5);
-				log(expression);
+				expr = expr.substring(0, expr.length - 5);
+				newName = newName.substring(0,newName.length-1);
+				log(expr);
 			} catch (e) {
 				log(e);
 				log("Error formatting date");
 			}
 
-			return expression;
+			try{
+			Refine.postCoreProcess("add-column", {
+				baseColumnName: cols[0],
+				expression: expr,
+				newColumnName: newName,
+				columnInsertIndex: Refine.columnNameToColumnIndex(cols[0])+1,
+				onError: "keep-original"
+			}, null, {
+				modelsChanged: true
+			}, {
+				onDone:function(){
+					callback(newName,monthBeforeDay);
+				}
+			});
+			}catch(e){
+				log("Error: dateTimeWizard: createNewColumn()");
+				log(e);
+				alert("A column already exists with the name "+newName+", \"(LG)\" has been appended to the column name for now.");
+				Refine.postCoreProcess("add-column", {
+					baseColumnName: cols[0],
+					expression: expr,
+					newColumnName: newName+" (LG)",
+					columnInsertIndex: Refine.columnNameToColumnIndex(cols[0])+1,
+					onError: "keep-original"
+				}, null, {
+					modelsChanged: true
+				}, {
+					onDone:function(){
+						callback(newName,monthBeforeDay);
+					}
+				});				
+			}
 
 		},
-		
+
+		/*
+		 * typeAsXSDDate
+		 * 
+		 * Posts a minimal text-transform process call 
+		 * (i.e. without a noticeable UI update)
+		 */
+		typeAsXSDDate:function(colName,expr){
+
+			var self = this;
+
+			$.post(
+					"/command/" + "core" + "/" + "text-transform" + "?" + $.param({
+						columnName: colName,
+						expression: expr,
+						repeat: false,
+						repeatCount: "",
+						project: theProject.id
+					}),
+					null,
+					function(){
+						Refine.update({cellsChanged:true},function(){
+							self.saveRDF(colName);
+						});
+					}
+			);
+
+			return false;
+
+		},
+
 		/*
 		 * Saves the finialised date format in RDF.
 		 */
-		saveRDF:function(){
+		saveRDF:function(colName){
+
 			//Add typed class to column header
+			var self = this;
+
+			var dcURI = "http://purl.org/dc/terms/";
+			var dcCURIE = "dc";
+			var xsdURI = "http://www.w3.org/2001/XMLSchema#";
+			var xsdCURIE = "xsd";
+			var timeURI = "http://www.w3.org/2006/time#";
+			var timeCURIE = "time";
+
+			var schema = LinkedGov.vars.rdfSchemaObject;
+
+			/*
+			 * Remove any existing "date" prefixes
+			 */
+			for(var i=0;i<schema.prefixes.length;i++){
+				if(schema.prefixes[i].name == dcCURIE || schema.prefixes[i].name == xsdCURIE || schema.prefixes[i].name == timeCURIE){
+					log("Found existing date RDF prefixes, removing...");
+					schema.prefixes.splice(i,1);
+					i--;
+				}
+			}
+
+			/*
+			 * Remove any existing "address" rootNodes
+			 */
+			for(var i=0;i<schema.rootNodes.length;i++){
+				if(schema.rootNodes[i].id == "date-"+colName){
+					log("Found existing date RDF mappings for column: "+colName+", removing...");
+					schema.rootNodes.splice(i,1);
+					i--;
+				}
+			}
+
+			schema.prefixes.push({
+				"name":dcCURIE,
+				"uri":dcURI
+			});
+			schema.prefixes.push({
+				"name":xsdCURIE,
+				"uri":xsdURI
+			});
+			schema.prefixes.push({
+				"name":timeCURIE,
+				"uri":timeURI
+			});
+
+			schema.rootNodes.push({
+				"id":"date-"+colName,
+				"nodeType":"cell-as-resource",
+				"expression":"value",
+				"isRowNumberCell":true,
+				"rdfTypes":[
+
+				            ],
+				            "links":[
+				                     {
+				                    	 "uri":"http://purl.org/dc/terms/date",
+				                    	 "curie":"dc:date",
+				                    	 "target":{
+				                    		 "nodeType":"cell-as-resource",
+				                    		 "expression":"value+\"#date\"",
+				                    		 "isRowNumberCell":true,
+				                    		 "rdfTypes":[
+				                    		             {
+				                    		            	 "uri":"http://www.w3.org/2006/time#Instant",
+				                    		            	 "curie":"time:Instant"
+				                    		             }
+				                    		             ],
+				                    		             "links":[
+				                    		                      {
+				                    		                    	  "uri":"http://www.w3.org/2006/time#inXSDDateTime",
+				                    		                    	  "curie":"time:inXSDDateTime",
+				                    		                    	  "target":{
+				                    		                    		  "nodeType":"cell-as-literal",
+				                    		                    		  "expression":"value",
+				                    		                    		  "valueType":"http://www.w3.org/2001/XMLSchema#dateTime",
+				                    		                    		  "columnName":colName,
+				                    		                    		  "isRowNumberCell":false
+				                    		                    	  }
+				                    		                      }
+				                    		                      ]
+				                    	 }
+				                     }
+				                     ]
+			});
+
+			/*
+			 * Save the RDF.
+			 */
+			Refine.postProcess("rdf-extension", "save-rdf-schema", {}, {
+				schema: JSON.stringify(schema)
+			}, {}, {
+				onDone: function () {
+					//DialogSystem.dismissUntil(self._level - 1);
+					theProject.overlayModels.rdfSchema = schema;
+					self.onComplete();
+				}
+			});
+
+
+			self.onComplete();
 		},
 
 		/*
@@ -1874,6 +2176,7 @@ LinkedGov.dateTimeWizard = {
 		onComplete:function(){
 			var self = this;
 			LinkedGov.resetWizard(self.vars.elmts.dateTimeBody);
+			LinkedGov.showWizardProgress(false);
 		}
 
 };
@@ -1916,6 +2219,8 @@ LinkedGov.measurementsWizard = {
 		 * 
 		 */
 		initialise: function(elmts) {
+			LinkedGov.showWizardProgress(true);
+
 			var self = this;
 			self.vars.elmts = elmts;
 			self.saveRDF();
@@ -1932,7 +2237,7 @@ LinkedGov.measurementsWizard = {
 			var elmts = self.vars.elmts;
 
 			var prefix = "fb";
-			var namespaceURI = "http://rdf.freebase.com/ns/";
+			var namespaceURI = "http://rdf.freebase.com/rdf/";
 
 			/*
 			 * E.g. 
@@ -1962,43 +2267,75 @@ LinkedGov.measurementsWizard = {
 			 * wizard through the elmts object, and create an RDF Schema JSON object 
 			 * for each of them, and store their measurement data in RDF).
 			 */
+
+			var schema = LinkedGov.vars.rdfSchemaObject;
+
+			for(var i=0;i<schema.rootNodes.length;i++){
+				if(schema.rootNodes[i].id == "lat-long"){
+					//log("Found existing lat-long RDF mappings, removing...");
+					schema.rootNodes.splice(i,1);
+					i--;
+				}
+			}
+			for(var i=0;i<schema.prefixes.length;i++){
+				if(schema.prefixes[i].name == geoCURIE || schema.prefixes[i].name == spatialrelationsCURIE){
+					//log("Found existing lat-long RDF prefixes, removing...");
+					schema.prefixes.splice(i,1);
+					i--;
+				}
+			}						
 			$(elmts.measurementsColumns).children().each(function () {
 
-				var jsonObj = {
-						"prefixes": [{
-							"name": prefix,
-							"uri": namespaceURI
-						}],
-						"baseUri": "http://127.0.0.1:3333/",
-						"rootNodes": [{
-							"nodeType": "cell-as-resource",
+				var schema = LinkedGov.vars.rdfSchemaObject;
+
+				for(var i=0;i<schema.rootNodes.length;i++){
+					if(schema.rootNodes[i].id == "measurements-"+$(this).children("span.col").html()){
+						//log("Found existing lat-long RDF mappings, removing...");
+						schema.rootNodes.splice(i,1);
+						i--;
+					}
+				}
+				for(var i=0;i<schema.prefixes.length;i++){
+					if(schema.prefixes[i].name == prefix){
+						//log("Found existing lat-long RDF prefixes, removing...");
+						schema.prefixes.splice(i,1);
+						i--;
+					}
+				}			
+
+				schema.prefixes.push({
+					"name": prefix,
+					"uri": namespaceURI
+				});
+				schema.rootNodes.push({
+					"id":"measurements-"+$(this).children("span.col").html(),
+					"nodeType": "cell-as-resource",
+					"expression": "value",
+					"isRowNumberCell": true,
+					"rdfTypes": [],
+					"links": [{
+						"uri": uri,
+						"curie": curie,
+						"target": {
+							"nodeType": "cell-as-literal",
 							"expression": "value",
-							"isRowNumberCell": true,
-							"rdfTypes": [],
-							"links": [{
-								"uri": uri,
-								"curie": curie,
-								"target": {
-									"nodeType": "cell-as-literal",
-									"expression": "value",
-									"valueType": "http://www.w3.org/2001/XMLSchema#int",
-									"columnName": $(this).children("span.col").html(),
-									"isRowNumberCell": false
-								}
-							}]
-						}]
-				};
+							"valueType": "http://www.w3.org/2001/XMLSchema#int",
+							"columnName": $(this).children("span.col").html(),
+							"isRowNumberCell": false
+						}
+					}]
+				});
 
 				/*
 				 * Save the RDF
 				 */
 				Refine.postProcess("rdf-extension", "save-rdf-schema", {}, {
-					schema: JSON.stringify(jsonObj)
+					schema: JSON.stringify(schema)
 				}, {}, {
 					onDone: function () {
 						//DialogSystem.dismissUntil(self._level - 1);
+						theProject.overlayModels.rdfSchema = schema;
 						self.onComplete();
-						theProject.overlayModels.rdfSchema = jsonObj;
 					}
 				});
 
@@ -2013,6 +2350,7 @@ LinkedGov.measurementsWizard = {
 			var self = this;
 			LinkedGov.resetWizard(self.vars.elmts.measurementsBody);
 			//Add typed class to column header
+			LinkedGov.showWizardProgress(false);
 		}
 
 };
@@ -2066,8 +2404,11 @@ LinkedGov.addressWizard = {
 		 */
 		initialise: function(elmts){
 
+			LinkedGov.showWizardProgress(true);
+
 			var self = this;
 			self.vars.elmts = elmts;
+
 
 			/*
 			 * Build the fragment/column array and check if a 
@@ -2076,16 +2417,24 @@ LinkedGov.addressWizard = {
 			 */
 			self.vars.fragmentsToColumns = self.getFragments();
 
-			log('self.vars.fragmentsToColumns:');
-			log(self.vars.fragmentsToColumns);
+			//log('self.vars.fragmentsToColumns:');
+			//log(self.vars.fragmentsToColumns);
+
+			var postcodePresent = 0;
 
 			for(var i=0;i<self.vars.fragmentsToColumns.length;i++){
-				log(self.vars.fragmentsToColumns[i]);
+				//log(self.vars.fragmentsToColumns[i]);
 				if(self.vars.fragmentsToColumns[i].type == "postcode"){
-					self.checkPostCode(self.vars.fragmentsToColumns[i].name,function(){
-						self.saveRDF();
-					});
+					postcodePresent = i;
 				}
+			}
+
+			if(postcodePresent > 0){
+				self.checkPostCode(self.vars.fragmentsToColumns[postcodePresent].name,function(){
+					self.saveRDF();
+				});
+			}else {
+				self.saveRDF();				
 			}
 
 		},
@@ -2159,7 +2508,7 @@ LinkedGov.addressWizard = {
 				modelsChanged: true
 			}, {
 				onDone:function(){
-					
+
 					// Remove the old postcode column
 					$.post(
 							"/command/" + "core" + "/" + "remove-column" + "?" + $.param({
@@ -2168,7 +2517,7 @@ LinkedGov.addressWizard = {
 							}),
 							null,
 							function(){
-								
+
 								// Rename new column to old column name
 								$.post(
 										"/command/" + "core" + "/" + "rename-column" + "?" + $.param({
@@ -2193,7 +2542,7 @@ LinkedGov.addressWizard = {
 													log("fragmentsToColumns[i].name = "+fragmentsToColumns[i].name);
 												}
 											}
-											*/
+											 */
 											callback();															
 										},
 										"json"
@@ -2201,7 +2550,7 @@ LinkedGov.addressWizard = {
 							},
 							"json"
 					);
-					
+
 
 				}
 			});	
@@ -2232,6 +2581,8 @@ LinkedGov.addressWizard = {
 			/*
 			 * Store the URIs & namespaces
 			 */
+			var rdfsURI = "http://www.w3.org/2000/01/rdf-schema#";
+			var rdfsCURIE = "rdfs";
 			var vcardURI = "http://www.w3.org/2006/vcard/ns#";
 			var vcardCURIE = "vcard";
 			var ospcURI = "http://data.ordnancesurvey.co.uk/ontology/postcode/";
@@ -2243,7 +2594,7 @@ LinkedGov.addressWizard = {
 			//log("fragments:");
 			//log(fragments);
 
-			
+
 			/*
 			 * Loop through the fragments, the type value can be:
 			 * 
@@ -2276,8 +2627,8 @@ LinkedGov.addressWizard = {
 					 * Create the other vCard address fragments
 					 */
 					uri = vcardURI+fragments[i].type;
-					curie = vcardCURIE+":"+fragments[i].type;
-					schemaFragmentArray.push(self.makeVCardFragment(fragments[i].name,uri,curie));
+				curie = vcardCURIE+":"+fragments[i].type;
+				schemaFragmentArray.push(self.makeVCardFragment(fragments[i].name,uri,curie));
 
 				}
 			}
@@ -2300,63 +2651,79 @@ LinkedGov.addressWizard = {
 			 * TODO: Base URI needs to be dynamic.
 			 * TODO: Other URIs should be dynamic.
 			 */
-			var schemaObj = {
-					"prefixes":[{
-						"name":"rdfs",
-						"uri":"http://www.w3.org/2000/01/rdf-schema#"
-					},
-					{
-						"name":"vcard",
-						"uri":"http://www.w3.org/2006/vcard/ns#"
-					},
-					{
-						"name":"ospc",
-						"uri":"http://data.ordnancesurvey.co.uk/ontology/postcode/"
+
+			var schema = LinkedGov.vars.rdfSchemaObject;
+
+			/*
+			 * Remove any existing "address" prefixes
+			 */
+			for(var i=0;i<schema.prefixes.length;i++){
+				if(schema.prefixes[i].name == rdfsCURIE || schema.prefixes[i].name == vcardCURIE || schema.prefixes[i].name == ospcCURIE){
+					log("Found existing address RDF prefixes, removing...");
+					schema.prefixes.splice(i,1);
+					i--;
+				}
+			}
+
+			/*
+			 * Remove any existing "address" rootNodes
+			 */
+			for(var i=0;i<schema.rootNodes.length;i++){
+				if(schema.rootNodes[i].id == "address"){
+					log("Found existing address RDF mappings, removing...");
+					schema.rootNodes.splice(i,1);
+					i--;
+				}
+			}
+
+			schema.prefixes.push({
+				"name":rdfsCURIE,
+				"uri":rdfsURI
+			});
+			schema.prefixes.push({
+				"name":vcardCURIE,
+				"uri":vcardURI
+			});
+			schema.prefixes.push({
+				"name":ospcCURIE,
+				"uri":ospcURI
+			});
+
+			schema.rootNodes.push({
+				"id":"address",
+				"nodeType":"cell-as-resource",
+				"expression":"value",
+				"isRowNumberCell":true,
+				"rdfTypes":[{
+					"uri":"http://www.w3.org/2006/vcard/ns#VCard",
+					"curie":"vcard:VCard"
+				}],
+				"links":[{
+					"uri":"http://www.w3.org/2006/vcard/ns#adr",
+					"curie":"vcard:adr",
+					"target":{
+						"nodeType":"cell-as-resource",
+						"expression":"value+\"#address\"",
+						"isRowNumberCell":true,
+						"rdfTypes":[{
+							"uri":"http://www.w3.org/2006/vcard/ns#Address",
+							"curie":"vcard:Address"
+						}],
+						"links":schemaFragmentArray
 					}
-					],
-					"baseUri":"http://localhost:3333/",
-					"rootNodes":[
-					             {
-					            	 "nodeType":"cell-as-resource",
-					            	 "expression":"value",
-					            	 "isRowNumberCell":true,
-					            	 "rdfTypes":[
-					            	             {
-					            	            	 "uri":"http://www.w3.org/2006/vcard/ns#VCard",
-					            	            	 "curie":"vcard:VCard"
-					            	             }
-					            	             ],
-					            	             "links":[
-					            	                      {
-					            	                    	  "uri":"http://www.w3.org/2006/vcard/ns#adr",
-					            	                    	  "curie":"vcard:adr",
-					            	                    	  "target":{
-					            	                    		  "nodeType":"cell-as-resource",
-					            	                    		  "expression":"value+\"#address\"",
-					            	                    		  "isRowNumberCell":true,
-					            	                    		  "rdfTypes":[
-					            	                    		              {
-					            	                    		            	  "uri":"http://www.w3.org/2006/vcard/ns#Address",
-					            	                    		            	  "curie":"vcard:Address"
-					            	                    		              }
-					            	                    		              ],
-					            	                    		              "links":schemaFragmentArray
-					            	                    	  }
-					            	                      }
-					            	                      ]
-					             }
-					             ]
-			};
+				}]
+			});
 
 			/*
 			 * Save the RDF.
 			 */
 			Refine.postProcess("rdf-extension", "save-rdf-schema", {}, {
-				schema: JSON.stringify(schemaObj)
+				schema: JSON.stringify(schema)
 			}, {}, {
 				onDone: function () {
 					//DialogSystem.dismissUntil(self._level - 1);
-					theProject.overlayModels.rdfSchema = schemaObj;
+					theProject.overlayModels.rdfSchema = schema;
+					self.onComplete();
 				}
 			});
 
@@ -2389,7 +2756,7 @@ LinkedGov.addressWizard = {
 		 *  a label.
 		 */
 		makeOSPCFragment:function(colName,uri,curie,pcodeURI){
-			
+
 			var o = {
 					"uri":uri,
 					"curie":curie,
@@ -2401,20 +2768,18 @@ LinkedGov.addressWizard = {
 						"rdfTypes":[
 
 						            ],
-						            "links":[
-						                     {
-						                    	 "uri":"http://www.w3.org/2000/01/rdf-schema#label",
-						                    	 "curie":"rdfs:label",
-						                    	 "target":{
-						                    		 "nodeType":"cell-as-literal",
-						                    		 "expression":"value",
-						                    		 "columnName":colName,
-						                    		 "isRowNumberCell":false
-						                    	 }
-						                     }
-						                     ]
+						            "links":[{
+						            	"uri":"http://www.w3.org/2000/01/rdf-schema#label",
+						            	"curie":"rdfs:label",
+						            	"target":{
+						            		"nodeType":"cell-as-literal",
+						            		"expression":"value",
+						            		"columnName":colName,
+						            		"isRowNumberCell":false
+						            	}
+						            }]
 					}
-			}
+			};
 
 			return o;
 		},
@@ -2426,6 +2791,7 @@ LinkedGov.addressWizard = {
 			var self = this;
 			LinkedGov.resetWizard(self.vars.elmts.addressBody);
 			//Add typed class to column headers
+			LinkedGov.showWizardProgress(false);
 		}
 };
 
@@ -2469,6 +2835,8 @@ LinkedGov.latLongWizard = {
 		 */
 		initialise: function(elmts){
 
+			LinkedGov.showWizardProgress(true);
+
 			var self = this;
 			self.vars.elmts = elmts;
 
@@ -2481,7 +2849,7 @@ LinkedGov.latLongWizard = {
 
 			log('self.vars.fragmentsToColumns:');
 			log(self.vars.fragmentsToColumns);
-			
+
 			self.saveRDF();
 
 		},
@@ -2544,12 +2912,12 @@ LinkedGov.latLongWizard = {
 			var geoCURIE = "geo";
 
 			var spatialrelationsURI = "http://data.ordnancesurvey.co.uk/ontology/spatialrelations/";
-			var spatialrelationsCURIE = "spatialrelations"
+			var spatialrelationsCURIE = "spatialrelations";
 			var uri, curie = "";
 
 			//log("fragments:");
 			//log(fragments);
-			
+
 			/*
 			 * Loop through the fragments, the type value can be:
 			 * 
@@ -2604,197 +2972,17 @@ LinkedGov.latLongWizard = {
 				}
 			}
 
-			
-			
-			
-			
-			
-			
-			
-	/*		
-			
-			
-			{
-				   "prefixes":[
-				      {
-				         "name":"rdfs",
-				         "uri":"http://www.w3.org/2000/01/rdf-schema#"
-				      },
-				      {
-				         "name":"ospc",
-				         "uri":"http://data.ordnancesurvey.co.uk/ontology/postcode/"
-				      },
-				      {
-				         "name":"vcard",
-				         "uri":"http://www.w3.org/2006/vcard/ns#"
-				      },
-				      {
-				         "name":"geo",
-				         "uri":"http://www.w3.org/2003/01/geo/wgs84_pos#"
-				      }
-				   ],
-				   "baseUri":"http://localhost:3333/",
-				   "rootNodes":[
-				      {
-				         "nodeType":"cell-as-resource",
-				         "expression":"value",
-				         "isRowNumberCell":true,
-				         "rdfTypes":[
-				            {
-				               "uri":"http://www.w3.org/2006/vcard/ns#VCard",
-				               "curie":"vcard:VCard"
-				            }
-				         ],
-				         "links":[
-				            {
-				               "uri":"http://www.w3.org/2006/vcard/ns#adr",
-				               "curie":"vcard:adr",
-				               "target":{
-				                  "nodeType":"cell-as-resource",
-				                  "expression":"value+\"#address\"",
-				                  "isRowNumberCell":true,
-				                  "rdfTypes":[
-				                     {
-				                        "uri":"http://www.w3.org/2006/vcard/ns#Address",
-				                        "curie":"vcard:Address"
-				                     }
-				                  ],
-				                  "links":[
-				                     {
-				                        "uri":"http://www.w3.org/2006/vcard/ns#postcode",
-				                        "curie":"vcard:postcode",
-				                        "target":{
-				                           "nodeType":"cell-as-literal",
-				                           "expression":"value",
-				                           "columnName":"SCHOOL - POSTCODE",
-				                           "isRowNumberCell":false
-				                        }
-				                     },
-				                     {
-				                        "uri":"http://data.ordnancesurvey.co.uk/ontology/postcode/postcode",
-				                        "curie":"ospc:postcode",
-				                        "target":{
-				                           "nodeType":"cell-as-resource",
-				                           "expression":"\"http://data.ordnancesurvey.co.uk/id/postcodeunit/\"+value.replace(\" \",\"\")",
-				                           "columnName":"SCHOOL - POSTCODE",
-				                           "isRowNumberCell":false,
-				                           "rdfTypes":[
 
-				                           ],
-				                           "links":[
-				                              {
-				                                 "uri":"http://www.w3.org/2000/01/rdf-schema#label",
-				                                 "curie":"rdfs:label",
-				                                 "target":{
-				                                    "nodeType":"cell-as-literal",
-				                                    "expression":"value",
-				                                    "columnName":"SCHOOL - POSTCODE",
-				                                    "isRowNumberCell":false
-				                                 }
-				                              }
-				                           ]
-				                        }
-				                     },
-				                     {
-				                        "uri":"http://www.w3.org/2006/vcard/ns#street-address",
-				                        "curie":"vcard:street-address",
-				                        "target":{
-				                           "nodeType":"cell-as-literal",
-				                           "expression":"value",
-				                           "columnName":"SCHOOL - ADDRESS_1",
-				                           "isRowNumberCell":false
-				                        }
-				                     },
-				                     {
-				                        "uri":"http://www.w3.org/2006/vcard/ns#extended-address",
-				                        "curie":"vcard:extended-address",
-				                        "target":{
-				                           "nodeType":"cell-as-literal",
-				                           "expression":"value",
-				                           "columnName":"SCHOOL - ADDRESS_2",
-				                           "isRowNumberCell":false
-				                        }
-				                     },
-				                     {
-				                        "uri":"http://www.w3.org/2006/vcard/ns#locality",
-				                        "curie":"vcard:locality",
-				                        "target":{
-				                           "nodeType":"cell-as-literal",
-				                           "expression":"value",
-				                           "columnName":"SCHOOL - ADDRESS_3",
-				                           "isRowNumberCell":false
-				                        }
-				                     }
-				                  ]
-				               }
-				            }
-				         ]
-				      },
-				      {
-				         "nodeType":"cell-as-resource",
-				         "expression":"value",
-				         "isRowNumberCell":true,
-				         "rdfTypes":[
+			//for(var i=0;i<LinkedGov.vars.rdfSchemaObject.prefixes.length;i++){
+			//	if(LinkedGov.vars.rdfSchemaObject.prefixes[i].name != "")
+			//}
+			var geoURI = "http://www.w3.org/2003/01/geo/wgs84_pos#";
+			var geoCURIE = "geo";
 
-				         ],
-				         "links":[
-				            {
-				               "uri":"http://www.w3.org/2003/01/geo/wgs84_pos#location",
-				               "curie":"geo:location",
-				               "target":{
-				                  "nodeType":"cell-as-resource",
-				                  "expression":"value+\"#point\"",
-				                  "isRowNumberCell":true,
-				                  "rdfTypes":[
-				                     {
-				                        "uri":"http://www.w3.org/2003/01/geo/wgs84_pos#Point",
-				                        "curie":"geo:Point"
-				                     }
-				                  ],
-				                  "links":[
-				                     {
-				                        "uri":"http://www.w3.org/2003/01/geo/wgs84_pos#lat",
-				                        "curie":"geo:lat",
-				                        "target":{
-				                           "nodeType":"cell-as-literal",
-				                           "expression":"value",
-				                           "columnName":"SCHOOL - LATTIUDE",
-				                           "isRowNumberCell":false
-				                        }
-				                     },
-				                     {
-				                        "uri":"http://www.w3.org/2003/01/geo/wgs84_pos#long",
-				                        "curie":"geo:long",
-				                        "target":{
-				                           "nodeType":"cell-as-literal",
-				                           "expression":"value",
-				                           "columnName":"SCHOOL - LONGITUDE",
-				                           "isRowNumberCell":false
-				                        }
-				                     }
-				                  ]
-				               }
-				            }
-				         ]
-				      }
-				   ]
-				}		
-			
-			
-			
-			
-			
-			
-			
-		*/	
-			
-			
-			
-			
-			
-			
-			
-			
+			var spatialrelationsURI = "http://data.ordnancesurvey.co.uk/ontology/spatialrelations/";
+			var spatialrelationsCURIE = "spatialrelations";
+
+
 			/*
 			 * The RDF plugin's schema object that's posted to the save-rdf-schema 
 			 * process.
@@ -2810,42 +2998,54 @@ LinkedGov.latLongWizard = {
 			 * TODO: Other URIs should be dynamic.
 			 */
 
-			var schemaObj = {
-					   "prefixes":[
-					               {
-					                  "name":geoCURIE,
-					                  "uri":geoURI
-					               },
-					               {
-						               "name":spatialrelationsCURIE,
-						               "uri":spatialrelationsURI
-						            }
-					               
-					            ],
-					            "baseUri":"http://localhost:3333/",
-					            "rootNodes":[
-					               {
-					                  "nodeType":"cell-as-resource",
-					                  "expression":"value+\"#point\"",
-					                  "isRowNumberCell":true,
-					                  "rdfTypes":[{
-					                	  "uri":"http://www.w3.org/2003/01/geo/wgs84_pos#Point",
-					                	  "curie":"geo:Point"
-					                  }],
-					                  "links":schemaFragmentArray
-					               }
-					            ]
-					         };
+			var schema = LinkedGov.vars.rdfSchemaObject;
+
+			for(var i=0;i<schema.rootNodes.length;i++){
+				if(schema.rootNodes[i].id == "lat-long"){
+					//log("Found existing lat-long RDF mappings, removing...");
+					schema.rootNodes.splice(i,1);
+					i--;
+				}
+			}
+			for(var i=0;i<schema.prefixes.length;i++){
+				if(schema.prefixes[i].name == geoCURIE || schema.prefixes[i].name == spatialrelationsCURIE){
+					//log("Found existing lat-long RDF prefixes, removing...");
+					schema.prefixes.splice(i,1);
+					i--;
+				}
+			}			
+
+			schema.prefixes.push({
+				name:geoCURIE,
+				uri:geoURI
+			});
+			schema.prefixes.push({
+				name:spatialrelationsCURIE,
+				uri:spatialrelationsURI
+			});			
+			schema.rootNodes.push({
+				"id":"lat-long",
+				"nodeType":"cell-as-resource",
+				"expression":"value+\"#point\"",
+				"isRowNumberCell":true,
+				"rdfTypes":[{
+					"uri":"http://www.w3.org/2003/01/geo/wgs84_pos#Point",
+					"curie":"geo:Point"
+				}],
+				"links":schemaFragmentArray
+			});
+
 
 			/*
 			 * Save the RDF.
 			 */
 			Refine.postProcess("rdf-extension", "save-rdf-schema", {}, {
-				schema: JSON.stringify(schemaObj)
+				schema: JSON.stringify(schema)
 			}, {}, {
 				onDone: function () {
 					//DialogSystem.dismissUntil(self._level - 1);
-					theProject.overlayModels.rdfSchema = schemaObj;
+					theProject.overlayModels.rdfSchema = schema;
+					self.onComplete();
 				}
 			});
 
@@ -2856,18 +3056,18 @@ LinkedGov.latLongWizard = {
 		 * for a fragment of a vCard address.
 		 */
 		makeFragmentRDF:function(colName,uri,curie){
-			
+
 			var o = {
-                    "uri":uri,
-                    "curie":curie,
-                    "target":{
-                       "nodeType":"cell-as-literal",
-                       "expression":"value",
-                       "columnName":colName,
-                       "isRowNumberCell":false
-                    }
+					"uri":uri,
+					"curie":curie,
+					"target":{
+						"nodeType":"cell-as-literal",
+						"expression":"value",
+						"columnName":colName,
+						"isRowNumberCell":false
+					}
 			};
-	                  
+
 
 			return o;
 		},
@@ -2880,7 +3080,208 @@ LinkedGov.latLongWizard = {
 			var self = this;
 			LinkedGov.resetWizard(self.vars.elmts.latLongBody);
 			//Add typed class to column headers
+			LinkedGov.showWizardProgress(false);
 		}
+};
+
+LinkedGov.splitVariablePartColumn = {
+
+		vars:{
+			colName:"",
+			separator:"",
+			callback:{},
+			lowestNumberOfParts:0
+		},
+
+		initialise:function(colName,separator,callback){
+			var self = this;
+			self.vars.colName = colName;
+			self.vars.separator = separator;
+			self.vars.callback = callback;
+
+			self.findLowestNumberOfParts();
+		},
+
+		findLowestNumberOfParts:function(){
+
+			var self = this;
+			// Create custom text facet
+
+			/*
+			 * Build a parameter object using the first of the column
+			 * names.
+			 */
+			var facetParams = {
+					"facets":[
+					          {"type":"list",
+					        	  "name":self.vars.colName,
+					        	  "columnName":self.vars.colName,
+					        	  "expression":"value.split(\""+self.vars.separator+"\").length()",
+					        	  "omitBlank":false,
+					        	  "omitError":false,
+					        	  "selection":[],
+					        	  "selectBlank":false,
+					        	  "selectError":false,
+					        	  "invert":false
+					          }
+					          ],
+					          "mode":"row-based"
+			};
+
+			/*
+			 * Post a minimal call (remembering to include 'theProject' parameter for 
+			 * minimal calls).
+			 */
+			$.post(
+					"/command/core/compute-facets?" + $.param({ project: theProject.id }),
+					{ engine: JSON.stringify(facetParams) },
+					function(data) {
+						/*
+						 * Loop through the UI facets
+						 */
+						log("data.facets.length = "+data.facets.length);
+						for(var i=0; i<data.facets.length; i++){
+							log("i="+i);
+							/*
+							 * If the facet matches the column name and has choices returned
+							 */
+							if(data.facets[i].columnName == self.vars.colName && typeof data.facets[i].choices != 'undefined'){
+								log("Facet data received successfully");
+								var temp = 99;
+								for(var h=0; h<data.facets[i].choices.length;h++){
+									if(data.facets[i].choices[h].v.v < temp){
+										temp = data.facets[i].choices[h].v.v;
+									}
+								}
+								self.vars.lowestNumberOfParts = temp;
+
+								log("Lowest number of parts for column "+self.vars.colName+": "+temp);
+							}
+						}
+
+						if(temp < 2){
+							self.onFail();
+						} else {
+							self.createNewColumns(1, self.vars.lowestNumberOfParts-1);
+						}
+
+					}
+			);			
+		},
+
+		/*
+		 * createNewColumns
+		 * 
+		 * Recursive function that creates the new columns after splitting
+		 * the selected address column.
+		 * 
+		 * Takes 2 parameters. "partIndex" is the index used to grab 
+		 * the particular part of the split array, i.e. value.split(",")[partIndex].
+		 * colSuffix is the number used to append to the name of the column 
+		 * when creating the new columns.
+		 *
+		 */
+		createNewColumns:function(partIndex, colSuffix){
+
+			log("createNewColumns");
+
+			var self = this;
+			// Add new columns for value parts depending on the 
+			// the lowest number of parts
+
+			if(partIndex < self.vars.lowestNumberOfParts && colSuffix > 0){
+
+				try{
+					Refine.postCoreProcess("add-column", {
+						baseColumnName: self.vars.colName,
+						expression: 'value.split("'+self.vars.separator+'")[value.split("'+self.vars.separator+'").length()-'+partIndex+'].trim()',
+						newColumnName: self.vars.colName+" "+colSuffix,
+						columnInsertIndex: Refine.columnNameToColumnIndex(self.vars.colName)+1,
+						onError: "keep-original"
+					}, null, {
+						modelsChanged: true
+					}, {
+						onDone:function(){
+							self.createNewColumns(partIndex, colSuffix);
+						}
+					});
+				}catch(e){
+					log("Error: splitVariablePartColumn - createNewColumns()")
+					log(e);
+					alert("A column already exists with the name "+self.vars.colName+" "+colSuffix+", \"(LG)\" has been appended to the column name for now.");
+					/*
+					 * If the error is due to the new column name already existing 
+					 * then append a more unique suffix
+					 */
+					Refine.postCoreProcess("add-column", {
+						baseColumnName: self.vars.colName,
+						expression: 'value.split("'+self.vars.separator+'")[value.split("'+self.vars.separator+'").length()-'+partIndex+'].trim()',
+						newColumnName: self.vars.colName+" "+colSuffix+" (LG)",
+						columnInsertIndex: Refine.columnNameToColumnIndex(self.vars.colName)+1,
+						onError: "keep-original"
+					}, null, {
+						modelsChanged: true
+					}, {
+						onDone:function(){
+							self.createNewColumns(partIndex, colSuffix);
+						}
+					});
+				}
+
+				partIndex++;
+				colSuffix--
+			} else {
+				self.partitionForLastPart();
+			}
+
+		},
+
+		partitionForLastPart:function(){
+
+			log("partitionForLastPart");
+
+			// Finally, perform a text transform on the selected column using 
+			// the GREL partition function, leaving us with any values upto  
+			// the last value we created a new colum for.
+			var self = this;
+
+
+
+			$.post(
+					"/command/" + "core" + "/" + "text-transform" + "?" + $.param({
+						columnName: self.vars.colName, 
+						expression: 'partition(value,"'+self.vars.separator+'"+value.split("'+self.vars.separator+'")[value.split("'+self.vars.separator+'").length()-2])[0].trim()', 
+						onError: "keep-original",
+						repeat: false,
+						repeatCount: 10,
+						project:theProject.id
+					}),
+					null,
+					function(){
+						self.onComplete();
+					},
+					"json"
+			);
+
+		},
+
+		onFail:function(){
+			alert("This split will have no effect as there are single-part values in this column.");
+			self.vars.callback();
+		},
+
+		/*
+		 * onComplete
+		 */
+		onComplete:function(){
+			var self = this;
+
+			Refine.update({cellsChanged:true},function(){
+				self.vars.callback();
+			});
+
+		}
+
 };
 
 /*
@@ -2892,8 +3293,10 @@ LinkedGov.latLongWizard = {
  * Overriding the main DOM.loadHTML function allows us to inject 
  * our own JS whenever Refine injects HTML.
  */
-DOM.loadHTML = function(module, path) {
+DOM.loadHTML = function(module, path, callback) {
 
+	callback = callback || function(){};
+	
 	if(path == ""){
 		module = "linkedgov";
 		path = "";
@@ -2907,11 +3310,15 @@ DOM.loadHTML = function(module, path) {
 			success: function(html) {
 				DOM._loadedHTML[fullPath] = html;
 				LinkedGov.loadHTMLCallback(fullPath);
+				callback();
 			}
 		});
+	} else {
+		callback();
 	}
 	return DOM._loadedHTML[fullPath];
 };
+
 
 function log(str) {
 	window.console && console.log && LinkedGov.vars.debug && console.log(str);
