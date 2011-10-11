@@ -356,7 +356,7 @@ body.lg div.wizard-body ul.column-display li span.colOptions {
     padding-right: 0;
 }
 body.lg div.wizard-body ul.column-display li span.colOptions span {
-	padding-left:1%;
+	padding-left:3px;
 }
 body.lg div.wizard-body ul.date-checkboxes li span.colOptions.mb4d, 
 body.lg div.wizard-body ul.date-checkboxes li span.colOptions.day, 
