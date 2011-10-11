@@ -1,10 +1,11 @@
+/*
 body.lg #header {
 	height: 40px;
     margin: 10px;
     overflow: visible;
     position: relative;
 }
-body.lg aapp-home-button img {
+body.lg a#app-home-button img {
     margin-left: 10px;
     margin-top: -3px;
     z-index: 9999;	
@@ -15,6 +16,8 @@ body.lg #project-title {
     left: 60px;
     padding: 4px 0 0;	
 }
+*/
+
 body.wizard-progress div.dialog-frame, body.wizard-progress div.dialog-overlay {
 	display:none !important;
 }
@@ -55,7 +58,6 @@ body.lg div.wizardProgressMessage p img {
     margin: 10px auto auto;
 }
 body.lg table.data-table td.column-header.typed {
-	/*background-image: url("http://127.0.0.1:3333/extension/linkedgov/images/rdf-small.png");*/
     background-image: url("../images/rdf-small.png");
     background-position: right center;
     background-repeat: no-repeat;
@@ -101,6 +103,7 @@ body.lg table.data-table tr td.skip {
 }
 
 body.lg div.typing-panel-body {
+	bottom:0;
     height: auto !important;
     overflow-y: auto;
     padding: 5px 5px 10px 10px;
@@ -109,8 +112,8 @@ body.lg div.typing-panel-body {
     width: 285px;
 }
 body.lg div.wizard-panel {
-    background-color: #FFFFFF;
-    bottom: 70px;
+    background-color: #E3E9FF;
+    bottom: 32px;
     height: auto !important;
     overflow-y: auto;
     padding: 0;
@@ -120,12 +123,12 @@ body.lg div.wizard-panel {
     left:300px;
 }
 body.lg a.wizard-header {
-    background: url("../images/arrow.png") no-repeat scroll 260px center #EBEEF8;
+    background: url("../images/arrow.png") no-repeat scroll right center #EBEEF8;
     border: 1px solid #BBCCFF;
     color: #444444;
     cursor: pointer;
     display: block;
-    margin: 5px 5px 0 0;
+    margin: 5px 0 0 0;
     padding: 10px 25px 10px 10px;
     text-decoration: none;
 }
@@ -160,6 +163,14 @@ body.lg div.wizard-body p.description {
     display: block;
     padding: 0 0 10px;
     text-align: justify;
+}
+body.lg div.wizard-body p.description a.ex {
+    cursor: pointer;
+    display: block;
+    padding-bottom: 5px;
+}
+body.lg div.wizard-body p.description span.ex-text {
+	display:none;
 }
 body.lg div.wizard-body ol.steps {
     margin: 0 0 10px 25px;
@@ -245,6 +256,7 @@ body.lg div.wizard-body span.note {
 body.lg a.info {
     background: url("../images/info.png") no-repeat scroll 0 0 transparent;
     height: 16px;
+    margin-top: 3px;
     outline: medium none;
     position: absolute;
     right: 15px;
@@ -274,50 +286,51 @@ body.lg div.wizard-body div.selector a.button {
 body.lg div.wizard-body ul.column-display {
     background: none repeat scroll 0 0 #FFFFFF;
     border: 1px solid #DDDDDD;
-    margin-bottom: 5px;
-    margin-top: 10px;
-    max-height: 200px;
-    overflow-y: auto;
-    padding: 0 1px;
-    text-align: left;
-    display:none;
+    color: #333333;
+    display:none;	
+    line-height: 17px;
+    list-style-type: none;
+    margin-bottom: 2px;
+    margin-top: 5px;
+    overflow: hidden;
+    padding-left: 1px;
+    padding-right: 1px;
 }
 body.lg div.wizard-body ul.column-display li {
     background: none repeat scroll 0 0 #FFFFFF;
     border: 1px solid #DDDDDD;
-    color: #246524;
-    height: 17px;
+    color: #333333;
     line-height: 17px;
     list-style-type: none;
     margin-bottom: 1px;
     margin-top: 1px;
     overflow: hidden;
-    padding-left: 3px;
-    vertical-align: middle;
+    padding-left: 0;
+}
+body.lg div.wizard-body ul.column-display li span.col {
+    display: inline-block;
+    padding-bottom: 2px;
+    padding-left: 6px;
+    padding-top: 2px;
 }
 body.lg div.wizard-body ul.column-display li span.remove {
-    /*
-    color: #A94D4D;
+    background-color: #FFD6D6;
+    color: #773030;
     cursor: pointer;
     float: right;
     font-family: Arial;
     font-size: 10px;
-    margin-left: 1px;
-    padding-left: 3px;
-    padding-right: 4px;
-    padding-top: 0;
-    */
-    color: #A94D4D;
-    cursor: pointer;
-    float: right;
-    font-family: Arial;
-    font-size: 10px;
-    margin-left: 1px;
-    padding-left: 2px;
-    padding-right: 3px;
-    padding-top: 0px;
+    height: 21px;
+    line-height: 21px;
+    margin-left: 0;
+    margin-top: 0;
+    padding: 0;
+    text-align: center;
+    width: 21px;
 }
 body.lg div.wizard-body ul.column-display li span.remove:hover {
+	background-color:#773030;
+	color:#FFD6D6;
 }
 body.lg div.wizard-body ul.column-display li.skip {
 	/*opacity:0.5;
@@ -325,91 +338,55 @@ body.lg div.wizard-body ul.column-display li.skip {
 	border:1px solid #CCCCCC;*/
 	display:none;	
 }
-body.lg div.wizard-body ul.column-display li select {
-    float: right;
-    font-size: 10px;
+body.lg div.wizard-body ul.column-display li span.colOptions select {
+    font-size: 12px;
     height: 20px;
-    margin-right: 0;
-    margin-top: -1px;
+    margin: 2px 0 0 4px;
     padding: 0;
-    width: 38%;
 }
-body.lg div.wizard-body ul.fragments li {
-	padding: 2px 0 1px 5px;
-}
-body.lg div.wizard-body ul.column-display li span.col {
-    float: left;
-    width: 92%;
-}
-body.lg div.wizard-body ul.fragments li span.col {
-    float: left;
-    width: 55%;
-}
-body.lg div.wizard-body ul.date-checkboxes li {
-    color: #333333;
-    height: auto;
-    line-height: 17px;
-    list-style-type: none;
-    margin-bottom: 3px;
-    margin-top: 1px;
-    overflow: hidden;
-    padding-bottom: 2px;
-    padding-left: 0;
-}
-body.lg div.wizard-body ul.date-checkboxes li span.col {
-    background-color: #FFFFFF;
-    border: 1px solid #FFFFFF;
-    color: #246524;
-    float: left;
-    margin-bottom: 1px;
-    margin-left: 3px;
-    margin-top: 3px;
-    padding-left: 3px;
-    width: 89%;
-}
-body.lg div.wizard-body div.selector ul.date-checkboxes li select {
-	float: right;
-    font-size: 10px;
-    height: 20px;
-    margin-right: 0;
-    margin-top: 0;
-    padding: 0;
-    width: 39px;
-}
-
-body.lg div.wizard-body ul.date-checkboxes li input.mb4d {
-	clear: both;
-    display: block;
-    float: left;
-    margin-right: 5px;
-}
-body.lg div.wizard-body ul.date-checkboxes li span.colOptions {
+body.lg div.wizard-body ul.column-display li span.colOptions {
     background-color: #F9F9F5;
-    border: 1px solid #CCCCCC;
+    border-top:1px solid #FFFFFF;
     display: block;
-    float: left;
+    float: none;
     font-size: 11px;
-    line-height: 21px;
-    margin-left: 2px;
-    margin-top: 2px;
+    margin-left: 0;
+    margin-top: 0;
     padding-left: 0;
-    padding-right: 4px;
-    width: 89%;
+    padding-right: 0;
 }
-body.lg div.wizard-body ul.date-checkboxes li span.colOptions.mb4d {
+body.lg div.wizard-body ul.column-display li span.colOptions span {
+	padding-left:1%;
+}
+body.lg div.wizard-body ul.date-checkboxes li span.colOptions.mb4d, 
+body.lg div.wizard-body ul.date-checkboxes li span.colOptions.day, 
+body.lg div.wizard-body ul.date-checkboxes li span.colOptions.year {
 	background-color: #FEFFE8;
-	display:none;
+	display: none;
 }
-body.lg div.wizard-body ul.date-checkboxes li span.remove {
-    color: #A94D4D;
-    cursor: pointer;
-    float: right;
-    font-family: Arial;
-    font-size: 10px;
-    margin-left: 1px;
-    padding-left: 0;
-    padding-right: 4px;
-    padding-top: 4px;
+body.lg div.wizard-body ul.date-checkboxes li span.colOptions.day span, 
+body.lg div.wizard-body ul.date-checkboxes li span.colOptions.year span {
+	padding-left:5px;
+}
+body.lg div.wizard-body ul.date-checkboxes li span.colOptions.day input, 
+body.lg div.wizard-body ul.date-checkboxes li span.colOptions.year input {
+    height: 10px;
+    margin-bottom: 2px;
+    margin-left: 6px;
+    margin-top: 2px;
+    width: 30px;
+}
+body.lg div.wizard-body ul.date-checkboxes li span.colOptions.duration {
+	background-color: #FFF6E6;
+}
+body.lg div.wizard-body ul.date-checkboxes li span.colOptions div.duration-input {
+	display:none;
+	padding-left: 5px;
+}
+div.duration-input input.duration-value {
+	font-size: 12px;
+    height: 10px;
+    width: 30px;
 }
 body.lg div.wizard-body ul.date-checkboxes li span.dateFrags span {
     padding-left: 1%;
@@ -420,14 +397,12 @@ body.lg div.wizard-body ul.date-checkboxes li span.dateFrags input {
 }
 body.lg div.update-button {
     background-color: #E3E9FF;
-    bottom: 32px;
+    bottom: 0;
     padding-bottom: 7px;
-    padding-top: 7px;
-    position: absolute;
+    padding-top: 14px;
+    position: relative;
     right: 0;
     text-align: center;
-    width: 300px;
-    left: 300px;
 }
 body.lg div.update-button a.update {
     font-size: 14px;
@@ -465,8 +440,8 @@ body.lg .fbs-pane {
 body.lg div.rangeSelect div.range {
     background-color: #F6F6F6;
     border: 1px solid #DDDDDD;
-    margin-top: 0px;
-    padding: 10px;
+    margin-top: 0;
+    padding: 5px;
     text-align: left;
     display:none;
 }
@@ -484,17 +459,19 @@ body.lg div.rangeSelect div.range select {
 	
 /**** jQuery UI Selectable styles ****/
 body.lg .ui-selectable .ui-selecting { 
-	background: #99FF98; 
+	background-color: #99FF98; 
 }
 body.lg .ui-selected, body.lg .ui-selectable .ui-selected { 
-    background: none repeat scroll 0 0 #DAFFD9;
+    background-color: #DAFFD9;
 }
 body.lg .ui-selectable { 
 	list-style-type: none; 
 	margin: 0; 
 	padding: 0; 
 }
-
+body.lg table.ui-selectable td.column-header:hover {
+	background-color:#99FF98;
+}
 
 /**** jQuery UI Dialog ****/
 /*

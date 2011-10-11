@@ -66,10 +66,9 @@ TypingPanel.prototype._render = function () {
 	 * allows access to the individual elements through the object
 	 * "elmts".
 	 */
-	
+
 	$("a[bind='dateTimeButton']").live("click",function () {
 		self.destroyColumnSelector();
-		log(elmts);
 		LinkedGov.dateTimeWizard.initialise(DOM.bind(self._div));
 	});
 
@@ -105,111 +104,35 @@ TypingPanel.prototype._render = function () {
 };
 
 
-/*
- * wizardInteraction
- * 
- * Handles the opening & closing of wizard panels and what to conceal/
- * reveal to the user.
- * 
- * Also populates the range selector inputs with column names on the 
- * callback of opening up.
- */
-TypingPanel.prototype.openWizard = function(el) {
-
-	/*
-	 * If the wizard is already open, close it.
-	 */
-	if ($(el).hasClass("exp")) {
-		$(el).removeClass("exp");
-		$("a.info").hide();
-		$(el).next('div.wizard-body').slideUp(function () {
-			$(this).find("div.selector").children("div.range").hide();
-		});
-		/*
-		 * otherwise, make sure all other wizards are closed and open 
-		 * the one that's just been clicked.
-		 */
-	} else {
-		$("a.info").hide();
-		$('div.wizard-body').slideUp(function () {
-			$(this).find("div.selector").children("div.range").hide();
-		});
-		$('a.wizard-header.exp').removeClass("exp");
-		$(el).next('div.wizard-body').slideDown(function () {
-			// show the info icon
-			$("a.info").show();
-			/*
-			 * If the wizard contains a range selector, retrieve the 
-			 * column header names and populate the select inputs.
-			 */
-			if ($(this).hasClass("rangeSelect")) {
-				$(this).find("div.selector").children("div.range").hide();
-				var columnHeaders = "";
-				var i = 0;
-				/*
-				 * Grab the column names from the data table and present 
-				 * them as <option> elements.
-				 * TODO: Perhaps grab the names from Refine's DOM object 
-				 * instead.
-				 */
-				$("div.column-header-title span.column-header-name").each(function () {
-					if ($(this).html() != "All") {
-						columnHeaders += "<option data-id='" + i + "' value='" + $(this).html() + "'>" + $(this).html() + "</option>";
-						i++;
-					}
-				});
-				/*
-				 * Populate the select inputs with the <option> elements.
-				 */
-				$(this).find("div.selector").children("div.range").children("select").each(function () {
-					$(this).html(columnHeaders);
-					$(this).val($(this).find("option").eq(0).val());
-				});
-				$(this).find("div.selector").children("div.range").slideDown();
-
-			}
-		});
-		$(el).addClass("exp");
-	}
-
-	$("div.selector a.selectColumn").html("Start Select");
-	$("table.data-table").selectable("destroy");
-	$("table.data-table .column-header").each(function () {
-		$(this).removeClass("ui-selected");
-	});	
-}
-
-
 TypingPanel.prototype.enterWizard = function(wizardName) {
 
 	$("div.wizard-panel").html(DOM.loadHTML("linkedgov", "html/project/"+wizardName+".html",function(){		
 		$("div.typing-panel-body").animate({"left":"-300px"},500);
 		$("div.cancel-button").animate({"left":"0px"},500);
-		$("div.update-button").animate({"left":"0px"},500);
 		$("div.wizard-panel").animate({"left":"0px"},500,function(){
 
 			// show the info icon
 			$("a.info").show();
-			
+
 			//Wire the sticky update button to the wizards specific update button
 			$("div.update-button a.button").attr("bind",$("div.wizard-body").find("a.update").attr("bind"));
-			
+
 			/*
 			 * Perform some JS initialisation specific to the wizard
 			 */
 			switch(wizardName){
-			
+
 			case "measurement-wizard" : 
-				
+
 				// make the measurements text field auto suggest
 				$("#unitInputField").suggest().bind("fb-select", function (e, data) {
 					//alert(data.name + ", " + data.id);
 				});
-				
+
 				break;
-				
+
 			case "rangecolumns-wizard" :
-				
+
 				/*
 				 * If the wizard contains a range selector, retrieve the 
 				 * column header names and populate the select inputs.
@@ -219,12 +142,15 @@ TypingPanel.prototype.enterWizard = function(wizardName) {
 					$("div.rangeSelect").find("div.selector").children("div.range").slideDown();					
 				});
 
-				break
+				break;
+			case "datetime-wizard" :
+				//$("div.wizard-body span.mb4d").css();
+				break;
 			default:
 				break;
-				
+
 			}
-			
+
 		});
 	}));	
 
@@ -234,7 +160,6 @@ TypingPanel.prototype.exitWizard = function() {
 
 	$("div.typing-panel-body").animate({"left":"0px"},500);
 	$("div.cancel-button").animate({"left":"300px"},500);
-	$("div.update-button").animate({"left":"300px"},500);
 	$("div.wizard-panel").animate({"left":"300px"},500, function(){
 		$("div.wizard-panel").find("div.wizard-body").remove();
 	});
@@ -243,9 +168,9 @@ TypingPanel.prototype.exitWizard = function() {
 
 
 TypingPanel.prototype.populateRangeSelector = function(callback) {
-	
+
 	callback = callback || function(){return false};
-	
+
 	var columnHeaders = "";
 	var i = 0;
 	/*
@@ -267,9 +192,9 @@ TypingPanel.prototype.populateRangeSelector = function(callback) {
 		$(this).html(columnHeaders);
 		$(this).val($(this).find("option").eq(0).val());
 	});
-	
+
 	callback();
-	
+
 }
 
 /*
@@ -282,15 +207,12 @@ TypingPanel.prototype.populateRangeSelector = function(callback) {
  */
 TypingPanel.prototype.buttonSelector = function(button, selectType) {
 
+	var self = this;
 	var mode = selectType || "default";
 
 	if ($(button).html() == "Start Select") {
 
-		$("div.selector a.selectColumn").html("Start Select");
-		$("table.data-table").selectable("destroy");
-		$("table.data-table .column-header").each(function () {
-			$(this).removeClass("ui-selected").removeClass("skip");
-		});
+		self.destroyColumnSelector();
 
 		$cols = $(button).parent().children("ul.column-display");
 		$cols.html("").hide();
@@ -355,11 +277,7 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 			}
 		});
 	} else {
-		$("div.selector a.selectColumn").html("Start Select");
-		$("table.data-table").selectable("destroy");
-		$("table.data-table .column-header").each(function () {
-			$(this).removeClass("ui-selected");
-		});
+		self.destroyColumnSelector();
 	}	
 }
 
@@ -376,11 +294,8 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
  */
 TypingPanel.prototype.rangeSelector = function(select) {
 
-	$("div.selector a.selectColumn").html("Start Select");
-	$("table.data-table").selectable("destroy");
-	$("table.data-table .column-header").each(function () {
-		$(this).removeClass("ui-selected");
-	});
+	var self = this;
+	self.destroyColumnSelector();
 
 	$cols = $(select).parent().parent().children("ul.column-display");
 	$cols.html("").hide();
@@ -442,11 +357,11 @@ TypingPanel.prototype.rangeSelector = function(select) {
 	});
 
 	if(colsHTML == ""){
-		
+
 	} else {
 		$cols.html(colsHTML).show();
 	}
-	
+
 }
 
 /*
@@ -479,7 +394,7 @@ TypingPanel.prototype.removeColumn = function(el) {
 	 * the range.
 	 */
 	$cols = $(el).parent("li").parent("ul");
-	
+
 	if($(el).parent("li")[0] === $(el).parent().parent("ul").children().eq(0)[0] || $(el).parent("li")[0] == $(el).parent("li").parent("ul").children("li").eq($(el).parent("li").parent("ul").children("li").length-1)[0]){
 
 		$(el).parent().slideUp(250,function(){
@@ -487,9 +402,9 @@ TypingPanel.prototype.removeColumn = function(el) {
 			$(this).remove();
 
 			while($cols.children("li").length > 0 && $cols.children("li").eq(0).hasClass("skip")){
-					$cols.children("li").eq(0).remove();
+				$cols.children("li").eq(0).remove();
 			}
-			
+
 			if($cols.children("li").length < 1){
 				$cols.html("").hide();
 			}
@@ -544,17 +459,52 @@ TypingPanel.prototype.removeColumn = function(el) {
  */
 TypingPanel.prototype.getFragmentData = function(columnList) {
 
-	var fragmentHTML = "<span class='dateFrags colOptions'>";
+	var fragmentHTML = "";
 
 	switch (columnList.attr("bind")) {
 	case "dateTimeColumns" :
 
+		fragmentHTML = "<span class='dateFrags colOptions'>";
+
 		var symbols = ["Y","M","D","h","m","s"];
 		for(var i=0;i<symbols.length;i++){
-			fragmentHTML += '<input type="checkbox" class="date-checkbox" value="'+symbols[i]+'" /><span>'+symbols[i]+'</span>'
+			fragmentHTML += "<input type='checkbox' class='date-checkbox' value='"+symbols[i]+"' /><span>"+symbols[i]+"</span>";
 		}
 
-		fragmentHTML += '</span><span class="colOptions mb4d"><input type="checkbox" class="mb4d" value="mb4d" /> <span>Month before day (e.g. 07/23/1994)</span></span>';
+		fragmentHTML += "</span>";
+
+		// Option to specify that the date/time is a duration
+		fragmentHTML += "<span class='colOptions duration'>" +
+		"<input type='checkbox' class='duration' value='duration' />" +
+		"<span>Duration</span>" +
+		"<div class='duration-input'>" + 
+		"<input class='duration-value' type='text' />" +
+		"<select class='duration'>" +
+		"<option value='seconds'>seconds</option>" +
+		"<option value='minutes'>minutes</option>" +
+		"<option value='hours'>hours</option>" +
+		"<option value='days'>days</option>" +
+		"<option value='months'>months</option>" +
+		"<option value='years'>years</option>" +
+		"</select>" +
+		"</div>" +
+		"</span>";
+
+		// Option for specifying the order of day and month
+		fragmentHTML += "<span class='colOptions mb4d'>" +
+		"<input type='checkbox' class='mb4d' value='mb4d' />" +
+		"<span>Month before day (e.g. 07/23/1994)</span>" +
+		"</span>";
+		// Input for specifying the year the dates occur in
+		fragmentHTML += "<span class='colOptions year'>" +
+		"<span>Do you know the year?</span>" +
+		"<input type='text' class='year' value='' maxlength='4' />" +
+		"</span>";
+		// Input for specifying the day the times occur on
+		fragmentHTML += "<span class='colOptions day'>" +
+		"<span>Do you know the day?</span>" +
+		"<input type='text' class='day' value='' maxlength='2' />" +
+		"</span>";
 
 		/*
 		 * Add the "fragments" class to the list of columns so CSS styles can 
@@ -564,7 +514,9 @@ TypingPanel.prototype.getFragmentData = function(columnList) {
 		break;
 	case "addressColumns" :
 
-		fragmentHTML = 
+		fragmentHTML = "<span class='colOptions'>";
+
+		fragmentHTML += 
 			"<select class='address-select'>" + 
 			"<option value='street-address'>Street Address</option>" + 
 			"<option value='extended-address'>Extended Address</option>" +
@@ -572,7 +524,10 @@ TypingPanel.prototype.getFragmentData = function(columnList) {
 			"<option value='region'>Region</option>" + 
 			"<option value='postcode'>Postcode</option>" + 
 			"<option value='country-name'>Country</option>" + 
-			"</select>";	
+			"<option value='mixed'>Mixed</option>" + 
+			"</select>";
+
+		fragmentHTML += "</span>";
 
 		/*
 		 * Add the "fragments" class to the list of columns so CSS styles can 
@@ -582,7 +537,9 @@ TypingPanel.prototype.getFragmentData = function(columnList) {
 		break;
 	case "latLongColumns" :
 
-		fragmentHTML = 
+		fragmentHTML = "<span class='colOptions'>";
+
+		fragmentHTML += 
 			"<select class='latlong-select'>" + 
 			"<option value='lat'>Latitude</option>" + 
 			"<option value='long'>Longitude</option>" +
@@ -590,6 +547,7 @@ TypingPanel.prototype.getFragmentData = function(columnList) {
 			"<option value='easting'>Easting</option>" + 
 			"</select>";	
 
+		fragmentHTML += "</span>";
 		/*
 		 * Add the "fragments" class to the list of columns so CSS styles can 
 		 * be applied.
@@ -599,7 +557,6 @@ TypingPanel.prototype.getFragmentData = function(columnList) {
 	default :
 		break;
 	}
-
 
 	return fragmentHTML;
 
@@ -636,13 +593,11 @@ $(document).ready(function() {
 
 			$("div#left-panel div.refine-tabs").tabs('select', 1);
 			$("div#left-panel div.refine-tabs").css("visibility", "visible");			
-			
+
 			clearInterval(interval);
 		}
 
 	}, 5);
-
-
 
 
 	/*
@@ -653,7 +608,16 @@ $(document).ready(function() {
 	});
 
 	$("div.cancel-button a.button").live("click",function(){
+		ui.typingPanel.destroyColumnSelector();
 		ui.typingPanel.exitWizard();
+	});
+
+	$("p.description a.ex").live("click",function(){
+		if($(this).next().css("display") == "none"){
+			$(this).next().show();
+		} else {
+			$(this).next().hide();
+		}
 	});
 
 	/*
@@ -721,41 +685,69 @@ $(document).ready(function() {
 	/*
 	 * Date/time interaction for column lists
 	 */
-	$("ul.date-checkboxes li span.dateFrags input[type='checkbox']").live("change",function(){
-		if($(this).attr("checked")){
+	$("ul.date-checkboxes input[type='checkbox']").live("change",function(){
 
-			var inputs = $(this).parent("span").children("input");
-			var D_and_M = 0;
-			var h_and_m = 0;
-
-			for(var i=0;i<inputs.length;i++){
-				if(inputs.eq(i).attr("checked")){
-					if(inputs.eq(i).val() == "M" || inputs.eq(i).val() == "D"){
-						D_and_M++;
-					} else if(inputs.eq(i).val() == "h" || inputs.eq(i).val() == "m"){
-						h_and_m++;
-					}
-				}
+		var dateString = "";
+		$.each($("ul.date-checkboxes li span.dateFrags input"),function(){
+			if($(this).attr("checked")){
+				dateString += $(this).val()+"-";
 			}
+		});
+		dateString = dateString.substring(0,dateString.length-1);
+		log(dateString);
 
-			if(D_and_M == 2){
-				//alert("day and month selected");
-				$(this).parent("span").parent("li").children("span.mb4d").slideDown();
+		/*
+		 * Detect duration selection
+		 */
+		if($(this).hasClass("duration")){
+
+			if($(this).attr("checked")){
+				$(this).parent("span").parent("li").children("span.duration").find("div.duration-input").data("olddisplay","block");
+				$(this).parent("span").parent("li").children("span.duration").find("div.duration-input").slideDown();				
 			} else {
-				$(this).parent("span").parent("li").children("span.mb4d").slideUp();
+				$(this).parent("span").parent("li").children("span.duration").find("div.duration-input").slideUp();
 			}
-			
-			if(h_and_m == 2){
-				//alert("hours and minutes selected");
-			} else {
-				
-			}
-			
-		} else {
-			if($(this).val() == "M" || $(this).val() == "D"){
-				$(this).parent("span").parent("li").children("span.mb4d").slideUp();
-			}
+
 		}
+
+		/*
+		 * Detect day and month selection
+		 */
+
+		if(dateString.indexOf("M-D") >= 0){
+			//alert("day and month selected");
+
+			// Display input to specify day-month order
+			$(this).parent("span").parent("li").children("span.mb4d").data("olddisplay","block");
+			$(this).parent("span").parent("li").children("span.mb4d").slideDown();
+
+			if(dateString.indexOf("Y") < 0){
+				// Display the year input
+				$(this).parent("span").parent("li").children("span.year").data("olddisplay","block");
+				$(this).parent("span").parent("li").children("span.year").slideDown();
+			} else {
+				$(this).parent("span").parent("li").children("span.year").slideUp();
+			}
+		} else {
+			$(this).parent("span").parent("li").children("span.mb4d").slideUp();
+			$(this).parent("span").parent("li").children("span.year").slideUp();
+		}
+
+		/*
+		 * Detect hour and minute selection
+		 */
+		if(dateString.indexOf("h-m") >= 0){
+			//alert("hours and minutes selected");
+			if(dateString.indexOf("D") < 0){
+				$(this).parent("span").parent("li").children("span.day").data("olddisplay","block");
+				$(this).parent("span").parent("li").children("span.day").slideDown();
+			} else {
+				$(this).parent("span").parent("li").children("span.day").slideUp();
+			}
+		} else {
+			$(this).parent("span").parent("li").children("span.day").slideUp();
+		}
+
 	});
 
 	/*

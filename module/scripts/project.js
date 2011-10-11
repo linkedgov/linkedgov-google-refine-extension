@@ -12,6 +12,15 @@
  * - General data operations (set blank cells to null)
  * - Individual wizard operations
  * 
+ * Wizards names:
+ * 
+ * - multipleColumnsWizard
+ * - multipleValuesWizard
+ * - dateTimeWizard
+ * - measurementsWizard
+ * - addressWizard
+ * - latLongWizard
+ * 
  * Notes:
  * 
  * When posting one of Refine's core process operations using 
@@ -39,7 +48,12 @@ var LinkedGov = {
 			debug:true,
 			separator: "<LG>",
 			nullValue:"<LG_NULL>",
-			blanksSetToNulls:false
+			blanksSetToNulls:false,
+			rdfSchema:{
+				prefixes:[],
+				baseUri:"http://127.0.0.1:3333/",
+				rootNodes:[]
+			}
 		},
 
 		/*
@@ -51,8 +65,8 @@ var LinkedGov = {
 
 			this.restyle();
 			this.injectTypingPanel();
+			this.injectWizardProgressOverlay();
 			this.quickTools();
-			this.wizardProgressMessage();
 			this.applyTypeIcons.init();
 		},
 
@@ -66,10 +80,10 @@ var LinkedGov = {
 			 * Giving the body our own class applies our CSS rules.
 			 */
 			$("body").addClass("lg");
-			$("a#app-home-button img").attr("src","extension/linkedgov/images/duck.jpg")
+			/*$("a#app-home-button img").attr("src","extension/linkedgov/images/duck.jpg")
 			.attr("width","35")
 			.css("margin-left","10px")
-			.css("margin-top","-4px");
+			.css("margin-top","-4px");*/
 		},
 
 		/*
@@ -168,12 +182,21 @@ var LinkedGov = {
 			});
 
 		},
-		
 
-		wizardProgressMessage:function(){
+		/*
+		 * injectWizardProgressOverlay
+		 * 
+		 * Appends the wizard to the project page body, 
+		 */
+		injectWizardProgressOverlay:function(){
 			$("body").append("<div class='wizardProgressMessage'><div class='overlay'><!-- --></div><p>Wizard in progress...<img src='images/large-spinner.gif' /></p></div>");
 		},
 
+		/*
+		 * showWizardProgress
+		 * 
+		 * Shows or hides the wizard progress message.
+		 */
 		showWizardProgress:function(show){
 			if(show){
 				$('div.wizardProgressMessage').show();
@@ -184,6 +207,21 @@ var LinkedGov = {
 			}
 		},
 		
+		/*
+		 * getRDFSchema
+		 * 
+		 * Returns the RDF plugin schema (if there is one), otherwise 
+		 * returns our skeleton of the schema to begin the first RDF operations on.
+		 */
+		getRDFSchema:function(){
+			if(typeof theProject.overlayModels != 'undefined' && typeof theProject.overlayModels.rdfSchema != 'undefined'){
+				LinkedGov.vars.rdfSchema = theProject.overlayModels.rdfSchema;
+				return theProject.overlayModels.rdfSchema;
+			}else {
+				return LinkedGov.vars.rdfSchema;
+			}
+		},
+
 		/*
 		 * 
 		 * resizeAll
@@ -213,7 +251,7 @@ var LinkedGov = {
 			 * height: auto !important;
 			 * top: 28px;
 			 */
-			ui.typingPanel.resize(); 
+			//ui.typingPanel.resize(); 
 		},
 
 		/*
@@ -1711,8 +1749,8 @@ LinkedGov.dateTimeWizard = {
 		 */
 		initialise: function(elmts) {
 
-			log("here");
-			log(elmts);
+			//log("here");
+			//log(elmts);
 
 			var self = this;
 			self.vars.elmts = elmts;
@@ -2138,7 +2176,7 @@ LinkedGov.dateTimeWizard = {
 			var timeURI = "http://www.w3.org/2006/time#";
 			var timeCURIE = "time";
 
-			var schema = theProject.overlayModels.rdfSchema;
+			var schema = LinkedGov.getRDFSchema();
 
 			/*
 			 * Remove any existing "date" prefixes
@@ -2223,7 +2261,7 @@ LinkedGov.dateTimeWizard = {
 			}, {}, {
 				onDone: function () {
 					//DialogSystem.dismissUntil(self._level - 1);
-					theProject.overlayModels.rdfSchema = schema;
+					//theProject.overlayModels.rdfSchema = schema;
 					self.onComplete();
 				}
 			});
@@ -2337,7 +2375,7 @@ LinkedGov.measurementsWizard = {
 			 * for each of them, and store their measurement data in RDF).
 			 */
 
-			var schema = theProject.overlayModels.rdfSchema;
+			var schema = LinkedGov.getRDFSchema();
 
 			var cols = self.vars.cols;
 			for(var i=0;i<cols.length;i++){
@@ -2386,7 +2424,7 @@ LinkedGov.measurementsWizard = {
 				}, {}, {
 					onDone: function () {
 						//DialogSystem.dismissUntil(self._level - 1);
-						theProject.overlayModels.rdfSchema = schema;
+						//theProject.overlayModels.rdfSchema = schema;
 						self.onComplete();
 					}
 				});
@@ -2466,7 +2504,6 @@ LinkedGov.addressWizard = {
 			var self = this;
 			self.vars.elmts = elmts;
 
-
 			/*
 			 * Build the fragment/column array and check if a 
 			 * postcode has been selected, in which case perform 
@@ -2483,8 +2520,12 @@ LinkedGov.addressWizard = {
 				//log(self.vars.fragmentsToColumns[i]);
 				if(self.vars.fragmentsToColumns[i].type == "postcode"){
 					postcodePresent = i;
+				} else if(self.vars.fragmentsToColumns[i].type == "mixed") {
+					checkForPostCode = true;
 				}
 			}
+			
+			
 
 			if(postcodePresent > 0){
 				self.validatePostCode(self.vars.fragmentsToColumns[postcodePresent].name,function(){
@@ -2634,7 +2675,6 @@ LinkedGov.addressWizard = {
 			//log("fragments:");
 			//log(fragments);
 
-
 			/*
 			 * Loop through the fragments, the type value can be:
 			 * 
@@ -2690,7 +2730,7 @@ LinkedGov.addressWizard = {
 			 * URI and an rdfs:label.
 			 */
 
-			var schema = theProject.overlayModels.rdfSchema;
+			var schema = LinkedGov.getRDFSchema();
 
 			/*
 			 * Remove any existing "address" prefixes
@@ -2760,7 +2800,7 @@ LinkedGov.addressWizard = {
 			}, {}, {
 				onDone: function () {
 					//DialogSystem.dismissUntil(self._level - 1);
-					theProject.overlayModels.rdfSchema = schema;
+					//theProject.overlayModels.rdfSchema = schema;
 					self.onComplete();
 				}
 			});
@@ -3036,7 +3076,7 @@ LinkedGov.latLongWizard = {
 			 * TODO: Other URIs should be dynamic.
 			 */
 
-			var schema = theProject.overlayModels.rdfSchema;
+			var schema = LinkedGov.getRDFSchema();
 
 			for(var i=0;i<schema.rootNodes.length;i++){
 				if(schema.rootNodes[i].id == "lat-long"){
@@ -3082,7 +3122,7 @@ LinkedGov.latLongWizard = {
 			}, {}, {
 				onDone: function () {
 					//DialogSystem.dismissUntil(self._level - 1);
-					theProject.overlayModels.rdfSchema = schema;
+					//theProject.overlayModels.rdfSchema = schema;
 					self.onComplete();
 				}
 			});
@@ -3348,18 +3388,20 @@ LinkedGov.applyTypeIcons = {
 			//log("Applying type icons...");
 
 			var self = this;
-			if($("td.column-header").length < 1){
+			if(typeof theProject.overlayModels != 'undefined' && typeof theProject.overlayModels.rdfSchema != 'undefined' && $("td.column-header").length > 0){				
+				$.each(theProject.overlayModels.rdfSchema, function(key, val) { 
+					self.recursiveFunction(key, val);
+				});	
+			} else {
 				var t = setInterval(function(){
-					if($("td.column-header").length > 0){
-
+					if($("td.column-header").length > 0 && typeof theProject.overlayModels != 'undefined' && typeof theProject.overlayModels.rdfSchema != 'undefined'){
 						clearInterval(t);
 						$.each(theProject.overlayModels.rdfSchema, function(key, val) { 
 							self.recursiveFunction(key, val) 
 						});
 					}
-				},100);
+				},100);		
 			}
-
 		},
 
 		recursiveFunction: function(key, val) {
@@ -3382,7 +3424,7 @@ LinkedGov.applyTypeIcons = {
 			}
 		}
 
-}
+};
 
 
 /*

@@ -1,8 +1,26 @@
 <div class="wizard-body" bind="multipleValuesBody">
 
 	<h2>Multiple values wizard</h2>
-
-	<p>Select the column that has values to be used as headers:</p>
+	
+	<p class="description">
+		If a column contains regularly appearing values of a different type 
+		that have corresponding values somewhere else in the data - this 
+		wizard aims to reorganise them into their own columns with those 
+		corresponding values.
+	</p>
+	<p class="description">
+	<a class="ex">Example</a>
+	<span class="ex-text">
+		An example could be a column named "Energy type" that contained 
+		the same repeating 3 values "Electricity, Water, Gas" with another 
+		column named "Readings" that contained their corresponding energy 
+		reading values. After running this wizard, the "Energy type" column 
+		would be transformed into three new columns - "Electricity", "Water" 
+		and "Gas", that each contain their corresponding values from the 
+		"Readings" column.  
+	</span>
+	</p>
+	<p class="description">Select the column containing multiple types:</p>
 	<div class="selector">
 		<a class="button selectColumn" id="multipleValuesSelect">Start
 			Select</a> <a class="info">
@@ -16,8 +34,7 @@
 		</ul>
 	</div>
 
-	<p>Select the column that contains the values/measurements for the
-		new headed columns:</p>
+	<p class="description">Select the column containing their corresponding values:</p>
 	<div class="selector">
 		<a class="button 2 selectColumn" id="multipleValuesSelect2">Start
 			Select</a> <a class="info">
@@ -31,8 +48,8 @@
 		</ul>
 	</div>
 
-	<p>Select any columns that contain values/measurements that do not
-		fit under the new headed columns:</p>
+	<p class="description">Select the columns that contain values that do not
+		correspond to the multiple types (i.e. a "Totals" column):</p>
 	<div class="selector">
 		<a class="button 3 selectColumn" id="multipleValuesSelect3">Start
 			Select</a> <a class="info">
@@ -45,9 +62,11 @@
 		<ul class="column-display 3" bind="multipleValuesColumns3">
 		</ul>
 	</div>
-
-	<a href="javascript:{}" bind="multipleValuesButton"
-		class="button update" title="Update">Update</a>
+	
 
 </div>
 <!-- end multiple value wizard -->
+
+	<div class="update-button">
+		<a href="javascript:{}" bind="multipleValuesButton" class="button update" title="Update">Update</a>
+	</div>

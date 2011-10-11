@@ -2,6 +2,19 @@
 
 	<h2>Address wizard</h2>
 
+	<p class="description">
+		The address wizard will attempt to understand and format any address information in the data. 
+		An address may be contained within a single column (with the various parts split by comma for example) 
+		or an address could have it's parts split across multiple columns.
+	</p>
+
+	<p class="description">
+		If a multi-part address is contained in a single column, select the "Split address" box 
+		below to split the address before selecting it's various parts. Once the address parts are 
+		in their own columns, you may then select those columns and specify what parts of the address 
+		they contain.
+	</p>
+
 	<input bind="addressSplit" type="checkbox" class="split"
 		id="address-split"> <label for="address-split">Split
 		address</label> <a class="info"> <!-- info --> </a> <span class="note">To
@@ -42,9 +55,10 @@
 
 		<ul class="column-display" bind="addressColumns">
 		</ul>
-	</div>
-
-	<a href="javascript:{}" bind="addressButton" class="button update"
-		title="Update">Update</a>
+	</div>	
 
 </div><!-- end address wizard -->
+
+	<div class="update-button">
+		<a href="javascript:{}" bind="addressButton" class="button update" title="Update">Update</a>
+	</div>	
