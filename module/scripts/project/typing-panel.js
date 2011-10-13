@@ -503,7 +503,7 @@ TypingPanel.prototype.getFragmentData = function(columnList) {
 		// Input for specifying the day the times occur on
 		fragmentHTML += "<span class='colOptions day'>" +
 		"<span>Do you know the day?</span>" +
-		"<input type='text' class='day' value='' maxlength='2' />" +
+		"<input id='datepicker-"+$.generateId()+"' type='text' class='day datepicker' value='' />" +
 		"</span>";
 
 		/*
@@ -529,11 +529,17 @@ TypingPanel.prototype.getFragmentData = function(columnList) {
 
 		fragmentHTML += "</span>";
 
+		// Option for specifying the order of day and month
+		fragmentHTML += "<span class='colOptions postcode'>" +
+		"<input type='checkbox' class='postcode' value='postcode' />" +
+		"<span>Contains postcode</span>" +
+		"</span>";
+
 		/*
 		 * Add the "fragments" class to the list of columns so CSS styles can 
 		 * be applied.
 		 */
-		columnList.addClass("fragments");
+		columnList.addClass("address-checkboxes");
 		break;
 	case "latLongColumns" :
 
@@ -685,52 +691,47 @@ $(document).ready(function() {
 	/*
 	 * Date/time interaction for column lists
 	 */
-	$("ul.date-checkboxes input[type='checkbox']").live("change",function(){
+	$("ul.date-checkboxes span.dateFrags input[type='checkbox']").live("change",function(){
 
+		/*
+		 * Construct a date fragment string: e.g. Y-D-M-h
+		 */
 		var dateString = "";
-		$.each($("ul.date-checkboxes li span.dateFrags input"),function(){
+		$.each($(this).parent("span").children("input"),function(){
 			if($(this).attr("checked")){
 				dateString += $(this).val()+"-";
 			}
 		});
 		dateString = dateString.substring(0,dateString.length-1);
-		log(dateString);
+		//log(dateString);
 
-		/*
-		 * Detect duration selection
-		 */
-		if($(this).hasClass("duration")){
-
-			if($(this).attr("checked")){
-				$(this).parent("span").parent("li").children("span.duration").find("div.duration-input").data("olddisplay","block");
-				$(this).parent("span").parent("li").children("span.duration").find("div.duration-input").slideDown();				
-			} else {
-				$(this).parent("span").parent("li").children("span.duration").find("div.duration-input").slideUp();
-			}
-
+		if(dateString.length > 0) {
+			$(this).parent("span").parent("li").children("span.duration").data("olddisplay","block");
+			$(this).parent("span").parent("li").children("span.duration").slideDown(250);
+		} else {
+			$(this).parent("span").parent("li").children("span.duration").slideUp(250);
 		}
 
 		/*
 		 * Detect day and month selection
 		 */
-
 		if(dateString.indexOf("M-D") >= 0){
 			//alert("day and month selected");
 
 			// Display input to specify day-month order
 			$(this).parent("span").parent("li").children("span.mb4d").data("olddisplay","block");
-			$(this).parent("span").parent("li").children("span.mb4d").slideDown();
+			$(this).parent("span").parent("li").children("span.mb4d").slideDown(250);
 
 			if(dateString.indexOf("Y") < 0){
 				// Display the year input
 				$(this).parent("span").parent("li").children("span.year").data("olddisplay","block");
-				$(this).parent("span").parent("li").children("span.year").slideDown();
+				$(this).parent("span").parent("li").children("span.year").slideDown(250);
 			} else {
-				$(this).parent("span").parent("li").children("span.year").slideUp();
+				$(this).parent("span").parent("li").children("span.year").slideUp(250);
 			}
 		} else {
-			$(this).parent("span").parent("li").children("span.mb4d").slideUp();
-			$(this).parent("span").parent("li").children("span.year").slideUp();
+			$(this).parent("span").parent("li").children("span.mb4d").slideUp(250);
+			$(this).parent("span").parent("li").children("span.year").slideUp(250);
 		}
 
 		/*
@@ -739,17 +740,47 @@ $(document).ready(function() {
 		if(dateString.indexOf("h-m") >= 0){
 			//alert("hours and minutes selected");
 			if(dateString.indexOf("D") < 0){
+				$(this).parent("span").parent("li").children("span.day").find("input.datepicker").datepicker("destroy").datepicker({
+					changeYear:true,
+					changeMonth:true,
+					dateFormat: 'dd/mm/yy'
+				});
 				$(this).parent("span").parent("li").children("span.day").data("olddisplay","block");
-				$(this).parent("span").parent("li").children("span.day").slideDown();
+				$(this).parent("span").parent("li").children("span.day").slideDown(250);
 			} else {
-				$(this).parent("span").parent("li").children("span.day").slideUp();
+				$(this).parent("span").parent("li").children("span.day").slideUp(250);
 			}
 		} else {
-			$(this).parent("span").parent("li").children("span.day").slideUp();
+			$(this).parent("span").parent("li").children("span.day").slideUp(250);
 		}
 
 	});
 
+	/*
+	 * Detect date duration selection
+	 */
+	$("ul.date-checkboxes input.duration").live("change",function(){
+		if($(this).attr("checked")){
+			$(this).parent("span").parent("li").children("span.duration").find("div.duration-input").data("olddisplay","block");
+			$(this).parent("span").parent("li").children("span.duration").find("div.duration-input").slideDown(250);				
+		} else {
+			$(this).parent("span").parent("li").children("span.duration").find("div.duration-input").slideUp(250);
+		}
+	});
+
+	/*
+	 * Interaction for address column options
+	 */
+	$("ul.address-checkboxes span.colOptions select").live("change",function(){
+		if($(this).val() == "mixed"){
+			$(this).parent("span").parent("li").find("span.postcode").data("olddisplay","block");
+			$(this).parent("span").parent("li").find("span.postcode").slideDown(250);
+		} else {
+			$(this).parent("span").parent("li").find("span.postcode").slideUp(250);
+		}
+	});
+	
+	
 	/*
 	 * Show tooltips
 	 */

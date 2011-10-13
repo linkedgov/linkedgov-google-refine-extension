@@ -35,7 +35,8 @@ function init() {
     "project/scripts",
     module,
     [
-      "scripts/project.js"
+      "scripts/project.js",
+      "externals/jquery-ui/jquery-ui.datepicker.js"
     ]
   );
   
@@ -44,7 +45,8 @@ function init() {
     "project/styles",
     module,
     [
-      "styles/project.css"
+      "styles/project.css",
+      "externals/jquery-ui/css/jquery-ui.datepicker.less"
     ]
   );
 }

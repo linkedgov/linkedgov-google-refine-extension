@@ -103,13 +103,13 @@ body.lg table.data-table tr td.skip {
 }
 
 body.lg div.typing-panel-body {
-	bottom:0;
+    bottom: 0;
     height: auto !important;
     overflow-y: auto;
-    padding: 5px 5px 10px 10px;
+    padding: 5px 10px 10px;
     position: absolute;
     top: 28px;
-    width: 285px;
+    width: 280px;
 }
 body.lg div.wizard-panel {
     background-color: #E3E9FF;
@@ -211,7 +211,7 @@ body.lg div.wizard-body div.split label {
     width: 219px;
 }
 body.lg div.wizard-body div.split input.splitCharacter {
-    background-color: #FFFFC8;
+    background-color: #FFFFCC;
     margin-top: 5px;
     text-align: center;
     width: 15px;
@@ -238,19 +238,19 @@ body.lg div.wizard-body label {
 	padding-left: 5px;
 }
 body.lg div.wizard-body span.note {
-    background: none repeat scroll 0 0 #FDFFA9;
+    background: none repeat scroll 0 0 #FFFFCC;
     border: 1px solid #999999;
     box-shadow: 0 0 10px #7D7D7D;
     color: #000000;
     display:none;
-    font-size: 11px;
+    font-size: 12px;
     left: 315px;
     margin: 5px 0;
     padding: 15px 20px;
     position: fixed;
-    text-align: justify;
-    top:45%;
-    width: 300px;
+    text-align: left;
+    top: 45%;
+    width: 250px;
     z-index: 9999;
 }
 body.lg a.info {
@@ -315,18 +315,20 @@ body.lg div.wizard-body ul.column-display li span.col {
 }
 body.lg div.wizard-body ul.column-display li span.remove {
     background-color: #FFD6D6;
+    border-radius: 3px 3px 3px 3px;
     color: #773030;
     cursor: pointer;
     float: right;
     font-family: Arial;
-    font-size: 10px;
-    height: 21px;
-    line-height: 21px;
+    font-size: 9px;
+    height: 13px;
+    line-height: 13px;
     margin-left: 0;
-    margin-top: 0;
+    margin-right: 4px;
+    margin-top: 4px;
     padding: 0;
     text-align: center;
-    width: 21px;
+    width: 12px;
 }
 body.lg div.wizard-body ul.column-display li span.remove:hover {
 	background-color:#773030;
@@ -339,14 +341,14 @@ body.lg div.wizard-body ul.column-display li.skip {
 	display:none;	
 }
 body.lg div.wizard-body ul.column-display li span.colOptions select {
-    font-size: 12px;
+    font-size: 11px;
     height: 20px;
-    margin: 2px 0 0 4px;
+    margin: 3px 0 2px 5px;
     padding: 0;
 }
 body.lg div.wizard-body ul.column-display li span.colOptions {
     background-color: #F9F9F5;
-    border-top:1px solid #FFFFFF;
+    border-top:1px solid #EDEDED;
     display: block;
     float: none;
     font-size: 11px;
@@ -355,20 +357,23 @@ body.lg div.wizard-body ul.column-display li span.colOptions {
     padding-left: 0;
     padding-right: 0;
 }
+body.lg div.wizard-body ul.column-display li span.colOptions input {
+	margin-left:5px;
+}
 body.lg div.wizard-body ul.column-display li span.colOptions span {
 	padding-left:3px;
 }
 body.lg div.wizard-body ul.date-checkboxes li span.colOptions.mb4d, 
 body.lg div.wizard-body ul.date-checkboxes li span.colOptions.day, 
 body.lg div.wizard-body ul.date-checkboxes li span.colOptions.year {
-	background-color: #FEFFE8;
+	background-color: #FFFFCC;
 	display: none;
 }
 body.lg div.wizard-body ul.date-checkboxes li span.colOptions.day span, 
 body.lg div.wizard-body ul.date-checkboxes li span.colOptions.year span {
 	padding-left:5px;
 }
-body.lg div.wizard-body ul.date-checkboxes li span.colOptions.day input, 
+
 body.lg div.wizard-body ul.date-checkboxes li span.colOptions.year input {
     height: 10px;
     margin-bottom: 2px;
@@ -376,12 +381,23 @@ body.lg div.wizard-body ul.date-checkboxes li span.colOptions.year input {
     margin-top: 2px;
     width: 30px;
 }
+body.lg div.wizard-body ul.date-checkboxes li span.colOptions.day input {
+	height: 10px;
+   	margin-bottom: 2px;
+    margin-left: 6px;
+    margin-top: 2px;
+    width: 60px;
+}
 body.lg div.wizard-body ul.date-checkboxes li span.colOptions.duration {
 	background-color: #FFF6E6;
+	display:none;
 }
 body.lg div.wizard-body ul.date-checkboxes li span.colOptions div.duration-input {
 	display:none;
-	padding-left: 5px;
+	padding-bottom: 2px;
+}
+body.lg div.wizard-body ul.address-checkboxes li span.postcode {
+	display:none;
 }
 div.duration-input input.duration-value {
 	font-size: 12px;
@@ -473,6 +489,28 @@ body.lg table.ui-selectable td.column-header:hover {
 	background-color:#99FF98;
 }
 
+body.lg div.ui-datepicker {
+    background: none repeat scroll 0 0 #E3E9FF;
+    border: 1px solid #CCCCCC;
+    box-shadow: 0 0 10px #999999;
+}
+body.lg div.ui-datepicker .ui-widget-header {
+    background: none repeat scroll 0 0 #BBCCFF;
+    border: 1px solid #FFFFFF;
+    color: #333333;
+}
+body.lg div.ui-datepicker .ui-state-default, .ui-widget-content .ui-state-default {
+    background: none repeat scroll 0 0 #FFFFFF;
+    border: 1px solid #CCCCCC;
+    color: #333333;
+    font-weight: bold;
+}
+body.lg div.ui-datepicker .ui-state-hover {
+    background: none repeat scroll 0 0 #FEFFE8;
+    border: 1px solid #CCCCCC;
+    color: #333333;
+    font-weight: bold;
+}
 /**** jQuery UI Dialog ****/
 /*
 body.lg .ui-dialog {
