@@ -214,8 +214,8 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 
 		self.destroyColumnSelector();
 
-		$cols = $(button).parent().children("ul.column-display");
-		$cols.html("").hide();
+		$cols = $(button).parent().children("ul.selected-columns");
+		//$cols.html("").hide();
 		$(button).html("End Select");
 
 		var RefineUI = ui;
@@ -231,6 +231,15 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 						 */
 						if($(this).html() == $(ui.selected).children().find(".column-header-name").html()){
 
+							$(this).parent("li").remove();
+							$(ui.selected).removeClass("ui-selected");
+
+							if($cols.children("li").length < 1){
+								$cols.html("").hide();
+							} else {
+								$cols.show();
+							}
+
 							if($(this).parent().hasClass("skip")){
 								$(this).parent().removeClass("skip").show();
 							}
@@ -241,14 +250,15 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 					if(addToList){
 						switch(mode){
 						case "default" :
-							$cols.html($cols.html() + 
+							$cols.append( 
 									"<li>" +
 									"<span class='col'>" + 
 									$(ui.selected).children().find(".column-header-name").html() + 
 									"</span>" + 
 									"<span class='remove'>X</span>" +
 									RefineUI.typingPanel.getFragmentData($cols) +
-							"</li>")
+									"</li>"
+							)
 							.show();
 							break;
 						case "splitter" :
@@ -265,15 +275,18 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 				}
 			},
 			unselected: function (event, ui) {
-				// log("unselected");
-				$cols.html("").hide();
+				$cols.children("li").children("span.col").each(function(){
+					if($(this).html() == $(ui.unselected).children().find(".column-header-name").html()){
+						$(this).parent("li").remove();
+					}
+				});
 			},
 			selecting: function (event, ui) {
 				// log("selecting");
 			},
 			unselecting: function (event, ui) {
 				// log("unselecting");
-				$cols.html("").hide();
+				//$cols.html("").hide();
 			}
 		});
 	} else {
@@ -297,7 +310,7 @@ TypingPanel.prototype.rangeSelector = function(select) {
 	var self = this;
 	self.destroyColumnSelector();
 
-	$cols = $(select).parent().parent().children("ul.column-display");
+	$cols = $(select).parent().parent().children("ul.selected-columns");
 	$cols.html("").hide();
 	var colsHTML = "";
 	var from = 0, to = 0;
@@ -660,7 +673,7 @@ $(document).ready(function() {
 	 * Interaction for "split" button in address wizard.
 	 */
 	$("div.split a.splitter-split").live("click",function(){
-		var name = $(this).parent().find("ul.column-display").children("li").eq(0).children("span.col").html();
+		var name = $(this).parent().find("ul.selected-columns").children("li").eq(0).children("span.col").html();
 		var separator = $(this).parent().find("input.splitCharacter").val();
 
 		if(separator.length < 1 || name.length < 1){
@@ -684,7 +697,7 @@ $(document).ready(function() {
 	/*
 	 * 'Remove column' interaction for column lists
 	 */
-	$("ul.column-display li span.remove").live("click",function(){
+	$("ul.selected-columns li span.remove").live("click",function(){
 		ui.typingPanel.removeColumn($(this));
 	});
 
@@ -779,8 +792,8 @@ $(document).ready(function() {
 			$(this).parent("span").parent("li").find("span.postcode").slideUp(250);
 		}
 	});
-	
-	
+
+
 	/*
 	 * Show tooltips
 	 */

@@ -283,7 +283,7 @@ body.lg div.wizard-body div.selector p {
 body.lg div.wizard-body div.selector a.button {
     /*background: -moz-linear-gradient(center top , #E8FFED, #A1DEAA) repeat scroll 0 0 transparent !important;*/
 }
-body.lg div.wizard-body ul.column-display {
+body.lg div.wizard-body ul.selected-columns {
     background: none repeat scroll 0 0 #FFFFFF;
     border: 1px solid #DDDDDD;
     color: #333333;
@@ -296,7 +296,7 @@ body.lg div.wizard-body ul.column-display {
     padding-left: 1px;
     padding-right: 1px;
 }
-body.lg div.wizard-body ul.column-display li {
+body.lg div.wizard-body ul.selected-columns li {
     background: none repeat scroll 0 0 #FFFFFF;
     border: 1px solid #DDDDDD;
     color: #333333;
@@ -307,13 +307,13 @@ body.lg div.wizard-body ul.column-display li {
     overflow: hidden;
     padding-left: 0;
 }
-body.lg div.wizard-body ul.column-display li span.col {
+body.lg div.wizard-body ul.selected-columns li span.col {
     display: inline-block;
     padding-bottom: 2px;
     padding-left: 6px;
     padding-top: 2px;
 }
-body.lg div.wizard-body ul.column-display li span.remove {
+body.lg div.wizard-body ul.selected-columns li span.remove {
     background-color: #FFD6D6;
     border-radius: 3px 3px 3px 3px;
     color: #773030;
@@ -330,23 +330,23 @@ body.lg div.wizard-body ul.column-display li span.remove {
     text-align: center;
     width: 12px;
 }
-body.lg div.wizard-body ul.column-display li span.remove:hover {
+body.lg div.wizard-body ul.selected-columns li span.remove:hover {
 	background-color:#773030;
 	color:#FFD6D6;
 }
-body.lg div.wizard-body ul.column-display li.skip {
+body.lg div.wizard-body ul.selected-columns li.skip {
 	/*opacity:0.5;
 	background-color:#EEEEEE;
 	border:1px solid #CCCCCC;*/
 	display:none;	
 }
-body.lg div.wizard-body ul.column-display li span.colOptions select {
+body.lg div.wizard-body ul.selected-columns li span.colOptions select {
     font-size: 11px;
     height: 20px;
     margin: 3px 0 2px 5px;
     padding: 0;
 }
-body.lg div.wizard-body ul.column-display li span.colOptions {
+body.lg div.wizard-body ul.selected-columns li span.colOptions {
     background-color: #F9F9F5;
     border-top:1px solid #EDEDED;
     display: block;
@@ -357,10 +357,10 @@ body.lg div.wizard-body ul.column-display li span.colOptions {
     padding-left: 0;
     padding-right: 0;
 }
-body.lg div.wizard-body ul.column-display li span.colOptions input {
+body.lg div.wizard-body ul.selected-columns li span.colOptions input {
 	margin-left:5px;
 }
-body.lg div.wizard-body ul.column-display li span.colOptions span {
+body.lg div.wizard-body ul.selected-columns li span.colOptions span {
 	padding-left:3px;
 }
 body.lg div.wizard-body ul.date-checkboxes li span.colOptions.mb4d, 
