@@ -349,7 +349,7 @@ body.lg td.default-importing-parsing-control-panel-options-panel div.parser-pane
 body.lg td.default-importing-parsing-control-panel-options-panel div.parser-panel input.lightweight {
     margin-bottom: 0;
     margin-left: 0;
-    margin-right: 0;
+    margin-right: 3px;
     margin-top: 0;
     border: 1px solid #CCCCCC;
 }

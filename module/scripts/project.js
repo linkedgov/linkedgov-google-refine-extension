@@ -81,10 +81,6 @@ var LinkedGov = {
 			 * Giving the body our own class applies our CSS rules.
 			 */
 			$("body").addClass("lg");
-			/*$("a#app-home-button img").attr("src","extension/linkedgov/images/duck.jpg")
-			.attr("width","35")
-			.css("margin-left","10px")
-			.css("margin-top","-4px");*/
 		},
 
 		/*
@@ -119,7 +115,11 @@ var LinkedGov = {
 				//if doesn't have a quick tool
 				//then insert
 				//else show or hide
+<<<<<<< HEAD
 				if(!$("table.data-table-header").hasClass("ui-selectable")){
+=======
+				if(!$(this).hasClass("ui-selectee")){
+>>>>>>> Additional fixes for the rev. 2335 update
 					if($(this).hasClass("show")){
 						$(this).find(".quick-tool").hide();
 						$(this).addClass("hide").removeClass("show");

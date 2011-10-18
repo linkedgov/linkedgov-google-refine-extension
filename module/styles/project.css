@@ -1,22 +1,3 @@
-/*
-body.lg #header {
-	height: 40px;
-    margin: 10px;
-    overflow: visible;
-    position: relative;
-}
-body.lg a#app-home-button img {
-    margin-left: 10px;
-    margin-top: -3px;
-    z-index: 9999;	
-}
-body.lg #project-title {
-    font-size: 1.6em;
-    height: 40px;
-    left: 60px;
-    padding: 4px 0 0;	
-}
-*/
 
 body.wizard-progress div.dialog-frame, body.wizard-progress div.dialog-overlay {
 	display:none !important;
@@ -59,9 +40,12 @@ body.lg div.wizardProgressMessage p img {
 }
 body.lg table.data-header-table td.column-header.typed {
     background-image: url("../images/rdf-small.png");
-    background-position: right center;
+    background-position: center 3px;
     background-repeat: no-repeat;
-    padding-right: 35px;
+}
+body.lg table.data-header-table td.column-header, body.lg table.data-table td.column-header {
+    height: 45px;
+    vertical-align:bottom;
 }
 body.lg div.quick-tool {
     background: none repeat scroll 0 0 #FFFFFF;
@@ -74,7 +58,7 @@ body.lg div.quick-tool {
     margin-top: 1px;
     padding: 1px;
     position: absolute;
-    width: 80px;
+    width: 80px !important; 
     z-index: 9999;
 }
 body.lg div.quick-tool ul {
