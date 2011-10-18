@@ -57,7 +57,7 @@ body.lg div.wizardProgressMessage p img {
     display: block;
     margin: 10px auto auto;
 }
-body.lg table.data-table td.column-header.typed {
+body.lg table.data-header-table td.column-header.typed {
     background-image: url("../images/rdf-small.png");
     background-position: right center;
     background-repeat: no-repeat;
@@ -97,7 +97,7 @@ body.lg div.quick-tool ul li:active {
 body.lg div#left-panel div.refine-tabs {
 	visibility:hidden;
 }
-body.lg table.data-table tr td.skip {
+body.lg table.data-header-table tr td.skip {
 	background-color: #F4F4F4;
 	opacity:0.3;
 }

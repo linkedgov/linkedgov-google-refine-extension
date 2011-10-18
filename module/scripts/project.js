@@ -119,7 +119,7 @@ var LinkedGov = {
 				//if doesn't have a quick tool
 				//then insert
 				//else show or hide
-				if(!$("table.data-table").hasClass("ui-selectable")){
+				if(!$("table.data-table-header").hasClass("ui-selectable")){
 					if($(this).hasClass("show")){
 						$(this).find(".quick-tool").hide();
 						$(this).addClass("hide").removeClass("show");
@@ -987,6 +987,19 @@ LinkedGov.multipleColumnsWizard = {
 
 		},
 
+		onFail:function(message){
+			var self = this;
+			/*
+			 * Reset any null cells to blanks again, using the "false" flag
+			 */
+			LinkedGov.setBlanksToNulls(false,theProject.columnModel.columns,0,function(){
+				log("Multiple columns wizard failed.\n\n"+message);
+				Refine.update({everythingChanged:true});
+				LinkedGov.resetWizard(self.vars.elmts.multipleColumnsBody);
+				LinkedGov.showWizardProgress(false);
+			});			
+		},
+		
 		/*
 		 * onComplete
 		 * 
@@ -1011,20 +1024,8 @@ LinkedGov.multipleColumnsWizard = {
 			});
 
 			return false;
-		},
-
-		onFail:function(message){
-			var self = this;
-			/*
-			 * Reset any null cells to blanks again, using the "false" flag
-			 */
-			LinkedGov.setBlanksToNulls(false,theProject.columnModel.columns,0,function(){
-				log("Multiple columns wizard failed.\n\n"+message);
-				Refine.update({everythingChanged:true});
-				LinkedGov.resetWizard(self.vars.elmts.multipleColumnsBody);
-				LinkedGov.showWizardProgress(false);
-			});			
 		}
+
 
 };
 

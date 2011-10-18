@@ -220,7 +220,7 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 
 		var RefineUI = ui;
 
-		$("table.data-table").selectable({
+		$("table.data-header-table").selectable({
 			filter: 'td.column-header',
 			selected: function (event, ui) {
 				if($(ui.selected).children().find(".column-header-name").html() != "All"){
@@ -360,10 +360,10 @@ TypingPanel.prototype.rangeSelector = function(select) {
 			 * TODO: Inefficient iteration.
 			 */
 			$colName = $(this).val();
-			$("table.data-table tr td.column-header span.column-header-name").each(function(){
+			$("table.data-header-table tr td.column-header span.column-header-name").each(function(){
 				if($(this).html() == $colName){
 					$(this).parent().parent("td").addClass("ui-selected");
-					$("table.data-table").addClass("ui-selectable");
+					$("table.data-header-table").addClass("ui-selectable");
 				}
 			});
 		}
@@ -383,8 +383,8 @@ TypingPanel.prototype.rangeSelector = function(select) {
  */
 TypingPanel.prototype.destroyColumnSelector = function() {
 	$("div.selector a.selectColumn").html("Start Select");
-	$("table.data-table").selectable("destroy");
-	$("table.data-table .column-header").each(function () {
+	$("table.data-header-table").selectable("destroy");
+	$("table.data-header-table .column-header").each(function () {
 		$(this).removeClass("ui-selected").removeClass("skip");
 	});	
 }
@@ -651,6 +651,7 @@ $(document).ready(function() {
 	 * 
 	 */
 	$("div.selector a.selectColumn").live("click",function () {
+		
 		if($(this).hasClass("splitter")){
 			ui.typingPanel.buttonSelector($(this),"splitter");			
 		} else {
