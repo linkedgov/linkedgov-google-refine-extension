@@ -40,7 +40,7 @@ body.lg div.wizardProgressMessage p img {
 }
 body.lg table.data-header-table td.column-header.typed {
     background-image: url("../images/rdf-small.png");
-    background-position: center 3px;
+    background-position: center 5px;
     background-repeat: no-repeat;
 }
 body.lg table.data-header-table td.column-header, body.lg table.data-table td.column-header {
@@ -96,8 +96,8 @@ body.lg div.typing-panel-body {
     width: 280px;
 }
 body.lg div.wizard-panel {
-    background-color: #E3E9FF;
-    bottom: 32px;
+    /*background-color: #E3E9FF;*/
+    bottom: 72px;
     height: auto !important;
     overflow-y: auto;
     padding: 0;
@@ -155,6 +155,9 @@ body.lg div.wizard-body p.description a.ex {
 }
 body.lg div.wizard-body p.description span.ex-text {
 	display:none;
+	background: none repeat scroll 0 0 #FFFFCD;
+    border: 1px solid yellow;
+    padding: 5px;
 }
 body.lg div.wizard-body ol.steps {
     margin: 0 0 10px 25px;
@@ -329,6 +332,10 @@ body.lg div.wizard-body ul.selected-columns li span.colOptions select {
     height: 20px;
     margin: 3px 0 2px 5px;
     padding: 0;
+    width: 96%;
+}
+body.lg div.wizard-body ul.selected-columns li span.colOptions select.duration {
+	width:auto;
 }
 body.lg div.wizard-body ul.selected-columns li span.colOptions {
     background-color: #F9F9F5;
@@ -397,12 +404,14 @@ body.lg div.wizard-body ul.date-checkboxes li span.dateFrags input {
 }
 body.lg div.update-button {
     background-color: #E3E9FF;
-    bottom: 0;
+    bottom: 32px;
+    left: 0;
+    display:none;
     padding-bottom: 7px;
-    padding-top: 14px;
-    position: relative;
-    right: 0;
+    padding-top: 9px;
+    position: fixed;
     text-align: center;
+    width: 300px;
 }
 body.lg div.update-button a.update {
     font-size: 14px;

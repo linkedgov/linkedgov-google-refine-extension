@@ -115,11 +115,7 @@ var LinkedGov = {
 				//if doesn't have a quick tool
 				//then insert
 				//else show or hide
-<<<<<<< HEAD
-				if(!$("table.data-table-header").hasClass("ui-selectable")){
-=======
 				if(!$(this).hasClass("ui-selectee")){
->>>>>>> Additional fixes for the rev. 2335 update
 					if($(this).hasClass("show")){
 						$(this).find(".quick-tool").hide();
 						$(this).addClass("hide").removeClass("show");
@@ -571,6 +567,8 @@ var LinkedGov = {
 			// Scroll the top of the wizard into view.
 			//$(wizardBody).parent().scrollTop($(wizardBody).prev("a.wizard-header").offset().top)
 
+			return false;
+
 		},
 
 		/*
@@ -691,37 +689,45 @@ LinkedGov.multipleColumnsWizard = {
 		 */
 		initialise: function(elmts){
 
-			LinkedGov.showWizardProgress(true);
-
 			var self = this;
 			self.vars.elmts = elmts;
 
-			log("Starting multipleColumnsWizard");
+			if($(elmts.multipleColumnsColumns).children("li").length > 0){
 
-			/*
-			 * Recalculate which columns are going to be transposed, 
-			 * taking into account any columns the user wants to skip.
-			 */
-			self.checkSkippedColumns();
-
-			/*
-			 * Set any blank cells to null to protect them from being filled down into 
-			 * after the transpose operation (which produces blank cells).
-			 * 
-			 * Passing self.transpose() as a parameter calls it immediately for some reason.
-			 */
-			LinkedGov.setBlanksToNulls(true,theProject.columnModel.columns,0,function(){
+				log("Starting multipleColumnsWizard");
+				
+				LinkedGov.showWizardProgress(true);
+				
 				/*
-				 * If a gap has been detected, reorder the columns first.
+				 * Recalculate which columns are going to be transposed, 
+				 * taking into account any columns the user wants to skip.
 				 */
-				if(self.vars.gapInRange){
-					self.reorderColumns(Refine.columnNameToColumnIndex(self.vars.startColName),function(){
+				self.checkSkippedColumns();
+
+				/*
+				 * Set any blank cells to null to protect them from being filled down into 
+				 * after the transpose operation (which produces blank cells).
+				 * 
+				 * Passing self.transpose() as a parameter calls it immediately for some reason.
+				 */
+				LinkedGov.setBlanksToNulls(true,theProject.columnModel.columns,0,function(){
+					/*
+					 * If a gap has been detected, reorder the columns first.
+					 */
+					if(self.vars.gapInRange){
+						self.reorderColumns(Refine.columnNameToColumnIndex(self.vars.startColName),function(){
+							self.transposeColumns();
+						});
+					} else {
 						self.transposeColumns();
-					});
-				} else {
-					self.transposeColumns();
-				}
-			});
+					}
+				});
+
+			} else {
+				alert("You need to select a column to start from and a column to end at.\n\n" +
+						"If you need to unselect any column inbetween those columns, you can remove " +
+						"them from the list by clicking the red cross to the right of the column name.")
+			}
 
 		},
 
@@ -999,7 +1005,7 @@ LinkedGov.multipleColumnsWizard = {
 				LinkedGov.showWizardProgress(false);
 			});			
 		},
-		
+
 		/*
 		 * onComplete
 		 * 
@@ -1095,31 +1101,43 @@ LinkedGov.multipleValuesWizard = {
 		 */
 		initialise: function(elmts) {
 
-			LinkedGov.showWizardProgress(true);
-
 			var self = this;
 			self.vars.elmts = elmts;
 
 			//LinkedGov.setFacetCountLimit(1000);
 
-			// Store the column containing the new column header values
-			self.vars.headersColName = $(elmts.multipleValuesColumns).children("li").eq(0).find("span.col").html();
-			// Store the column containing the values for the new columns
-			self.vars.valuesColName = $(elmts.multipleValuesColumns2).children("li").eq(0).find("span.col").html();
-			/*
-			 * Store the columns to exclude from the operation (e.g. a totals column)
-			 */ 
-			$(elmts.multipleValuesColumns3).children("li").each(function(){
-				self.vars.colsToExclude.push($(this).find("span.col").html())
-			});
 
-			/*
-			 * Set blank cells to bull before starting the operation, call the first wizard 
-			 * operation once complete.
-			 */
-			LinkedGov.setBlanksToNulls(true,theProject.columnModel.columns,0,function(){
-				self.findSortableColumnHeaders();
-			});
+			if($(elmts.multipleValuesColumns).children("li").length < 1 || $(elmts.multipleValuesColumns2).children("li").length < 1){
+				alert("You must select a single column containing multiple types and another " +
+						"column containing their corresponding values.\n\nSelecting any columns " +
+				"to exclude from the operation is optional.");
+			} else {
+
+				LinkedGov.showWizardProgress(true);
+
+				// Store the column containing the new column header values
+				self.vars.headersColName = $(elmts.multipleValuesColumns).children("li").eq(0).find("span.col").html();
+				// Store the column containing the values for the new columns
+				self.vars.valuesColName = $(elmts.multipleValuesColumns2).children("li").eq(0).find("span.col").html();
+
+				log(self.vars.headersColName+","+self.vars.valuesColName);
+
+				/*
+				 * Store the columns to exclude from the operation (e.g. a totals column)
+				 */ 
+				$(elmts.multipleValuesColumns3).children("li").each(function(){
+					self.vars.colsToExclude.push($(this).find("span.col").html())
+				});
+
+				/*
+				 * Set blank cells to bull before starting the operation, call the first wizard 
+				 * operation once complete.
+				 */		
+				LinkedGov.setBlanksToNulls(true,theProject.columnModel.columns,0,function(){
+					self.findSortableColumnHeaders();
+				});
+			}
+
 
 		},
 
@@ -1783,6 +1801,16 @@ LinkedGov.multipleValuesWizard = {
 			});	
 		},
 
+		onFail:function(message){
+			var self = this;
+			LinkedGov.setBlanksToNulls(false,theProject.columnModel.columns,0,function(){
+				alert("Multiple Values wizard failed. \n\n"+message);
+				LinkedGov.resetWizard(self.vars.elmts.multipleValuesBody);	
+				LinkedGov.showWizardProgress(false);
+			});
+
+		},
+
 		/*
 		 * onComplete
 		 * 
@@ -1802,16 +1830,6 @@ LinkedGov.multipleValuesWizard = {
 			});
 
 			return false;
-		},
-
-		onFail:function(message){
-			var self = this;
-			LinkedGov.setBlanksToNulls(false,theProject.columnModel.columns,0,function(){
-				alert("Multiple Values wizard failed. \n\n"+message);
-				LinkedGov.resetWizard(self.vars.elmts.multipleValuesBody);	
-				LinkedGov.showWizardProgress(false);
-			});
-
 		}
 
 };
@@ -1864,27 +1882,39 @@ LinkedGov.dateTimeWizard = {
 			//log(elmts);
 
 			var self = this;
+			var error = false;
 			self.vars.elmts = elmts;
 			self.vars.columns = [];
 			self.vars.colFragments = [];
-			LinkedGov.showWizardProgress(true);
 
-			/*
-			 * Remove any skipped columns or columns that have no date fragments
-			 * specified.
-			 */
-			self.vars.elmts.dateTimeColumns.children("li").each(function(){
-				if($(this).hasClass("skip")){
-					$(this).remove();
-				} else {
-					var checkedInputs = $(this).find("input:checked");
-					if(checkedInputs.length < 1){
+			if(elmts.dateTimeColumns.children("li").length > 0){
+
+
+				/*
+				 * Remove any skipped columns or columns that have no date fragments
+				 * specified.
+				 */
+				self.vars.elmts.dateTimeColumns.children("li").each(function(){
+					if($(this).hasClass("skip")){
 						$(this).remove();
+					} else {
+						var checkedInputs = $(this).find("input:checked");
+						if(checkedInputs.length < 1){
+							alert("You haven't specified what date or time part is contained in the \""+$(this).find("span.col").html()+"\" column");
+							error = true;
+						}
 					}
-				}
-			});
+				});
 
-			self.buildColumnObjects();
+				if(!error){
+					LinkedGov.showWizardProgress(true);
+					self.buildColumnObjects();
+				} else {
+					return false;
+				}
+			} else {
+				alert("You need to select one or more columns that contain a date, time or both.");
+			}
 
 		},
 
@@ -2674,7 +2704,8 @@ LinkedGov.dateTimeWizard = {
 
 
 		onFail:function(message){
-			alert("Date/time wizard failed.\n\n"+message);
+			var self = this;
+			alert("Date and time wizard failed.\n\n"+message);
 			LinkedGov.resetWizard(self.vars.elmts.addressBody);
 			LinkedGov.showWizardProgress(false);
 		},
@@ -2743,11 +2774,19 @@ LinkedGov.measurementsWizard = {
 			self.vars.elmts = elmts;
 			self.vars.colObjects = self.buildColumnObjects(elmts);
 
-			LinkedGov.showWizardProgress(true);
+			if(self.vars.colObjects.length > 0){
+				if(elmts.unitInputField.val().length > 0){
+					LinkedGov.showWizardProgress(true);
 
-			LinkedGov.checkSchema(self.vars.vocabs,function(rootNode,foundRootNode){
-				self.saveRDF(rootNode,foundRootNode);
-			});
+					LinkedGov.checkSchema(self.vars.vocabs,function(rootNode,foundRootNode){
+						self.saveRDF(rootNode,foundRootNode);
+					});
+				} else {
+					alert("You need to search for a measurement type using the text box.");
+				}
+			} else {
+				alert("You need to select a column and specify what type of measurement it contains.");
+			}
 		},
 
 		/*
@@ -2832,7 +2871,7 @@ LinkedGov.measurementsWizard = {
 				}
 
 				/*
-				 
+
 				rootNode.links.push({
 					"uri": "hasMeasurement",
 					"curie": "lg:hasMeasurement",
@@ -2860,8 +2899,8 @@ LinkedGov.measurementsWizard = {
 						}]
 					}
 				});
-				
-				*/
+
+				 */
 
 				rootNode.links.push({
 					"uri": uri,
@@ -2909,6 +2948,7 @@ LinkedGov.measurementsWizard = {
 
 
 		onFail:function(message){
+			var self = this;
 			alert("Measurments wizard failed.\n\n"+message);
 			LinkedGov.resetWizard(self.vars.elmts.addressBody);
 			LinkedGov.showWizardProgress(false);
@@ -2990,8 +3030,6 @@ LinkedGov.addressWizard = {
 		 */
 		initialise: function(elmts){
 
-			LinkedGov.showWizardProgress(true);
-
 			var self = this;
 			self.vars.elmts = elmts;
 
@@ -3006,9 +3044,11 @@ LinkedGov.addressWizard = {
 			self.vars.colObjects = self.buildColumnObjects();
 
 			if(self.vars.colObjects.length > 0){
-				log('self.vars.colObjects:');
-				log(self.vars.colObjects);
 
+				LinkedGov.showWizardProgress(true);
+
+				//log('self.vars.colObjects:');
+				//log(self.vars.colObjects);
 
 				/*
 				 * Build rdf fragments
@@ -3055,7 +3095,7 @@ LinkedGov.addressWizard = {
 				 */
 
 			} else {
-				self.onFail("No columns were selected.");
+				alert("You need to specify one or more columns as having a part of an address in.")
 			}
 		},
 
@@ -3480,6 +3520,7 @@ LinkedGov.addressWizard = {
 		 * onFail
 		 */
 		onFail:function(message){
+			var self = this;
 			alert("Address wizard failed.\n\n"+message);
 			LinkedGov.resetWizard(self.vars.elmts.addressBody);
 			LinkedGov.showWizardProgress(false);
@@ -3750,6 +3791,13 @@ LinkedGov.latLongWizard = {
 		},
 
 
+		onFail:function(){
+			var self = this;
+			alert("Geolocation wizard failed.\n\n"+message)
+			LinkedGov.resetWizard(self.vars.elmts.latLongBody);
+			LinkedGov.showWizardProgress(false);
+		},
+
 		/*
 		 * Return the wizard to its original state.
 		 */
@@ -3769,15 +3817,16 @@ LinkedGov.splitVariablePartColumn = {
 			colName:"",
 			separator:"",
 			callback:{},
+			splitterHTML:"",
 			lowestNumberOfParts:0
 		},
 
-		initialise:function(colName,separator,callback){
+		initialise:function(colName,separator,elBody,callback){
 			var self = this;
 			self.vars.colName = colName;
 			self.vars.separator = separator;
 			self.vars.callback = callback;
-
+			self.vars.splitterHTML = elBody;
 			self.findLowestNumberOfParts();
 		},
 
@@ -3955,8 +4004,9 @@ LinkedGov.splitVariablePartColumn = {
 		},
 
 		onFail:function(message){
+			var self = this;
 			alert("Column split failed.\n\n"+message);
-			self.vars.callback();
+			self.vars.splitterHTML.find("input#splitCharacter").val("").focus();
 		},
 
 		/*
@@ -3966,6 +4016,8 @@ LinkedGov.splitVariablePartColumn = {
 			var self = this;
 
 			Refine.update({cellsChanged:true},function(){
+				self.vars.splitterHTML.find("ul.selected-columns").html("").hide();
+				ui.typingPanel.destroyColumnSelector();
 				self.vars.callback();
 			});
 

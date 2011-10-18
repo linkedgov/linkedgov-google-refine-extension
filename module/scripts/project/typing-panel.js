@@ -110,7 +110,9 @@ TypingPanel.prototype.enterWizard = function(wizardName) {
 		$("div.typing-panel-body").animate({"left":"-300px"},500);
 		$("div.cancel-button").animate({"left":"0px"},500);
 		$("div.wizard-panel").animate({"left":"0px"},500,function(){
-
+			
+			$("div.update-button").show();
+			
 			// show the info icon
 			$("a.info").show();
 
@@ -158,13 +160,15 @@ TypingPanel.prototype.enterWizard = function(wizardName) {
 
 TypingPanel.prototype.exitWizard = function() {
 
+	$("div.update-button").animate({"left":"300px"},500,function(){
+		$(this).hide();
+	});
 	$("div.typing-panel-body").animate({"left":"0px"},500);
 	$("div.cancel-button").animate({"left":"300px"},500);
 	$("div.wizard-panel").animate({"left":"300px"},500, function(){
 		$("div.wizard-panel").find("div.wizard-body").remove();
 	});
 }
-
 
 
 TypingPanel.prototype.populateRangeSelector = function(callback) {
@@ -261,6 +265,18 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 							)
 							.show();
 							break;
+						case "single-column" :
+							$cols.html( 
+									"<li>" +
+									"<span class='col'>" + 
+									$(ui.selected).children().find(".column-header-name").html() + 
+									"</span>" + 
+									"<span class='remove'>X</span>" +
+									RefineUI.typingPanel.getFragmentData($cols) +
+									"</li>"
+							)
+							.show();							
+							break;
 						case "splitter" :
 							$cols.html(
 									"<li>" +
@@ -269,7 +285,8 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 									"</span>" + 
 									"<span class='remove'>X</span>" +
 							"</li>")
-							.show();							
+							.show();	
+							break;
 						}
 					}
 				}
@@ -632,8 +649,9 @@ $(document).ready(function() {
 	});
 
 	$("p.description a.ex").live("click",function(){
+		
 		if($(this).next().css("display") == "none"){
-			$(this).next().show();
+			$(this).next().css("display","block");
 		} else {
 			$(this).next().hide();
 		}
@@ -648,12 +666,15 @@ $(document).ready(function() {
 	 * Modes:
 	 * default - produces column list with select inputs for fragments
 	 * splitter - produces a single column with no select inputs for fragments
+	 * single-column - only allows the user to select one column
 	 * 
 	 */
 	$("div.selector a.selectColumn").live("click",function () {
 		
 		if($(this).hasClass("splitter")){
 			ui.typingPanel.buttonSelector($(this),"splitter");			
+		} else if($(this).hasClass("single-column")){ 
+			ui.typingPanel.buttonSelector($(this),"single-column");
 		} else {
 			ui.typingPanel.buttonSelector($(this),"default");			
 		}
@@ -676,12 +697,12 @@ $(document).ready(function() {
 	$("div.split a.splitter-split").live("click",function(){
 		var name = $(this).parent().find("ul.selected-columns").children("li").eq(0).children("span.col").html();
 		var separator = $(this).parent().find("input.splitCharacter").val();
-
+		var splitElement = $(this).parent();
 		if(separator.length < 1 || name.length < 1){
 			alert("You need to make sure you have selected a column to split and entered a character to split by.");
 		} else {
-			LinkedGov.splitVariablePartColumn.initialise(name,separator,function(){
-				$("input.split").removeAttr("checked");
+			LinkedGov.splitVariablePartColumn.initialise(name,separator,splitElement,function(){
+				$("input#address-split").removeAttr("checked");
 				$("div.split").hide();
 			});
 		}
