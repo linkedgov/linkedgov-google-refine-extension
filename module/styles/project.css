@@ -87,7 +87,7 @@ body.lg table.data-header-table tr td.skip {
 }
 
 body.lg div.typing-panel-body {
-    bottom: 0;
+    bottom: 32px;
     height: auto !important;
     overflow-y: auto;
     padding: 5px 10px 10px;
@@ -105,6 +105,98 @@ body.lg div.wizard-panel {
     top: 28px;
     width: 300px;
     left:300px;
+}
+body.lg div.description-panel {
+    bottom: 32px;
+    height: auto !important;
+    overflow-y: auto;
+    padding: 0;
+    position: absolute;
+    top: 28px;
+    width: 300px;
+    left:300px;
+}
+body.lg div.description-panel h3 {
+	margin-bottom:5px;
+}
+body.lg div.description-panel ul.key {
+    list-style-type: none;
+    margin-bottom: 10px;
+    margin-left: 10px;
+    margin-top:10px;
+}
+body.lg div.description-panel ul.key li {
+	margin-bottom: 5px;
+}
+body.lg div.description-panel div.row-description {
+	margin-bottom: 15px;
+    margin-top: 5px;
+}
+body.lg div.description-panel div.row-description input {
+	border: 1px inset #CCCCCC;
+    background-position: right center;
+    background-repeat: no-repeat;
+    margin: 0 0 0;
+    padding: 3px;
+    width: 96%;
+}
+body.lg div.description-panel div.row-description textarea {
+	border: 1px inset #CCCCCC;
+    color: #999999;
+    display: inline-block;
+    font-style: italic;
+    height: 32px;
+    margin: 3px 0 0;
+    padding: 3px;
+    width: 96% !important;
+}
+body.lg div.description-panel div.column-list {
+	padding:0px;
+	margin-top:10px;
+}
+body.lg div.description-panel div.column-list ul {
+	margin:0;
+	list-style-type:none;
+}
+body.lg div.description-panel div.column-list ul li {
+	margin-bottom:5px;
+}
+body.lg div.description-panel div.column-list ul li.bad input, body.lg div.description-panel div.row-description.bad input {
+	background-color:#FFDCDC;
+	background-image:url(../images/cross.png);
+}
+body.lg div.description-panel div.column-list ul li.maybe input, body.lg div.description-panel div.row-description.maybe input {
+	background-color:#EFEFEF;
+	background-image:url(../images/warning.png);
+}
+body.lg div.description-panel div.column-list ul li.good input, body.lg div.description-panel div.row-description.good input {
+	background-color:#D6FFC9;
+	background-image:url(../images/tick.png);
+}
+body.lg div.description-panel div.column-list ul li.great input, body.lg div.description-panel div.row-description.great input {
+	background-color:#FDFFDC;
+	background-image:url(../images/star.png);
+}
+body.lg div.description-panel div.column-list ul li input.column-name {
+	border: 1px inset #CCCCCC;
+    background-position: right center;
+    background-repeat: no-repeat;
+    margin: 0 0 0;
+    padding: 3px;
+    width: 96%;
+}
+body.lg div.description-panel div.column-list ul li input.column-name:hover {
+	color:#0059D5;
+}
+body.lg div.description-panel div.column-list ul li textarea {
+	border: 1px inset #CCCCCC;
+    color: #999999;
+    display: inline-block;
+    font-style: italic;
+    height: 32px;
+    margin: 3px 0 0;
+    padding: 3px;
+    width: 96% !important;
 }
 body.lg a.wizard-header {
     background: url("../images/arrow.png") no-repeat scroll right center #EBEEF8;
@@ -167,6 +259,15 @@ body.lg div.wizard-body ol.steps li {
     margin-bottom: 5px;
     padding: 0;
 }
+body.lg div.next-button {
+    background: none repeat scroll 0 0 #BBCCFF;
+    bottom: 0;
+    padding: 4px 0;
+    position: absolute;
+    text-align: center;
+    width: 300px;
+    left: 0px;
+}
 body.lg div.cancel-button {
     background: none repeat scroll 0 0 #BBCCFF;
     bottom: 0;
@@ -176,11 +277,14 @@ body.lg div.cancel-button {
     width: 300px;
     left: 300px;
 }
-body.lg div.cancel-button a.button {
+body.lg div.cancel-button a.button, body.lg div.next-button a.button {
     font-weight: normal;
     margin-bottom: 0;
     margin-top: 0;
     padding: 2px 10px;
+}
+body.lg div.next-button a.button {
+	font-weight:bold;
 }
 body.lg div.wizard-body div.split {
     background: none repeat scroll 0 0 #F9F9F9;

@@ -1,0 +1,55 @@
+<div class="wizard-body description-body" bind="description-panel">
+
+	<h2>Labels and descriptions</h2>
+
+	<p class="description">
+		To make this data searchable and useful for others to use on the web, it's important that 
+		the columns have meaningful names and small one-line descriptions. It is not expected that there 
+		is an appropriate description for the rows and columns, however please try to provide them with a 
+		decent label.
+	</p>
+	
+	<p>Key:</p>
+	<ul class="key">
+	<li><img src="/extension/linkedgov/images/cross.png" /> - Bad label</li>
+	<li><img src="/extension/linkedgov/images/warning.png" /> - Needs checking</li>
+	<li><img src="/extension/linkedgov/images/tick.png" /> - Good label, but no description</li>
+	<li><img src="/extension/linkedgov/images/star.png" /> - Great!</li>
+	</ul>
+		
+	<h3>Rows</h3>
+	
+	<p>Please enter a label and description that describes each row, e.g "energy reading":</p>
+	<div class="row-description">
+		<input class='row-label' type="text" value='Enter a label...' />
+		<textarea class='row-description' value='Enter a description...'>Enter a description...</textarea>
+	</div>
+	
+	<h3>Columns</h3>	
+	<p>Please try to make the column names as helpful and as readable as possible. For example, if a column 
+	contains postcodes with the name "Column 3", it would be much more useful to name it "Postcodes".</p>
+	
+	&nbsp;
+
+	
+	<!-- div class="selector column-names">
+		<a class="button selectColumn column-labels" id="column-labels">Start Select</a> <a
+			class="info"></a> <span class="note">To select multiple column
+			headings, hold down CTRL (Windows) or Apple (Mac). You can also drag
+			your mouse across multiple column headers while holding down the
+			relevant key.</span>
+
+		<ul class="selected-columns" bind="labelColumnNames">
+		</ul>
+	</div -->	
+	
+	<div class="column-list">
+	<!--  -->
+	</div>	
+
+</div><!-- end description-panel -->
+
+
+<div class="update-button">
+	<a href="javascript:{}" bind="descriptionButton" class="button update" title="Update">Update</a>
+</div>

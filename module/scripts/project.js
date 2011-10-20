@@ -53,6 +53,11 @@ var LinkedGov = {
 				prefixes:[],
 				baseUri:"http://127.0.0.1:3333/",
 				rootNodes:[]
+			},
+			labelsAndDescriptions:{
+				rowLabel:"",
+				rowDescription:"",
+				cols:[]
 			}
 		},
 
@@ -256,8 +261,25 @@ var LinkedGov = {
 
 			});
 
-			var rootNode = LinkedGov.findExistingRDF(schema,namespaces);
+			//var rootNode = LinkedGov.findExistingRDF(schema,namespaces);
 
+			/*
+			 * Check to see if any RDF exists already.
+			 */
+			if(schema.rootNodes.length > 0){
+				callback(schema.rootNodes[0],false);
+			} else {
+				rootNode = {
+						"nodeType":"cell-as-resource",
+						"expression":"value",
+						"isRowNumberCell":true,
+						"rdfTypes":[],
+						"links":[]
+				};
+				callback(rootNode,true);
+			}
+			
+			/*
 			if(rootNode == null){
 				rootNode = {
 						"nodeType":"cell-as-resource",
@@ -270,6 +292,7 @@ var LinkedGov = {
 			}else{
 				callback(rootNode,false)
 			}
+			*/
 
 		},
 
@@ -463,7 +486,9 @@ var LinkedGov = {
 					oldColumnName: oldName,
 					newColumnName: newName
 				},
-				success:callback,
+				success:function(){
+					LinkedGov.renameColumnInRDF.start(oldName,newName,callback);
+				},
 				error:function(){
 					alert("A problem was encountered when renaming the column: \""+oldName+"\".");
 				}
@@ -695,9 +720,9 @@ LinkedGov.multipleColumnsWizard = {
 			if($(elmts.multipleColumnsColumns).children("li").length > 0){
 
 				log("Starting multipleColumnsWizard");
-				
+
 				LinkedGov.showWizardProgress(true);
-				
+
 				/*
 				 * Recalculate which columns are going to be transposed, 
 				 * taking into account any columns the user wants to skip.
@@ -726,7 +751,7 @@ LinkedGov.multipleColumnsWizard = {
 			} else {
 				alert("You need to select a column to start from and a column to end at.\n\n" +
 						"If you need to unselect any column inbetween those columns, you can remove " +
-						"them from the list by clicking the red cross to the right of the column name.")
+				"them from the list by clicking the red cross to the right of the column name.")
 			}
 
 		},
@@ -2068,6 +2093,10 @@ LinkedGov.dateTimeWizard = {
 					var frags = ['h','m','s'];
 					var colArray = [];
 					for(var i=0;i<colObjects.length;i++){
+						/*
+						 * TODO: need to loop through the frags here as the h-m-s 
+						 * could be in any order in the column list.
+						 */
 						if(colObjects[i].combi == frags[fragCount]){
 							colArray.push(colObjects[i].name);
 							fragCount++;
@@ -2084,7 +2113,29 @@ LinkedGov.dateTimeWizard = {
 						}
 					}
 				}
-
+			} else if(colObjects.length == 2){
+				
+				/*
+				 * If we have Y-M-D selected, check if we have h-m or h-m-s selected
+				 * 
+				 */
+				for(var a=0;a<colObjects.length;a++){
+					if(colObjects[a].combi == "Y-M-D"){
+						var colArray = [colObjects[a].name];
+						for(var i=0;i<colObjects.length;i++){
+							if(colObjects[i].combi == "h-m"){
+								colArray.push(colObjects[i].name);
+								log("We have a year, month, day, hours and minutes spread across two columns");
+								self.createSingleColumnDate(colArray,"Y-M-D-h-m",callback);
+							} else if(colObjects[i].combi == "h-m-s"){
+								colArray.push(colObjects[i].name);
+								log("We have a year, month, day, hours, minutes and seconds spread across two columns");
+								self.createSingleColumnDate(colArray,"Y-M-D-h-m-s",callback);
+							}
+						}
+					}
+				}
+				
 			} else if(colObjects.length == 6){
 
 				/*
@@ -2139,8 +2190,8 @@ LinkedGov.dateTimeWizard = {
 			 * previous columns names.
 			 */
 			for(var i=0; i<cols.length; i++){
-				expr += 'cells["'+cols[i]+'"].value+"/"+';
-				newName += cols[i]+"/";
+				expr += 'cells["'+cols[i]+'"].value+"-"+';
+				newName += cols[i]+"-";
 			}
 
 			/*
@@ -2348,8 +2399,19 @@ LinkedGov.dateTimeWizard = {
 				 * Generate RDF for each row depending on the options selected
 				 */
 				if(typeof colObjects[i].durationValue != 'undefined' && typeof colObjects[i].durationUnit != 'undefined'){
-					// makeDurationFragment
-					colObjects[i].durationRDF = self.makeDurationFragment(colObjects[i].durationValue, colObjects[i].durationUnit);
+					
+					/*
+					 * If the date-time is an XSD/gregorian date, and the user has specified
+					 * a duration, then we have a special case where we add the duration slug on 
+					 * to the end of the XSD URI.
+					 */
+					if(colObjects[i].xsdDateRDF != 'undefined'){
+						colObjects[i].xsdDateRDF = self.appendDurationToXSD(colObjects[i]);
+					} else {
+						// makeDurationFragment
+						colObjects[i].durationRDF = self.makeDurationFragment(colObjects[i].durationValue, colObjects[i].durationUnit);
+					}
+					
 				}
 				if(typeof colObjects[i].year != 'undefined'){
 					// makeYearFragment
@@ -2503,6 +2565,7 @@ LinkedGov.dateTimeWizard = {
 		 */
 		makeXSDDateTimeFragment:function(colName){
 
+			/*
 			var o = {
 					"uri":"http://www.w3.org/2006/time#xsdDateTime",
 					"curie":"time:xsdDateTime",
@@ -2513,10 +2576,70 @@ LinkedGov.dateTimeWizard = {
 						"isRowNumberCell":false
 					}
 			};
+			*/
+			
+			var camelColName = LinkedGov.camelize(colName);
+			
+			var o = {
+		               "uri":"http://example.linkedgov.org/"+camelColName,
+		               "curie":"lg:"+camelColName,
+		               "target":{
+		                  "nodeType":"cell-as-resource",
+		                  "expression":"\"http://reference.data.gov.uk/doc/gregorian-interval/\"+value+\"/P0Y0M0DT0H30M\"",
+		                  "columnName":colName,
+		                  "isRowNumberCell":false,
+		                  "rdfTypes":[
+
+		                  ],
+		                  "links":[
+
+		                  ]
+		               }
+		            }
 
 			return o;
 		},
 
+		/*
+		 * Adds a duration string "/P0Y0M0DT0H30M" to the end of a
+		 * XSD URI.
+		 */
+		appendDurationToXSD:function(colObject){
+			
+			var rdf = colObject.xsdDateRDF;
+			var unit = colObject.durationUnit;
+			var value = colObject.durationValue;
+			var durationSlug = "";
+			/*
+			 * TODO: Duration only allows Years - Minutes, so need to remove seconds.
+			 * TODO: Should just use Y,M,D for the unit values in the select dropdown in the wizard.
+			 * TODO: What if the duration is 1 hour, 30 minutes.
+			 */
+			switch(unit){
+			case "years" : 
+				durationSlug = "/P"+value+"Y0M0DT0H0M"
+				break;
+			case "months" : 
+				durationSlug = "/P0Y"+value+"M0DT0H0M"
+				break;
+			case "days" :
+				durationSlug = "/P0Y0M"+value+"DT0H0M"
+				break;
+			case "hours" :
+				durationSlug = "/P0Y0M0DT"+value+"H0M"
+				break;
+			case "minutes" :
+				durationSlug = "/P0Y0M0DT0H"+value+"M"
+				break;
+			default :
+				break;
+			}
+			
+			rdf.target.expression = rdf.target.expression + durationSlug;
+			
+			return rdf;
+		},
+		
 		/*
 		 * Return the RDF for describing a row's duration.
 		 * 
@@ -2815,6 +2938,115 @@ LinkedGov.measurementsWizard = {
 			var elmts = self.vars.elmts;
 
 
+
+
+			/*
+   "rootNodes":[
+      {
+         "nodeType":"cell-as-resource",
+         "expression":"value",
+         "isRowNumberCell":true,
+         "rdfTypes":[
+            {
+               "uri":"http://example.linkedgov.org/EnergyReading",
+               "curie":"lg:EnergyReading"
+            }
+         ],
+         "links":[
+            {
+               "uri":"http://example.linkedgov.org/electricityUsage",
+               "curie":"lg:electricityUsage",
+               "target":{
+                  "nodeType":"cell-as-blank",
+                  "isRowNumberCell":true,
+                  "rdfTypes":[
+
+                  ],
+                  "links":[
+                     {
+                        "uri":"http://rdf.freebase.com/ns/watt-hour",
+                        "curie":"fb:watt-hour",
+                        "target":{
+                           "nodeType":"cell-as-literal",
+                           "expression":"value",
+                           "valueType":"http://www.w3.org/2001/XMLSchema#int",
+                           "columnName":"Electricity",
+                           "isRowNumberCell":false
+                        }
+                     }
+                  ]
+               }
+            },
+            {
+               "uri":"http://example.linkedgov.org/heatUsage",
+               "curie":"lg:heatUsage",
+               "target":{
+                  "nodeType":"cell-as-blank",
+                  "isRowNumberCell":true,
+                  "rdfTypes":[
+
+                  ],
+                  "links":[
+                     {
+                        "uri":"http://rdf.freebase.com/ns/watt-hour",
+                        "curie":"fb:watt-hour",
+                        "target":{
+                           "nodeType":"cell-as-literal",
+                           "expression":"value",
+                           "valueType":"http://www.w3.org/2001/XMLSchema#int",
+                           "columnName":"Heat",
+                           "isRowNumberCell":false
+                        }
+                     }
+                  ]
+               }
+            },
+            {
+               "uri":"http://example.linkedgov.org/gasUsage",
+               "curie":"lg:gasUsage",
+               "target":{
+                  "nodeType":"cell-as-blank",
+                  "isRowNumberCell":true,
+                  "rdfTypes":[
+
+                  ],
+                  "links":[
+                     {
+                        "uri":"http://rdf.freebase.com/ns/watt-hour",
+                        "curie":"fb:watt-hour",
+                        "target":{
+                           "nodeType":"cell-as-literal",
+                           "expression":"value",
+                           "valueType":"http://www.w3.org/2001/XMLSchema#int",
+                           "columnName":"Gas",
+                           "isRowNumberCell":false
+                        }
+                     }
+                  ]
+               }
+            },
+            {
+               "uri":"http://example.linkedgov.org/readingTime",
+               "curie":"lg:readingTime",
+               "target":{
+                  "nodeType":"cell-as-resource",
+                  "expression":"\"http://reference.data.gov.uk/doc/gregorian-interval/\"+value+\"/P0Y0M0DT0H30M\"",
+                  "columnName":"Date",
+                  "isRowNumberCell":false,
+                  "rdfTypes":[
+
+                  ],
+                  "links":[
+
+                  ]
+               }
+            }
+         ]
+      }
+   ]
+}
+			 */
+
 			/*
 			 * E.g. 
 			 * 
@@ -2854,67 +3086,62 @@ LinkedGov.measurementsWizard = {
 
 				var links = rootNode.links;
 
+				/*
 				for(var j=0; j<links.length; j++){
-
-					/*
-					 * TODO: Can there be multiple targets for a link?
-					 */
+				
 					if(typeof links[j].target != 'undefined' && links[j].target.columnName == colObjects[i].name){
-						/*
-						 * Found existing RDF for the column, so remove it.
-						 */
+
 						log("Found measurements RDF data for column: \""+colObjects[i].name+"\", removing ...");
 						links.splice(j,1);
 						j--;
 					}
 
-				}
+				}*/
+				
 
 				/*
-
-				rootNode.links.push({
-					"uri": "hasMeasurement",
-					"curie": "lg:hasMeasurement",
-					"target": {
-						"nodeType": "cell-as-resource",
-						"expression": "value+\"#measurement\"",
-						"isRowNumberCell": true,
-						"links":[{
-							"uri": uri,
-							"curie": curie,
-							"target": {
-								"nodeType": "cell-as-literal",
-								"expression": "value",
-								"valueType": "http://www.w3.org/2001/XMLSchema#int",
-								"columnName": colObjects[i].name,
-								"isRowNumberCell": false
-							}
-						},{
-							"uri": "http://www.w3.org/2000/01/rdf-schema#label",
-							"curie": "rdfs:label",
-							"target": {
-								"nodeType": "cell-as-literal",
-								"value": colObjects[i].measurement
-							}
-						}]
-					}
-				});
-
+				 * Camel-case & trim whitespace to use as URI slug
 				 */
-
+				var camelColName = LinkedGov.camelize(colObjects[i].name);
+				
+				/*
+				 * Check to see if there's an existing mapping for the column name already.
+				 */
+				for(var j=0; j<links.length; j++){
+					if(links[j].uri.indexOf(camelColName) > -1){
+						log("Found measurements RDF data for column: \""+colObjects[i].name+"\", removing ...");
+						links.splice(j,1);
+						j--;
+					}
+				}
+				
+				
 				rootNode.links.push({
-					"uri": uri,
-					"curie": curie,
-					"target": {
-						"nodeType": "cell-as-literal",
-						"expression": "value",
-						"valueType": "http://www.w3.org/2001/XMLSchema#int",
-						"columnName": colObjects[i].name,
-						"isRowNumberCell": false
+					"uri":"http://example.linkedgov.org/"+camelColName,
+					"curie":"lg:"+camelColName,
+					"target":{
+						"nodeType":"cell-as-blank",
+						"isRowNumberCell":true,
+						"rdfTypes":[
+
+						            ],
+						            "links":[
+						                     {
+						     					 "uri": uri,
+						    					 "curie": curie,
+						                    	 "target":{
+						                    		 "nodeType":"cell-as-literal",
+						                    		 "expression":"value",
+						                    		 "valueType":"http://www.w3.org/2001/XMLSchema#int",
+						                    		 "columnName":colObjects[i].name,
+						                    		 "isRowNumberCell":false
+						                    	 }
+						                     }
+						                     ]
 					}
 				});
 
-			}
+			} // end for
 
 			var schema = LinkedGov.getRDFSchema();
 
@@ -2925,6 +3152,19 @@ LinkedGov.measurementsWizard = {
 				/*
 				 * Create and type the row index "0/#point" as a geo:Point
 				 */
+
+				//var thing = window.prompt("What does each row symbolise? 
+				//(e.g. 'Energy reading')");
+
+				/*
+				 * TODO: This shouldn't be here - this should be asked at the 
+				 * end of the Typing process.
+				 */
+				rootNode.rdfTypes.push({
+					"uri":"http://example.linkedgov.org/EnergyReading",
+					"curie":"lg:EnergyReading"
+				});
+
 				schema.rootNodes.push(rootNode);
 			}
 
@@ -4094,6 +4334,66 @@ LinkedGov.applyTypeIcons = {
 
 };
 
+/*
+ * Traverses the RDF schema and finds the column name that has been changed and 
+ * changes it.
+ */
+LinkedGov.renameColumnInRDF = {
+	
+	vars:{
+		oldName:"",
+		newName:"",
+		callback:{}
+	},
+	
+	start:function(oldName,newName,callback){
+		var self = this;
+		self.vars.oldName = oldName;
+		self.vars.newName = newName;
+		self.vars.callback = callback;
+		
+		var schema = theProject.overlayModels.rdfSchema;
+		
+		$.each(schema, function(key, val) { 
+			self.recursiveFunction(key, val);
+		});
+		
+		/*
+		 * Save the RDF.
+		 */
+		Refine.postProcess("rdf-extension", "save-rdf-schema", {}, {
+			schema: JSON.stringify(schema)
+		}, {}, {
+			onDone: function () {
+				log("Finished");
+				callback();
+			}
+		});
+		
+		
+	},
+
+
+	recursiveFunction: function(key, val) {
+		var self = this;
+		//self.actualFunction(key, val);
+		
+		if (val instanceof Object) {
+			if(typeof val.columnName != 'undefined'){
+				log("Found something containing a columnName key");
+				log(val);
+				if(val.columnName == self.vars.oldName){
+					log("Changing "+val.columnName+" - to: "+self.vars.newName);
+					val.columnName = self.vars.newName;
+				}
+			}
+			$.each(val, function(key, value) {
+				self.recursiveFunction(key, value)
+			});
+		}
+	}
+	
+};
 
 
 /*
@@ -4144,6 +4444,15 @@ $.fn.generateId = function() {
 		this.id = $.generateId();
 	});
 };
+
+LinkedGov.camelize = function(str){
+
+	return str.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, function(match, index) {
+		if (+match === 0) return ""; // or if (/\s+/.test(match)) for white spaces
+		return index == 0 ? match.toLowerCase() : match.toUpperCase();
+	});
+
+}
 
 function log(str) {
 	window.console && console.log && LinkedGov.vars.debug && console.log(str);

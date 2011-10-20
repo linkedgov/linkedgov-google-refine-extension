@@ -109,10 +109,11 @@ TypingPanel.prototype.enterWizard = function(wizardName) {
 	$("div.wizard-panel").html(DOM.loadHTML("linkedgov", "html/project/"+wizardName+".html",function(){		
 		$("div.typing-panel-body").animate({"left":"-300px"},500);
 		$("div.cancel-button").animate({"left":"0px"},500);
+		$("div.next-button").animate({"left":"-300px"},500);
 		$("div.wizard-panel").animate({"left":"0px"},500,function(){
-			
+
 			$("div.update-button").show();
-			
+
 			// show the info icon
 			$("a.info").show();
 
@@ -158,16 +159,239 @@ TypingPanel.prototype.enterWizard = function(wizardName) {
 
 }
 
-TypingPanel.prototype.exitWizard = function() {
+TypingPanel.prototype.exitWizard = function(){
 
 	$("div.update-button").animate({"left":"300px"},500,function(){
 		$(this).hide();
 	});
 	$("div.typing-panel-body").animate({"left":"0px"},500);
+	$("div.description-panel").animate({"left":"300px"},500);
 	$("div.cancel-button").animate({"left":"300px"},500);
+	$("div.next-button").animate({"left":"0px"},500);
 	$("div.wizard-panel").animate({"left":"300px"},500, function(){
 		$("div.wizard-panel").find("div.wizard-body").remove();
 	});
+}
+
+TypingPanel.prototype.buildDescriptionPanel = function() {
+
+	//log("buildDescriptionPanel");
+
+	$("div.description-panel div.column-list").hide();
+	var html = "<ul>";
+	$("div.column-header-title span.column-header-name").each(function(){
+		if($(this).html() != "All"){
+			/*
+			 * Column name status can be:
+			 * good - user has entered a name
+			 * bad - is blank or contains the word "column"
+			 * maybe - could be fine
+			 */
+			var status = "maybe";
+			if($(this).html().length < 2 || $(this).html().toLowerCase().indexOf("column") > -1){
+				status = "bad";
+			}
+			html += "<li class='"+status+"'>" +
+			"<input class='column-name' value='"+$(this).html()+"' />" +
+			"<textarea class='column-description' value='Enter a description...'>Enter a description...</textarea>" + 
+			"</li>";
+			$(this).addClass(status);
+		}
+	});
+	html += "</ul>";
+
+	$("div.description-panel div.column-list").html(html);
+
+	/*
+	 * Try to populate the list with the data that was saved last time, 
+	 * otherwise create the save data from the newly created column list.
+	 */
+
+	var labelData = LinkedGov.vars.labelsAndDescriptions;
+
+	if(labelData.rowLabel.length > 0) {
+		$("div.description-panel div.row-description input").val(labelData.rowLabel);
+	}
+	if(labelData.rowDescription.length  > 0) {
+		$("div.description-panel div.row-description textarea").val(labelData.rowDescription).html(labelData.rowDescription);
+	}
+	ui.typingPanel.checkRowDescription($("div.description-panel div.row-description"));
+
+
+	var colData = labelData.cols;
+
+	if(colData.length > 0){
+		for(var i=0;i<colData.length;i++){
+			$("div.description-panel div.column-list ul li").each(function(){
+
+				if($(this).find("input.column-name").val() == colData[i].name){
+					//log("Replacing description for "+colData[i].name+": "+colData[i].description);
+					$(this).find("textarea.column-description").val(colData[i].description);
+					$(this).find("textarea.column-description").html(colData[i].description);
+					ui.typingPanel.checkColumnDescription($(this));
+				}
+
+				$(this).find("input.column-name").data("original-name",$(this).find("input.column-name").val());
+			});
+		}
+	} else {
+		$("div.description-panel div.column-list ul li").each(function(){
+			colData.push({
+				name:$(this).find("input.column-name").val(),
+				description:$(this).find("textarea.column-description").val()
+			});
+			$(this).find("input.column-name").data("original-name",$(this).find("input.column-name").val());			
+		});
+	}
+
+	$("div.description-panel div.column-list").slideDown(1000);
+
+	/*
+	 * Interaction for row description
+	 */
+	$("div.description-panel div.row-description input, " +
+	"div.description-panel div.row-description textarea").live("focus",function(){
+		if($(this).hasClass("row-label") && $(this).val() == "Enter a label..."){
+			$(this).val("");
+		} else if($(this).hasClass("row-description") && $(this).val() == "Enter a description..."){
+			$(this).val("");
+		}
+	});
+	$("div.description-panel div.row-description input, " +
+	"div.description-panel div.row-description textarea").live("blur",function(){
+		if($(this).hasClass("row-label") && $(this).val() == ""){
+			$(this).val("Enter a label...");
+		} else if($(this).hasClass("row-description") && $(this).val() == ""){
+			$(this).val("Enter a description...");
+		}
+		ui.typingPanel.checkRowDescription($(this).parent());
+	});
+	$("div.description-panel div.row-description input, " +
+	"div.description-panel div.row-description textarea").live("keyup",function(){
+		ui.typingPanel.checkRowDescription($(this).parent());
+	});
+
+	/*
+	 * Interaction for column descriptions
+	 */
+	$("div.description-panel div.column-list ul li input.column-name, " +
+	"div.description-panel div.column-list ul li textarea.column-description").live("focus",function(){
+		if($(this).val() == "Enter a description..."){
+			$(this).val("");
+		}
+	});
+	$("div.description-panel div.column-list ul li input.column-name, " +
+	"div.description-panel div.column-list ul li textarea.column-description").live("blur",function(){
+
+		var el = $(this);
+
+		if($(this).hasClass("column-description") && $(this).val() == ""){
+			$(this).val("Enter a description...");
+		}
+		ui.typingPanel.checkColumnDescription($(this).parent());
+		/*
+		 * Rename column if good or great && changed
+		 */
+		if($(this).hasClass("column-name") && $(this).data("original-name") != el.val()){
+			if($(this).parent("li").hasClass("good") || $(this).parent("li").hasClass("good")){
+				var oldName = $(this).data("original-name");
+				var newName = el.val();
+				
+				for(var i=0;i<colData.length;i++){
+					if(colData[i].name == oldName){
+						colData[i].name = newName;
+						colData[i].description = el.parent().find("textarea").val();
+					}
+				}
+				
+				LinkedGov.renameColumn(oldName,newName,function(){
+					
+					LinkedGov.renameColumnInRDF.start(oldName,newName,function(){
+						Refine.update({everythingChanged:true});
+					});
+					
+					el.data("original-name",el.val());
+					
+				});
+				
+			}
+		}
+	});
+	$("div.description-panel div.column-list ul li input.column-name, " +
+	"div.description-panel div.column-list ul li textarea.column-description").live("keyup",function(){
+		ui.typingPanel.checkColumnDescription($(this).parent());
+	});
+
+	$("div.description-panel a.finish").live("click",function(){
+		/*
+		 * Save the description data as RDF
+		 * 
+		 * Save any columns without RDF with generic RDF using 
+		 * their column names as properties.
+		 */
+	});
+
+}
+
+TypingPanel.prototype.checkRowDescription = function(divElement){
+
+	var input = divElement.find("input.row-label");
+	var textarea = divElement.find("textarea.row-description");
+	var labelData = LinkedGov.vars.labelsAndDescriptions;
+
+	if(input.val().trim().length > 2 && input.val() != "Enter a label..."){
+		divElement.removeClass("bad").removeClass("maybe").addClass("good");
+		if(textarea.val().length > 2 && textarea.val() != "Enter a description..."){
+			divElement.addClass("great");
+		} else {
+			divElement.removeClass("great").addClass("good");
+		}
+	} else {
+		divElement.removeClass("great").removeClass("good").addClass("bad");
+	}
+
+	labelData.rowLabel = input.val();
+	labelData.rowDescription = textarea.val();
+
+}
+
+TypingPanel.prototype.checkColumnDescription = function(liElement){
+
+	var input = liElement.find("input.column-name");
+	var textarea = liElement.find("textarea.column-description");
+
+	var colData = LinkedGov.vars.labelsAndDescriptions.cols;
+
+	if(input.val().trim().length > 2 && input.val().toLowerCase().indexOf("column") < 0){
+		liElement.removeClass("bad").removeClass("maybe").addClass("good");
+		if(textarea.val().length > 2 && textarea.val() != "Enter a description..."){
+			liElement.addClass("great");
+		}
+	} else {
+		liElement.removeClass("great").removeClass("good").addClass("bad");
+	}
+
+	for(var i=0;i<colData.length;i++){
+		if(colData[i].name == input.val()){
+			colData[i].name = input.val();
+			colData[i].description = textarea.val();
+		}
+	}
+
+}
+
+
+TypingPanel.prototype.enterDescriptionPanel = function(){
+
+	$("div.description-panel").html(DOM.loadHTML("linkedgov", "html/project/description-panel.html",function(){		
+		$("div.typing-panel-body").animate({"left":"-300px"},500);
+		$("div.cancel-button").animate({"left":"0px"},500);
+		$("div.next-button").animate({"left":"-300px"},500);
+		$("div.description-panel").animate({"left":"0px"},500,function(){
+			ui.typingPanel.buildDescriptionPanel();
+		});
+
+	}));
 }
 
 
@@ -286,6 +510,18 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 									"<span class='remove'>X</span>" +
 							"</li>")
 							.show();	
+							break;
+						case "column-labels" :
+							$cols.append( 
+									"<li>" +
+									"<span class='remove'>X</span>" +
+									"<input class='column-label-input' value='" + 
+									$(ui.selected).children().find(".column-header-name").html() + 
+									"' />" + 
+									"<textarea rows='2' cols='10' class='column-description-input'></textarea>" +
+									"</li>"
+							)
+							.show();
 							break;
 						}
 					}
@@ -648,8 +884,13 @@ $(document).ready(function() {
 		ui.typingPanel.exitWizard();
 	});
 
+	$("div.next-button a.button").live("click",function(){
+		ui.typingPanel.destroyColumnSelector();
+		ui.typingPanel.enterDescriptionPanel();
+	});
+
 	$("p.description a.ex").live("click",function(){
-		
+
 		if($(this).next().css("display") == "none"){
 			$(this).next().css("display","block");
 		} else {
@@ -670,11 +911,13 @@ $(document).ready(function() {
 	 * 
 	 */
 	$("div.selector a.selectColumn").live("click",function () {
-		
+
 		if($(this).hasClass("splitter")){
 			ui.typingPanel.buttonSelector($(this),"splitter");			
 		} else if($(this).hasClass("single-column")){ 
 			ui.typingPanel.buttonSelector($(this),"single-column");
+		} else if($(this).hasClass("column-labels")){ 
+			ui.typingPanel.buttonSelector($(this),"column-labels");
 		} else {
 			ui.typingPanel.buttonSelector($(this),"default");			
 		}
