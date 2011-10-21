@@ -175,7 +175,7 @@ TypingPanel.prototype.exitWizard = function(){
 
 TypingPanel.prototype.buildDescriptionPanel = function() {
 
-	//log("buildDescriptionPanel");
+	log("buildDescriptionPanel");
 
 	$("div.description-panel div.column-list").hide();
 	var html = "<ul>";
@@ -225,7 +225,7 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 			$("div.description-panel div.column-list ul li").each(function(){
 
 				if($(this).find("input.column-name").val() == colData[i].name){
-					//log("Replacing description for "+colData[i].name+": "+colData[i].description);
+					log("Replacing description for "+colData[i].name+": "+colData[i].description);
 					$(this).find("textarea.column-description").val(colData[i].description);
 					$(this).find("textarea.column-description").html(colData[i].description);
 					ui.typingPanel.checkColumnDescription($(this));
@@ -329,6 +329,8 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 		 * Save any columns without RDF with generic RDF using 
 		 * their column names as properties.
 		 */
+		
+		LinkedGov.finaliseRDFSchema.init();
 	});
 
 }
@@ -388,6 +390,7 @@ TypingPanel.prototype.enterDescriptionPanel = function(){
 		$("div.cancel-button").animate({"left":"0px"},500);
 		$("div.next-button").animate({"left":"-300px"},500);
 		$("div.description-panel").animate({"left":"0px"},500,function(){
+			$("div.description-panel div.update-button").show();
 			ui.typingPanel.buildDescriptionPanel();
 		});
 

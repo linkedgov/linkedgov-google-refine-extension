@@ -278,7 +278,7 @@ var LinkedGov = {
 				};
 				callback(rootNode,true);
 			}
-			
+
 			/*
 			if(rootNode == null){
 				rootNode = {
@@ -292,7 +292,7 @@ var LinkedGov = {
 			}else{
 				callback(rootNode,false)
 			}
-			*/
+			 */
 
 		},
 
@@ -486,9 +486,7 @@ var LinkedGov = {
 					oldColumnName: oldName,
 					newColumnName: newName
 				},
-				success:function(){
-					LinkedGov.renameColumnInRDF.start(oldName,newName,callback);
-				},
+				success:callback,
 				error:function(){
 					alert("A problem was encountered when renaming the column: \""+oldName+"\".");
 				}
@@ -2114,7 +2112,7 @@ LinkedGov.dateTimeWizard = {
 					}
 				}
 			} else if(colObjects.length == 2){
-				
+
 				/*
 				 * If we have Y-M-D selected, check if we have h-m or h-m-s selected
 				 * 
@@ -2135,7 +2133,7 @@ LinkedGov.dateTimeWizard = {
 						}
 					}
 				}
-				
+
 			} else if(colObjects.length == 6){
 
 				/*
@@ -2399,7 +2397,7 @@ LinkedGov.dateTimeWizard = {
 				 * Generate RDF for each row depending on the options selected
 				 */
 				if(typeof colObjects[i].durationValue != 'undefined' && typeof colObjects[i].durationUnit != 'undefined'){
-					
+
 					/*
 					 * If the date-time is an XSD/gregorian date, and the user has specified
 					 * a duration, then we have a special case where we add the duration slug on 
@@ -2411,7 +2409,7 @@ LinkedGov.dateTimeWizard = {
 						// makeDurationFragment
 						colObjects[i].durationRDF = self.makeDurationFragment(colObjects[i].durationValue, colObjects[i].durationUnit);
 					}
-					
+
 				}
 				if(typeof colObjects[i].year != 'undefined'){
 					// makeYearFragment
@@ -2576,26 +2574,26 @@ LinkedGov.dateTimeWizard = {
 						"isRowNumberCell":false
 					}
 			};
-			*/
-			
+			 */
+
 			var camelColName = LinkedGov.camelize(colName);
-			
+
 			var o = {
-		               "uri":"http://example.linkedgov.org/"+camelColName,
-		               "curie":"lg:"+camelColName,
-		               "target":{
-		                  "nodeType":"cell-as-resource",
-		                  "expression":"\"http://reference.data.gov.uk/doc/gregorian-interval/\"+value+\"/P0Y0M0DT0H30M\"",
-		                  "columnName":colName,
-		                  "isRowNumberCell":false,
-		                  "rdfTypes":[
+					"uri":"http://example.linkedgov.org/"+camelColName,
+					"curie":"lg:"+camelColName,
+					"target":{
+						"nodeType":"cell-as-resource",
+						"expression":"\"http://reference.data.gov.uk/doc/gregorian-interval/\"+value+\"/P0Y0M0DT0H30M\"",
+						"columnName":colName,
+						"isRowNumberCell":false,
+						"rdfTypes":[
 
-		                  ],
-		                  "links":[
+						            ],
+						            "links":[
 
-		                  ]
-		               }
-		            }
+						                     ]
+					}
+			}
 
 			return o;
 		},
@@ -2605,7 +2603,7 @@ LinkedGov.dateTimeWizard = {
 		 * XSD URI.
 		 */
 		appendDurationToXSD:function(colObject){
-			
+
 			var rdf = colObject.xsdDateRDF;
 			var unit = colObject.durationUnit;
 			var value = colObject.durationValue;
@@ -2634,12 +2632,12 @@ LinkedGov.dateTimeWizard = {
 			default :
 				break;
 			}
-			
+
 			rdf.target.expression = rdf.target.expression + durationSlug;
-			
+
 			return rdf;
 		},
-		
+
 		/*
 		 * Return the RDF for describing a row's duration.
 		 * 
@@ -3088,7 +3086,7 @@ LinkedGov.measurementsWizard = {
 
 				/*
 				for(var j=0; j<links.length; j++){
-				
+
 					if(typeof links[j].target != 'undefined' && links[j].target.columnName == colObjects[i].name){
 
 						log("Found measurements RDF data for column: \""+colObjects[i].name+"\", removing ...");
@@ -3097,13 +3095,13 @@ LinkedGov.measurementsWizard = {
 					}
 
 				}*/
-				
+
 
 				/*
 				 * Camel-case & trim whitespace to use as URI slug
 				 */
 				var camelColName = LinkedGov.camelize(colObjects[i].name);
-				
+
 				/*
 				 * Check to see if there's an existing mapping for the column name already.
 				 */
@@ -3114,8 +3112,8 @@ LinkedGov.measurementsWizard = {
 						j--;
 					}
 				}
-				
-				
+
+
 				rootNode.links.push({
 					"uri":"http://example.linkedgov.org/"+camelColName,
 					"curie":"lg:"+camelColName,
@@ -3127,8 +3125,8 @@ LinkedGov.measurementsWizard = {
 						            ],
 						            "links":[
 						                     {
-						     					 "uri": uri,
-						    					 "curie": curie,
+						                    	 "uri": uri,
+						                    	 "curie": curie,
 						                    	 "target":{
 						                    		 "nodeType":"cell-as-literal",
 						                    		 "expression":"value",
@@ -4339,61 +4337,266 @@ LinkedGov.applyTypeIcons = {
  * changes it.
  */
 LinkedGov.renameColumnInRDF = {
-	
-	vars:{
-		oldName:"",
-		newName:"",
-		callback:{}
-	},
-	
-	start:function(oldName,newName,callback){
-		var self = this;
-		self.vars.oldName = oldName;
-		self.vars.newName = newName;
-		self.vars.callback = callback;
-		
-		var schema = theProject.overlayModels.rdfSchema;
-		
-		$.each(schema, function(key, val) { 
-			self.recursiveFunction(key, val);
-		});
-		
-		/*
-		 * Save the RDF.
-		 */
-		Refine.postProcess("rdf-extension", "save-rdf-schema", {}, {
-			schema: JSON.stringify(schema)
-		}, {}, {
-			onDone: function () {
-				log("Finished");
+
+		vars:{
+			oldName:"",
+			newName:"",
+			callback:{}
+		},
+
+		start:function(oldName,newName,callback){
+			var self = this;
+			self.vars.oldName = oldName;
+			self.vars.newName = newName;
+			self.vars.callback = callback;
+
+			if(typeof theProject.overlayModels != 'undefined' && typeof theProject.overlayModels.rdfSchema != 'undefined'){
+
+				var schema = theProject.overlayModels.rdfSchema;
+
+				$.each(schema, function(key, val) { 
+					self.recursiveFunction(key, val);
+				});
+
+				/*
+				 * Save the RDF.
+				 */
+				Refine.postProcess("rdf-extension", "save-rdf-schema", {}, {
+					schema: JSON.stringify(schema)
+				}, {}, {
+					onDone: function () {
+						log("Finished");
+						callback();
+					}
+				});
+			} else {
 				callback();
+				return false;
 			}
-		});
-		
-		
-	},
+
+		},
 
 
-	recursiveFunction: function(key, val) {
-		var self = this;
-		//self.actualFunction(key, val);
-		
-		if (val instanceof Object) {
-			if(typeof val.columnName != 'undefined'){
-				log("Found something containing a columnName key");
-				log(val);
-				if(val.columnName == self.vars.oldName){
-					log("Changing "+val.columnName+" - to: "+self.vars.newName);
-					val.columnName = self.vars.newName;
+		recursiveFunction: function(key, val) {
+			var self = this;
+			//self.actualFunction(key, val);
+
+			if (val instanceof Object) {
+				if(typeof val.columnName != 'undefined'){
+					log("Found something containing a columnName key");
+					log(val);
+					if(val.columnName == self.vars.oldName){
+						log("Changing "+val.columnName+" - to: "+self.vars.newName);
+						val.columnName = self.vars.newName;
+					}
+				}
+				$.each(val, function(key, value) {
+					self.recursiveFunction(key, value)
+				});
+			}
+		}
+
+};
+
+/*
+ * For any columns that do not have RDF stored, save their values in RDF
+ * using the column name as the property name.
+ */
+LinkedGov.finaliseRDFSchema = {
+
+		vars:{
+			vocabs:{
+				lg:{
+					curie:"lg",
+					uri:"http://example.linkedgov.org/"
 				}
 			}
-			$.each(val, function(key, value) {
-				self.recursiveFunction(key, value)
+		},
+
+		/*
+		 * Check which column headers don't have the "typed" class.
+		 */
+		init:function(){
+
+			var self = this;
+
+			self.vars.cols = LinkedGov.vars.labelsAndDescriptions.cols;
+			self.vars.rowLabel = LinkedGov.vars.labelsAndDescriptions.rowLabel;
+			self.vars.rowDescription = LinkedGov.vars.labelsAndDescriptions.rowDescription;
+
+			/*
+			 * Apply the row label and description
+			 */
+			self.saveRowClass(function(){
+				self.saveColumnsAsProperties(function(){
+					LinkedGov.checkSchema(self.vars.vocabs,function(rootNode,foundRootNode){
+						
+						var camelizedRowLabel = LinkedGov.camelize(self.vars.rowLabel);
+						
+						rootNode.rdfTypes = [{
+							uri:self.vars.vocabs.lg.uri+camelizedRowLabel,
+							curie:self.vars.vocabs.lg.curie+":"+camelizedRowLabel,
+						}];
+						
+						self.saveRDF(rootNode,foundRootNode);
+						
+					});
+				})
+			})
+
+		},
+
+		/*
+		 * Add another rootNode.
+		 */
+		saveRowClass:function(callback){
+
+			var self = this;
+
+			var schema = LinkedGov.getRDFSchema();
+
+			var camelizedRowLabel = LinkedGov.camelize(LinkedGov.vars.labelsAndDescriptions.rowLabel);
+
+			var rootNode = {
+					links:[{
+						curie:"rdfs:label",
+						target:{
+							lang:"en",
+							nodeType:"literal",
+							value:LinkedGov.vars.labelsAndDescriptions.rowLabel
+						},
+						uri:"http://www.w3.org/2000/01/rdf-schema#label"
+					},{
+						curie:"rdfs:comment",
+						target:{
+							lang:"en",
+							nodeType:"literal",
+							value:LinkedGov.vars.labelsAndDescriptions.rowDescription
+						},
+						uri:"http://www.w3.org/2000/01/rdf-schema#comment"						
+					}],
+					nodeType:"resource",
+					rdfTypes:[{
+						curie:"owl:Class",
+						uri:"http://www.w3.org/2002/07/owl#Class"
+					}],
+					value:"http://example.linkedgov.org/example-dataset/terms/"+camelizedRowLabel
+			};
+
+			schema.rootNodes.push(rootNode);
+
+			callback();
+
+		},
+
+		/*
+		 * 
+		 */
+		saveColumnsAsProperties:function(callback){
+
+			var self = this;
+			var cols = LinkedGov.vars.labelsAndDescriptions.cols;
+			var schema = LinkedGov.getRDFSchema();
+
+			for(var i=0;i<cols.length;i++){
+
+				/*
+				 * Add the owl:objectProperty statements for the columns.
+				 */
+				var rootNode = {
+						nodeType:"resource",
+						rdfTypes:[{
+							curie:"owl:objectProperty",
+							uri:"http://www.w3.org/2002/07/owl#objectProperty"
+						}],
+						value:"http://example.linkedgov.org/example-dataset/terms/"+LinkedGov.camelize(cols[i].name),
+						links:[{
+							curie:"rdfs:label",
+							target:{
+								lang:"en",
+								nodeType:"literal",
+								value:cols[i].name
+							},
+							uri:"http://www.w3.org/2000/01/rdf-schema#label"
+						}]
+				}
+
+				/*
+				 * Add the column description.
+				 */
+				if(cols[i].description.length > 2 && cols[i].description != "Enter a description..."){
+					rootNode.links.push({
+						curie:"rdfs:comment",
+						target:{
+							lang:"en",
+							nodeType:"literal",
+							value:cols[i].description
+						},
+						uri:"http://www.w3.org/2000/01/rdf-schema#comment"	
+					})
+				}
+
+				schema.rootNodes.push(rootNode);
+
+				if(i == cols.length-1){
+					callback();
+				}
+			}
+
+		},
+
+		saveRDF:function(rootNode,newRootNode){
+
+			var self = this;
+
+			$("td.column-header").each(function() {
+				if ($(this).find("span.column-header-name").html() != "All" && !$(this).hasClass("typed")) {
+
+					log("\""+$(this).find("span.column-header-name").html()+"\" has no RDF, generating generic RDF for it.");
+
+					var camelizedColumnName = LinkedGov.camelize($(this).find("span.column-header-name").html());
+					var o = {
+							"uri":self.vars.vocabs.lg.uri+camelizedColumnName,
+							"curie":self.vars.vocabs.lg.curie+":"+camelizedColumnName,
+							"target":{
+								"nodeType":"cell-as-literal",
+								"expression":"value",
+								"columnName":$(this).find("span.column-header-name").html(),
+								"isRowNumberCell":false
+							}
+					};
+
+					rootNode.links.push(o);
+				}
 			});
+
+			var schema = LinkedGov.getRDFSchema();
+
+			if(!newRootNode){
+				log("rootNode has already been updated...");
+			} else {
+				alert("New RDF root node created. This should only happen if there was no RDF for any of the columns.");
+				log("Adding first rootNode for generic column RDF...");
+
+				schema.rootNodes.push(rootNode);
+			}
+
+			/*
+			 * Save the RDF.
+			 */
+			Refine.postProcess("rdf-extension", "save-rdf-schema", {}, {
+				schema: JSON.stringify(schema)
+			}, {}, {
+				onDone: function () {
+					//DialogSystem.dismissUntil(self._level - 1);
+					//theProject.overlayModels.rdfSchema = schema;
+					Refine.update({everythingChanged:true});
+				}
+			});
+
 		}
-	}
-	
-};
+
+}
 
 
 /*

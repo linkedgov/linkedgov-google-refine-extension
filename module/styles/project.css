@@ -107,7 +107,7 @@ body.lg div.wizard-panel {
     left:300px;
 }
 body.lg div.description-panel {
-    bottom: 32px;
+    bottom: 72px;
     height: auto !important;
     overflow-y: auto;
     padding: 0;
