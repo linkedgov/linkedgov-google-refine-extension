@@ -2403,7 +2403,8 @@ LinkedGov.dateTimeWizard = {
 					 * a duration, then we have a special case where we add the duration slug on 
 					 * to the end of the XSD URI.
 					 */
-					if(colObjects[i].xsdDateRDF != 'undefined'){
+					if(typeof colObjects[i].xsdDateRDF != 'undefined'){
+						log("colObjects[i].xsdDateRDF - "+colObjects[i].xsdDateRDF);
 						colObjects[i].xsdDateRDF = self.appendDurationToXSD(colObjects[i]);
 					} else {
 						// makeDurationFragment
@@ -3615,7 +3616,6 @@ LinkedGov.addressWizard = {
 			var ospcCURIE = "ospc";
 			var ospcResourceURI = "http://data.ordnancesurvey.co.uk/id/postcodeunit/";
 
-
 			/*
 			 * The RDF plugin's schema object that's posted to the save-rdf-schema 
 			 * process.
@@ -3632,28 +3632,22 @@ LinkedGov.addressWizard = {
 			 * URI and an rdfs:label.
 			 */
 
-
-			if(newRootNode){
-				rootNode.rdfTypes.push({
-					"uri":"http://www.w3.org/2006/vcard/ns#VCard",
-					"curie":"vcard:VCard"
-				});
-				rootNode.links.push({
-					"uri":"http://www.w3.org/2006/vcard/ns#adr",
-					"curie":"vcard:adr",
-					"target":{
-						"nodeType":"cell-as-resource",
-						"expression":"value+\"#address\"",
-						"isRowNumberCell":true,
-						"rdfTypes":[{
-							"uri":"http://www.w3.org/2006/vcard/ns#Address",
-							"curie":"vcard:Address"
-						}],
+			var vcardObj = {
+					"uri":"http://example.linkedgov.org/location",
+					"curie":"lg:location",
+		               "target":{
+		                   "nodeType":"cell-as-resource",
+		                   "expression":"value+\"#address\"",
+		                   "isRowNumberCell":true,
+		                   "rdfTypes":[
+		                      {
+		                         "uri":"http://www.w3.org/2006/vcard/ns#Address",
+		                         "curie":"vcard:Address"
+		                      }
+		                   ],
 						"links":[]
 					}
-				});
-			}
-
+			};
 
 			/*
 			 * Loop through the column objects and store their RDF in the schema.
@@ -3664,13 +3658,14 @@ LinkedGov.addressWizard = {
 			for(var i=0;i<colObjects.length;i++){
 
 				if(colObjects[i].containsPostcode && colObjects[i].part == "postcode"){
-					rootNode.links[0].target.links.push(colObjects[i].ospcRdf);
+					vcardObj.target.links.push(colObjects[i].ospcRdf);
 				}
 				if(typeof colObjects[i].rdf != 'undefined'){
-					rootNode.links[0].target.links.push(colObjects[i].rdf);
+					vcardObj.target.links.push(colObjects[i].rdf);
 				}
 			}
 
+			rootNode.links.push(vcardObj);
 
 			var schema = LinkedGov.getRDFSchema();
 
@@ -3900,6 +3895,74 @@ LinkedGov.latLongWizard = {
 			var colObjects = self.vars.colObjects;
 
 			var uri, curie = "";
+			
+
+/*
+
+
+{
+               "uri":"http://example.linkedgov.org/location",
+               "curie":"lg:location",
+               "target":{
+                  "nodeType":"cell-as-resource",
+                  "expression":"value+\"#geoPoint\"",
+                  "isRowNumberCell":true,
+                  "rdfTypes":[
+                     {
+                        "uri":"http://www.w3.org/2003/01/geo/wgs84_pos#Point",
+                        "curie":"geo:Point"
+                     }
+                  ],
+                  "links":[
+                     {
+                        "uri":"http://www.w3.org/2003/01/geo/wgs84_pos#lat",
+                        "curie":"geo:lat",
+                        "target":{
+                           "nodeType":"cell-as-literal",
+                           "expression":"value",
+                           "valueType":"http://www.w3.org/2001/XMLSchema#float",
+                           "columnName":"Latitude",
+                           "isRowNumberCell":false
+                        }
+                     },
+                     {
+                        "uri":"http://www.w3.org/2003/01/geo/wgs84_pos#long",
+                        "curie":"geo:long",
+                        "target":{
+                           "nodeType":"cell-as-literal",
+                           "expression":"value",
+                           "valueType":"http://www.w3.org/2001/XMLSchema#float",
+                           "columnName":"Longitude",
+                           "isRowNumberCell":false
+                        }
+                     }
+                  ]
+               }
+            }
+
+
+ */			
+			
+
+			
+			
+			var obj = {
+		               "uri":"http://example.linkedgov.org/location",
+		               "curie":"lg:location",
+		               "target":{
+		                  "nodeType":"cell-as-resource",
+		                  "expression":"value+\"#point\"",
+		                  "isRowNumberCell":true,
+		                  "rdfTypes":[
+		                     {
+		                        "uri":"http://www.w3.org/2003/01/geo/wgs84_pos#Point",
+		                        "curie":"geo:Point"
+		                     }
+		                  ],
+		                  "links":[]
+		               }
+			};			
+			
 
 			/*
 			 * Loop through the fragments, the type value can be:
@@ -3917,9 +3980,6 @@ LinkedGov.latLongWizard = {
 
 				for(var j=0; j<links.length; j++){
 
-					/*
-					 * TODO: Can there be multiple targets for a link?
-					 */
 					if(typeof links[j].target != 'undefined' && links[j].target.columnName == colObjects[i].name){
 						/*
 						 * Found existing RDF for the column, so remove it.
@@ -3940,7 +4000,7 @@ LinkedGov.latLongWizard = {
 					 */
 					uri = vocabs.geo.uri+colObjects[i].type;
 					curie = vocabs.geo.curie+":"+colObjects[i].type;
-					links.push(self.makeFragmentRDF(colObjects[i].name,uri,curie));
+					obj.target.links.push(self.makeFragmentRDF(colObjects[i].name,uri,curie));
 
 					break;
 				case "lat" : 
@@ -3949,7 +4009,7 @@ LinkedGov.latLongWizard = {
 					 */
 					uri = vocabs.geo.uri+colObjects[i].type;
 					curie = vocabs.geo.curie+":"+colObjects[i].type;
-					links.push(self.makeFragmentRDF(colObjects[i].name,uri,curie));
+					obj.target.links.push(self.makeFragmentRDF(colObjects[i].name,uri,curie));
 
 					break;
 				case "northing" :
@@ -3958,7 +4018,7 @@ LinkedGov.latLongWizard = {
 					 */
 					uri = vocabs.spatialrelations.uri+colObjects[i].type;
 					curie = vocabs.spatialrelations.curie+":"+colObjects[i].type;
-					links.push(self.makeFragmentRDF(colObjects[i].name,uri,curie));
+					obj.target.links.push(self.makeFragmentRDF(colObjects[i].name,uri,curie));
 
 					break;
 				case "easting" : 
@@ -3967,7 +4027,7 @@ LinkedGov.latLongWizard = {
 					 */
 					uri = vocabs.spatialrelations.uri+colObjects[i].type;
 					curie = vocabs.spatialrelations.curie+":"+colObjects[i].type;
-					links.push(self.makeFragmentRDF(colObjects[i].name,uri,curie));
+					obj.target.links.push(self.makeFragmentRDF(colObjects[i].name,uri,curie));
 
 					break;	
 				default:
@@ -3976,20 +4036,14 @@ LinkedGov.latLongWizard = {
 
 			}
 
+			rootNode.links.push(obj);
+			
 			var schema = LinkedGov.getRDFSchema();
 
 			if(!newRootNode){
 				log("rootNode has already been updated...");
 			} else {
 				log("Adding first rootNode for lat-long data...");
-				/*
-				 * Create and type the row index "0/#point" as a geo:Point
-				 */
-				rootNode.expression = "value+\"#point\"";
-				rootNode.rdfTypes.push({
-					"uri":"http://www.w3.org/2003/01/geo/wgs84_pos#Point",
-					"curie":"geo:Point"
-				});
 				schema.rootNodes.push(rootNode);
 			}
 
@@ -4018,6 +4072,7 @@ LinkedGov.latLongWizard = {
 					"curie":curie,
 					"target":{
 						"nodeType":"cell-as-literal",
+						"valueType": "http://www.w3.org/2001/XMLSchema#float",
 						"expression":"value",
 						"columnName":colName,
 						"isRowNumberCell":false
@@ -4430,16 +4485,16 @@ LinkedGov.finaliseRDFSchema = {
 			self.saveRowClass(function(){
 				self.saveColumnsAsProperties(function(){
 					LinkedGov.checkSchema(self.vars.vocabs,function(rootNode,foundRootNode){
-						
+
 						var camelizedRowLabel = LinkedGov.camelize(self.vars.rowLabel);
-						
+
 						rootNode.rdfTypes = [{
 							uri:self.vars.vocabs.lg.uri+camelizedRowLabel,
 							curie:self.vars.vocabs.lg.curie+":"+camelizedRowLabel,
 						}];
-						
+
 						self.saveRDF(rootNode,foundRootNode);
-						
+
 					});
 				})
 			})

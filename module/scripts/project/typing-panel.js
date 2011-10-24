@@ -251,6 +251,7 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 	 */
 	$("div.description-panel div.row-description input, " +
 	"div.description-panel div.row-description textarea").live("focus",function(){
+		$("table.data-table > tbody > tr.odd > td ").css("background-color","#C1FFB1");
 		if($(this).hasClass("row-label") && $(this).val() == "Enter a label..."){
 			$(this).val("");
 		} else if($(this).hasClass("row-description") && $(this).val() == "Enter a description..."){
@@ -259,6 +260,7 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 	});
 	$("div.description-panel div.row-description input, " +
 	"div.description-panel div.row-description textarea").live("blur",function(){
+		$("table.data-table > tbody > tr.odd > td ").css("background-color","#F2F2F2");
 		if($(this).hasClass("row-label") && $(this).val() == ""){
 			$(this).val("Enter a label...");
 		} else if($(this).hasClass("row-description") && $(this).val() == ""){
@@ -276,6 +278,17 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 	 */
 	$("div.description-panel div.column-list ul li input.column-name, " +
 	"div.description-panel div.column-list ul li textarea.column-description").live("focus",function(){
+		
+		var colName = $(this).parent("li").find("input.column-name").val();
+	
+		$("div.column-header-title span.column-header-name").each(function(){
+			if($(this).html() == colName){
+				$(this).parent("div").parent("td").addClass("selected");
+			} else {
+				$(this).parent("div").parent("td").removeClass("selected");
+			}
+		});
+		
 		if($(this).val() == "Enter a description..."){
 			$(this).val("");
 		}
@@ -284,7 +297,14 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 	"div.description-panel div.column-list ul li textarea.column-description").live("blur",function(){
 
 		var el = $(this);
-
+		var colName = $(this).parent("li").find("input.column-name").val();
+		
+		$("div.column-header-title span.column-header-name").each(function(){
+			if($(this).html() == colName){
+				$(this).parent("div").parent("td").removeClass("selected");
+			}
+		});
+		
 		if($(this).hasClass("column-description") && $(this).val() == ""){
 			$(this).val("Enter a description...");
 		}
@@ -293,7 +313,8 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 		 * Rename column if good or great && changed
 		 */
 		if($(this).hasClass("column-name") && $(this).data("original-name") != el.val()){
-			if($(this).parent("li").hasClass("good") || $(this).parent("li").hasClass("good")){
+			
+			if($(this).parent("li").hasClass("maybe") || $(this).parent("li").hasClass("good") || $(this).parent("li").hasClass("great")){
 				var oldName = $(this).data("original-name");
 				var newName = el.val();
 				
@@ -314,7 +335,11 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 					
 				});
 				
+			} else {
+				el.val(el.data("original-name"));
 			}
+		} else {
+
 		}
 	});
 	$("div.description-panel div.column-list ul li input.column-name, " +
@@ -330,7 +355,23 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 		 * their column names as properties.
 		 */
 		
-		LinkedGov.finaliseRDFSchema.init();
+		var error = false;
+		
+		if($("div.row-description").hasClass("maybe") || $("div.row-description").hasClass("bad")){
+			error = true;
+		}
+		
+		$("div.column-list ul li").each(function(){
+			if($(this).hasClass("maybe") || $(this).hasClass("bad")){
+				error = true;
+			}
+		});
+		
+		if(error){
+			alert("Some labels still need to be checked, please make sure you have checked the row description and all of the columns.")
+		} else {
+			LinkedGov.finaliseRDFSchema.init();
+		}
 	});
 
 }
@@ -379,22 +420,34 @@ TypingPanel.prototype.checkColumnDescription = function(liElement){
 			colData[i].description = textarea.val();
 		}
 	}
-
 }
 
 
 TypingPanel.prototype.enterDescriptionPanel = function(){
 
-	$("div.description-panel").html(DOM.loadHTML("linkedgov", "html/project/description-panel.html",function(){		
+	if($("div.description-panel div.column-list ul li").length > 0){
+		
+		// list already built
 		$("div.typing-panel-body").animate({"left":"-300px"},500);
 		$("div.cancel-button").animate({"left":"0px"},500);
 		$("div.next-button").animate({"left":"-300px"},500);
-		$("div.description-panel").animate({"left":"0px"},500,function(){
-			$("div.description-panel div.update-button").show();
-			ui.typingPanel.buildDescriptionPanel();
-		});
+		$("div.description-panel").animate({"left":"0px"},500);
+		$("div.description-panel div.update-button").show().animate({"left":"0px"},500);
+	} else {
+		
+		// build new list
+		$("div.description-panel").html(DOM.loadHTML("linkedgov", "html/project/description-panel.html",function(){		
+			$("div.typing-panel-body").animate({"left":"-300px"},500);
+			$("div.cancel-button").animate({"left":"0px"},500);
+			$("div.next-button").animate({"left":"-300px"},500);
+			$("div.description-panel").animate({"left":"0px"},500,function(){
+				$("div.description-panel div.update-button").show().animate({"left":"0px"},500);
+				ui.typingPanel.buildDescriptionPanel();
+			});
+		}));
+		
+	}
 
-	}));
 }
 
 

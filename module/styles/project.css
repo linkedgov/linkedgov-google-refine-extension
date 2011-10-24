@@ -38,6 +38,9 @@ body.lg div.wizardProgressMessage p img {
     display: block;
     margin: 10px auto auto;
 }
+body.lg table.data-header-table td.column-header.selected {
+	 background-color: #C1FFB1;
+}
 body.lg table.data-header-table td.column-header.typed {
     background-image: url("../images/rdf-small.png");
     background-position: center 5px;
@@ -133,7 +136,7 @@ body.lg div.description-panel div.row-description {
     margin-top: 5px;
 }
 body.lg div.description-panel div.row-description input {
-	border: 1px inset #CCCCCC;
+	border: 1px solid #D6D6D6;
     background-position: right center;
     background-repeat: no-repeat;
     margin: 0 0 0;
@@ -141,7 +144,7 @@ body.lg div.description-panel div.row-description input {
     width: 96%;
 }
 body.lg div.description-panel div.row-description textarea {
-	border: 1px inset #CCCCCC;
+	border: 1px solid #D6D6D6;
     color: #999999;
     display: inline-block;
     font-style: italic;
@@ -178,7 +181,7 @@ body.lg div.description-panel div.column-list ul li.great input, body.lg div.des
 	background-image:url(../images/star.png);
 }
 body.lg div.description-panel div.column-list ul li input.column-name {
-	border: 1px inset #CCCCCC;
+	border: 1px solid #D6D6D6;
     background-position: right center;
     background-repeat: no-repeat;
     margin: 0 0 0;
@@ -189,7 +192,7 @@ body.lg div.description-panel div.column-list ul li input.column-name:hover {
 	color:#0059D5;
 }
 body.lg div.description-panel div.column-list ul li textarea {
-	border: 1px inset #CCCCCC;
+	border: 1px solid #D6D6D6;
     color: #999999;
     display: inline-block;
     font-style: italic;
