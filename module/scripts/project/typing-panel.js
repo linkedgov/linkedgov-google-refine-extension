@@ -376,6 +376,11 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 
 }
 
+/*
+ * checkRowDescription
+ * 
+ * Validates the input for the row label and description on interaction.
+ */
 TypingPanel.prototype.checkRowDescription = function(divElement){
 
 	var input = divElement.find("input.row-label");
