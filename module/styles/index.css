@@ -64,7 +64,7 @@ body.lg .hide {
 body.lg #create-project-ui-source-selection {
     background: none repeat scroll 0 0 white;
     font-size: 1.3em;
-    overflow-y: scroll;
+    overflow-y: auto;
     visibility: visible; 
 }
 body.lg #lg-logo {

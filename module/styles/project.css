@@ -39,7 +39,7 @@ body.lg div.wizardProgressMessage p img {
     margin: 10px auto auto;
 }
 body.lg table.data-header-table td.column-header.selected {
-	 background-color: #C1FFB1;
+	 background-color: #DAFFD9;
 }
 body.lg table.data-header-table td.column-header.typed {
     background-image: url("../images/rdf-small.png");
@@ -180,7 +180,7 @@ body.lg div.description-panel div.column-list ul li.great input, body.lg div.des
 	background-color:#FDFFDC;
 	background-image:url(../images/star.png);
 }
-body.lg div.description-panel div.column-list ul li input.column-name {
+body.lg div.description-panel div.column-list ul li input.column-label {
 	border: 1px solid #D6D6D6;
     background-position: right center;
     background-repeat: no-repeat;
@@ -188,7 +188,7 @@ body.lg div.description-panel div.column-list ul li input.column-name {
     padding: 3px;
     width: 96%;
 }
-body.lg div.description-panel div.column-list ul li input.column-name:hover {
+body.lg div.description-panel div.column-list ul li input.column-label:hover {
 	color:#0059D5;
 }
 body.lg div.description-panel div.column-list ul li textarea {

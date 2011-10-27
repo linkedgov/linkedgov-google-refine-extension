@@ -173,6 +173,36 @@ TypingPanel.prototype.exitWizard = function(){
 	});
 }
 
+
+
+TypingPanel.prototype.enterDescriptionPanel = function(){
+
+	if($("div.description-panel div.column-list ul li").length > 0){
+
+		// list already built
+		$("div.typing-panel-body").animate({"left":"-300px"},500);
+		$("div.cancel-button").animate({"left":"0px"},500);
+		$("div.next-button").animate({"left":"-300px"},500);
+		$("div.description-panel").animate({"left":"0px"},500);
+		$("div.description-panel div.update-button").show().animate({"left":"0px"},500);
+	} else {
+
+		// build new list
+		$("div.description-panel").html(DOM.loadHTML("linkedgov", "html/project/description-panel.html",function(){		
+			$("div.typing-panel-body").animate({"left":"-300px"},500);
+			$("div.cancel-button").animate({"left":"0px"},500);
+			$("div.next-button").animate({"left":"-300px"},500);
+			$("div.description-panel").animate({"left":"0px"},500,function(){
+				$("div.description-panel div.update-button").show().animate({"left":"0px"},500);
+				ui.typingPanel.buildDescriptionPanel();
+			});
+		}));
+
+	}
+
+}
+
+
 TypingPanel.prototype.buildDescriptionPanel = function() {
 
 	log("buildDescriptionPanel");
@@ -192,7 +222,7 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 				status = "bad";
 			}
 			html += "<li class='"+status+"'>" +
-			"<input class='column-name' value='"+$(this).html()+"' />" +
+			"<input class='column-label' value='"+$(this).html()+"' />" +
 			"<textarea class='column-description' value='Enter a description...'>Enter a description...</textarea>" + 
 			"</li>";
 			$(this).addClass(status);
@@ -205,7 +235,7 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 	/*
 	 * Try to populate the list with the data that was saved last time, 
 	 * otherwise create the save data from the newly created column list.
-	 */
+
 
 	var labelData = LinkedGov.vars.labelsAndDescriptions;
 
@@ -215,43 +245,64 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 	if(labelData.rowDescription.length  > 0) {
 		$("div.description-panel div.row-description textarea").val(labelData.rowDescription).html(labelData.rowDescription);
 	}
-	ui.typingPanel.checkRowDescription($("div.description-panel div.row-description"));
+	 */
 
-
+	/*
+	 * Data should load into the input fields from the RDF schema, not the 
+	 * object "labelsAndDescriptions".
+	 */
+	var labelData = LinkedGov.vars.labelsAndDescriptions; 
 	var colData = labelData.cols;
 
 	if(colData.length > 0){
 		for(var i=0;i<colData.length;i++){
 			$("div.description-panel div.column-list ul li").each(function(){
 
-				if($(this).find("input.column-name").val() == colData[i].name){
-					log("Replacing description for "+colData[i].name+": "+colData[i].description);
-					$(this).find("textarea.column-description").val(colData[i].description);
-					$(this).find("textarea.column-description").html(colData[i].description);
+				if($(this).find("input.column-label").val() == colData[i].name){
+					//log("Replacing description for "+colData[i].name+": "+colData[i].description);
+					$(this).find("textarea.column-description").val(colData[i].description).html(colData[i].description);
 					ui.typingPanel.checkColumnDescription($(this));
 				}
 
-				$(this).find("input.column-name").data("original-name",$(this).find("input.column-name").val());
+				$(this).find("input.column-label").data("original-name",$(this).find("input.column-label").val());
 			});
 		}
 	} else {
-		$("div.description-panel div.column-list ul li").each(function(){
-			colData.push({
-				name:$(this).find("input.column-name").val(),
-				description:$(this).find("textarea.column-description").val()
+		ui.typingPanel.loadLabelsAndDescription(function(){
+			$("div.description-panel div.column-list").slideDown(1000,function(){
+
+				labelData.rowLabel = $("div.row-decsription input.row-name").val();
+				labelData.rowDescription = $("div.row-description textarea.row-description").val();
+
+				/*
+				 * Validate the row label and description
+				 */
+				ui.typingPanel.checkRowDescription($("div.description-panel div.row-description"));
+
+				/*
+				 * Populate a local object of column names and description so the user can 
+				 * switch between panels before saving and not lose their input values.
+				 */
+				$("div.description-panel div.column-list ul li").each(function(){
+					colData.push({
+						name:$(this).find("input.column-label").val(),
+						description:$(this).find("textarea.column-description").val()
+					});
+					$(this).find("input.column-label").data("original-name",$(this).find("input.column-label").val());
+					ui.typingPanel.checkColumnDescription($(this));
+				});
+
+
 			});
-			$(this).find("input.column-name").data("original-name",$(this).find("input.column-name").val());			
 		});
 	}
-
-	$("div.description-panel div.column-list").slideDown(1000);
 
 	/*
 	 * Interaction for row description
 	 */
 	$("div.description-panel div.row-description input, " +
 	"div.description-panel div.row-description textarea").live("focus",function(){
-		$("table.data-table > tbody > tr.odd > td ").css("background-color","#C1FFB1");
+		$("table.data-table > tbody > tr.odd > td ").css("background-color","#DAFFD9");
 		if($(this).hasClass("row-label") && $(this).val() == "Enter a label..."){
 			$(this).val("");
 		} else if($(this).hasClass("row-description") && $(this).val() == "Enter a description..."){
@@ -274,13 +325,13 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 	});
 
 	/*
-	 * Interaction for column descriptions
+	 * Interaction when focusing on any column label or description input
 	 */
-	$("div.description-panel div.column-list ul li input.column-name, " +
+	$("div.description-panel div.column-list ul li input.column-label, " +
 	"div.description-panel div.column-list ul li textarea.column-description").live("focus",function(){
-		
-		var colName = $(this).parent("li").find("input.column-name").val();
-	
+
+		var colName = $(this).parent("li").find("input.column-label").val();
+
 		$("div.column-header-title span.column-header-name").each(function(){
 			if($(this).html() == colName){
 				$(this).parent("div").parent("td").addClass("selected");
@@ -288,85 +339,95 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 				$(this).parent("div").parent("td").removeClass("selected");
 			}
 		});
-		
+
 		if($(this).val() == "Enter a description..."){
 			$(this).val("");
 		}
 	});
-	$("div.description-panel div.column-list ul li input.column-name, " +
+
+	/*
+	 * Interaction when losing focus on any column label or description input
+	 */
+	$("div.description-panel div.column-list ul li input.column-label, " +
 	"div.description-panel div.column-list ul li textarea.column-description").live("blur",function(){
 
 		var el = $(this);
-		var colName = $(this).parent("li").find("input.column-name").val();
-		
+		var colName = $(this).parent("li").find("input.column-label").val();
+
 		$("div.column-header-title span.column-header-name").each(function(){
 			if($(this).html() == colName){
 				$(this).parent("div").parent("td").removeClass("selected");
 			}
 		});
-		
+
 		if($(this).hasClass("column-description") && $(this).val() == ""){
 			$(this).val("Enter a description...");
 		}
 		ui.typingPanel.checkColumnDescription($(this).parent());
+
 		/*
 		 * Rename column if good or great && changed
 		 */
-		if($(this).hasClass("column-name") && $(this).data("original-name") != el.val()){
-			
+		if($(this).hasClass("column-label") && $(this).data("original-name") != el.val()){
+
 			if($(this).parent("li").hasClass("maybe") || $(this).parent("li").hasClass("good") || $(this).parent("li").hasClass("great")){
 				var oldName = $(this).data("original-name");
 				var newName = el.val();
-				
+
 				for(var i=0;i<colData.length;i++){
 					if(colData[i].name == oldName){
 						colData[i].name = newName;
 						colData[i].description = el.parent().find("textarea").val();
 					}
 				}
-				
+
 				LinkedGov.renameColumn(oldName,newName,function(){
-					
+
 					LinkedGov.renameColumnInRDF.start(oldName,newName,function(){
-						Refine.update({everythingChanged:true});
+						Refine.update({modelsChanged:true});
 					});
-					
+
 					el.data("original-name",el.val());
-					
+
 				});
-				
+
 			} else {
 				el.val(el.data("original-name"));
 			}
-		} else {
-
 		}
 	});
-	$("div.description-panel div.column-list ul li input.column-name, " +
+
+	/*
+	 * Interaction when pressing a key in the column label or description input fields
+	 */
+	$("div.description-panel div.column-list ul li input.column-label, " +
 	"div.description-panel div.column-list ul li textarea.column-description").live("keyup",function(){
 		ui.typingPanel.checkColumnDescription($(this).parent());
 	});
 
-	$("div.description-panel a.finish").live("click",function(){
+	/*
+	 * Save button functionality
+	 */
+	$("div.description-panel a.save").live("click",function(){
+
 		/*
 		 * Save the description data as RDF
 		 * 
 		 * Save any columns without RDF with generic RDF using 
 		 * their column names as properties.
 		 */
-		
 		var error = false;
-		
+
 		if($("div.row-description").hasClass("maybe") || $("div.row-description").hasClass("bad")){
 			error = true;
 		}
-		
+
 		$("div.column-list ul li").each(function(){
 			if($(this).hasClass("maybe") || $(this).hasClass("bad")){
 				error = true;
 			}
 		});
-		
+
 		if(error){
 			alert("Some labels still need to be checked, please make sure you have checked the row description and all of the columns.")
 		} else {
@@ -375,6 +436,79 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 	});
 
 }
+
+
+
+/*
+ * loadLabelsAndDescription
+ * 
+ * Loop through the root nodes in the RDF schema, locating the 
+ * row and column label and descriptions, using them to populate 
+ * the input fields in the labels and descriptions panel.
+ * 
+ */
+TypingPanel.prototype.loadLabelsAndDescription = function(callback) {
+
+	if (typeof theProject.overlayModels != 'undefined' && typeof theProject.overlayModels.rdfSchema != 'undefined') {
+
+		var schema = theProject.overlayModels.rdfSchema;
+
+		for(var i=0; i<schema.rootNodes.length; i++){
+
+			if(typeof schema.rootNodes[i].rdfTypes != 'undefined' && schema.rootNodes[i].rdfTypes.length > 0) {
+
+				/*
+				 * Found the row label & description
+				 */
+				if(schema.rootNodes[i].rdfTypes[0].curie == "owl:Class"){
+					for(var j=0; j<schema.rootNodes[i].links.length; j++){
+						/*
+						 * Locate the label and comment and populate the input fields
+						 */
+						if(schema.rootNodes[i].links[j].curie == "rdfs:label"){
+							$("div.row-description input.row-label").val(schema.rootNodes[i].links[j].target.value);
+						} else if(schema.rootNodes[i].links[j].curie == "rdfs:comment"){
+							$("div.row-description textarea.row-description").val(schema.rootNodes[i].links[j].target.value);
+						}
+					}
+
+				} else if(schema.rootNodes[i].rdfTypes[0].curie == "owl:ObjectProperty") {
+					/*
+					 * Found a column label & description
+					 */
+					if(schema.rootNodes[i].links.length == 2 && schema.rootNodes[i].links[0].curie.indexOf("rdfs") >= 0){
+						for(var j=0; j<schema.rootNodes[i].links.length; j++){
+							if(schema.rootNodes[i].links[j].curie == "rdfs:label"){		
+								/*
+								 * Loop through the panel inputs and locate the input with the matching 
+								 * column label
+								 */
+								$("div.column-list ul li").each(function(){
+									if($(this).find("input.column-label").val() == schema.rootNodes[i].links[j].target.value){
+										/*
+										 * For the "link" object found to contain the label, use the other link object (the comment) 
+										 * to populate the column's description input.
+										 */
+										$(this).find("textarea.column-description")
+										.val(schema.rootNodes[i].links[(j?0:1)].target.value)
+										.html(schema.rootNodes[i].links[(j?0:1)].target.value);
+									}
+								});
+							}
+						}
+					}
+				}
+			}
+		}
+
+		callback();
+
+	} else {
+		callback();
+		return false;
+	}
+}
+
 
 /*
  * checkRowDescription
@@ -405,7 +539,7 @@ TypingPanel.prototype.checkRowDescription = function(divElement){
 
 TypingPanel.prototype.checkColumnDescription = function(liElement){
 
-	var input = liElement.find("input.column-name");
+	var input = liElement.find("input.column-label");
 	var textarea = liElement.find("textarea.column-description");
 
 	var colData = LinkedGov.vars.labelsAndDescriptions.cols;
@@ -427,33 +561,6 @@ TypingPanel.prototype.checkColumnDescription = function(liElement){
 	}
 }
 
-
-TypingPanel.prototype.enterDescriptionPanel = function(){
-
-	if($("div.description-panel div.column-list ul li").length > 0){
-		
-		// list already built
-		$("div.typing-panel-body").animate({"left":"-300px"},500);
-		$("div.cancel-button").animate({"left":"0px"},500);
-		$("div.next-button").animate({"left":"-300px"},500);
-		$("div.description-panel").animate({"left":"0px"},500);
-		$("div.description-panel div.update-button").show().animate({"left":"0px"},500);
-	} else {
-		
-		// build new list
-		$("div.description-panel").html(DOM.loadHTML("linkedgov", "html/project/description-panel.html",function(){		
-			$("div.typing-panel-body").animate({"left":"-300px"},500);
-			$("div.cancel-button").animate({"left":"0px"},500);
-			$("div.next-button").animate({"left":"-300px"},500);
-			$("div.description-panel").animate({"left":"0px"},500,function(){
-				$("div.description-panel div.update-button").show().animate({"left":"0px"},500);
-				ui.typingPanel.buildDescriptionPanel();
-			});
-		}));
-		
-	}
-
-}
 
 
 TypingPanel.prototype.populateRangeSelector = function(callback) {
