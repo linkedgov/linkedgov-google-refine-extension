@@ -31,7 +31,7 @@
  * 5. fillDownColumns() Fills in all the blank cells as a result of the rotate.
  * 
  */
-LinkedGov.multipleColumnsWizard = {
+var multipleColumnsWizard = {
 
 		vars : {
 			startColName : "",

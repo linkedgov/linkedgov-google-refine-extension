@@ -11,8 +11,7 @@
  */
 LinkedGov.setFacetCountLimit = function(n) {
 
-	LinkedGov
-	.silentProcessCall({
+	LinkedGov.silentProcessCall({
 		type : "POST",
 		url : "/command/" + "core" + "/" + "set-preference",
 		data : {
@@ -54,12 +53,10 @@ LinkedGov.setBlanksToNulls = function(toNulls, columns, i, callback) {
 	 */
 	if (toNulls) {
 		// Set cells to null
-		expr = "if(isBlank(value),\"" + LinkedGov.vars.nullValue
-		+ "\",value)";
+		expr = "if(isBlank(value),\"" + LinkedGov.vars.nullValue + "\",value)";
 	} else {
 		// Set cells to blank
-		expr = "if(value==\"" + LinkedGov.vars.nullValue
-		+ "\",blank,value)";
+		expr = "if(value==\"" + LinkedGov.vars.nullValue + "\",blank,value)";
 	}
 
 	/*
@@ -84,8 +81,7 @@ LinkedGov.setBlanksToNulls = function(toNulls, columns, i, callback) {
 			},
 			success : function() {
 				i = i + 1;
-				self
-				.setBlanksToNulls(toNulls, columns, i,
+				self.setBlanksToNulls(toNulls, columns, i,
 						callback);
 			},
 			error : function() {
@@ -184,8 +180,7 @@ LinkedGov.splitColumn = function(colName, separator, callback) {
  */
 LinkedGov.moveColumn = function(colName, dir, callback) {
 
-	var i = Refine.columnNameToColumnIndex(colName)
-	+ (dir == "left" ? -1 : 1);
+	var i = Refine.columnNameToColumnIndex(colName) + (dir == "left" ? -1 : 1);
 
 	LinkedGov.silentProcessCall({
 		type : "POST",
@@ -196,8 +191,7 @@ LinkedGov.moveColumn = function(colName, dir, callback) {
 		},
 		success : callback,
 		error : function() {
-			alert("A problem was encountered when moving the column: \""
-					+ colName + "\".");
+			alert("A problem was encountered when moving the column: \"" + colName + "\".");
 		}
 	});
 
@@ -217,7 +211,7 @@ LinkedGov.moveColumn = function(colName, dir, callback) {
  * This works well for address columns as street addresses and areas are usually variable 
  * length - usually leaving the city, country or postcode in a single column.
  */
-LinkedGov.splitVariablePartColumn = {
+var splitVariablePartColumn = {
 
 		vars : {
 			colName : "",
@@ -249,8 +243,7 @@ LinkedGov.splitVariablePartColumn = {
 						"type" : "list",
 						"name" : self.vars.colName,
 						"columnName" : self.vars.colName,
-						"expression" : "value.split(\"" + self.vars.separator
-						+ "\").length()",
+						"expression" : "value.split(\"" + self.vars.separator + "\").length()",
 						"omitBlank" : false,
 						"omitError" : false,
 						"selection" : [],
@@ -264,8 +257,7 @@ LinkedGov.splitVariablePartColumn = {
 			/*
 			 * Post a silent facet call.
 			 */
-			LinkedGov
-			.silentProcessCall({
+			LinkedGov.silentProcessCall({
 				type : "POST",
 				url : "/command/" + "core" + "/" + "compute-facets",
 				data : {
@@ -277,13 +269,12 @@ LinkedGov.splitVariablePartColumn = {
 					 */
 					log("data.facets.length = " + data.facets.length);
 					for ( var i = 0; i < data.facets.length; i++) {
-						log("i=" + i);
+						
 						/*
 						 * If the facet matches the column name and has
 						 * choices returned
 						 */
-						if (data.facets[i].columnName == self.vars.colName
-								&& typeof data.facets[i].choices != 'undefined') {
+						if (data.facets[i].columnName == self.vars.colName && typeof data.facets[i].choices != 'undefined') {
 							log("Facet data received successfully");
 							/*
 							 * Store the lowest number of parts
@@ -296,23 +287,19 @@ LinkedGov.splitVariablePartColumn = {
 							}
 							self.vars.lowestNumberOfParts = temp;
 
-							log("Lowest number of parts for column "
-									+ self.vars.colName + ": " + temp);
+							log("Lowest number of parts for column " + self.vars.colName + ": " + temp);
 						}
 					}
 
 					if (temp < 2) {
-						self
-						.onFail("This split will have no effect as there are single-part values in this column.");
+						self.onFail("This split will have no effect as there are single-part values in this column.");
 					} else {
-						self.createNewColumns(1,
-								self.vars.lowestNumberOfParts - 1);
+						self.createNewColumns(1, self.vars.lowestNumberOfParts - 1);
 					}
 
 				},
 				error : function() {
-					self
-					.onFail("A problem was encountered when computing facets.");
+					self.onFail("A problem was encountered when computing facets.");
 				}
 			});
 
@@ -343,12 +330,9 @@ LinkedGov.splitVariablePartColumn = {
 				try {
 					Refine.postCoreProcess("add-column", {
 						baseColumnName : self.vars.colName,
-						expression : 'value.split("' + self.vars.separator
-						+ '")[value.split("' + self.vars.separator
-						+ '").length()-' + partIndex + '].trim()',
+						expression : 'value.split("' + self.vars.separator+ '")[value.split("' + self.vars.separator+ '").length()-' + partIndex + '].trim()',
 						newColumnName : self.vars.colName + " " + colSuffix,
-						columnInsertIndex : Refine
-						.columnNameToColumnIndex(self.vars.colName) + 1,
+						columnInsertIndex : Refine.columnNameToColumnIndex(self.vars.colName) + 1,
 						onError : "keep-original"
 					}, null, {
 						modelsChanged : true
@@ -360,24 +344,16 @@ LinkedGov.splitVariablePartColumn = {
 				} catch (e) {
 					log("Error: splitVariablePartColumn - createNewColumns()")
 					log(e);
-					alert("A column already exists with the name "
-							+ self.vars.colName
-							+ " "
-							+ colSuffix
-							+ ", \"(LG)\" has been appended to the column name for now.");
+					alert("A column already exists with the name " + self.vars.colName + " " + colSuffix + ", \"(LG)\" has been appended to the column name for now.");
 					/*
 					 * If the error is due to the new column name already existing
 					 * then append a more unique suffix
 					 */
 					Refine.postCoreProcess("add-column", {
 						baseColumnName : self.vars.colName,
-						expression : 'value.split("' + self.vars.separator
-						+ '")[value.split("' + self.vars.separator
-						+ '").length()-' + partIndex + '].trim()',
-						newColumnName : self.vars.colName + " " + colSuffix
-						+ " (LG)",
-						columnInsertIndex : Refine
-						.columnNameToColumnIndex(self.vars.colName) + 1,
+						expression : 'value.split("' + self.vars.separator+ '")[value.split("' + self.vars.separator+ '").length()-' + partIndex + '].trim()',
+						newColumnName : self.vars.colName + " " + colSuffix+ " (LG)",
+						columnInsertIndex : Refine.columnNameToColumnIndex(self.vars.colName) + 1,
 						onError : "keep-original"
 					}, null, {
 						modelsChanged : true
@@ -389,7 +365,7 @@ LinkedGov.splitVariablePartColumn = {
 				}
 
 				partIndex++;
-				colSuffix--
+				colSuffix--;
 			} else {
 				self.partitionForLastPart();
 			}
@@ -405,16 +381,12 @@ LinkedGov.splitVariablePartColumn = {
 			// the last value we created a new colum for.
 			var self = this;
 
-			LinkedGov
-			.silentProcessCall({
+			LinkedGov.silentProcessCall({
 				type : "POST",
 				url : "/command/" + "core" + "/" + "text-transform",
 				data : {
 					columnName : self.vars.colName,
-					expression : 'partition(value,"' + self.vars.separator
-					+ '"+value.split("' + self.vars.separator
-					+ '")[value.split("' + self.vars.separator
-					+ '").length()-2])[0].trim()',
+					expression : 'partition(value,"' + self.vars.separator+ '"+value.split("' + self.vars.separator+ '")[value.split("' + self.vars.separator+ '").length()-2])[0].trim()',
 					onError : "keep-original",
 					repeat : false,
 					repeatCount : 10

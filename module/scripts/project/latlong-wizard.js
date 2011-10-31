@@ -1,29 +1,14 @@
-
-
 /*
  * latLongWizard
  * 
- * The address wizard helps to clean up addresses, with the postcode being the
- * highest priority.
+ * The user can specify if one or more columns contain a latitude, 
+ * longitude, northing or easting.
  * 
- * A user is able to select one column containing a full address, in which case,
- * a regular expression is used to separate the different parts of the address
- * into separate columns, so types can be applied to those columns.
- * 
- * The user is also able to select multiple columns that contain fragments of an
- * address, in which case typing is applied to the columns.
- * 
- * initialise
- * 
- * getFragments
- * 
- * makeFragmentRDF
- * 
- * saveRDF
- * 
+ * After selecting the column(s), a select box is provided containing 
+ * the geolocation types.
  * 
  */
-LinkedGov.latLongWizard = {
+var latLongWizard = {
 
 		vars : {
 			elmts : {},
@@ -36,12 +21,16 @@ LinkedGov.latLongWizard = {
 				spatialrelations : {
 					curie : "spatialrelations",
 					uri : "http://data.ordnancesurvey.co.uk/ontology/spatialrelations/"
+				},
+				lg : {
+					curie: "lg",
+					uri: LinkedGov.vars.lgNameSpace
 				}
 			}
 		},
 
 		/*
-		 * 
+		 * Build the array of column objects and save the RDF.
 		 */
 		initialise : function(elmts) {
 
@@ -50,17 +39,9 @@ LinkedGov.latLongWizard = {
 			var self = this;
 			self.vars.elmts = elmts;
 
-			/*
-			 * Build the fragment/column array and check if a postcode has been
-			 * selected, in which case perform a regex match to verify.
-			 */
 			self.vars.colObjects = self.buildColumnObjects();
 
-			log('self.vars.colObjects:');
-			log(self.vars.colObjects);
-
-			LinkedGov.checkSchema(self.vars.vocabs, function(rootNode,
-					foundRootNode) {
+			LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
 				self.saveRDF(rootNode, foundRootNode);
 			});
 
@@ -79,7 +60,9 @@ LinkedGov.latLongWizard = {
 			var array = [];
 
 			/*
-			 * If there are columns that have been selected
+			 * Check that columns have actually been selected, loop through them and
+			 * create a column object for each of them - storing their name and their 
+			 * geolocation type.
 			 */
 			if ($(self.vars.elmts.latLongColumns).children("li").length > 0) {
 				$(self.vars.elmts.latLongColumns).children("li").each(function() {
@@ -110,19 +93,13 @@ LinkedGov.latLongWizard = {
 		 */
 		saveRDF : function(rootNode, newRootNode) {
 
-			log("saveRDF");
-
-			log(rootNode);
+			//log("saveRDF");
 
 			var self = this;
 
-			var colObjects = self.vars.colObjects;
-
-			var uri, curie = "";
-
 			var obj = {
-					"uri" : "http://example.linkedgov.org/location",
-					"curie" : "lg:location",
+					"uri" : self.vars.vocabs.lg.uri+"location",
+					"curie" : self.vars.vocabs.lg.curie+":location",
 					"target" : {
 						"nodeType" : "cell-as-resource",
 						"expression" : "value+\"#point\"",
@@ -134,11 +111,15 @@ LinkedGov.latLongWizard = {
 						"links" : []
 					}
 			};
+			
+
+			var colObjects = self.vars.colObjects;
 
 			/*
-			 * Loop through the fragments, the type value can be:
-			 *  - postcode (make an OSPC RDF fragment) - street-address -
-			 * extended-address - postal-code - locality - country-name
+			 * Loop through the column objects and check for any existing RDF by
+			 * searching for the column name.
+			 * 
+			 * If there is existing lat-long RDF for a column, it's removed.
 			 */
 			for ( var i = 0; i < colObjects.length; i++) {
 
@@ -161,6 +142,11 @@ LinkedGov.latLongWizard = {
 
 				var vocabs = self.vars.vocabs;
 
+				/*
+				 * Create 
+				 */
+				var uri, curie = "";
+
 				switch (colObjects[i].type) {
 				case "long":
 					/*
@@ -168,8 +154,7 @@ LinkedGov.latLongWizard = {
 					 */
 					uri = vocabs.geo.uri + colObjects[i].type;
 					curie = vocabs.geo.curie + ":" + colObjects[i].type;
-					obj.target.links.push(self.makeFragmentRDF(colObjects[i].name,
-							uri, curie));
+					obj.target.links.push(self.makeLatLongRDF(colObjects[i].name, uri, curie));
 
 					break;
 				case "lat":
@@ -178,8 +163,7 @@ LinkedGov.latLongWizard = {
 					 */
 					uri = vocabs.geo.uri + colObjects[i].type;
 					curie = vocabs.geo.curie + ":" + colObjects[i].type;
-					obj.target.links.push(self.makeFragmentRDF(colObjects[i].name,
-							uri, curie));
+					obj.target.links.push(self.makeLatLongRDF(colObjects[i].name, uri, curie));
 
 					break;
 				case "northing":
@@ -189,8 +173,7 @@ LinkedGov.latLongWizard = {
 					uri = vocabs.spatialrelations.uri + colObjects[i].type;
 					curie = vocabs.spatialrelations.curie + ":"
 					+ colObjects[i].type;
-					obj.target.links.push(self.makeFragmentRDF(colObjects[i].name,
-							uri, curie));
+					obj.target.links.push(self.makeLatLongRDF(colObjects[i].name, uri, curie));
 
 					break;
 				case "easting":
@@ -200,8 +183,7 @@ LinkedGov.latLongWizard = {
 					uri = vocabs.spatialrelations.uri + colObjects[i].type;
 					curie = vocabs.spatialrelations.curie + ":"
 					+ colObjects[i].type;
-					obj.target.links.push(self.makeFragmentRDF(colObjects[i].name,
-							uri, curie));
+					obj.target.links.push(self.makeLatLongRDF(colObjects[i].name, uri, curie));
 
 					break;
 				default:
@@ -235,10 +217,9 @@ LinkedGov.latLongWizard = {
 		},
 
 		/*
-		 * Returns part of the RDF plugin's schema for a fragment of a vCard
-		 * address.
+		 * Constructs the RDF object, also types the value as a float.
 		 */
-		makeFragmentRDF : function(colName, uri, curie) {
+		makeLatLongRDF : function(colName, uri, curie) {
 
 			var o = {
 					"uri" : uri,

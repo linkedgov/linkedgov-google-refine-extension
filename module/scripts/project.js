@@ -73,28 +73,46 @@ var LinkedGov = {
 			this.injectTypingPanel();
 			this.injectWizardProgressOverlay();
 			this.quickTools();
-			this.applyTypeIcons.init();
-			this.applyTypeIcons.apply();
 			
 			/*
 			 * Load the wizard scripts
 			 */
-			$.getScript("extension/linkedgov/scripts/project/address-wizard.js");
-			$.getScript("extension/linkedgov/scripts/project/datetime-wizard.js");
-			$.getScript("extension/linkedgov/scripts/project/latlong-wizard.js");
-			$.getScript("extension/linkedgov/scripts/project/measurements-wizard.js");
-			$.getScript("extension/linkedgov/scripts/project/multiplecolumns-wizard.js");
-			$.getScript("extension/linkedgov/scripts/project/multiplevalues-wizard.js");
+			$.getScript("extension/linkedgov/scripts/project/address-wizard.js",function(){
+				LinkedGov.addressWizard = addressWizard;
+			});
+			$.getScript("extension/linkedgov/scripts/project/datetime-wizard.js",function(){
+				LinkedGov.dateTimeWizard = dateTimeWizard;
+			});
+			$.getScript("extension/linkedgov/scripts/project/latlong-wizard.js",function(){
+				LinkedGov.latLongWizard = latLongWizard;
+			});
+			$.getScript("extension/linkedgov/scripts/project/measurements-wizard.js",function(){
+				LinkedGov.measurementsWizard = measurementsWizard;
+			});
+			$.getScript("extension/linkedgov/scripts/project/multiplecolumns-wizard.js",function(){
+				LinkedGov.multipleColumnsWizard = multipleColumnsWizard;
+			});
+			$.getScript("extension/linkedgov/scripts/project/multiplevalues-wizard.js",function(){
+				LinkedGov.multipleValuesWizard = multipleValuesWizard;
+			});
 			
 			/*
 			 * Load the refine operations script
 			 */
-			$.getScript("extension/linkedgov/scripts/project/refine-operations.js");
+			$.getScript("extension/linkedgov/scripts/project/refine-operations.js",function(){
+				LinkedGov.splitVariablePartColumn = splitVariablePartColumn;
+			});
 			
 			/*
 			 * Load our custom save-rdf operations script
 			 */
-			$.getScript("extension/linkedgov/scripts/project/save-rdf.js");
+			$.getScript("extension/linkedgov/scripts/project/save-rdf.js",function(){
+				LinkedGov.renameColumnInRDF = renameColumnInRDF;
+				LinkedGov.finaliseRDFSchema = finaliseRDFSchema;
+				LinkedGov.applyTypeIcons = applyTypeIcons;
+				LinkedGov.applyTypeIcons.init();
+				LinkedGov.applyTypeIcons.apply();
+			});
 		},
 
 		/*
@@ -381,92 +399,6 @@ var LinkedGov = {
 					return ""; // or if (/\s+/.test(match)) for white spaces
 				return index == 0 ? match.toLowerCase() : match.toUpperCase();
 			});
-
-		}
-
-};
-
-/*
- * 
- */
-LinkedGov.applyTypeIcons = {
-
-		/*
-		 * Uses data stored in the RDF schema object to apply the RDF symbols to
-		 * columns that have RDF data.
-		 */
-		init : function() {
-
-			var myUpdate = Refine.update;
-
-			Refine.update = function(options, callback) {
-				var theCallback = callback;
-				var theOptions = options;
-				var myCallback = function() {
-					LinkedGov.applyTypeIcons.apply();
-					theCallback();
-				}
-				myUpdate(theOptions, myCallback);
-			}
-
-		},
-
-		apply : function() {
-
-			log("Applying type icons...");
-
-			var self = this;
-			if (typeof theProject.overlayModels != 'undefined'
-				&& typeof theProject.overlayModels.rdfSchema != 'undefined'
-					&& $("td.column-header").length > 0) {
-				$.each(theProject.overlayModels.rdfSchema, function(key, val) {
-					self.recursiveFunction(key, val);
-				});
-			} else {
-				var t = setInterval(
-						function() {
-							if ($("td.column-header").length > 0
-									&& typeof theProject.overlayModels != 'undefined'
-										&& typeof theProject.overlayModels.rdfSchema != 'undefined') {
-								clearInterval(t);
-								$.each(theProject.overlayModels.rdfSchema,
-										function(key, val) {
-									self.recursiveFunction(key, val)
-								});
-							}
-						}, 100);
-			}
-		},
-
-		recursiveFunction : function(key, val) {
-			var self = this;
-			self.actualFunction(key, val);
-			if (val instanceof Object) {
-				$.each(val, function(key, value) {
-					self.recursiveFunction(key, value)
-				});
-			}
-		},
-
-		actualFunction : function(key, val) {
-
-			//log(key+" : "+val);
-
-			if (key == "columnName") {
-				$("td.column-header").each(function() {
-					if ($(this).find("span.column-header-name").html().toLowerCase() == val.toLowerCase()) {
-						$(this).addClass("typed");
-					}
-				});
-			} else if(key == "curie"){
-				$("td.column-header").each(function() {		
-					if (val.toLowerCase().split(":")[1] == $(this).find("span.column-header-name").html().toLowerCase()) {
-						$(this).addClass("typed");
-					}
-				});
-			}
-
-
 
 		}
 

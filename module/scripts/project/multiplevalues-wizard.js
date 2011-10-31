@@ -38,7 +38,9 @@
  * header values.
  * 
  */
-LinkedGov.multipleValuesWizard = {
+
+
+var multipleValuesWizard = {
 
 		vars : {
 			headersColName : "",

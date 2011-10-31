@@ -1,4 +1,3 @@
-
 /*
  * measurementsWizard
  * 
@@ -10,14 +9,8 @@
  * autosuggestion box. The information returned by the Freebase API lets us
  * store a URI, label and class for the measurement.
  * 
- * initialise
- * 
- * saveRDF
- * 
- * 
- * 
  */
-LinkedGov.measurementsWizard = {
+var measurementsWizard = {
 
 		/*
 		 * elmts: an object that contains the bound HTML elements for the
@@ -36,26 +29,37 @@ LinkedGov.measurementsWizard = {
 		},
 
 		/*
-		 * The HTML input fields and options for the wizard are passed to the wizard
-		 * object through the parameter "elmts" and are stored globally within the
-		 * wizard.
-		 * 
-		 * Begins the wizard operation.
-		 * 
+		 * Builds the column objects and saves their RDF. 
 		 */
 		initialise : function(elmts) {
+			
 			var self = this;
 			self.vars.elmts = elmts;
-			self.vars.colObjects = self.buildColumnObjects(elmts);
+			
+			/*
+			 * Build the column objects
+			 */
+			self.vars.colObjects = self.buildColumnObjects();
 
+			/*
+			 * Check that a column has been selected and that a measurement 
+			 * has been selected using the Freebase autosuggestion box.
+			 */
 			if (self.vars.colObjects.length > 0) {
 				if (elmts.unitInputField.val().length > 0) {
+					
+					/*
+					 * Display the "working..." sign
+					 */
 					LinkedGov.showWizardProgress(true);
 
-					LinkedGov.checkSchema(self.vars.vocabs, function(rootNode,
-							foundRootNode) {
+					/*
+					 * Save the RDF.
+					 */
+					LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
 						self.saveRDF(rootNode, foundRootNode);
 					});
+
 				} else {
 					alert("You need to search for a measurement type using the text box.");
 				}
@@ -65,10 +69,16 @@ LinkedGov.measurementsWizard = {
 		},
 
 		/*
+		 * buildColumnObjects
 		 * 
+		 * Build an array of {column name, measurement} objects
 		 */
-		buildColumnObjects : function(elmts) {
+		buildColumnObjects : function() {
+			
+			var self = this;
+			var elmts = self.vars.elmts;
 			var array = [];
+			
 			$(elmts.measurementsColumns).find("span.col").each(function() {
 				array.push({
 					name : $(this).html(),
@@ -90,16 +100,13 @@ LinkedGov.measurementsWizard = {
 			var elmts = self.vars.elmts;
 
 			/*
-			 * E.g.
-			 * 
-			 * Returned by API: en/celsius
-			 * 
-			 * We want,
-			 * 
-			 * uri = http://rdf.freebase.com/ns/en.celsius curie = fb:celsius
+			 * E.g. Returned by API: en/celsius
+			 * However, we want the URI to look like this:
+			 * http://rdf.freebase.com/ns/en.celsius 
+			 * and the CURIE like this: 
+			 * fb:celsius
 			 * 
 			 */
-
 			var prefix = "fb";
 			var namespaceURI = "http://rdf.freebase.com/rdf/";
 			var uri = elmts.unitInputField.data("data.suggest").id;
@@ -115,11 +122,9 @@ LinkedGov.measurementsWizard = {
 			curie = prefix + ":" + curie;
 
 			/*
-			 * Loop through each of the selected columns (that are passed to the
-			 * wizard through the elmts object, and create an RDF Schema JSON object
-			 * for each of them, and store their measurement data in RDF).
+			 * Loop through the column objects, check if there's existing RDF in the schema for 
+			 * any of the columns, add/replace the newly generated RDF object.
 			 */
-
 			var schema = LinkedGov.getRDFSchema();
 
 			var colObjects = self.vars.colObjects;
@@ -139,8 +144,7 @@ LinkedGov.measurementsWizard = {
 				 */
 				for ( var j = 0; j < links.length; j++) {
 					if (links[j].uri.indexOf(camelColName) > -1) {
-						log("Found measurements RDF data for column: \""
-								+ colObjects[i].name + "\", removing ...");
+						log("Found measurements RDF data for column: \""+ colObjects[i].name + "\", removing ...");
 						links.splice(j, 1);
 						j--;
 					}
@@ -177,21 +181,6 @@ LinkedGov.measurementsWizard = {
 				log("rootNode has already been updated...");
 			} else {
 				log("Adding first rootNode for lat-long data...");
-				/*
-				 * Create and type the row index "0/#point" as a geo:Point
-				 */
-
-				// var thing = window.prompt("What does each row symbolise?
-				// (e.g. 'Energy reading')");
-				/*
-				 * TODO: This shouldn't be here - this should be asked at the end of
-				 * the Typing process.
-				 */
-				rootNode.rdfTypes.push({
-					"uri" : "http://example.linkedgov.org/EnergyReading",
-					"curie" : "lg:EnergyReading"
-				});
-
 				schema.rootNodes.push(rootNode);
 			}
 
@@ -202,8 +191,6 @@ LinkedGov.measurementsWizard = {
 				schema : JSON.stringify(schema)
 			}, {}, {
 				onDone : function() {
-					// DialogSystem.dismissUntil(self._level - 1);
-					// theProject.overlayModels.rdfSchema = schema;
 					self.onComplete();
 				}
 			});
