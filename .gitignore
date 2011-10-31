@@ -1,2 +1,5 @@
 .settings*
 .DS_Store
+*.project
+*.svn
+*.classpath

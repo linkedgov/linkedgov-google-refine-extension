@@ -153,7 +153,7 @@ var dateTimeWizard = {
 				for ( var j = 0; j < checkedInputs.length; j++) {
 					colObject.combi += checkedInputs.eq(j).val() + "-";
 				}
-				colObject.combi = colObject.combi.substring(0, value.length - 1);
+				colObject.combi = colObject.combi.substring(0, colObject.combi.length - 1);
 				
 				/*
 				 * Store the month before day value
@@ -180,14 +180,14 @@ var dateTimeWizard = {
 				/*
 				 * Store the particular year value
 				 */
-				if (value.indexOf("Y") < 0
+				if (colObject.combi.indexOf("Y") < 0
 						&& cols.eq(i).children("span.year").find('input.year').val().length > 0) {
 					colObject.year = cols.eq(i).children("span.year").find('input.year').val();
 				}
 				/*
 				 * Store the particular day value
 				 */
-				if (value.indexOf("D") < 0
+				if (colObject.combi.indexOf("D") < 0
 						&& cols.eq(i).children("span.day").find('input.day').val().length > 0) {
 					colObject.day = cols.eq(i).children("span.day").find('input.day').val();
 				}
