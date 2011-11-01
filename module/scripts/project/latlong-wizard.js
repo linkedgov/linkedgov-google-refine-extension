@@ -41,12 +41,20 @@ var latLongWizard = {
 
 			self.vars.colObjects = self.buildColumnObjects();
 
-			LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
-				self.saveRDF(rootNode, foundRootNode);
-			});
+			if(self.vars.colObjects.length == 2 && self.vars.colObjects[0].type == "northing" || self.vars.colObjects[0].type == "easting"){
+				self.convertNorthingEastingToLatLong(function(){
+					LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
+						self.saveRDF(rootNode, foundRootNode);
+					});
+				});
+			} else {
+				LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
+					self.saveRDF(rootNode, foundRootNode);
+				});
+			}
 
 		},
-
+		
 		/*
 		 * buildColumnObjects
 		 * 
@@ -84,6 +92,55 @@ var latLongWizard = {
 			}
 		},
 
+		/*
+		 * convertNorthingEastingToLatLong
+		 * 
+		 * Add a new column using the GREL function built by Glyn that converts
+		 * an Easting,Northing to a Latitude,Longitude
+		 */
+		convertNorthingEastingToLatLong:function(callback){
+			
+			var self = this;
+			var northingCol = "";
+			var eastingCol = "";
+			
+			for(var i=0;i<self.vars.colObjects.length; i++){
+			
+				if(self.vars.colObjects[i].type == "northing") {
+					northingCol = self.vars.colObjects[i].name;
+					eastingCol = self.vars.colObjects[i?0:1].name;
+				} else if (self.vars.colObjects[i].type == "easting"){
+					eastingCol = self.vars.colObjects[i].name;
+					northingCol = self.vars.colObjects[i?0:1].name;					
+				}
+				
+			}
+			
+			Refine.postCoreProcess("add-column", {
+				baseColumnName : eastingCol,
+				expression : "northingEastingToLatLong(cells[\""+eastingCol+"\"].value,cells[\""+northingCol+"\"].value)",
+				newColumnName : "Latitude,Longitude",
+				columnInsertIndex : Refine.columnNameToColumnIndex(eastingCol) + 1,
+				onError : "keep-original"
+			}, null, {
+				modelsChanged : true
+			}, {
+				onDone : function() {
+					/*
+					 * Create the column object for the new column
+					 */
+					self.vars.colObjects.push({
+						type : "lat-long",
+						name : "Latitude,Longitude"
+					});
+
+					callback();
+				}
+			});
+			
+		},
+
+		
 		/*
 		 * saveRDF
 		 * 
@@ -186,6 +243,17 @@ var latLongWizard = {
 					obj.target.links.push(self.makeLatLongRDF(colObjects[i].name, uri, curie));
 
 					break;
+				case "lat-long":
+					/*
+					 * Create lat-long RDF
+					 */
+					uri = vocabs.geo.uri + "lat";
+					curie = vocabs.geo.curie + ":" + "lat";
+					obj.target.links.push(self.makeLatLongRDFCombined("lat",colObjects[i].name, uri, curie));
+					uri = vocabs.geo.uri + "long";
+					curie = vocabs.geo.curie + ":" + "long";
+					obj.target.links.push(self.makeLatLongRDFCombined("long",colObjects[i].name, uri, curie));
+					break;
 				default:
 					break;
 				}
@@ -228,6 +296,31 @@ var latLongWizard = {
 						"nodeType" : "cell-as-literal",
 						"valueType" : "http://www.w3.org/2001/XMLSchema#float",
 						"expression" : "value",
+						"columnName" : colName,
+						"isRowNumberCell" : false
+					}
+			};
+
+			return o;
+		},
+		
+		makeLatLongRDFCombined: function(type, colName, uri, curie) {
+			
+			var segmentSplit = 0;
+			
+			if(type == "lat"){
+				segmentSplit = 0;
+			} else {
+				segmentSplit = 1;
+			}
+			
+			var o = {
+					"uri" : uri,
+					"curie" : curie,
+					"target" : {
+						"nodeType" : "cell-as-literal",
+						"valueType" : "http://www.w3.org/2001/XMLSchema#float",
+						"expression" : "value.split(\",\")["+segmentSplit+"]",
 						"columnName" : colName,
 						"isRowNumberCell" : false
 					}

@@ -382,7 +382,7 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 			$(this).val("");
 		}
 	});
-	
+
 	/*
 	 * Add an on "blur" listener to the column label and description inputs
 	 */
@@ -417,7 +417,7 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 		if($(this).hasClass("column-label") && $(this).data("original-name") != el.val()){
 
 			if($(this).parent("li").hasClass("maybe") || $(this).parent("li").hasClass("good") || $(this).parent("li").hasClass("great")){
-				
+
 				/*
 				 * The old labels of the columns are stored using the elements "data" property as  
 				 * a temporary holding spot. This gets overriden whenever the label is changed for the 
@@ -692,7 +692,7 @@ TypingPanel.prototype.populateRangeSelector = function(divRange, callback) {
  * the jQuery UI "selectable" plugin is invoked and the callbacks for 
  * for the selection actions populate a list in the wizard.
  */
-TypingPanel.prototype.buttonSelector = function(button, mode) {
+TypingPanel.prototype.buttonSelector = function(button, selectType) {
 
 	var self = this;
 	/* 
@@ -702,7 +702,7 @@ TypingPanel.prototype.buttonSelector = function(button, mode) {
 	 * columns selected for the address wizard as they need to contain different 
 	 * options.
 	 */
-	var mode = mode || "default";
+	var mode = selectType || "default";
 
 	/*
 	 * If the button is labelled "Start Select", then the user is wanting to 
@@ -719,7 +719,7 @@ TypingPanel.prototype.buttonSelector = function(button, mode) {
 		 * Cache the location of the selected columns (some may already be present)
 		 */
 		$cols = $(button).parent().children("ul.selected-columns");
-		
+
 		/*
 		 * Change the button label to "End Select"
 		 */
@@ -790,7 +790,7 @@ TypingPanel.prototype.buttonSelector = function(button, mode) {
 							addToList = false;
 						}
 					});
-					
+
 					/*
 					 * If the selected column doesn't already exist in the selected columns list,
 					 * create an entry in the list for it, depending on the mode parameter for the 
@@ -801,7 +801,9 @@ TypingPanel.prototype.buttonSelector = function(button, mode) {
 					 * column entry.
 					 */
 					if(addToList){
+
 						switch(mode){
+
 						case "default" :
 							/*
 							 * default - allows multiple columns to be added to the list.
@@ -817,6 +819,7 @@ TypingPanel.prototype.buttonSelector = function(button, mode) {
 							)
 							.show();
 							break;
+
 						case "single-column" :
 							/*
 							 * single-column - only allows one column to be selected - hence the use 
@@ -833,6 +836,7 @@ TypingPanel.prototype.buttonSelector = function(button, mode) {
 							)
 							.show();							
 							break;
+
 						case "splitter" :
 							/*
 							 * splitter - only allows one column to be selected and doesn't ask 
@@ -847,6 +851,10 @@ TypingPanel.prototype.buttonSelector = function(button, mode) {
 							"</li>")
 							.show();	
 							break;
+
+						default:
+							break;
+						}
 					}
 				}
 			},

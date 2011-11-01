@@ -12,6 +12,9 @@ var ClientSideResourceManager = Packages.com.google.refine.ClientSideResourceMan
  */
 function init() {
 
+	Packages.java.lang.System.err.println("Initializing NorthingEastingToLatLong extension");
+	Packages.org.linkedgov.NorthingEastingToLatLong.register();
+	
 	ClientSideResourceManager.addPaths(
     "index/scripts",
     module,
