@@ -8,12 +8,11 @@
  * Follows the same structure as the facet and history
  * panels.
  * 
- * Contents:
- * - Resize function
- * - Update function
- * - Render function
- * - Interaction handler for the wizards
- * - Interaction for column selection
+ * - Houses column selection functions
+ * - Creates the dynamic content for the wizards when selecting columns
+ * - Handles all user interaction for the typing panel, it's wizards 
+ * and the labels and descriptions panel.
+ * - Provides validation for the labels and descriptions panel
  * 
  */
 
@@ -146,13 +145,13 @@ TypingPanel.prototype.enterWizard = function(wizardName) {
 				 * column header names and populate the select inputs.
 				 */
 				$("div.rangeSelect").find("div.selector").children("div.range").hide();
-				ui.typingPanel.populateRangeSelector(function(){
+				ui.typingPanel.populateRangeSelector($("div.rangeSelect").find("div.selector").children("div.range"), function(){
 					$("div.rangeSelect").find("div.selector").children("div.range").slideDown();					
 				});
 
 				break;
 			case "datetime-wizard" :
-				//$("div.wizard-body span.mb4d").css();
+
 				break;
 			default:
 				break;
@@ -160,7 +159,7 @@ TypingPanel.prototype.enterWizard = function(wizardName) {
 			}
 
 		});
-	}));	
+	}));
 
 }
 
@@ -222,7 +221,9 @@ TypingPanel.prototype.enterDescriptionPanel = function(){
 /*
  * buildDescriptionPanel
  * 
- * 
+ * If it's the first time the user has entered the labels and descriptions panel, 
+ * the input elements need to built and populated with the column headers - or - 
+ * any existing labels and descriptions from a previous session.
  */
 TypingPanel.prototype.buildDescriptionPanel = function() {
 
@@ -238,6 +239,7 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 		if($(this).html() != "All"){
 			/*
 			 * Column name status can be:
+			 * great - label and description entered
 			 * good - user has entered a name
 			 * bad - is blank or contains the word "column"
 			 * maybe - could be fine
@@ -410,7 +412,7 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 		ui.typingPanel.checkColumnDescription($(this).parent());
 
 		/*
-		 * Rename column if the status is 'good' or 'great' && changed
+		 * Rename column if the status is 'good'/'great' & has been changed
 		 */
 		if($(this).hasClass("column-label") && $(this).data("original-name") != el.val()){
 
@@ -474,19 +476,19 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 		 * 
 		 * Save any columns without RDF with generic RDF using 
 		 * their column names as properties.
+		 * 
+		 * Perform some basic validation so that the user must make sure all labels 
+		 * are correctly entered to a certain level of acceptability.
 		 */
 		var error = false;
-
 		if($("div.row-description").hasClass("maybe") || $("div.row-description").hasClass("bad")){
 			error = true;
 		}
-
 		$("div.column-list ul li").each(function(){
 			if($(this).hasClass("maybe") || $(this).hasClass("bad")){
 				error = true;
 			}
 		});
-
 		if(error){
 			alert("Some labels still need to be checked, please make sure you have checked the row description and all of the columns.")
 		} else {
@@ -508,16 +510,21 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
  */
 TypingPanel.prototype.loadLabelsAndDescription = function(callback) {
 
+	/*
+	 * Make sure the RDF schema exists
+	 */
 	if (typeof theProject.overlayModels != 'undefined' && typeof theProject.overlayModels.rdfSchema != 'undefined') {
 
 		var schema = theProject.overlayModels.rdfSchema;
 
+		/*
+		 * Loop throught the RDF root nodes and test the RDF type.
+		 */
 		for(var i=0; i<schema.rootNodes.length; i++){
-
 			if(typeof schema.rootNodes[i].rdfTypes != 'undefined' && schema.rootNodes[i].rdfTypes.length > 0) {
 
 				/*
-				 * Found the row label & description
+				 * If the RDF type is owl:Class then we've found the row label & description
 				 */
 				if(schema.rootNodes[i].rdfTypes[0].curie == "owl:Class"){
 					for(var j=0; j<schema.rootNodes[i].links.length; j++){
@@ -533,7 +540,7 @@ TypingPanel.prototype.loadLabelsAndDescription = function(callback) {
 
 				} else if(schema.rootNodes[i].rdfTypes[0].curie == "owl:ObjectProperty") {
 					/*
-					 * Found a column label & description
+					 * If the type is owl:ObjectProperty, we've found a column label & description
 					 */
 					if(schema.rootNodes[i].links.length == 2 && schema.rootNodes[i].links[0].curie.indexOf("rdfs") >= 0){
 						for(var j=0; j<schema.rootNodes[i].links.length; j++){
@@ -614,8 +621,15 @@ TypingPanel.prototype.checkColumnDescription = function(liElement){
 
 	var colData = LinkedGov.vars.labelsAndDescriptions.cols;
 
+	/*
+	 * If the column label is longer than 2 letters and doesn't contain the word column
+	 */
 	if(input.val().trim().length > 2 && input.val().toLowerCase().indexOf("column") < 0){
 		liElement.removeClass("bad").removeClass("maybe").addClass("good");
+		/*
+		 * If the description value is not equal to the holding text, add the "great" 
+		 * status.
+		 */
 		if(textarea.val().length > 2 && textarea.val() != "Enter a description..."){
 			liElement.addClass("great");
 		}
@@ -623,17 +637,25 @@ TypingPanel.prototype.checkColumnDescription = function(liElement){
 		liElement.removeClass("great").removeClass("good").addClass("bad");
 	}
 
+	/*
+	 * Store the column description in the local object.
+	 */
 	for(var i=0;i<colData.length;i++){
 		if(colData[i].name == input.val()){
-			colData[i].name = input.val();
 			colData[i].description = textarea.val();
 		}
 	}
 }
 
 
-
-TypingPanel.prototype.populateRangeSelector = function(callback) {
+/*
+ * populateRangeSelector
+ * 
+ * Takes a div.range element that contains two select inputs as children and 
+ * populate the select inputs with the column names and sets them to the first 
+ * option.
+ */
+TypingPanel.prototype.populateRangeSelector = function(divRange, callback) {
 
 	callback = callback || function(){return false};
 
@@ -654,7 +676,7 @@ TypingPanel.prototype.populateRangeSelector = function(callback) {
 	/*
 	 * Populate the select inputs with the <option> elements.
 	 */
-	$("div.rangeSelect").find("div.selector").children("div.range").children("select").each(function () {
+	divRange.children("select").each(function () {
 		$(this).html(columnHeaders);
 		$(this).val($(this).find("option").eq(0).val());
 	});
@@ -664,58 +686,126 @@ TypingPanel.prototype.populateRangeSelector = function(callback) {
 }
 
 /*
- * columnSelector
+ * buttonSelector
  * 
  * Upon clicking the "Select" button in each wizard to select columns, 
  * the jQuery UI "selectable" plugin is invoked and the callbacks for 
  * for the selection actions populate a list in the wizard.
- * 
  */
-TypingPanel.prototype.buttonSelector = function(button, selectType) {
+TypingPanel.prototype.buttonSelector = function(button, mode) {
 
 	var self = this;
-	var mode = selectType || "default";
+	/* 
+	 * mode can be used to generate different HTML for the select columns.
+	 * 
+	 * e.g. Select columns for the date and time wizard are different to the 
+	 * columns selected for the address wizard as they need to contain different 
+	 * options.
+	 */
+	var mode = mode || "default";
 
+	/*
+	 * If the button is labelled "Start Select", then the user is wanting to 
+	 * select columns.
+	 */
 	if ($(button).html() == "Start Select") {
 
+		/*
+		 * Remove any existing column selectors on the page
+		 */
 		self.destroyColumnSelector();
 
+		/*
+		 * Cache the location of the selected columns (some may already be present)
+		 */
 		$cols = $(button).parent().children("ul.selected-columns");
-		//$cols.html("").hide();
+		
+		/*
+		 * Change the button label to "End Select"
+		 */
 		$(button).html("End Select");
 
+		/*
+		 * Cache the global "ui" object because it clashes with jQuery UI's selectable "ui" object below.
+		 */
 		var RefineUI = ui;
 
+		/*
+		 * Invoke the "selectable" plugin on the data table, and only allow the user to select 
+		 * "td.column-header" elements, then handle the various interactions.
+		 */
 		$("table.data-header-table").selectable({
 			filter: 'td.column-header',
 			selected: function (event, ui) {
+				/*
+				 * Element selected.
+				 * 
+				 * If the selected column is not the "All" column
+				 */
 				if($(ui.selected).children().find(".column-header-name").html() != "All"){
+					/*
+					 * Assume it will be added to the list of selected columns
+					 */
 					var addToList = true;
+					/*
+					 * Loop through any existing select columns in the list 
+					 */
 					$cols.children("li").children("span.col").each(function(){
 						/*
-						 * Check if column has already been selected.
+						 * Check if selected column already exists in the list.
+						 * 
+						 * If it already exists, assume the user is wanting to 
+						 * deselect the column.
 						 */
 						if($(this).html() == $(ui.selected).children().find(".column-header-name").html()){
 
+							/*
+							 * Remove the column from the select columns list and remove the highlighted 
+							 * "ui-selected" class from the column header in the data table.
+							 */
 							$(this).parent("li").remove();
 							$(ui.selected).removeClass("ui-selected");
 
+							/*
+							 * Check to see if there are any selected columns still present in the list, 
+							 * which if there aren't, hide the list.
+							 */
 							if($cols.children("li").length < 1){
 								$cols.html("").hide();
 							} else {
 								$cols.show();
 							}
-
+							/*
+							 * If a selected column exists in the list, but hidden by the 
+							 * "skip" class, then show the selected column again.
+							 */
 							if($(this).parent().hasClass("skip")){
 								$(this).parent().removeClass("skip").show();
 							}
 
+							/*
+							 * If the column already exists in the list, then we don't want to 
+							 * add another entry for it.
+							 */
 							addToList = false;
 						}
 					});
+					
+					/*
+					 * If the selected column doesn't already exist in the selected columns list,
+					 * create an entry in the list for it, depending on the mode parameter for the 
+					 * column list.
+					 * 
+					 * Each mode calls the getFragmentData() function, passing the column-list that 
+					 * has a class attached to the element to determine what HTML to inject into each 
+					 * column entry.
+					 */
 					if(addToList){
 						switch(mode){
 						case "default" :
+							/*
+							 * default - allows multiple columns to be added to the list.
+							 */
 							$cols.append( 
 									"<li>" +
 									"<span class='col'>" + 
@@ -728,6 +818,10 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 							.show();
 							break;
 						case "single-column" :
+							/*
+							 * single-column - only allows one column to be selected - hence the use 
+							 * of html() instead of append().
+							 */
 							$cols.html( 
 									"<li>" +
 									"<span class='col'>" + 
@@ -740,6 +834,10 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 							.show();							
 							break;
 						case "splitter" :
+							/*
+							 * splitter - only allows one column to be selected and doesn't ask 
+							 * for any fragment data. Used
+							 */
 							$cols.html(
 									"<li>" +
 									"<span class='col'>" + 
@@ -749,19 +847,6 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 							"</li>")
 							.show();	
 							break;
-						case "column-labels" :
-							$cols.append( 
-									"<li>" +
-									"<span class='remove'>X</span>" +
-									"<input class='column-label-input' value='" + 
-									$(ui.selected).children().find(".column-header-name").html() + 
-									"' />" + 
-									"<textarea rows='2' cols='10' class='column-description-input'></textarea>" +
-									"</li>"
-							)
-							.show();
-							break;
-						}
 					}
 				}
 			},
@@ -1154,8 +1239,6 @@ $(document).ready(function() {
 			ui.typingPanel.buttonSelector($(this),"splitter");			
 		} else if($(this).hasClass("single-column")){ 
 			ui.typingPanel.buttonSelector($(this),"single-column");
-		} else if($(this).hasClass("column-labels")){ 
-			ui.typingPanel.buttonSelector($(this),"column-labels");
 		} else {
 			ui.typingPanel.buttonSelector($(this),"default");			
 		}

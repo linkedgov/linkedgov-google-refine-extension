@@ -1,42 +1,14 @@
 /*
- * LinkedGov UI skin for Google Refine
- * 
+ * LinkedGov extension for Google Refine
  * Author: Dan Smith
  * 
- * The global LinkedGov object for the Project page.
+ * project.js
  * 
- * Contents:
- * - Global variables (debug on / off)
- * - Initialisation functions
- * - Initial injection functions
- * - General data operations (set blank cells to null)
- * - Individual wizard operations
+ * LinkedGov object for the project page.
  * 
- * Wizards names:
- * 
- * - multipleColumnsWizard
- * - multipleValuesWizard
- * - dateTimeWizard
- * - measurementsWizard
- * - addressWizard
- * - latLongWizard
- * 
- * Notes:
- * 
- * When posting one of Refine's core process operations using 
- * Refine.postCoreProcess() - a number of UI updates is usually 
- * bundled with it as the expected behaviour is for Refine to 
- * perform a core process with gaps for user input in between. This 
- * isn't the case for the LinkedGov skin as a series of operations are 
- * often strung together and executed rapidly, resulting in flashes of
- * "updating" and "working" messages while operations are performed. To 
- * avoid this, the function call is skipped when possible and replaced 
- * using a more silent AJAX call with LinkedGov.silentProcessCall function, 
- * which doesn't carry with it any of Refine's UI update functions. This 
- * replacement has to be used carefully though as some operations rely on 
- * previous updates being made (i.e. row-removals and row/column transposes 
- * require the data-table to be updated otherwise successive operations 
- * will fail to realise the old rows/columns have been changed).
+ * - Injects the "typing" panel
+ * - Loads typing panel wizards
+ * - Provides variables and generic functions for the page and the wizards
  * 
  */
 var LinkedGov = {
@@ -135,16 +107,15 @@ var LinkedGov = {
 		injectTypingPanel : function() {
 
 			// Create the Typing tab
-			$(".refine-tabs ul li").eq(0).after(
-			'<li><a href="#refine-tabs-typing">Typing</a></li>');
+			$(".refine-tabs ul li").eq(0).after('<li><a href="#refine-tabs-typing">Typing</a></li>');
 			// Create the Typing panel div
-			$("div.refine-tabs")
-			.append(
-			'<div id="refine-tabs-typing" bind="typingPanelDiv"><!-- spacer --></div>');
+			$("div.refine-tabs").append('<div id="refine-tabs-typing" bind="typingPanelDiv"><!-- spacer --></div>');
 			// Load LinkedGov's Typing panel HTML into the div
-			$("div#refine-tabs-typing").html(
-					DOM.loadHTML("linkedgov", "html/project/typing-panel.html"));
+			$("div#refine-tabs-typing").html(DOM.loadHTML("linkedgov", "html/project/typing-panel.html"));
 
+			/*
+			 * Bind our own resize function to the window
+			 */
 			$(window).unbind("resize");
 			$(window).bind("resize", LinkedGov.resizeAll_LG);
 
@@ -156,14 +127,16 @@ var LinkedGov = {
 		quickTools : function() {
 
 			/*
-			 * Quick tools TODO: Show & hide using CSS.
+			 * Quick tools 
+			 * 
+			 * As long as the user is not being asked to select a column,
+			 * append a DIV element containing the column quick tools.
+			 * 
+			 * If a column header already has the quick tool, then show or hide it.
+			 * 
+			 * TODO: Show & hide using CSS.
 			 */
-			$("td.column-header").live(
-					"hover",
-					function() {
-						// if doesn't have a quick tool
-						// then insert
-						// else show or hide
+			$("td.column-header").live("hover",function() {
 						if (!$(this).hasClass("ui-selectee")) {
 							if ($(this).hasClass("show")) {
 								$(this).find(".quick-tool").hide();
@@ -187,6 +160,11 @@ var LinkedGov = {
 						}
 					});
 
+			/*
+			 * Interaction for the quick tool options
+			 * 
+			 * Use the event object returned by jQUery to get the column name
+			 */
 			$("div.quick-tool").find("li").live("click", function(e) {
 
 				var td = e.target.parentNode.parentNode.parentNode;
@@ -240,9 +218,11 @@ var LinkedGov = {
 		 * Appends the wizard to the project page body,
 		 */
 		injectWizardProgressOverlay : function() {
-			$("body")
-			.append(
-			"<div class='wizardProgressMessage'><div class='overlay'><!-- --></div><p>Wizard in progress...<img src='images/large-spinner.gif' /></p></div>");
+			$("body").append(
+					"<div class='wizardProgressMessage'>" +
+					"<div class='overlay'><!-- --></div>" +
+					"<p>Wizard in progress...<img src='images/large-spinner.gif' /></p>" +
+					"</div>");
 		},
 
 		/*
@@ -261,10 +241,8 @@ var LinkedGov = {
 		},
 
 		/*
-		 * 
-		 * resizeAll
-		 * 
-		 * 
+		 * resizeAll_LG
+		 *  
 		 * The top-level resizeAll function doesn't resize our typing panel, so we
 		 * need to include the typing panel's resize function in this function.
 		 * 
@@ -277,15 +255,6 @@ var LinkedGov = {
 			 * Call the old resizeAll function - found in the core project.js file.
 			 */
 			resizeAll();
-			/*
-			 * Call our additional resize functions.
-			 */
-
-			/*
-			 * TODO: Use this CSS instead of a JS resize: bottom: 0; height: auto
-			 * !important; top: 28px;
-			 */
-			// ui.typingPanel.resize();
 		},
 
 		/*
@@ -299,8 +268,7 @@ var LinkedGov = {
 		resetWizard : function(wizardBody) {
 
 			// Clear checkboxes
-			$(wizardBody).find(":input").removeAttr('checked').removeAttr(
-			'selected');
+			$(wizardBody).find(":input").removeAttr('checked').removeAttr('selected');
 			// Clear column selections
 			$(wizardBody).find("ul.selected-columns").html("").hide();
 			// Clear text fields
@@ -318,9 +286,6 @@ var LinkedGov = {
 			ui.leftPanelTabs.tabs({
 				selected : 1
 			});
-
-			// Scroll the top of the wizard into view.
-			// $(wizardBody).parent().scrollTop($(wizardBody).prev("a.wizard-header").offset().top)
 
 			return false;
 
@@ -363,7 +328,6 @@ var LinkedGov = {
 		 */
 		loadHTMLCallback : function(htmlPage) {
 
-			// log(htmlPage+" has been loaded");
 			/*
 			 * Strip the HTML location down to it's name
 			 */
@@ -375,8 +339,7 @@ var LinkedGov = {
 
 			case 'typing-panel':
 				// Inject LinkedGov's Typing panel JS into the page
-				$.getScript(ModuleWirings["linkedgov"]
-				+ 'scripts/project/typing-panel.js');
+				$.getScript(ModuleWirings["linkedgov"] + 'scripts/project/typing-panel.js');
 				break;
 
 			default:
@@ -441,7 +404,10 @@ DOM.loadHTML = function(module, path, callback) {
 };
 
 /*
- * generateId - returns a unique id.
+ * GenerateId - returns a unique id.
+ * 
+ * Used for creating jQuery UI's Datepickers for selected
+ * date columns.
  */
 $.generateId = function() {
 	return arguments.callee.prefix + arguments.callee.count++;
@@ -454,6 +420,10 @@ $.fn.generateId = function() {
 	});
 };
 
+/*
+ * A degradable logging function - can be 
+ * turned on and off using LinkedGov.vars.debug.
+ */
 function log(str) {
 	window.console && console.log && LinkedGov.vars.debug && console.log(str);
 }
