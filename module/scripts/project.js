@@ -41,6 +41,19 @@ var LinkedGov = {
 		 */
 		initialise : function() {
 
+			
+			$.ajax({
+				type : "GET",
+				url : "/command/" + "core" + "/" + "get-project-metadata?project="+theProject.id,
+				data : $.param({}),
+				success : function(data) {
+					console.log(data);
+				},
+				error : function() {
+					
+				}
+			});
+			
 			this.restyle();
 			this.injectTypingPanel();
 			this.injectWizardProgressOverlay();

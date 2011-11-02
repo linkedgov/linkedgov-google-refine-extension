@@ -15,6 +15,8 @@ function init() {
 	Packages.java.lang.System.err.println("Initializing NorthingEastingToLatLong extension");
 	Packages.org.linkedgov.NorthingEastingToLatLong.register();
 	
+	Packages.com.google.refine.RefineServlet.registerCommand(module, "save-meta-information", new Packages.org.linkedgov.command.SaveMetaInformationCommand());
+	
 	ClientSideResourceManager.addPaths(
     "index/scripts",
     module,

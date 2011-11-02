@@ -263,6 +263,38 @@ var LinkedGov = {
 			}	
 
 		},
+		
+		saveMetadata:function(jobID, projectID, callback){
+			
+			var self = this;
+
+			var formData = {
+					"source organisation":"National Audit Office",
+					"copyright":true,
+					"license":"Open government license"
+			};
+			
+			formData.project = projectID;
+			
+			$.ajax({
+				type : "POST",
+				url : "/command/" + "linkedgov" + "/" + "save-meta-information",
+				data : $.param(formData),
+				success : function(data) {
+					callback(jobID,projectID);
+				},
+				error : function() {
+					self.importFail("A problem was encountered when saving metadata");
+				}
+			});
+			
+		},
+		
+		importFail:function(message){
+				
+			alert(message);
+		
+		},
 
 		resizeParsingPanel:function(){
 
@@ -442,33 +474,43 @@ Refine.DefaultImportingController.prototype._onImportJobReady = function() {
 /*
  * Override the pollImportJob
  */
-/*
+
 LinkedGov.pollImportJob = Refine.CreateProjectUI.prototype.pollImportJob;
 
 Refine.CreateProjectUI.prototype.pollImportJob = function(start, jobID, timerID, checkDone, callback, onError) {
 
-	//lgCheckDone = function(job){
-
-	//	log("lgCheckDone");
-	//	log(job);
-
-		//return checkDone(job);
-	//};
-
+	/*
+	 * Create our own "callback" function
+	 */
 	lgCallback = function(jobID,job) {
 
-		//Refine.CreateProjectUI.cancelImportinJob(jobID);
-		//document.location = "project?project=" + job.config.projectID;
-		callback(jobID,job);
-		console.log(jobID);
-		console.log(job);
-		alert(job.config.projectID);
+		/*
+		 * This function is accessed twice by Refine, the first time to 
+		 * send the user to the "preview" panel when they can modify the 
+		 * import options, and the second time, with the projectID to the 
+		 * "project" page.
+		 * 
+		 * The second time round is when the projectID is present, so we 
+		 * intercept and fire-off a call to save our custom metadata.
+		 */
+		if(typeof job.config.projectID != 'undefined'){
+			
+			
+			LinkedGov.saveMetadata(jobID, job.config.projectID, function(jobID, projectID){
+				Refine.CreateProjectUI.cancelImportinJob(jobID);
+				document.location = "project?project=" + projectID;
+			});
+			
+			
+		} else {
+			callback(jobID,job);
+		}
 
 	};
 
 	LinkedGov.pollImportJob(start, jobID, timerID, checkDone, lgCallback, onError);
 }
-*/
+
 
 $.extend({
 	getUrlVars: function(){
