@@ -494,7 +494,7 @@ body.lg div.wizard-body ul.date-checkboxes li span.colOptions div.duration-input
 	display:none;
 	padding-bottom: 2px;
 }
-body.lg div.wizard-body ul.address-checkboxes li span.postcode {
+body.lg div.wizard-body ul.address-fragments li span.postcode {
 	display:none;
 }
 div.duration-input input.duration-value {

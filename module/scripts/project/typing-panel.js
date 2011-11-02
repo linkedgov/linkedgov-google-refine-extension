@@ -48,9 +48,10 @@ TypingPanel.prototype.update = function (onDone) {
 /*
  * _render
  * 
- * - Initialises the autosuggestion box for the measurements wizard
- * - Attachers listeners to the wizard "Update" buttons
- * - Resizes the panel
+ * Sets up the generic user interaction for the typing panel and for the wizards 
+ * using "live" event delegation which means injected HTML and newly 
+ * appended elements will not need to have event listeners re-applied to them. 
+ *
  */
 TypingPanel.prototype._render = function () {
 
@@ -59,48 +60,258 @@ TypingPanel.prototype._render = function () {
 	var elmts = DOM.bind(self._div);
 
 	/*
+	 * Interaction when clicking on a wizard header
+	 */
+	$('a.wizard-header').live("click",function() {
+		ui.typingPanel.enterWizard($(this).attr("rel"));
+	});
+	/*
+	 * Interaction for "Return to wizards" button.
+	 */
+	$("div.cancel-button a.button").live("click",function(){
+		ui.typingPanel.destroyColumnSelector();
+		ui.typingPanel.exitWizard();
+	});
+	/*
+	 * Interaction for "Next" button - take the user 
+	 * to the labels and descriptions panel.
+	 */
+	$("div.next-button a.button").live("click",function(){
+		ui.typingPanel.destroyColumnSelector();
+		ui.typingPanel.enterDescriptionPanel();
+	});
+	/*
+	 * Interaction for "example" links in wizards that show/hide 
+	 * a paragraph of text.
+	 */
+	$("p.description a.ex").live("click",function(){
+
+		if($(this).next().css("display") == "none"){
+			$(this).next().css("display","block");
+		} else {
+			$(this).next().hide();
+		}
+	});
+	
+	/*
 	 * When each wizards' "Update" button is clicked, 
 	 * their corresponding wizard function is called. Each of the 
 	 * wizards have "bind" attributes in their HTML code, which 
 	 * allows access to the individual elements through the object
 	 * "elmts".
 	 */
-
 	$("a[bind='dateTimeButton']").live("click",function () {
 		self.destroyColumnSelector();
 		LinkedGov.dateTimeWizard.initialise(DOM.bind(self._div));
 	});
-
 	$("a[bind='measurementsButton']").live("click",function () {
 		self.destroyColumnSelector();
 		LinkedGov.measurementsWizard.initialise(DOM.bind(self._div));
 	});
-
 	$("a[bind='latLongButton']").live("click",function(){
 		self.destroyColumnSelector();
 		LinkedGov.latLongWizard.initialise(DOM.bind(self._div));	 
 	});
-
 	$("a[bind='addressButton']").live("click",function () {
 		self.destroyColumnSelector();
 		LinkedGov.addressWizard.initialise(DOM.bind(self._div));
 	});
-
 	$("a[bind='multipleColumnsButton']").live("click",function () {
 		self.destroyColumnSelector();
 		LinkedGov.multipleColumnsWizard.initialise(DOM.bind(self._div));
 	});
-
 	$("a[bind='multipleValuesButton']").live("click",function () {
 		self.destroyColumnSelector();
 		LinkedGov.multipleValuesWizard.initialise(DOM.bind(self._div));
 	});
 
+
+	/*
+	 * Interaction for the column selector button. 
+	 * 
+	 * Slight differences with how the select input is displayed 
+	 * depends on what type of "mode" is passed as a parameter.
+	 * 
+	 * Modes:
+	 * default - produces column list with select inputs for fragments
+	 * splitter - produces a single column with no select inputs for fragments
+	 * single-column - only allows the user to select one column
+	 * 
+	 */
+	$("div.selector a.selectColumn").live("click",function () {
+
+		if($(this).hasClass("splitter")){
+			ui.typingPanel.buttonSelector($(this),"splitter");			
+		} else if($(this).hasClass("single-column")){ 
+			ui.typingPanel.buttonSelector($(this),"single-column");
+		} else {
+			ui.typingPanel.buttonSelector($(this),"default");			
+		}
+	});
+	
+	/*
+	 * 'Remove column' interaction for column lists
+	 */
+	$("ul.selected-columns li span.remove").live("click",function(){
+		ui.typingPanel.removeColumn($(this));
+	});
+
+	/*
+	 * Show tooltips
+	 */
+	$("a.info").live("mouseover",function () {
+		$(this).next("span").show();
+	}).live("mouseout",function () {
+		$(this).next("span").hide();
+	});
+
+	/*
+	 * Set up more user interaction but slightly more specific to each wizard.
+	 */
+	this.setUpWizardInteraction();
+	
+	
 	/*
 	 * Called similarly to Refine's panels.
 	 */
 	this.resize();
 };
+
+/*
+ * Sets up more specific user interaction for wizards.
+ */
+TypingPanel.prototype.setupWizardInteraction = function() {
+
+	
+	/*
+	 * Interaction for the column range select inputs
+	 */
+	$("div.selector div.range select").live("change",function () {
+		ui.typingPanel.rangeSelector($(this));
+	});
+
+	
+	/*
+	 * "Split address" checkbox
+	 */
+	$('div.wizard-body input.split').live("change",function(){
+		if($(this).attr("checked")){
+			$(this).parent().children("div.split").slideDown();
+		} else {
+			$(this).parent().children("div.split").slideUp();
+		}
+	});
+
+	/*
+	 * Interaction for "split" button in address wizard.
+	 */
+	$("div.split a.splitter-split").live("click",function(){
+		var name = $(this).parent().find("ul.selected-columns").children("li").eq(0).children("span.col").html();
+		var separator = $(this).parent().find("input.splitCharacter").val();
+		var splitElement = $(this).parent();
+		if(separator.length < 1 || name.length < 1){
+			alert("You need to make sure you have selected a column to split and entered a character to split by.");
+		} else {
+			LinkedGov.splitVariablePartColumn.initialise(name,separator,splitElement,function(){
+				$("input#address-split").removeAttr("checked");
+				$("div.split").hide();
+			});
+		}
+	});
+
+	/*
+	 * Date/time interaction for column lists
+	 */
+	$("ul.date-checkboxes span.dateFrags input[type='checkbox']").live("change",function(){
+
+		/*
+		 * Construct a date fragment string: e.g. Y-D-M-h
+		 */
+		var dateString = "";
+		$.each($(this).parent("span").children("input"),function(){
+			if($(this).attr("checked")){
+				dateString += $(this).val()+"-";
+			}
+		});
+		dateString = dateString.substring(0,dateString.length-1);
+		//log(dateString);
+
+		if(dateString.length > 0) {
+			$(this).parent("span").parent("li").children("span.duration").data("olddisplay","block");
+			$(this).parent("span").parent("li").children("span.duration").slideDown(250);
+		} else {
+			$(this).parent("span").parent("li").children("span.duration").slideUp(250);
+		}
+
+		/*
+		 * Detect day and month selection
+		 */
+		if(dateString.indexOf("M-D") >= 0){
+			//alert("day and month selected");
+
+			// Display input to specify day-month order
+			$(this).parent("span").parent("li").children("span.mb4d").data("olddisplay","block");
+			$(this).parent("span").parent("li").children("span.mb4d").slideDown(250);
+
+			if(dateString.indexOf("Y") < 0){
+				// Display the year input
+				$(this).parent("span").parent("li").children("span.year").data("olddisplay","block");
+				$(this).parent("span").parent("li").children("span.year").slideDown(250);
+			} else {
+				$(this).parent("span").parent("li").children("span.year").slideUp(250);
+			}
+		} else {
+			$(this).parent("span").parent("li").children("span.mb4d").slideUp(250);
+			$(this).parent("span").parent("li").children("span.year").slideUp(250);
+		}
+
+		/*
+		 * Detect hour and minute selection
+		 */
+		if(dateString.indexOf("h-m") >= 0){
+			//alert("hours and minutes selected");
+			if(dateString.indexOf("D") < 0){
+				$(this).parent("span").parent("li").children("span.day").find("input.datepicker").datepicker("destroy").datepicker({
+					changeYear:true,
+					changeMonth:true,
+					dateFormat: 'dd/mm/yy'
+				});
+				$(this).parent("span").parent("li").children("span.day").data("olddisplay","block");
+				$(this).parent("span").parent("li").children("span.day").slideDown(250);
+			} else {
+				$(this).parent("span").parent("li").children("span.day").slideUp(250);
+			}
+		} else {
+			$(this).parent("span").parent("li").children("span.day").slideUp(250);
+		}
+
+	});
+
+	/*
+	 * Detect date duration selection
+	 */
+	$("ul.date-checkboxes input.duration").live("change",function(){
+		if($(this).attr("checked")){
+			$(this).parent("span").parent("li").children("span.duration").find("div.duration-input").data("olddisplay","block");
+			$(this).parent("span").parent("li").children("span.duration").find("div.duration-input").slideDown(250);				
+		} else {
+			$(this).parent("span").parent("li").children("span.duration").find("div.duration-input").slideUp(250);
+		}
+	});
+
+	/*
+	 * Interaction for address column options
+	 */
+	$("ul.address-fragments span.colOptions select").live("change",function(){
+		if($(this).val() == "mixed"){
+			$(this).parent("span").parent("li").find("span.postcode").data("olddisplay","block");
+			$(this).parent("span").parent("li").find("span.postcode").slideDown(250);
+		} else {
+			$(this).parent("span").parent("li").find("span.postcode").slideUp(250);
+		}
+	});
+	
+}
 
 /*
  * enterWizard
@@ -1097,13 +1308,16 @@ TypingPanel.prototype.removeColumn = function(el) {
 		 * If the column is inside the range (i.e. not at the beginning or end), add the class "skip" to 
 		 * the <li> element to enable the wizard to move it aside when rotating the other columns.
 		 */
-
 		$li_el = $(el).parent("li");
-
+		/*
+		 * Hide and apply "skip" class
+		 */
 		$li_el.slideUp(250,function(){
 			$(this).addClass("skip");
 		});
-
+		/*
+		 * Remove highlight from column header in the data table
+		 */
 		$("td.column-header div.column-header-title span.column-header-name").each(function(){
 			if($(this).html() == $li_el.find("span.col").html()){
 				$(this).parent().parent("td").removeClass("ui-selectee ui-selected");
@@ -1116,13 +1330,24 @@ TypingPanel.prototype.removeColumn = function(el) {
 /*
  * getFragmentData
  * 
- * Returns the HTML for the select inputs for certain wizards 
- * if the user is required to map data fragments for columns.
+ * When creating a column entry in a list of selected columns, each wizard 
+ * has it's own particular options for each column.
+ * 
+ * For columns selected in the date & time wizard - the user has to be able 
+ * to specify what parts of a date or time are contained in a column, whereas 
+ * for the geolocation wizard, the user needs to be able to specify whether the 
+ * columns contain latitude or longitude and so on. 
+ * 
+ * Returns the HTML to append to a column <li> entry.
  */
 TypingPanel.prototype.getFragmentData = function(columnList) {
 
 	var fragmentHTML = "";
 
+	/*
+	 * Each list of selected columns has an ID bound to it using the 
+	 * "bind" attribute.
+	 */
 	switch (columnList.attr("bind")) {
 	case "dateTimeColumns" :
 
@@ -1169,7 +1394,7 @@ TypingPanel.prototype.getFragmentData = function(columnList) {
 		"</span>";
 
 		/*
-		 * Add the "fragments" class to the list of columns so CSS styles can 
+		 * Add a specific CSS class to the list of columns so CSS styles can 
 		 * be applied.
 		 */
 		columnList.addClass("date-checkboxes");
@@ -1198,10 +1423,10 @@ TypingPanel.prototype.getFragmentData = function(columnList) {
 		"</span>";
 
 		/*
-		 * Add the "fragments" class to the list of columns so CSS styles can 
+		 * Add a specific CSS class to the list of columns so CSS styles can 
 		 * be applied.
 		 */
-		columnList.addClass("address-checkboxes");
+		columnList.addClass("address-fragments");
 		break;
 	case "latLongColumns" :
 
@@ -1232,22 +1457,29 @@ TypingPanel.prototype.getFragmentData = function(columnList) {
 
 
 /*
- * 
+ * Execute when page is loaded.
  */
 $(document).ready(function() {
 
 	/*
 	 * Interval set to check when the ui.typingPanelDiv HTML element is created
 	 * and bound to the ui object.
+	 * 
+	 * Once the HTML is loaded, create the TypingPanel object and switch to the 
+	 * tab.
 	 */
 	var interval = setInterval(function () {
+				
 		// log(typeof ui.typingPanelDiv);
 		if (typeof ui.typingPanelDiv == 'undefined') {
-			log("ui.typingPanelDiv is undefined.")
+			log("ui.typingPanelDiv is undefined.");
 		} else {
-
+			// Create the TypingPanel object
 			ui.typingPanel = new TypingPanel(ui.typingPanelDiv);
-
+			/*
+			 * Rebind the tabs resize functions when selecting the tab - 
+			 * adding in our own.
+			 */
 			ui.leftPanelTabs.unbind('tabsshow');
 			ui.leftPanelTabs.bind('tabsshow', function (event, tabs) {
 				if (tabs.index === 0) {
@@ -1258,210 +1490,15 @@ $(document).ready(function() {
 					ui.historyPanel.resize();
 				}
 			});
-
+			/*
+			 * Switch to index 1 - where the "Typing" tab is located.
+			 */
 			$("div#left-panel div.refine-tabs").tabs('select', 1);
 			$("div#left-panel div.refine-tabs").css("visibility", "visible");			
 
 			clearInterval(interval);
 		}
 
-	}, 5);
-
-
-	/*
-	 * Interaction when clicking on a wizard header
-	 */
-	$('a.wizard-header').live("click",function() {
-		ui.typingPanel.enterWizard($(this).attr("rel"));
-	});
-
-	$("div.cancel-button a.button").live("click",function(){
-		ui.typingPanel.destroyColumnSelector();
-		ui.typingPanel.exitWizard();
-	});
-
-	$("div.next-button a.button").live("click",function(){
-		ui.typingPanel.destroyColumnSelector();
-		ui.typingPanel.enterDescriptionPanel();
-	});
-
-	$("p.description a.ex").live("click",function(){
-
-		if($(this).next().css("display") == "none"){
-			$(this).next().css("display","block");
-		} else {
-			$(this).next().hide();
-		}
-	});
-
-	/*
-	 * Interaction for the column selector button. 
-	 * 
-	 * Slight differences with how the select input is displayed 
-	 * depends on what type of "mode" is passed as a parameter.
-	 * 
-	 * Modes:
-	 * default - produces column list with select inputs for fragments
-	 * splitter - produces a single column with no select inputs for fragments
-	 * single-column - only allows the user to select one column
-	 * 
-	 */
-	$("div.selector a.selectColumn").live("click",function () {
-
-		if($(this).hasClass("splitter")){
-			ui.typingPanel.buttonSelector($(this),"splitter");			
-		} else if($(this).hasClass("single-column")){ 
-			ui.typingPanel.buttonSelector($(this),"single-column");
-		} else {
-			ui.typingPanel.buttonSelector($(this),"default");			
-		}
-	});
-
-	/*
-	 * "Split address" checkbox
-	 */
-	$('div.wizard-body input.split').live("change",function(){
-		if($(this).attr("checked")){
-			$(this).parent().children("div.split").slideDown();
-		} else {
-			$(this).parent().children("div.split").slideUp();
-		}
-	});
-
-	/*
-	 * Interaction for "split" button in address wizard.
-	 */
-	$("div.split a.splitter-split").live("click",function(){
-		var name = $(this).parent().find("ul.selected-columns").children("li").eq(0).children("span.col").html();
-		var separator = $(this).parent().find("input.splitCharacter").val();
-		var splitElement = $(this).parent();
-		if(separator.length < 1 || name.length < 1){
-			alert("You need to make sure you have selected a column to split and entered a character to split by.");
-		} else {
-			LinkedGov.splitVariablePartColumn.initialise(name,separator,splitElement,function(){
-				$("input#address-split").removeAttr("checked");
-				$("div.split").hide();
-			});
-		}
-	});
-
-	/*
-	 * Interaction for the column range select inputs
-	 */
-	$("div.selector div.range select").live("change",function () {
-		ui.typingPanel.rangeSelector($(this));
-	});
-
-
-	/*
-	 * 'Remove column' interaction for column lists
-	 */
-	$("ul.selected-columns li span.remove").live("click",function(){
-		ui.typingPanel.removeColumn($(this));
-	});
-
-	/*
-	 * Date/time interaction for column lists
-	 */
-	$("ul.date-checkboxes span.dateFrags input[type='checkbox']").live("change",function(){
-
-		/*
-		 * Construct a date fragment string: e.g. Y-D-M-h
-		 */
-		var dateString = "";
-		$.each($(this).parent("span").children("input"),function(){
-			if($(this).attr("checked")){
-				dateString += $(this).val()+"-";
-			}
-		});
-		dateString = dateString.substring(0,dateString.length-1);
-		//log(dateString);
-
-		if(dateString.length > 0) {
-			$(this).parent("span").parent("li").children("span.duration").data("olddisplay","block");
-			$(this).parent("span").parent("li").children("span.duration").slideDown(250);
-		} else {
-			$(this).parent("span").parent("li").children("span.duration").slideUp(250);
-		}
-
-		/*
-		 * Detect day and month selection
-		 */
-		if(dateString.indexOf("M-D") >= 0){
-			//alert("day and month selected");
-
-			// Display input to specify day-month order
-			$(this).parent("span").parent("li").children("span.mb4d").data("olddisplay","block");
-			$(this).parent("span").parent("li").children("span.mb4d").slideDown(250);
-
-			if(dateString.indexOf("Y") < 0){
-				// Display the year input
-				$(this).parent("span").parent("li").children("span.year").data("olddisplay","block");
-				$(this).parent("span").parent("li").children("span.year").slideDown(250);
-			} else {
-				$(this).parent("span").parent("li").children("span.year").slideUp(250);
-			}
-		} else {
-			$(this).parent("span").parent("li").children("span.mb4d").slideUp(250);
-			$(this).parent("span").parent("li").children("span.year").slideUp(250);
-		}
-
-		/*
-		 * Detect hour and minute selection
-		 */
-		if(dateString.indexOf("h-m") >= 0){
-			//alert("hours and minutes selected");
-			if(dateString.indexOf("D") < 0){
-				$(this).parent("span").parent("li").children("span.day").find("input.datepicker").datepicker("destroy").datepicker({
-					changeYear:true,
-					changeMonth:true,
-					dateFormat: 'dd/mm/yy'
-				});
-				$(this).parent("span").parent("li").children("span.day").data("olddisplay","block");
-				$(this).parent("span").parent("li").children("span.day").slideDown(250);
-			} else {
-				$(this).parent("span").parent("li").children("span.day").slideUp(250);
-			}
-		} else {
-			$(this).parent("span").parent("li").children("span.day").slideUp(250);
-		}
-
-	});
-
-	/*
-	 * Detect date duration selection
-	 */
-	$("ul.date-checkboxes input.duration").live("change",function(){
-		if($(this).attr("checked")){
-			$(this).parent("span").parent("li").children("span.duration").find("div.duration-input").data("olddisplay","block");
-			$(this).parent("span").parent("li").children("span.duration").find("div.duration-input").slideDown(250);				
-		} else {
-			$(this).parent("span").parent("li").children("span.duration").find("div.duration-input").slideUp(250);
-		}
-	});
-
-	/*
-	 * Interaction for address column options
-	 */
-	$("ul.address-checkboxes span.colOptions select").live("change",function(){
-		if($(this).val() == "mixed"){
-			$(this).parent("span").parent("li").find("span.postcode").data("olddisplay","block");
-			$(this).parent("span").parent("li").find("span.postcode").slideDown(250);
-		} else {
-			$(this).parent("span").parent("li").find("span.postcode").slideUp(250);
-		}
-	});
-
-
-	/*
-	 * Show tooltips
-	 */
-	$("a.info").live("mouseover",function () {
-		$(this).next("span").show();
-	}).live("mouseout",function () {
-		$(this).next("span").hide();
-	});
-
-
-
+	}, 100);
+	
 });
