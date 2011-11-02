@@ -1,5 +1,5 @@
 $(document).ready(function(){
-	LinkedGov.disableFeatures();
+	LinkedGov.disableFeaturesForImport();
 });
 
 

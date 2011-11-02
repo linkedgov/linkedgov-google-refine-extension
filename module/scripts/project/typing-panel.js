@@ -168,7 +168,7 @@ TypingPanel.prototype._render = function () {
 	/*
 	 * Set up more user interaction but slightly more specific to each wizard.
 	 */
-	this.setUpWizardInteraction();
+	this.setupWizardInteraction();
 	
 	
 	/*

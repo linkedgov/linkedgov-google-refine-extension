@@ -30,8 +30,38 @@ var LinkedGov = {
 		initialise: function() {
 
 			//this.disableFeatures();
-			this.restyle();
-			this.injectMetaDataForm();
+			
+			var mode = $.getUrlVar('mode');
+			
+			if(mode == "resume"){
+				this.restyleOpenProjectArea();
+				this.setUpOpenProjectArea();
+			} else {
+				this.restyleImportArea();
+				this.injectMetaDataForm();	
+			}
+		},
+		
+		setUpOpenProjectArea:function(){
+			
+			var div = document.createElement("div");
+			div.id = "create-project-ui-source-selection-tab-bodies";
+			//document.body.append(div);
+
+			var openProjectArea = {};
+			for(var i=0;i<Refine.actionAreas.length;i++){
+				if(typeof Refine.actionAreas[i] != 'undefined' && Refine.actionAreas[i].id == "open-project"){
+					openProjectArea = Refine.actionAreas[i];
+					openProjectArea.bodyElmt.css("z-index","9999");
+				} else {
+					Refine.actionAreas[i].bodyElmt.remove();
+				}
+			}
+			openProjectArea.bodyElmt.append(div);
+			openProjectArea.bodyElmt.css("visibility","visible");
+			openProjectArea.bodyElmt.show();
+			
+			//$(window).unbind("resize");
 		},
 
 		/*
@@ -48,12 +78,12 @@ var LinkedGov = {
 		 * objects.
 		 * 
 		 */
-		disableFeatures: function() {
+		disableFeaturesForImport: function() {
 
 
 			//Refine.actionAreas[1].bodyElmt.hide().remove();
 			//Refine.actionAreas[2].bodyElmt.hide().remove();
-
+			
 			var createProjectArea = {};
 
 			/*
@@ -119,7 +149,12 @@ var LinkedGov = {
 		 * 
 		 * Any instant style changes to be made on page load
 		 */
-		restyle: function() {
+		restyleImportArea: function() {
+			$("body").addClass("lg");
+			$("#left-panel").hide();
+		},
+		
+		restyleOpenProjectArea: function(){
 			$("body").addClass("lg");
 			$("#left-panel").hide();
 		},
@@ -237,36 +272,6 @@ var LinkedGov = {
 
 			self._parsingPanelResizer = function(){
 
-				//log("parsingPanel is resizing...");
-				//log(self._parsingPanel);
-				/*
-				var elmts = self._parsingPanelElmts;
-				var width = $(window).width();
-				var height = $("div#right-panel").height()-15;
-				var headerHeight = elmts.wizardHeader.outerHeight(true);
-				var controlPanelHeight = 0; // DS
-				var cushion = 10;
-
-
-				$("div#right-panel").height($(window).height()-40);
-				$("div#right-panel-body").height($("div#right-panel").height()-5);				
-
-				elmts.dataPanel
-				.css("left", "300px")
-				.css("top", headerHeight + "px")
-				.css("width", ((width - 305) + "px"))
-				.css("height", (height - headerHeight - controlPanelHeight - DOM.getVPaddings(elmts.dataPanel))+cushion + "px");
-				elmts.progressPanel
-				.css("left", "0px")
-				.css("top", headerHeight + "px")
-				.css("width", (width - DOM.getHPaddings(elmts.progressPanel)) + "px")
-				.css("height", (height - headerHeight - controlPanelHeight - DOM.getVPaddings(elmts.progressPanel)) + "px");
-				elmts.controlPanel
-				.css("left", "0px")
-				.css("top", headerHeight + "px")
-				.css("width", "300px")
-				.css("height", (height - headerHeight - controlPanelHeight - DOM.getVPaddings(elmts.dataPanel))+cushion + "px"); 
-				 */
 				$("body.lg div.default-importing-parsing-control-panel")
 				.css("height","auto")
 				.css("bottom","0px")
@@ -373,7 +378,8 @@ var LinkedGov = {
 			}
 
 			return false;
-		}
+		},
+
 };
 
 /*
@@ -438,28 +444,48 @@ Refine.DefaultImportingController.prototype._onImportJobReady = function() {
  */
 /*
 LinkedGov.pollImportJob = Refine.CreateProjectUI.prototype.pollImportJob;
+
 Refine.CreateProjectUI.prototype.pollImportJob = function(start, jobID, timerID, checkDone, callback, onError) {
 
-	lgCheckDone = function(job){
+	//lgCheckDone = function(job){
 
-		log("lgCheckDone");
-		log(job);
+	//	log("lgCheckDone");
+	//	log(job);
 
-		return checkDone(job);
+		//return checkDone(job);
+	//};
+
+	lgCallback = function(jobID,job) {
+
+		//Refine.CreateProjectUI.cancelImportinJob(jobID);
+		//document.location = "project?project=" + job.config.projectID;
+		callback(jobID,job);
+		console.log(jobID);
+		console.log(job);
+		alert(job.config.projectID);
 
 	};
 
-	callback = function(jobID,job) {
-
-			Refine.CreateProjectUI.cancelImportinJob(jobID);
-			document.location = "project?project=" + job.config.projectID;
-
-	};
-
-	LinkedGov.pollImportJob(start, jobID, timerID, lgCheckDone, callback, onError);
+	LinkedGov.pollImportJob(start, jobID, timerID, checkDone, lgCallback, onError);
 }
 */
 
+$.extend({
+	getUrlVars: function(){
+		var vars = [], hash;
+		var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+		for(var i = 0; i < hashes.length; i++)
+		{
+			hash = hashes[i].split('=');
+			vars.push(hash[0]);
+			vars[hash[0]] = hash[1];
+		}
+		return vars;
+	},
+	getUrlVar: function(name){
+		return $.getUrlVars()[name];
+	}
+});
 
 $(document).ready(function(){
 

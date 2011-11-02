@@ -1,3 +1,12 @@
+/*
+ * LinkedGov extension for Google Refine
+ * Author: Dan Smith
+ * 
+ * refine-operations.js
+ * 
+ * Generic operations used by the wizards
+ * 
+ */
 
 /*
  * setFacetCountLimit

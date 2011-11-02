@@ -1,4 +1,16 @@
 /*
+ * LinkedGov extension for Google Refine
+ * Author: Dan Smith
+ * 
+ * save-rdf.js
+ * 
+ * Functions and operations that allow the wizards to save RDF to 
+ * the RDF schema.
+ * 
+ */
+
+
+/*
  * getRDFSchema
  * 
  * Returns the RDF plugin schema (if there is one), otherwise returns our
