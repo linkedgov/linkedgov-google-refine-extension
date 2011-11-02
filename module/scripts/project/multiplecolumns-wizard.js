@@ -151,11 +151,8 @@ var multipleColumnsWizard = {
 			 * be skipped and populate the "colsToSkip" array.
 			 */
 			for ( var j = 0, len = $(elmts.multipleColumnsColumns).children("li").length; j < len; j++) {
-				if ($($(elmts.multipleColumnsColumns).children("li")[j]).hasClass(
-				"skip")) {
-					self.vars.colsToSkip.push($(
-							$(elmts.multipleColumnsColumns).children("li")[j])
-							.find("span.col").html());
+				if ($($(elmts.multipleColumnsColumns).children("li")[j]).hasClass("skip")) {
+					self.vars.colsToSkip.push($($(elmts.multipleColumnsColumns).children("li")[j]).find("span.col").html());
 					self.vars.gapInRange = true;
 				}
 			}
@@ -166,10 +163,8 @@ var multipleColumnsWizard = {
 			/*
 			 * Recalculate how many columns to transpose.
 			 */
-			self.vars.startColName = $(elmts.multipleColumnsColumns).children("li")
-			.eq(0).find("span.col").html();
-			self.vars.colCount = $(elmts.multipleColumnsColumns).children("li").length
-			- self.vars.colsToSkip.length;
+			self.vars.startColName = $(elmts.multipleColumnsColumns).children("li").eq(0).find("span.col").html();
+			self.vars.colCount = $(elmts.multipleColumnsColumns).children("li").length  - self.vars.colsToSkip.length;
 			self.vars.newColName = window.prompt("New column name:", "");
 		},
 
@@ -412,19 +407,19 @@ var multipleColumnsWizard = {
 			/*
 			 * Reset any null cells to blanks again, using the "false" flag
 			 */
-			LinkedGov.setBlanksToNulls(false, theProject.columnModel.columns, 0,
-					function() {
+			LinkedGov.setBlanksToNulls(false, theProject.columnModel.columns, 0, function() {
+				
 				log("Multiple columns wizard complete");
-				Refine.update({
-					everythingChanged : true
+				Refine.update({everythingChanged:true},function(){
+					// Refresh the content of the select inputs
+					ui.typingPanel.rangeSelector($(self.vars.elmts.multipleColumnsBody).find("div.range").find("select").eq(0));
+					ui.typingPanel.populateRangeSelector($(self.vars.elmts.multipleColumnsBody).find("div.range"), function(){
+						$(self.vars.elmts.multipleColumnsBody).find("div.range").slideDown();					
+						LinkedGov.resetWizard(self.vars.elmts.multipleColumnsBody);
+						LinkedGov.showWizardProgress(false);
+					});
 				});
-				// Refresh the content of the select inputs
-				ui.typingPanel.rangeSelector($(
-						self.vars.elmts.multipleColumnsBody).find(
-						"div.range").find("select").eq(0));
-				LinkedGov.resetWizard(self.vars.elmts.multipleColumnsBody);
-				ui.typingPanel.populateRangeSelector();
-				LinkedGov.showWizardProgress(false);
+
 			});
 
 			return false;

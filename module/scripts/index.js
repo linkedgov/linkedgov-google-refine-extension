@@ -232,11 +232,11 @@ var LinkedGov = {
 		resizeParsingPanel:function(){
 
 			log("resizeParsingPanel");
-			
+
 			var self = Refine.DefaultImportingController.sources[0].ui._controller;
 
 			self._parsingPanelResizer = function(){
-				
+
 				//log("parsingPanel is resizing...");
 				//log(self._parsingPanel);
 				/*
@@ -246,11 +246,11 @@ var LinkedGov = {
 				var headerHeight = elmts.wizardHeader.outerHeight(true);
 				var controlPanelHeight = 0; // DS
 				var cushion = 10;
-				
-				
+
+
 				$("div#right-panel").height($(window).height()-40);
 				$("div#right-panel-body").height($("div#right-panel").height()-5);				
-				
+
 				elmts.dataPanel
 				.css("left", "300px")
 				.css("top", headerHeight + "px")
@@ -266,7 +266,7 @@ var LinkedGov = {
 				.css("top", headerHeight + "px")
 				.css("width", "300px")
 				.css("height", (height - headerHeight - controlPanelHeight - DOM.getVPaddings(elmts.dataPanel))+cushion + "px"); 
-*/
+				 */
 				$("body.lg div.default-importing-parsing-control-panel")
 				.css("height","auto")
 				.css("bottom","0px")
@@ -276,15 +276,15 @@ var LinkedGov = {
 				.css("width","295px");
 
 				$("body.lg div.default-importing-progress-data-panel")
-			    .css("bottom", "0")
-			    .css("left","305px")
-			    .css("height","auto")
-			    .css("padding-top", "150px")
-			    .css("right", "0")
-			    .css("top", "34px")
-			   .css("width","auto");
-				
-				
+				.css("bottom", "0")
+				.css("left","305px")
+				.css("height","auto")
+				.css("padding-top", "150px")
+				.css("right", "0")
+				.css("top", "34px")
+				.css("width","auto");
+
+
 				$("body.lg div.default-importing-parsing-data-panel")
 				.css("height","auto")
 				.css("bottom","0px")
@@ -309,16 +309,16 @@ var LinkedGov = {
 				.css("top","40px")
 				.css("visibility","visible")
 				.css("height","auto");
-				
+
 				// DS - alter the widths of the td elements that hold the checkboxes & inputs for the parsing panels
 				$('td.default-importing-parsing-control-panel-options-panel').children().find('div.grid-layout').children().find('td').each(function(){
 					if($(this).attr('width') === "1%"){
 						$(this).removeAttr('width').css('width','25px');
 					}
 				});
-				  
+
 			}
-			
+
 			$(window).unbind("resize");
 			$(window).bind("resize", self._parsingPanelResizer);
 			$(window).resize();
@@ -424,13 +424,42 @@ Refine.DefaultImportingController.prototype._onImportJobReady = function() {
 	} else {
 		this._showParsingPanel(false);
 	}
-	
+
 	LinkedGov.resizeParsingPanel();
-	
+
 	$(window).unbind("resize");
 	$(window).bind("resize",Refine.DefaultImportingController.sources[0].ui._controller._parsingPanelResizer);
 	$(window).resize();
 };
+
+
+/*
+ * Override the pollImportJob
+ */
+/*
+LinkedGov.pollImportJob = Refine.CreateProjectUI.prototype.pollImportJob;
+Refine.CreateProjectUI.prototype.pollImportJob = function(start, jobID, timerID, checkDone, callback, onError) {
+
+	lgCheckDone = function(job){
+
+		log("lgCheckDone");
+		log(job);
+
+		return checkDone(job);
+
+	};
+
+	callback = function(jobID,job) {
+
+			Refine.CreateProjectUI.cancelImportinJob(jobID);
+			document.location = "project?project=" + job.config.projectID;
+
+	};
+
+	LinkedGov.pollImportJob(start, jobID, timerID, lgCheckDone, callback, onError);
+}
+*/
+
 
 $(document).ready(function(){
 

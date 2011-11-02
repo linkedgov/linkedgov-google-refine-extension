@@ -649,43 +649,6 @@ TypingPanel.prototype.checkColumnDescription = function(liElement){
 
 
 /*
- * populateRangeSelector
- * 
- * Takes a div.range element that contains two select inputs as children and 
- * populate the select inputs with the column names and sets them to the first 
- * option.
- */
-TypingPanel.prototype.populateRangeSelector = function(divRange, callback) {
-
-	callback = callback || function(){return false};
-
-	var columnHeaders = "";
-	var i = 0;
-	/*
-	 * Grab the column names from the data table and present 
-	 * them as <option> elements.
-	 * TODO: Perhaps grab the names from Refine's DOM object 
-	 * instead.
-	 */
-	$("div.column-header-title span.column-header-name").each(function () {
-		if ($(this).html() != "All") {
-			columnHeaders += "<option data-id='" + i + "' value='" + $(this).html() + "'>" + $(this).html() + "</option>";
-			i++;
-		}
-	});
-	/*
-	 * Populate the select inputs with the <option> elements.
-	 */
-	divRange.children("select").each(function () {
-		$(this).html(columnHeaders);
-		$(this).val($(this).find("option").eq(0).val());
-	});
-
-	callback();
-
-}
-
-/*
  * buttonSelector
  * 
  * Upon clicking the "Select" button in each wizard to select columns, 
@@ -840,7 +803,8 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 						case "splitter" :
 							/*
 							 * splitter - only allows one column to be selected and doesn't ask 
-							 * for any fragment data. Used
+							 * for any fragment data. Used in the address wizard to split columns 
+							 * containing multiple address parts.
 							 */
 							$cols.html(
 									"<li>" +
@@ -859,6 +823,10 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 				}
 			},
 			unselected: function (event, ui) {
+				/*
+				 * Remove the column from the selected column list when it's 
+				 * column header is deselected.
+				 */
 				$cols.children("li").children("span.col").each(function(){
 					if($(this).html() == $(ui.unselected).children().find(".column-header-name").html()){
 						$(this).parent("li").remove();
@@ -874,36 +842,99 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 			}
 		});
 	} else {
+		/*
+		 * If the column-selector button does not say "Start Select"
+		 */
 		self.destroyColumnSelector();
 	}	
 }
 
 
+/*
+ * populateRangeSelector
+ * 
+ * Takes a div.range element that contains two select inputs as children and 
+ * populate the select inputs with the column names and sets them to the first 
+ * option.
+ */
+TypingPanel.prototype.populateRangeSelector = function(divRange, callback) {
+
+	callback = callback || function(){return false};
+
+	var columnHeaders = "";
+	var i = 0;
+	/*
+	 * Grab the column names from the data table and present 
+	 * them as <option> elements.
+	 * TODO: Perhaps grab the names from Refine's DOM object 
+	 * instead.
+	 */
+	$("div.column-header-title span.column-header-name").each(function () {
+		if ($(this).html() != "All") {
+			columnHeaders += "<option data-id='" + i + "' value='" + $(this).html() + "'>" + $(this).html() + "</option>";
+			i++;
+		}
+	});
+	/*
+	 * Populate the select inputs with the <option> elements.
+	 */
+	divRange.children("select").each(function () {
+		$(this).html(columnHeaders);
+		$(this).val($(this).find("option").eq(0).val());
+	});
+
+	callback();
+
+}
 
 /*
  * rangeSelector
  * 
- * On the range selects' input change, rangeSelector is called.
+ * When selecting a range of columns using two select inputs (e.g. 
+ * in the Multiple Columns wizard), this function is called regardless
+ * of which select input is changed and uses the selects' CSS class to 
+ * distinguish which one is which (.from & .to).
  * 
- * It adds basic validation to the select inputs so that when 
- * a value is picked in the "From" range select, all values before 
- * that value in the "To" range select are disabled, and vice versa.
+ * Also adds basic validation to the select inputs so that when 
+ * a value is picked in the "From" select input, all values before 
+ * that value in the "To" select input are disabled, and vice versa.
  */
 TypingPanel.prototype.rangeSelector = function(select) {
 
 	var self = this;
-	self.destroyColumnSelector();
 
+	/*
+	 * Remove any jQueryUI selectable stuff if the user has been 
+	 * selecting columns before this.
+	 */
+	self.destroyColumnSelector();
+	/*
+	 * Cache and hide the selected column list
+	 */
 	$cols = $(select).parent().parent().children("ul.selected-columns");
 	$cols.html("").hide();
+	/*
+	 * Create a var to append the innerHTML of the select inputs to (the 
+	 * column names), and two way-points for the range (i.e. a min and max)
+	 * that begin at 0 as no columns have been selected yet.
+	 */
 	var colsHTML = "";
 	var from = 0, to = 0;
 
+	/*
+	 * If the "from" select input has been changed.
+	 */
 	if ($(select).hasClass("from")) {
-		// Limit the "to" select input
-		// Check to see if the other input has been set and
-		// adjust the column list
+		/*
+		 * Use the "data-id" attribute of the option element as the column index.
+		 * The option "value" is the column name.
+		 */
 		from = parseInt($(select).find("option[value='" + $(select).val() + "']").attr("data-id"));
+		/*
+		 * Loop through the list of the other select inputs's options (the "To" select input)
+		 * and disable any option that has a "data-id" (column index) that's less than or equal
+		 * to the column that's been selected - otherwise enable it.
+		 */
 		$(select).parent().find("select.to").children("option").each(function() {
 			if (parseInt($(this).attr("data-id")) <= from) {
 				$(this).attr("disabled", "true");
@@ -912,10 +943,13 @@ TypingPanel.prototype.rangeSelector = function(select) {
 			}
 		});
 	} else if ($(select).hasClass("to")) {
-		// Limit the first select input
-		// Check to see if the other input has been set and
-		// adjust the column list
+
 		to = parseInt($(select).find("option[value='" + $(select).val() + "']").attr("data-id"));
+		/*
+		 * Loop through the list of the other select inputs's options (the "From" select input)
+		 * and disable any option that has a "data-id" (column index) that's greater than or 
+		 * equal to the column that's been selected - otherwise enable it.
+		 */
 		$(select).parent().find("select.from").children("option").each(function () {
 			if (parseInt($(this).attr("data-id")) >= to) {
 				$(this).attr("disabled", "true");
@@ -925,12 +959,29 @@ TypingPanel.prototype.rangeSelector = function(select) {
 		});
 	}
 
+	/*
+	 * Populate the selected column list accordingly.
+	 * 
+	 * Loop through the select input's options that has been changed
+	 */
 	$(select).find("option").each(function () {
-		if (parseInt($(this).attr("data-id")) >= parseInt($(this).parent().parent().children("select.from").find("option[value='" + $(this).parent().parent().children("select.from").val() + "']").attr("data-id")) 
-				&& parseInt($(this).attr("data-id")) <= parseInt($(this).parent().parent().children("select.to").find("option[value='" + $(this).parent().parent().children("select.to").val() + "']").attr("data-id"))) {
+
+		/*
+		 * Cache the select inputs
+		 */
+		var fromSelect = $(this).parent().parent().children("select.from");
+		var toSelect = $(this).parent().parent().children("select.to");
+		/*
+		 * For each option inside the select input, 
+		 * if it's column index is in between the selected "from" column
+		 * and the selected "to" column
+		 */
+		if (parseInt($(this).attr("data-id")) >= 
+			parseInt(fromSelect.find("option[value='" + fromSelect.val() + "']").attr("data-id")) 
+			&& parseInt($(this).attr("data-id")) <= 
+				parseInt(toSelect.find("option[value='" + toSelect.val() + "']").attr("data-id"))) {
 			/*
-			 * Populate the wizards column display.
-			 * <li><span>Column Name</span><select>Fragment data</select><span>Remove column</span></li>
+			 * Append the selected column HTML to the list.
 			 */
 			colsHTML += "<li>" +
 			"<span class='col'>" + $(this).val() + "</span>" +  
@@ -940,8 +991,6 @@ TypingPanel.prototype.rangeSelector = function(select) {
 			/*
 			 * Add jQuery UI's "selected" styles to the column headers in the
 			 * data table.
-			 * 
-			 * TODO: Inefficient iteration.
 			 */
 			$colName = $(this).val();
 			$("table.data-header-table tr td.column-header span.column-header-name").each(function(){
@@ -954,8 +1003,12 @@ TypingPanel.prototype.rangeSelector = function(select) {
 	});
 
 	if(colsHTML == ""){
-
+		// No columns have been selected
 	} else {
+		/*
+		 * Append the selected column list to the UL element in the wizard and 
+		 * show it.
+		 */
 		$cols.html(colsHTML).show();
 	}
 
@@ -976,41 +1029,63 @@ TypingPanel.prototype.destroyColumnSelector = function() {
 /*
  * removeColumn
  * 
- * Updates column selector when removing a column
+ * Functionality for removing a column from list of 
+ * selected columns.
+ * 
+ * "el" is the column entry's remove sign
  */
 TypingPanel.prototype.removeColumn = function(el) {
 
 	/*
-	 * Slide up column, apply "skip" class which has display:none.
-	 * Remove ui-selected from column header.
-	 */
-
-	/*
-	 * Check to see if column being removed is the first or last 
-	 * in column selection, in which case it is ok to remove from 
-	 * the range.
+	 * Cache the column list
 	 */
 	$cols = $(el).parent("li").parent("ul");
+	/*
+	 * Check to see if column being removed is the first or last 
+	 * in column selection, in which case it is ok to remove it from 
+	 * the range.
+	 * 
+	 * We're testing that the HTML elements are the same.
+	 */
+	if($(el).parent("li")[0] === $(el).parent().parent("ul").children().eq(0)[0] || 
+			$(el).parent("li")[0] == $(el).parent("li").parent("ul").children("li").eq($(el).parent("li").parent("ul").children("li").length-1)[0]){
 
-	if($(el).parent("li")[0] === $(el).parent().parent("ul").children().eq(0)[0] || $(el).parent("li")[0] == $(el).parent("li").parent("ul").children("li").eq($(el).parent("li").parent("ul").children("li").length-1)[0]){
-
+		/*
+		 * Slide the column entry up
+		 */
 		$(el).parent().slideUp(250,function(){
 
+			/*
+			 * Remove it from the list
+			 */
 			$(this).remove();
 
+			/*
+			 * Continue to remove any column entries that have the class "skip" and are the 
+			 * first in the list (as they're not being skipped).
+			 */
 			while($cols.children("li").length > 0 && $cols.children("li").eq(0).hasClass("skip")){
 				$cols.children("li").eq(0).remove();
 			}
 
+			/*
+			 * If there are no more selected columns left in the list, 
+			 * hide the list.
+			 */
 			if($cols.children("li").length < 1){
 				$cols.html("").hide();
 			}
 		});
+
 		/*
 		 * Remove the "selected" styling for the removed columns in the data table
 		 */
 		$li_el = $(el).parent("li");
 
+		/*
+		 * Loop through the column headers in the data table and remove the highlighted 
+		 * "ui-selected" class as it's now been deselected.
+		 */
 		$("td.column-header div.column-header-title span.column-header-name").each(function(){
 			if($(this).html() == $li_el.find("span.col").html()){
 				$(this).parent().parent("td").removeClass("ui-selected");
@@ -1019,31 +1094,21 @@ TypingPanel.prototype.removeColumn = function(el) {
 
 	} else {
 		/*
-		 * If the column is within the range, add the class "skip" to 
-		 * the <li> element to hook on to during the wizard.
+		 * If the column is inside the range (i.e. not at the beginning or end), add the class "skip" to 
+		 * the <li> element to enable the wizard to move it aside when rotating the other columns.
 		 */
-		if($(el).parent("li").hasClass("skip")){
-			$(el).parent().removeClass("skip");
-			$li_el = $(el).parent("li");
 
-			$("td.column-header div.column-header-title span.column-header-name").each(function(){
-				if($(this).html() == $li_el.find("span.col").html()){
-					$(this).parent().parent("td").addClass("ui-selectee ui-selected");
-				}
-			});
-		} else {			
-			$li_el = $(el).parent("li");
+		$li_el = $(el).parent("li");
 
-			$li_el.slideUp(250,function(){
-				$(this).addClass("skip");
-			});
+		$li_el.slideUp(250,function(){
+			$(this).addClass("skip");
+		});
 
-			$("td.column-header div.column-header-title span.column-header-name").each(function(){
-				if($(this).html() == $li_el.find("span.col").html()){
-					$(this).parent().parent("td").removeClass("ui-selectee ui-selected");
-				}
-			});	
-		}
+		$("td.column-header div.column-header-title span.column-header-name").each(function(){
+			if($(this).html() == $li_el.find("span.col").html()){
+				$(this).parent().parent("td").removeClass("ui-selectee ui-selected");
+			}
+		});	
 	}
 
 }
