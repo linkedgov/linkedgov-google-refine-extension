@@ -64,7 +64,16 @@ var multipleColumnsWizard = {
 				 * account any columns the user wants to skip.
 				 */
 				self.checkSkippedColumns();
-
+				
+				/*
+				 * Remove all RDF relating to the columns involved in the rotation 
+				 * operation as this will break their mappings.
+				 */
+				$(elmts.multipleColumnsColumns).children("li").find("span.col").each(function(){
+					//log("Removing RDF for: "+$(this).html());
+					LinkedGov.removeColumnInRDF($(this).html());
+				});
+				
 				/*
 				 * Set any blank cells to null to protect them from being filled
 				 * down into after the transpose operation (which produces blank
@@ -73,22 +82,13 @@ var multipleColumnsWizard = {
 				 * Passing self.transpose() as a parameter calls it immediately for
 				 * some reason.
 				 */
-				LinkedGov
-				.setBlanksToNulls(
-						true,
-						theProject.columnModel.columns,
-						0,
-						function() {
+				LinkedGov.setBlanksToNulls(true,theProject.columnModel.columns,0,function() {
 							/*
 							 * If a gap has been detected, reorder the
 							 * columns first.
 							 */
 							if (self.vars.gapInRange) {
-								self
-								.reorderColumns(
-										Refine
-										.columnNameToColumnIndex(self.vars.startColName),
-										function() {
+								self.reorderColumns(Refine.columnNameToColumnIndex(self.vars.startColName),function() {
 											self.transposeColumns();
 										});
 							} else {

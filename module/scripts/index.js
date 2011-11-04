@@ -24,12 +24,19 @@
 var LinkedGov = {
 
 		vars : {
-			debug:true
+			debug:true,
+			metadataObject:{}
 		},
 
 		initialise: function() {
 
 			//this.disableFeatures();
+			
+			/*
+			 * Change logo & slogan
+			 */
+			$("#header img").attr("src","/extension/linkedgov/images/logo-small.png").attr("height","40");
+			$("#header span#slogan").html("Fixing government data");
 			
 			var mode = $.getUrlVar('mode');
 			
@@ -188,13 +195,18 @@ var LinkedGov = {
 			var source = '';
 			var error = false;
 			var errorMessages = "";
-
+			
+			metadataObject = LinkedGov.vars.metadataObject;
+			
+			
 			if($("div.create-project-ui-source-selection-tab-body.selected").find("input[bind='urlInput']").length === 1){
 				// User is downloading data
 				source = "urlInput";
+				metadataObject["LinkedGov.source"] = "urlInput";
 			} else if($("div.create-project-ui-source-selection-tab-body.selected").find("input[bind='fileInput']").length === 1){
 				// User is uploading data
-				source = "fileInput"
+				source = "fileInput";
+				metadataObject["LinkedGov.source"] = "fileInput";
 			} else {
 				//alert("Data source error");
 				errorMessages += "<li>You must specify a source to import data from. Please select a file to upload or enter a web address to download from.</li>";
@@ -206,6 +218,7 @@ var LinkedGov = {
 				$("#data-name-input").addClass("error");
 			} else {
 				$("#data-name-input").removeClass("error");
+				metadataObject["LinkedGov.name"] = $("input#data-name-input").val();
 			}
 
 			if (typeof $("input[@name=project-license]:checked").val() == 'undefined') {
@@ -220,6 +233,7 @@ var LinkedGov = {
 				 */
 			} else {
 				$("div.metadata tr.license td").removeClass("error");
+				metadataObject["LinkedGov.license"] = $("input[@name=project-license]:checked").val();
 			}
 
 			if ($("input#data-webpage-input").val() == "http://" || $("input#data-webpage-input").val() == "") {
@@ -228,6 +242,7 @@ var LinkedGov = {
 				$("input#data-webpage-input").addClass("error");
 			} else {
 				$("input#data-webpage-input").removeClass("error");
+				metadataObject["LinkedGov.webLocation"] = $("input#data-webpage-input").val();
 			}
 
 			if ($("input#data-organisation-input").val().length === 0) {
@@ -236,6 +251,7 @@ var LinkedGov = {
 				$("input#data-organisation-input").addClass("error");
 			} else {
 				$("input#data-organisation-input").removeClass("error");
+				metadataObject["LinkedGov.organisation"] = $("input#data-organisation-input").val();
 			}
 
 			if ($("input#data-description-webpage-input").val() == "http://" || $("input#data-description-webpage-input").val() == "") {
@@ -244,6 +260,7 @@ var LinkedGov = {
 				$("input#data-description-webpage-input").addClass("error");
 			} else {
 				$("input#data-description-webpage-input").removeClass("error");
+				metadataObject["LinkedGov.descriptionLocation"] = $("input#data-description-webpage-input").val();
 			}
 
 			if ($("textarea#data-keywords-input").val().length === 0) {
@@ -252,6 +269,7 @@ var LinkedGov = {
 				$("textarea#data-keywords-input").addClass("error");
 			} else {
 				$("textarea#data-keywords-input").removeClass("error");
+				metadataObject["LinkedGov.keywords"] = $("textarea#data-keywords-input").val();
 			}	
 
 			if(!error){   
@@ -261,6 +279,22 @@ var LinkedGov = {
 				$('div.metadata').parent().parent().scrollTop(0);
 				$("div.metadata ul.errorMessages").html(errorMessages).show().focus();
 			}	
+			
+			
+			/*
+			 * Store the other form fields that are not required
+			 */
+			if($("input#data-license-webpage-input").val().length > 0 && $("input#data-license-webpage-input").val() != "http://"){
+				metadataObject["LinkedGov.licenseLocation"] = $("input#data-license-webpage-input").val();
+			}
+			
+			if($("input#data-date-input").val().length > 0){
+				metadataObject["LinkedGov.datePublished"] = $("input#data-date-input").val();
+			}
+			
+			if($("select#data-update-freq-input").val() != "Please select..."){
+				metadataObject["LinkedGov.frequency"] = $("select#data-update-freq-input").val();
+			}
 
 		},
 		
@@ -268,18 +302,12 @@ var LinkedGov = {
 			
 			var self = this;
 
-			var formData = {
-					"source organisation":"National Audit Office",
-					"copyright":true,
-					"license":"Open government license"
-			};
-			
-			formData.project = projectID;
+			LinkedGov.vars.metadataObject.project = projectID;
 			
 			$.ajax({
 				type : "POST",
 				url : "/command/" + "linkedgov" + "/" + "save-meta-information",
-				data : $.param(formData),
+				data : $.param(LinkedGov.vars.metadataObject),
 				success : function(data) {
 					callback(jobID,projectID);
 				},
@@ -343,7 +371,7 @@ var LinkedGov = {
 				.css("left","0px !important")
 				.css("width","100% !important")
 				.css("bottom","0px")
-				.css("top","40px")
+				.css("top","60px")
 				.css("visibility","visible")
 				.css("height","auto");
 

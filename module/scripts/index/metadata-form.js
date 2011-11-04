@@ -49,7 +49,8 @@ $("div.metadata input[name='data-license']").change(function(){
  */
 $('input.datepicker').datepicker({
 	changeYear:true,
-	changeMonth:true
+	changeMonth:true,
+	dateFormat:"yy-mm-dd"
 });
 
 /*
@@ -57,20 +58,20 @@ $('input.datepicker').datepicker({
  */
 $("button#dummy").toggle(function(){
 
-	$("div.metadata input#data-name-input").val("Dummy");
+	$("div.metadata input#data-name-input").val("Energy readings for MOD - May 2011");
 	//$("input.default-importing-web-url").val("http://mirrors.ctan.org/macros/latex/contrib/csvsimple/csvsimple-example.csv");
 	//$("input.default-importing-web-url").val("https://github.com/mhausenblas/addrable/raw/master/data/table2.csv");
 	$("input.default-importing-web-url").val("http://www.ecodriver.uk.com/eCMS/Files/MOD/ministryofdefence_may-2011.csv");
-	$("input[value='open-license']").attr("checked","true");
+	$("input[value='Open Government License']").attr("checked","true");
 	$("div.metadata input#data-license-other-input")
 	// Disabled the rest of the form and display message
-	$("div.metadata input#data-webpage-input").val("Dummy");
-	$("div.metadata input#data-license-webpage-input").val("Dummy");
-	$("div.metadata input#data-organisation-input").val("Dummy");
-	$("div.metadata input#data-description-webpage-input").val("Dummy");
-	$("div.metadata textarea#data-keywords-input").val("Dumb, Dumber");
-	$("div.metadata input#data-date-input").val("1/1/1999");
-	$("div.metadata select#data-update-freq-input").val("Hourly");
+	$("div.metadata input#data-webpage-input").val("http://www.mod.uk/DefenceInternet/AboutDefence/CorporatePublications/Structure/DepartmentalOrganisationCharts1.htm");
+	$("div.metadata input#data-license-webpage-input").val("http://www.nationalarchives.gov.uk/doc/open-government-licence/");
+	$("div.metadata input#data-organisation-input").val("Ministry Of Defence");
+	$("div.metadata input#data-description-webpage-input").val("http://www.mod.uk/DefenceInternet/AboutDefence/CorporatePublications/Structure/DepartmentalOrganisationCharts1.htm");
+	$("div.metadata textarea#data-keywords-input").val("Energy, electricity, readings, power, eco, enivronment, government");
+	$("div.metadata input#data-date-input").val("2011-03-23");
+	$("div.metadata select#data-update-freq-input").val("monthly");
 
 },function(){
 	$("div.metadata input#data-name-input").val("");

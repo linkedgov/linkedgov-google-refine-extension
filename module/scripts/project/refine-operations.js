@@ -140,13 +140,18 @@ LinkedGov.renameColumn = function(oldName, newName, callback) {
  * Removes a column
  */
 LinkedGov.removeColumn = function(colName, callback) {
+	
 	LinkedGov.silentProcessCall({
 		type : "POST",
 		url : "/command/" + "core" + "/" + "remove-column",
 		data : {
 			columnName : colName
 		},
-		success : callback,
+		success : function(){
+			if(callback){
+				callback();
+			}
+		},
 		error : function() {
 			alert("A problem was encountered when removing the column: \""
 					+ colName + "\".");
@@ -174,7 +179,9 @@ LinkedGov.splitColumn = function(colName, separator, callback) {
 			Refine.update({
 				modelsChanged : true
 			}, function() {
-				callback();
+				if(callback){
+					callback();
+				}
 			});
 		},
 		error : function() {
@@ -198,7 +205,11 @@ LinkedGov.moveColumn = function(colName, dir, callback) {
 			columnName : colName,
 			index : i
 		},
-		success : callback,
+		success : function(){
+			if(callback){
+				callback();
+			}
+		},
 		error : function() {
 			alert("A problem was encountered when moving the column: \"" + colName + "\".");
 		}

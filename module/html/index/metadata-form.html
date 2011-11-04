@@ -11,10 +11,23 @@
 		  <tr class="license">
 			<th><label for="data-license">License details<span class="required">*</span></label></th>
 			<td>
-				<span><input id="data-open-license" type="radio" name="data-license" value="open-license"/><label for="data-open-license">Open license</label></span>
-				<span><input id="data-lorem-license" type="radio" name="data-license" value="lorem-license"/><label for="data-lorem-license">Lorem license</label></span>
-				<span><input id="data-ipsum-license" type="radio" name="data-license" value="ipsum-license"/><label for="data-ipsum-license">Ipsum license</label></span>
-				<span><input id="open-license" type="radio" name="data-license" value="other" id="data-license-other-radio" /><label for="data-license-other-radio">Other - please specify</label></span>
+				<span>
+				<input id="data-open-government-license" type="radio" name="data-license" value="http://www.nationalarchives.gov.uk/doc/open-government-licence/"/>
+				<label for="data-open-government-license">Open Government License</label></span>
+				<span>
+				<input id="data-attribution-cc-by" type="radio" name="data-license" value="http://creativecommons.org/licenses/by/3.0/"/>
+				<label for="data-attribution-cc-by">Attribution CC BY</label></span>
+				<span>
+				<input id="data-public-domain" type="radio" name="data-license" value="http://creativecommons.org/publicdomain/zero/1.0/legalcode"/>
+				<label for="data-public-domain">Public domain</label></span>
+				<span>
+				<input id="data-crown-copyright" type="radio" name="data-license" value="http://www.nationalarchives.gov.uk/doc/open-government-licence/"/>
+				<label for="data-crown-copyright">Crown Copyright</label></span>
+				<span>
+				<input id="open-license" type="radio" name="data-license" value="other" id="data-license-other-radio" />
+				<label for="data-license-other-radio">Other - please specify</label>
+				</span>
+				
 				<input type="text" name="data-license-other" id="data-license-other-input" disabled="true" size="40" />
 			</td>
 		  </tr>	
@@ -55,10 +68,11 @@
 				<th><label for="data-update-freq-input">Enter the frequency this data gets updated (approximately)</label></th>
 				<td>
 				<select id="data-update-freq-input" name="data-update-freq">
+					<option value="Please select...">Please select...</option>
 					<option value="hourly">Hourly</option>
 					<option value="daily">Daily</option>
 					<option value="weekly">Weekly</option>
-					<option value="montly">Monthly</option>
+					<option value="monthly">Monthly</option>
 					<option value="quarterly">Quarterly</option>
 					<option value="yearly">Yearly</option>
 				</select>

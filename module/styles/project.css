@@ -1,4 +1,3 @@
-
 body.wizard-progress div.dialog-frame, body.wizard-progress div.dialog-overlay {
 	display:none !important;
 }
@@ -646,3 +645,11 @@ body.lg .ui-dialog .ui-dialog-buttonpane {
     text-align: left;
 }
 */
+
+/* Dark skin */
+#project-title {
+    font-size: 1.6em;
+    height: 40px;
+    left: 0;
+    padding: 0 0 0;
+}

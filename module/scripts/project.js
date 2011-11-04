@@ -41,18 +41,7 @@ var LinkedGov = {
 		 */
 		initialise : function() {
 
-			
-			$.ajax({
-				type : "GET",
-				url : "/command/" + "core" + "/" + "get-project-metadata?project="+theProject.id,
-				data : $.param({}),
-				success : function(data) {
-					console.log(data);
-				},
-				error : function() {
-					
-				}
-			});
+			$("#app-home-button").remove();
 			
 			this.restyle();
 			this.injectTypingPanel();
@@ -91,12 +80,13 @@ var LinkedGov = {
 			/*
 			 * Load our custom save-rdf operations script
 			 */
-			$.getScript("extension/linkedgov/scripts/project/save-rdf.js",function(){
+			$.getScript("extension/linkedgov/scripts/project/rdf-operations.js",function(){
 				LinkedGov.renameColumnInRDF = renameColumnInRDF;
 				LinkedGov.finaliseRDFSchema = finaliseRDFSchema;
 				LinkedGov.applyTypeIcons = applyTypeIcons;
 				LinkedGov.applyTypeIcons.init();
 				LinkedGov.applyTypeIcons.apply();
+				LinkedGov.saveMetadataToRDF();
 			});
 		},
 

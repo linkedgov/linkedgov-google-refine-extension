@@ -425,7 +425,15 @@ var dateTimeWizard = {
 							monthBeforeDay : false
 						});
 
-						callback();
+						for(var i=0;i<cols.length;i++){
+							LinkedGov.removeColumn(cols[i]);
+							if(i == cols.length-1){
+								Refine.update({modelsChanged:true},function(){
+									callback();
+								});
+							}
+						}
+						
 					}
 				});
 			} catch (e) {

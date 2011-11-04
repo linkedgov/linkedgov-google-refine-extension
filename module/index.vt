@@ -1,0 +1,11 @@
+<!-- Access this page at the URL /extension/linkedgov/ -->
+<!html>
+<head>
+<title>LinkedGov Portal</title>
+<link href="styles/menu.css" type="text/css" rel="stylesheet" /> 
+<script src="externals/jquery.js"></script>
+<script src="scripts/menu.js"></script>
+</head>
+<body>
+</body>
+</html>

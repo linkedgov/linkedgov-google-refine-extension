@@ -37,6 +37,7 @@ public class SaveMetaInformationCommand extends Command {
 				}
 			}
             
+			
             respond(response, "{ \"code\" : \"ok\" }");
         } catch (Exception e) {
             respondException(response, e);
