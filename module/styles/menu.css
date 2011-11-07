@@ -1,5 +1,4 @@
 html {
-    font: 300 1.4em/1.85 "Helvetica Neue",Helvetica,"Arial Unicode MS",Arial,sans-serif;
     margin: 0;
     padding: 0;
 }
@@ -7,6 +6,26 @@ body {
     margin: 0;
     padding: 0;
     overflow:hidden;
+    font-family: Arial,sans-serif;
+    font-size: 62.5%;
+}
+#lgHeader {
+    border-bottom: 3px solid #DDDDDD;
+    height: 48px;
+    margin: 0;
+    overflow: hidden;
+    padding-left: 20px;
+    padding-top: 9px;
+    position: relative;
+}
+#slogan {
+	color: #444444;
+    font-size: 110%;
+    font-style: italic;
+    margin: 0 1em;
+}
+img {
+    vertical-align: middle;
 }
 a {
 color:#000000;
@@ -125,37 +144,34 @@ margin:0 auto;
     width: 750px;
 }
 ul.three-block {
-    float: left;
-    font-size: 18px;
+    font-size: 15px;
     margin: 0;
     padding: 0;
     position: absolute;
-    top: 40%;
+    top: 45%;
 }
 ul.three-block li {
-    border: 2px solid #FFFFFF;
-    border-radius: 5px 5px 5px 5px;
     cursor: pointer;
-    float: left;
     list-style-type: none;
-    padding: 10px;
-    width: 226px;
-}
-ul.three-block li:hover {
-    background-color:#EBEEF8;
-    border:2px solid #DDDDDD;
+    margin: 10px;
+    width: 730px;
 }
 ul.three-block li img {
 
 }
 ul.three-block li a {
-    float: left;
+    background-color: #EBEEF8;
+    border: 1px solid #BBCCFF;
+    display: block;
     height: 100%;
-    margin: 0;
-    padding: 0;
+    margin: 0 auto;
+    padding: 10px;
     text-align: center;
     text-decoration: none;
-    width: 100%;
+    width: 250px;
+}
+ul.three-block li a:hover {
+    border:1px solid #444444;
 }
 ul.three-block li span {
 display: block;
