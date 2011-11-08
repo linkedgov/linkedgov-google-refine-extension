@@ -92,7 +92,7 @@ TypingPanel.prototype._render = function () {
 			$(this).next().hide();
 		}
 	});
-	
+
 	/*
 	 * When each wizards' "Update" button is clicked, 
 	 * their corresponding wizard function is called. Each of the 
@@ -148,7 +148,7 @@ TypingPanel.prototype._render = function () {
 			ui.typingPanel.buttonSelector($(this),"default");			
 		}
 	});
-	
+
 	/*
 	 * 'Remove column' interaction for column lists
 	 */
@@ -169,8 +169,8 @@ TypingPanel.prototype._render = function () {
 	 * Set up more user interaction but slightly more specific to each wizard.
 	 */
 	this.setupWizardInteraction();
-	
-	
+
+
 	/*
 	 * Called similarly to Refine's panels.
 	 */
@@ -182,7 +182,7 @@ TypingPanel.prototype._render = function () {
  */
 TypingPanel.prototype.setupWizardInteraction = function() {
 
-	
+
 	/*
 	 * Interaction for the column range select inputs
 	 */
@@ -190,7 +190,7 @@ TypingPanel.prototype.setupWizardInteraction = function() {
 		ui.typingPanel.rangeSelector($(this));
 	});
 
-	
+
 	/*
 	 * "Split address" checkbox
 	 */
@@ -310,7 +310,7 @@ TypingPanel.prototype.setupWizardInteraction = function() {
 			$(this).parent("span").parent("li").find("span.postcode").slideUp(250);
 		}
 	});
-	
+
 }
 
 /*
@@ -391,6 +391,11 @@ TypingPanel.prototype.exitWizard = function(){
 	$("div.wizard-panel").animate({"left":"300px"},500, function(){
 		$("div.wizard-panel").find("div.wizard-body").remove();
 	});
+
+	$("td.column-header").each(function(){
+		$(this).removeClass("bad").removeClass("maybe").removeClass("good").removeClass("great");
+	});
+
 }
 
 
@@ -413,6 +418,27 @@ TypingPanel.prototype.enterDescriptionPanel = function(){
 		$("div.next-button").animate({"left":"-300px"},500);
 		$("div.description-panel").animate({"left":"0px"},500);
 		$("div.description-panel div.update-button").show().animate({"left":"0px"},500);
+
+		$("td.column-header span.column-header-name").each(function(){
+			var header = $(this);
+			$("div.description-panel div.column-list ul li input").each(function(){
+				var label = $(this);
+
+				if(header == label){
+					if(label.parent().hasClass("great")){
+						header.parent().parent().addClass("great");
+					} else if(label.parent().hasClass("good")){
+						header.parent().parent().addClass("good");
+					} else if(label.parent().hasClass("maybe")){
+						header.parent().parent().addClass("maybe");
+					} else {
+						header.parent().parent().addClass("bad");
+					}
+				}
+
+			});
+		});
+
 	} else {
 
 		// build new list
@@ -463,7 +489,7 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 			"<input class='column-label' value='"+$(this).html()+"' />" +
 			"<textarea class='column-description' value='Enter a description...'>Enter a description...</textarea>" + 
 			"</li>";
-			$(this).addClass(status);
+			$(this).parent().parent().addClass(status);
 		}
 	});
 	html += "</ul>";
@@ -482,14 +508,15 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 	var labelData = LinkedGov.vars.labelsAndDescriptions; 
 	var colData = labelData.cols;
 	/*
-	 * If the global labels object 
+	 * If the global labels object exists, populate the input fields using 
+	 * it's values.
 	 */
 	if(colData.length > 0){
 		for(var i=0;i<colData.length;i++){
 			$("div.description-panel div.column-list ul li").each(function(){
 
-				if($(this).find("input.column-label").val() == colData[i].name){
-					//log("Replacing description for "+colData[i].name+": "+colData[i].description);
+				if($(this).find("input.column-label").val() == colData[i].label){
+					//log("Replacing description for "+colData[i].label+": "+colData[i].description);
 					$(this).find("textarea.column-description").val(colData[i].description).html(colData[i].description);
 					ui.typingPanel.checkColumnDescription($(this));
 				}
@@ -513,7 +540,7 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 				/*
 				 * Validate the row label and description
 				 */
-				ui.typingPanel.checkRowDescription($("div.description-panel div.row-description"));
+				//ui.typingPanel.checkRowDescription($("div.description-panel div.row-description"));
 
 				/*
 				 * Populate a global labels object of column names and description so the user can 
@@ -521,11 +548,11 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 				 */
 				$("div.description-panel div.column-list ul li").each(function(){
 					colData.push({
-						name:$(this).find("input.column-label").val(),
+						label:$(this).find("input.column-label").val(),
 						description:$(this).find("textarea.column-description").val()
 					});
 					$(this).find("input.column-label").data("original-name",$(this).find("input.column-label").val());
-					ui.typingPanel.checkColumnDescription($(this));
+					//ui.typingPanel.checkColumnDescription($(this));
 				});
 
 
@@ -638,8 +665,8 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 				var newName = el.val();
 
 				for(var i=0;i<colData.length;i++){
-					if(colData[i].name == oldName){
-						colData[i].name = newName;
+					if(colData[i].label == oldName){
+						colData[i].label = newName;
 						colData[i].description = el.parent().find("textarea").val();
 					}
 				}
@@ -703,6 +730,11 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 		if(error){
 			alert("Some labels still need to be checked, please make sure you have checked the row description and all of the columns.")
 		} else {
+
+			$("td.column-header").each(function(){
+				$(this).removeClass("bad").removeClass("maybe").removeClass("good").removeClass("great");
+			});
+
 			LinkedGov.finaliseRDFSchema.init();
 		}
 	});
@@ -743,9 +775,12 @@ TypingPanel.prototype.loadLabelsAndDescription = function(callback) {
 						 * Locate the label and comment and populate the input fields
 						 */
 						if(schema.rootNodes[i].links[j].curie == "rdfs:label"){
-							$("div.row-description input.row-label").val(schema.rootNodes[i].links[j].target.value);
+							$("div.row-description input.row-label").val(schema.rootNodes[i].links[j].target.value)
+							$("div.row-description input.row-label").parent().removeClass("maybe");
+							$("div.row-description input.row-label").parent().addClass("good");
 						} else if(schema.rootNodes[i].links[j].curie == "rdfs:comment"){
-							$("div.row-description textarea.row-description").val(schema.rootNodes[i].links[j].target.value);
+							$("div.row-description textarea.row-description").val(schema.rootNodes[i].links[j].target.value)
+							$("div.row-description textarea.row-description").parent().addClass("great");
 						}
 					}
 
@@ -762,6 +797,9 @@ TypingPanel.prototype.loadLabelsAndDescription = function(callback) {
 								 */
 								$("div.column-list ul li").each(function(){
 									if($(this).find("input.column-label").val() == schema.rootNodes[i].links[j].target.value){
+
+										$(this).removeClass("maybe").addClass("good");
+										
 										/*
 										 * For the "link" object found to contain the label, use the other link object (the comment) 
 										 * to populate the column's description input.
@@ -769,6 +807,25 @@ TypingPanel.prototype.loadLabelsAndDescription = function(callback) {
 										$(this).find("textarea.column-description")
 										.val(schema.rootNodes[i].links[(j?0:1)].target.value)
 										.html(schema.rootNodes[i].links[(j?0:1)].target.value);
+										
+										if($(this).find("textarea.column-description").val().length > 2){
+											
+											$("td.column-header span.column-header-name").each(function(){
+												if($(this).html() == $(this).find("input.column-label").val()){
+													$(this).removeClass("bad").removeClass("maybe").removeClass("good").addClass("great");
+												}
+											});
+											
+										} else {
+											
+											$("td.column-header span.column-header-name").each(function(){
+												if($(this).html() == $(this).find("input.column-label").val()){
+													$(this).removeClass("bad").removeClass("maybe").removeClass("great").addClass("good");
+												}
+											});
+											
+										}
+
 									}
 								});
 							}
@@ -797,7 +854,6 @@ TypingPanel.prototype.checkRowDescription = function(divElement){
 	var input = divElement.find("input.row-label");
 	var textarea = divElement.find("textarea.row-description");
 	var labelData = LinkedGov.vars.labelsAndDescriptions;
-
 	/*
 	 * Add the status's CSS class
 	 */
@@ -829,33 +885,43 @@ TypingPanel.prototype.checkColumnDescription = function(liElement){
 
 	var input = liElement.find("input.column-label");
 	var textarea = liElement.find("textarea.column-description");
-
 	var colData = LinkedGov.vars.labelsAndDescriptions.cols;
-
+	var status = "";
+	
 	/*
 	 * If the column label is longer than 2 letters and doesn't contain the word column
 	 */
 	if(input.val().trim().length > 2 && input.val().toLowerCase().indexOf("column") < 0){
 		liElement.removeClass("bad").removeClass("maybe").addClass("good");
+		status = "good";
 		/*
 		 * If the description value is not equal to the holding text, add the "great" 
 		 * status.
 		 */
 		if(textarea.val().length > 2 && textarea.val() != "Enter a description..."){
 			liElement.addClass("great");
+			status = "great";
 		}
 	} else {
 		liElement.removeClass("great").removeClass("good").addClass("bad");
+		status = "bad";
 	}
 
 	/*
 	 * Store the column description in the local object.
 	 */
 	for(var i=0;i<colData.length;i++){
-		if(colData[i].name == input.val()){
+		if(colData[i].label == input.val()){
 			colData[i].description = textarea.val();
 		}
 	}
+	
+	$("td.column-header span.column-header-name").each(function(){
+		if($(this).html() == liElement.find("input.row-label").val()){
+			var el = $(this).parent().parent();
+			el.removeClass("bad").removeClass("maybe").removeClass("good").removeClass("great").addClass(status);
+		}
+	});
 }
 
 
@@ -1469,7 +1535,7 @@ $(document).ready(function() {
 	 * tab.
 	 */
 	var interval = setInterval(function () {
-				
+
 		// log(typeof ui.typingPanelDiv);
 		if (typeof ui.typingPanelDiv == 'undefined') {
 			log("ui.typingPanelDiv is undefined.");
@@ -1500,5 +1566,5 @@ $(document).ready(function() {
 		}
 
 	}, 100);
-	
+
 });

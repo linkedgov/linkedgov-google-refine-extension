@@ -31,29 +31,35 @@ var LinkedGov = {
 		initialise: function() {
 
 			//this.disableFeatures();
-			
+
 			/*
 			 * Change logo & slogan
 			 */
 			$("#header img").attr("src","/extension/linkedgov/images/logo-small.png").attr("height","40");
 			$("#header span#slogan").html("Fixing government data");
 			
+			$("body").append('<div id="beta"><img src="/extension/linkedgov/images/beta-ribbon.gif"></div>');
+
 			var mode = $.getUrlVar('mode');
-			
+
 			if(mode == "resume"){
 				this.restyleOpenProjectArea();
-				this.setUpOpenProjectArea();
+				this.setUpOpenProjectPanel();
 			} else {
 				this.restyleImportArea();
-				this.injectMetaDataForm();	
+				this.setUpImportPanel();	
 			}
 		},
-		
-		setUpOpenProjectArea:function(){
-			
+
+		/*
+		 * setUpOpenProjectArea
+		 * 
+		 * Makes sure the "Open Project" area is visible and the others are hidden/removed.
+		 */
+		setUpOpenProjectPanel:function(){
+
 			var div = document.createElement("div");
 			div.id = "create-project-ui-source-selection-tab-bodies";
-			//document.body.append(div);
 
 			var openProjectArea = {};
 			for(var i=0;i<Refine.actionAreas.length;i++){
@@ -67,30 +73,18 @@ var LinkedGov = {
 			openProjectArea.bodyElmt.append(div);
 			openProjectArea.bodyElmt.css("visibility","visible");
 			openProjectArea.bodyElmt.show();
-			
-			//$(window).unbind("resize");
+
 		},
 
 		/*
 		 * disableFeatures
 		 *
-		 * Removes the clipboard & gdata import sources' 
-		 * HTML, as well as the Open Project and Import Project tabs which 
-		 * are already hidden.
-		 * 
-		 * Safari (and perhaps some other browsers) has some sort 
-		 * of delay when creating the UI objects due to an AJAX post. An 
-		 * interval of 1ms is used - and oddly only ever seems to iterate 
-		 * once. Without the interval, errors are thrown due to 'undefined' 
-		 * objects.
+		 * Removes the clipboard sources' HTML and hides the default "Next" buttons 
+		 * so we can attach our own events to our own button.
 		 * 
 		 */
 		disableFeaturesForImport: function() {
 
-
-			//Refine.actionAreas[1].bodyElmt.hide().remove();
-			//Refine.actionAreas[2].bodyElmt.hide().remove();
-			
 			var createProjectArea = {};
 
 			/*
@@ -111,19 +105,23 @@ var LinkedGov = {
 			createProjectArea.bodyElmt.css("visibility","visible");
 			createProjectArea.bodyElmt.show();
 
+			/*
+			 * Loop through the import source UI objects and remove the 
+			 * "clipboard" area.
+			 * 
+			 * The "Google Data" area is a separate plug-in and so is not 
+			 * contained in the list of UI objects. It must physically be 
+			 * removed from the project file structure or some undesirable CSS styles 
+			 * could be applied.
+			 */
 			var sources = Refine.DefaultImportingController.sources;
-
-			for(var j=0, len=sources.length; j<len; j++){
+			for(var j=0; j<sources.length; j++){				
 				try{
 					switch(sources[j].id) {		
 					case "clipboard" :
 						sources[j]._divBody.remove();
 						sources[j]._divHeader.remove();
-						break;		
-					case "gdata-source" : 
-						sources[j]._divBody.remove();
-						sources[j]._divHeader.remove();
-						break;					
+						break;				
 					default:
 						break;
 					}
@@ -152,15 +150,20 @@ var LinkedGov = {
 		},
 
 		/*
-		 * restyle
+		 * restyleImportArea
 		 * 
-		 * Any instant style changes to be made on page load
+		 * Any instant style changes to be made to the import panel
 		 */
 		restyleImportArea: function() {
 			$("body").addClass("lg");
 			$("#left-panel").hide();
 		},
-		
+
+		/*
+		 * restyleOpenProjectArea
+		 * 
+		 * Separate styling may be required for the open project panel.
+		 */
 		restyleOpenProjectArea: function(){
 			$("body").addClass("lg");
 			$("#left-panel").hide();
@@ -169,9 +172,10 @@ var LinkedGov = {
 		/*
 		 * injectMetaDataForm
 		 * 
-		 * Finds the HTML element that will house LinkedGov's metadata form.
+		 * Creates a new row in the index page table for our 
+		 * metadata form to be injected and scrolls both of them into view.
 		 */
-		injectMetaDataForm: function() {
+		setUpImportPanel: function() {
 
 			$("table#create-project-ui-source-selection-layout").append(
 					"<tr>" +
@@ -181,97 +185,140 @@ var LinkedGov = {
 
 			$("table tr td#linkedgov-metadata-form").html(DOM.loadHTML("linkedgov", "html/index/metadata-form.html"));
 			$("div#create-project-ui-source-selection").scrollTop(0);
+			$('tr#linkedgov-metadata-form').scrollTop(0);
 
 		},
 
 		/*
 		 * validateForm
 		 * 
-		 * Includes form validation and displays relevant error 
-		 * 	messages to the user.
+		 * Includes form validation and displays relevant error messages to the user.
+		 * 
+		 * Also builds the metadata object that gets sent to our custom 
+		 * saving command "saveCustomMetadata".
+		 * 
+		 * TODO: "source" key doesn't have the correct value - what should this be?
 		 */
 		validateForm: function() {
 
 			var source = '';
 			var error = false;
 			var errorMessages = "";
-			
+
 			metadataObject = LinkedGov.vars.metadataObject;
-			
-			
-			if($("div.create-project-ui-source-selection-tab-body.selected").find("input[bind='urlInput']").length === 1){
-				// User is downloading data
-				source = "urlInput";
-				metadataObject["LinkedGov.source"] = "urlInput";
-			} else if($("div.create-project-ui-source-selection-tab-body.selected").find("input[bind='fileInput']").length === 1){
-				// User is uploading data
-				source = "fileInput";
-				metadataObject["LinkedGov.source"] = "fileInput";
-			} else {
-				//alert("Data source error");
-				errorMessages += "<li>You must specify a source to import data from. Please select a file to upload or enter a web address to download from.</li>";
-			}
 
-			if ($("input#data-name-input").val().length < 1) {
-				error = true;
-				errorMessages += "<li>You must specify a project name</li>";
-				$("#data-name-input").addClass("error");
-			} else {
-				$("#data-name-input").removeClass("error");
-				metadataObject["LinkedGov.name"] = $("input#data-name-input").val();
-			}
+			/*
+			 * Validate the entire form as long as the "other" license 
+			 * radio box is not selected
+			 */
+			if(!$("div.metadata input#other-license").attr("checked")){
 
-			if (typeof $("input[@name=project-license]:checked").val() == 'undefined') {
-				error = true;
-				errorMessages += "<li>You must choose a project license</li>";
-				$("div.metadata tr.license td").addClass("error");
-			} else if($("input[@name=project-license]:checked").val() == 'other'){
-				error = true;
+				if($("div.create-project-ui-source-selection-tab-body.selected").find("input[bind='urlInput']").length === 1){
+					// User is downloading data
+					source = "urlInput";
+					metadataObject["LinkedGov.source"] = "urlInput";
+				} else if($("div.create-project-ui-source-selection-tab-body.selected").find("input[bind='fileInput']").length === 1){
+					// User is uploading data
+					source = "fileInput";
+					metadataObject["LinkedGov.source"] = "fileInput";
+				} else {
+					//alert("Data source error");
+					errorMessages += "<li>You must specify a source to import data from. Please select a file to upload or enter a web address to download from.</li>";
+				}
+
+				if ($("input#data-name-input").val().length < 1) {
+					error = true;
+					errorMessages += "<li>You must specify a project name</li>";
+					$("#data-name-input").addClass("error");
+				} else {
+					$("#data-name-input").removeClass("error");
+					metadataObject["LinkedGov.name"] = $("input#data-name-input").val();
+				}
+
+				if (typeof $("input[@name=project-license]:checked").val() == 'undefined') {
+					error = true;
+					errorMessages += "<li>You must choose a project license</li>";
+					$("div.metadata tr.license td").addClass("error");
+				} else if($("input[@name=project-license]:checked").val() == 'other'){
+					error = true;
+					/*
+					 * Send data off to LinkedGov to notify them that somebody has data with 
+					 * a special case of licensing.
+					 */
+				} else {
+					$("div.metadata tr.license td").removeClass("error");
+					$("input#data-license-other-input").removeClass("error");
+					metadataObject["LinkedGov.license"] = $("input[@name=project-license]:checked").val();
+				}
+
+				if ($("input#data-webpage-input").val() == "http://" || $("input#data-webpage-input").val() == "") {
+					error = true;
+					errorMessages += "<li>You must specify the dataset's webpage</li>";
+					$("input#data-webpage-input").addClass("error");
+				} else {
+					$("input#data-webpage-input").removeClass("error");
+					metadataObject["LinkedGov.webLocation"] = $("input#data-webpage-input").val();
+				}
+
+				if ($("input#data-organisation-input").val().length === 0) {
+					error = true;
+					errorMessages += "<li>You must specify a source organisation for the dataset</li>";
+					$("input#data-organisation-input").addClass("error");
+				} else {
+					$("input#data-organisation-input").removeClass("error");
+					metadataObject["LinkedGov.organisation"] = $("input#data-organisation-input").val();
+				}
+
+				if ($("input#data-description-webpage-input").val() == "http://" || $("input#data-description-webpage-input").val() == "") {
+					error = true;
+					errorMessages += "<li>You must specify a location for the description of the dataset</li>";
+					$("input#data-description-webpage-input").addClass("error");
+				} else {
+					$("input#data-description-webpage-input").removeClass("error");
+					metadataObject["LinkedGov.descriptionLocation"] = $("input#data-description-webpage-input").val();
+				}
+
+				if ($("textarea#data-keywords-input").val().length === 0) {
+					error = true;
+					errorMessages += "<li>You must enter at least one keyword for describing this dataset</li>";
+					$("textarea#data-keywords-input").addClass("error");
+				} else {
+					$("textarea#data-keywords-input").removeClass("error");
+					metadataObject["LinkedGov.keywords"] = $("textarea#data-keywords-input").val();
+				}	
+				
+			} else {
+				
+				log("here");
+				
+				if ($("input#data-name-input").val().length < 1) {
+					error = true;
+					errorMessages += "<li>You must specify a project name</li>";
+					$("#data-name-input").addClass("error");
+				} else {
+					$("#data-name-input").removeClass("error");
+					metadataObject["LinkedGov.name"] = $("input#data-name-input").val();
+				}
+
+				if ($("input#data-license-other-input").val().length < 1) {
+					error = true;
+					errorMessages += "<li>You must specify the name or location of the license.</li>";
+					$("input#data-license-other-input").addClass("error");
+				} else {
+					$("input#data-license-other-input").removeClass("error");
+				}
+				
 				/*
-				 * Send data off to LinkedGov to notify them that somebody has data with 
-				 * a special case of licensing.
+				 * TODO: Do something with the dataset, it's name and the custom license that 
+				 * has been entered.
 				 */
-			} else {
-				$("div.metadata tr.license td").removeClass("error");
-				metadataObject["LinkedGov.license"] = $("input[@name=project-license]:checked").val();
+				
 			}
 
-			if ($("input#data-webpage-input").val() == "http://" || $("input#data-webpage-input").val() == "") {
-				error = true;
-				errorMessages += "<li>You must specify the dataset's webpage</li>";
-				$("input#data-webpage-input").addClass("error");
-			} else {
-				$("input#data-webpage-input").removeClass("error");
-				metadataObject["LinkedGov.webLocation"] = $("input#data-webpage-input").val();
-			}
-
-			if ($("input#data-organisation-input").val().length === 0) {
-				error = true;
-				errorMessages += "<li>You must specify a source organisation for the dataset</li>";
-				$("input#data-organisation-input").addClass("error");
-			} else {
-				$("input#data-organisation-input").removeClass("error");
-				metadataObject["LinkedGov.organisation"] = $("input#data-organisation-input").val();
-			}
-
-			if ($("input#data-description-webpage-input").val() == "http://" || $("input#data-description-webpage-input").val() == "") {
-				error = true;
-				errorMessages += "<li>You must specify a location for the description of the dataset</li>";
-				$("input#data-description-webpage-input").addClass("error");
-			} else {
-				$("input#data-description-webpage-input").removeClass("error");
-				metadataObject["LinkedGov.descriptionLocation"] = $("input#data-description-webpage-input").val();
-			}
-
-			if ($("textarea#data-keywords-input").val().length === 0) {
-				error = true;
-				errorMessages += "<li>You must enter at least one keyword for describing this dataset</li>";
-				$("textarea#data-keywords-input").addClass("error");
-			} else {
-				$("textarea#data-keywords-input").removeClass("error");
-				metadataObject["LinkedGov.keywords"] = $("textarea#data-keywords-input").val();
-			}	
-
+			/*
+			 * If there are no errors with the required fields, simulate a click on the 
+			 * next button, else, display the error messages and scroll them into focus.
+			 */
 			if(!error){   
 				$("div.create-project-ui-source-selection-tab-body.selected form").find("button[bind='nextButton']").click();
 			} else {
@@ -279,31 +326,37 @@ var LinkedGov = {
 				$('div.metadata').parent().parent().scrollTop(0);
 				$("div.metadata ul.errorMessages").html(errorMessages).show().focus();
 			}	
-			
-			
+
+
 			/*
 			 * Store the other form fields that are not required
 			 */
 			if($("input#data-license-webpage-input").val().length > 0 && $("input#data-license-webpage-input").val() != "http://"){
 				metadataObject["LinkedGov.licenseLocation"] = $("input#data-license-webpage-input").val();
 			}
-			
+
 			if($("input#data-date-input").val().length > 0){
 				metadataObject["LinkedGov.datePublished"] = $("input#data-date-input").val();
 			}
-			
+
 			if($("select#data-update-freq-input").val() != "Please select..."){
 				metadataObject["LinkedGov.frequency"] = $("select#data-update-freq-input").val();
 			}
 
 		},
-		
+
+		/*
+		 * saveMetadata
+		 * 
+		 * Posts the metadata object to our "save-meta-information" command 
+		 * which stores the key-value pairs in the project's metadata.json file.
+		 */
 		saveMetadata:function(jobID, projectID, callback){
-			
+
 			var self = this;
 
 			LinkedGov.vars.metadataObject.project = projectID;
-			
+
 			$.ajax({
 				type : "POST",
 				url : "/command/" + "linkedgov" + "/" + "save-meta-information",
@@ -315,13 +368,21 @@ var LinkedGov = {
 					self.importFail("A problem was encountered when saving metadata");
 				}
 			});
-			
+
 		},
-		
+
+		/*
+		 * importFail
+		 * 
+		 * Called if it's not possible to save the metadata, in which case 
+		 * the user cannot proceed.
+		 */
 		importFail:function(message){
-				
 			alert(message);
-		
+			
+			/*
+			 * TODO: Do something if the import fails?
+			 */
 		},
 
 		resizeParsingPanel:function(){
@@ -348,7 +409,6 @@ var LinkedGov = {
 				.css("right", "0")
 				.css("top", "34px")
 				.css("width","auto");
-
 
 				$("body.lg div.default-importing-parsing-data-panel")
 				.css("height","auto")
@@ -479,10 +539,11 @@ DOM.loadHTML = function(module, path) {
 	return DOM._loadedHTML[fullPath];
 };
 
-function log(str) {
-	window.console && console.log && LinkedGov.vars.debug && console.log(str);
-}
-
+/*
+ * Override Refine's '_onImportJobReady' function
+ * 
+ * Necessary for us to call a resize function that resizes the parsing panel.
+ */
 Refine.DefaultImportingController.prototype._onImportJobReady = function() {
 	this._prepareData();
 	if (this._job.config.retrievalRecord.files.length > 1) {
@@ -500,11 +561,19 @@ Refine.DefaultImportingController.prototype._onImportJobReady = function() {
 
 
 /*
- * Override the pollImportJob
+ * Override Refine's 'pollImportJob' function
+ * 
+ * This is necessesary so that we can capture the project's ID (not the import job ID), 
+ * which must be used to access and write to the metadata.json file.
+ * 
+ * We place our own "LinkedGov.saveMetadata()" function inside the block of 
+ * code that is able to see the project ID, just before sending the user to the 
+ * "project" page.
  */
-
+/*
+ * Store the original 'pollImportJob' before we overwrite Refine's version.
+ */
 LinkedGov.pollImportJob = Refine.CreateProjectUI.prototype.pollImportJob;
-
 Refine.CreateProjectUI.prototype.pollImportJob = function(start, jobID, timerID, checkDone, callback, onError) {
 
 	/*
@@ -522,24 +591,30 @@ Refine.CreateProjectUI.prototype.pollImportJob = function(start, jobID, timerID,
 		 * intercept and fire-off a call to save our custom metadata.
 		 */
 		if(typeof job.config.projectID != 'undefined'){
-			
-			
 			LinkedGov.saveMetadata(jobID, job.config.projectID, function(jobID, projectID){
 				Refine.CreateProjectUI.cancelImportinJob(jobID);
 				document.location = "project?project=" + projectID;
 			});
-			
-			
 		} else {
 			callback(jobID,job);
 		}
-
 	};
 
+	/*
+	 * Call the original 'pollImportJob' function that was stored at the end of our new 
+	 * 'pollImportJob' function.
+	 */
 	LinkedGov.pollImportJob(start, jobID, timerID, checkDone, lgCallback, onError);
 }
 
-
+/*
+ * getUrlVars
+ * 
+ * Function allowing us to grab the parameters passed to the page.
+ * 
+ * "mode=import" = show the import panel
+ * "mode=resume" = show the resume panel
+ */
 $.extend({
 	getUrlVars: function(){
 		var vars = [], hash;
@@ -557,8 +632,15 @@ $.extend({
 	}
 });
 
+function log(str) {
+	window.console && console.log && LinkedGov.vars.debug && console.log(str);
+}
+
+/*
+ * docReady
+ * 
+ * Call the main initialisation function once the script & page has loaded
+ */
 $(document).ready(function(){
-
 	LinkedGov.initialise();
-
 });

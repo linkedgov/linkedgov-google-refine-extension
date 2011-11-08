@@ -100,6 +100,8 @@ var LinkedGov = {
 			 * Giving the body our own class applies our CSS rules.
 			 */
 			$("body").addClass("lg");
+			
+			$("#header").html('<img width="129" height="40" alt="Google Refine" src="/extension/linkedgov/images/logo-small.png"><span id="slogan">Fixing government data</span>'+$("#header").html());
 		},
 
 		/*
@@ -360,11 +362,10 @@ var LinkedGov = {
 			//log("Camelizing: ")
 			//log(str);
 			
-			return str.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, function(match, index) {
-				if (+match === 0)
-					return ""; // or if (/\s+/.test(match)) for white spaces
-				return index == 0 ? match.toLowerCase() : match.toUpperCase();
-			});
+		    return str
+	        .replace(/\s(.)/g, function($1) { return $1.toUpperCase(); })
+	        .replace(/\s/g, '')
+	        .replace(/^(.)/, function($1) { return $1.toLowerCase(); });
 
 		}
 
@@ -435,5 +436,7 @@ function log(str) {
  * Initialise our code once the page has fully loaded.
  */
 $(document).ready(function() {
+	
 	LinkedGov.initialise();
+	
 });

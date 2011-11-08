@@ -62,7 +62,7 @@ $("button#dummy").toggle(function(){
 	//$("input.default-importing-web-url").val("http://mirrors.ctan.org/macros/latex/contrib/csvsimple/csvsimple-example.csv");
 	//$("input.default-importing-web-url").val("https://github.com/mhausenblas/addrable/raw/master/data/table2.csv");
 	$("input.default-importing-web-url").val("http://www.ecodriver.uk.com/eCMS/Files/MOD/ministryofdefence_may-2011.csv");
-	$("input[value='Open Government License']").attr("checked","true");
+	$("input[value='http://www.nationalarchives.gov.uk/doc/open-government-licence/']").attr("checked","true");
 	$("div.metadata input#data-license-other-input")
 	// Disabled the rest of the form and display message
 	$("div.metadata input#data-webpage-input").val("http://www.mod.uk/DefenceInternet/AboutDefence/CorporatePublications/Structure/DepartmentalOrganisationCharts1.htm");

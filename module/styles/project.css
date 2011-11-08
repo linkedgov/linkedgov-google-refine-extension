@@ -1,3 +1,41 @@
+body.lg #header {
+    border-bottom: 3px solid #DDDDDD;
+    height: 48px;
+    margin: 0;
+    overflow: hidden;
+    padding-left: 20px;
+    padding-top: 9px;
+    position: relative;
+}
+body.lg #header img {
+	/*margin-left: 10px;
+    margin-top: 3px;*/
+}
+body.lg #slogan {
+    color: #444444;
+    font-size: 110%;
+    font-style: italic;
+    margin: 0 1em 0 14px;
+}
+body.lg #project-title {
+    font-size: 1.6em;
+    height: 40px;
+    left: 303px;
+    padding: 0;
+    top: 19px;
+}
+body.lg #project-controls {
+    font-size: 1.3em;
+    height: 40px;
+    right: 10px;
+}
+body.lg #project-title, #project-controls {
+    display: none;
+    margin-left: 5px;
+    margin-right: 5px;
+    position: absolute;
+    top: 18px;
+}
 body.wizard-progress div.dialog-frame, body.wizard-progress div.dialog-overlay {
 	display:none !important;
 }
@@ -176,8 +214,8 @@ body.lg div.description-panel div.column-list ul li.good input, body.lg div.desc
 	background-image:url(../images/tick.png);
 }
 body.lg div.description-panel div.column-list ul li.great input, body.lg div.description-panel div.row-description.great input {
-	background-color:#FDFFDC;
-	background-image:url(../images/star.png);
+	background-color:#D6FFC9;
+	background-image:url(../images/double-tick.png);
 }
 body.lg div.description-panel div.column-list ul li input.column-label {
 	border: 1px solid #D6D6D6;

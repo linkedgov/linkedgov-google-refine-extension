@@ -28,7 +28,6 @@ $(document).ready(function(){
 			} else if(mode == "#resume"){
 				$("iframe#lgIFrame").attr("src","http://127.0.0.1:3333/?mode=resume&ts="+new Date().getTime()).fadeIn(3000);
 			} else if(mode == "#game") {
-				$("iframe#lgIFrame").attr("src","http://www.bow-man.net/flash/bowman-game.swf?ts="+new Date().getTime()).fadeIn(3000);
 			}
 
 		}

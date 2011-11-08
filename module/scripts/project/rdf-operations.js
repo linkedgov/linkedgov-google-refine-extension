@@ -123,8 +123,8 @@ LinkedGov.saveMetadataToRDF = function(callback){
 	var metadataAlreadySaved = false;
 
 	for(var i=0; i<schema.rootNodes.length; i++){
-		for(var j=0; j<rootNodes[i].links.length; j++){
-			if(rootNodes[i].links[j].curie == "dct:title"){
+		for(var j=0; j<schema.rootNodes[i].links.length; j++){
+			if(schema.rootNodes[i].links[j].curie == "dct:title"){
 				metadataAlreadySaved = true;
 			}
 		}
@@ -601,8 +601,8 @@ var finaliseRDFSchema = {
 			 * Locate and remove any existing owl:Class root nodes
 			 */
 			for(var i=0; i<schema.rootNodes.length; i++){
-				for(var j=0; j<rootNodes[i].rdfTypes.length; j++){
-					if(rootNodes[i].rdfTypes[j].curie == "owl:Class"){
+				for(var j=0; j<schema.rootNodes[i].rdfTypes.length; j++){
+					if(schema.rootNodes[i].rdfTypes[j].curie == "owl:Class"){
 						schema.rootNodes.splice(i,1);
 						i--;
 					}
@@ -624,15 +624,7 @@ var finaliseRDFSchema = {
 							value : LinkedGov.vars.labelsAndDescriptions.rowLabel
 						},
 						uri : "http://www.w3.org/2000/01/rdf-schema#label"
-					}, {
-						curie : "rdfs:comment",
-						target : {
-							lang : "en",
-							nodeType : "literal",
-							value : LinkedGov.vars.labelsAndDescriptions.rowDescription
-						},
-						uri : "http://www.w3.org/2000/01/rdf-schema#comment"
-					} ],
+					}],
 					nodeType : "resource",
 					rdfTypes : [ {
 						curie : "owl:Class",
@@ -641,11 +633,28 @@ var finaliseRDFSchema = {
 					value : "http://example.linkedgov.org/example-dataset/terms/"
 						+ camelizedRowLabel
 			};
+			
+			/*
+			 * Add the row description separately in case the user hasn't entered a 
+			 * description for it.
+			 */
+			if (LinkedGov.vars.labelsAndDescriptions.rowDescription.length > 2 && LinkedGov.vars.labelsAndDescriptions.rowDescription != "Enter a description...") {
+				rootNode.links.push({
+					curie : "rdfs:comment",
+					target : {
+						lang : "en",
+						nodeType : "literal",
+						value : LinkedGov.vars.labelsAndDescriptions.rowDescription
+					},
+					uri : "http://www.w3.org/2000/01/rdf-schema#comment"
+				});
+			}
+			
 
 			/*
 			 * Add the root node to the schema.
 			 */
-			schema.rootNodes.push(rootNode);
+			schema.rootNodes.splice(0,0,rootNode);
 
 			callback();
 
@@ -667,8 +676,8 @@ var finaliseRDFSchema = {
 			 * Locate and remove any existing owl:ObjectProperty root nodes
 			 */
 			for(var i=0; i<schema.rootNodes.length; i++){
-				for(var j=0; j<rootNodes[i].rdfTypes.length; j++){
-					if(rootNodes[i].rdfTypes[j].curie == "owl:ObjectProperty"){
+				for(var j=0; j<schema.rootNodes[i].rdfTypes.length; j++){
+					if(schema.rootNodes[i].rdfTypes[j].curie == "owl:ObjectProperty"){
 						schema.rootNodes.splice(i,1);
 						i--;
 					}
@@ -679,7 +688,7 @@ var finaliseRDFSchema = {
 			 * Loop through the column label objects created by the labels and descriptions panel.
 			 */
 			for (var i = 0; i < cols.length; i++) {
-
+				
 				/*
 				 * Add the owl:ObjectProperty statements for the columns which each exist
 				 * as their own root nodes.
@@ -690,13 +699,13 @@ var finaliseRDFSchema = {
 							curie : "owl:ObjectProperty",
 							uri : "http://www.w3.org/2002/07/owl#ObjectProperty"
 						} ],
-						value : "http://example.linkedgov.org/example-dataset/terms/" + LinkedGov.camelize(cols[i].name),
+						value : "http://example.linkedgov.org/example-dataset/terms/" + LinkedGov.camelize(cols[i].label).replace(/:/g,"-"),
 						links : [ {
 							curie : "rdfs:label",
 							target : {
 								lang : "en",
 								nodeType : "literal",
-								value : cols[i].name
+								value : cols[i].label
 							},
 							uri : "http://www.w3.org/2000/01/rdf-schema#label"
 						} ]
@@ -704,7 +713,7 @@ var finaliseRDFSchema = {
 
 				/*
 				 * Add the column description separately in case the user hasn't entered a 
-				 * description for the column.
+				 * description for it.
 				 */
 				if (cols[i].description.length > 2 && cols[i].description != "Enter a description...") {
 					rootNode.links.push({
@@ -721,7 +730,7 @@ var finaliseRDFSchema = {
 				/*
 				 * Add the root node to the schema.
 				 */
-				schema.rootNodes.push(rootNode);
+				schema.rootNodes.splice(i+1,0,rootNode);
 
 				if (i == cols.length - 1) {
 					callback();
@@ -758,11 +767,11 @@ var finaliseRDFSchema = {
 					 * Default description is: <Row> <lg:columnName> "cell value"
 					 */
 					var o = {
-							"uri" : self.vars.vocabs.lg.uri + camelizedColumnName,
-							"curie" : self.vars.vocabs.lg.curie + ":" + camelizedColumnName,
+							"uri" : self.vars.vocabs.lg.uri + camelizedColumnName.replace(/:/g,"-"),
+							"curie" : self.vars.vocabs.lg.curie + ":" + camelizedColumnName.replace(/:/g,"-"),
 							"target" : {
 								"nodeType" : "cell-as-literal",
-								"expression" : "value.replace(\":\",\"-\")",
+								"expression" : "value",
 								"columnName" : $(this).find("span.column-header-name").html(),
 								"isRowNumberCell" : false
 							}
