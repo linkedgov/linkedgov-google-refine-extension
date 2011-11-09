@@ -84,7 +84,7 @@ TypingPanel.prototype._render = function () {
 	 * Interaction for "example" links in wizards that show/hide 
 	 * a paragraph of text.
 	 */
-	$("p.description a.ex").live("click",function(){
+	$("div.description a.ex").live("click",function(){
 
 		if($(this).next().css("display") == "none"){
 			$(this).next().css("display","block");
@@ -139,7 +139,7 @@ TypingPanel.prototype._render = function () {
 	 * 
 	 */
 	$("div.selector a.selectColumn").live("click",function () {
-
+		
 		if($(this).hasClass("splitter")){
 			ui.typingPanel.buttonSelector($(this),"splitter");			
 		} else if($(this).hasClass("single-column")){ 
@@ -917,7 +917,7 @@ TypingPanel.prototype.checkColumnDescription = function(liElement){
 	}
 	
 	$("td.column-header span.column-header-name").each(function(){
-		if($(this).html() == liElement.find("input.row-label").val()){
+		if($(this).html() == input.val()){
 			var el = $(this).parent().parent();
 			el.removeClass("bad").removeClass("maybe").removeClass("good").removeClass("great").addClass(status);
 		}
@@ -945,25 +945,30 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 	var mode = selectType || "default";
 
 	/*
-	 * If the button is labelled "Start Select", then the user is wanting to 
+	 * If the button does not have the class "selecting", then the user is wanting to 
 	 * select columns.
 	 */
-	if ($(button).html() == "Start Select") {
-
+	log($(button).hasClass("selecting"));
+	if (!$(button).hasClass("selecting")) {
+		
 		/*
 		 * Remove any existing column selectors on the page
 		 */
 		self.destroyColumnSelector();
 
 		/*
+		 * Change the button label to "End Select" and add a CSS
+		 * class to it.
+		 */
+		log("here");
+		
+		$(button).html("End Select");
+		$(button).addClass("selecting");
+		
+		/*
 		 * Cache the location of the selected columns (some may already be present)
 		 */
 		$cols = $(button).parent().children("ul.selected-columns");
-
-		/*
-		 * Change the button label to "End Select"
-		 */
-		$(button).html("End Select");
 
 		/*
 		 * Cache the global "ui" object because it clashes with jQuery UI's selectable "ui" object below.
@@ -1120,7 +1125,8 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 		});
 	} else {
 		/*
-		 * If the column-selector button does not say "Start Select"
+		 * If the column-selector button has the class "selecting", end 
+		 * column selection.
 		 */
 		self.destroyColumnSelector();
 	}	
@@ -1297,6 +1303,7 @@ TypingPanel.prototype.rangeSelector = function(select) {
  */
 TypingPanel.prototype.destroyColumnSelector = function() {
 	$("div.selector a.selectColumn").html("Start Select");
+	$("div.selector a.selectColumn").removeClass("selecting");
 	$("table.data-header-table").selectable("destroy");
 	$("table.data-header-table .column-header").each(function () {
 		$(this).removeClass("ui-selected").removeClass("skip");

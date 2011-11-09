@@ -355,7 +355,7 @@ LinkedGov.saveMetadataToRDF = function(callback){
  * 
  * Removes a column's RDF from the schema
  */
-LinkedGov.removeColumnInRDF = function(colName) {
+LinkedGov.removeColumnInRDF = function(colName,callback) {
 
 	log("removeColumnInRDF");
 
@@ -385,7 +385,9 @@ LinkedGov.removeColumnInRDF = function(colName) {
 						}, {}, {
 							onDone : function() {
 								log("Finished");
-								callback();
+								if(callback){
+									callback();
+								}
 							}
 						});
 						return false;
@@ -407,7 +409,9 @@ LinkedGov.removeColumnInRDF = function(colName) {
 								}, {}, {
 									onDone : function() {
 										log("Finished");
-										callback();
+										if(callback){
+											callback();
+										}
 									}
 								});
 

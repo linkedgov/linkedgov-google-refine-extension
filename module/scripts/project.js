@@ -156,6 +156,7 @@ var LinkedGov = {
 								+ "<li class='remove'>Remove</li>"
 								+ "<li class='move-left'>Move left</li>"
 								+ "<li class='move-right'>Move right</li>"
+								+ "<li class='delete-rdf'>Delete RDF</li>"
 								+ "</ul>" + "</div>";
 
 								$(this).append(html);
@@ -203,6 +204,13 @@ var LinkedGov = {
 					break;
 				case "move-right":
 					LinkedGov.moveColumn(colName, "right", function() {
+						Refine.update({
+							modelsChanged : true
+						});
+					});
+					break;
+				case "delete-rdf":
+					LinkedGov.removeColumnInRDF(colName, function() {
 						Refine.update({
 							modelsChanged : true
 						});

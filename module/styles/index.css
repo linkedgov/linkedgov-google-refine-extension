@@ -26,6 +26,7 @@ body.lg .create-project-ui-source-selection-tab-body {
 }
 body.lg #create-project-ui-source-selection-layout {
     width: 100%;
+    height: 100%;
 }
 body.lg div.action-area-tab-body {
     visibility:visible !important;
