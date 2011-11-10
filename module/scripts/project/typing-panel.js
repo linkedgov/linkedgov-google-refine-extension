@@ -157,10 +157,10 @@ TypingPanel.prototype._render = function () {
 	});
 
 	/*
-	 * Show tooltips
+	 * Show and position tooltips
 	 */
 	$("a.info").live("mouseover",function () {
-		$(this).next("span").show();
+		$(this).next("span").css("top",($(this).offset().top-($(this).next("span").height()/2))+"px").show();
 	}).live("mouseout",function () {
 		$(this).next("span").hide();
 	});
@@ -512,6 +512,16 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 	 * it's values.
 	 */
 	if(colData.length > 0){
+		
+		if(labelData.rowLabel){
+			$("div.row-decsription input.row-name").val(labelData.rowLabel);
+		}
+		if(labelData.rowDescription){
+			$("div.row-description textarea.row-description").val(labelData.rowDescription);
+		}
+		
+		ui.typingPanel.checkRowDescription($("div.row-decsription"));
+		
 		for(var i=0;i<colData.length;i++){
 			$("div.description-panel div.column-list ul li").each(function(){
 
@@ -540,7 +550,7 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 				/*
 				 * Validate the row label and description
 				 */
-				//ui.typingPanel.checkRowDescription($("div.description-panel div.row-description"));
+				ui.typingPanel.checkRowDescription($("div.description-panel div.row-description"));
 
 				/*
 				 * Populate a global labels object of column names and description so the user can 
@@ -565,7 +575,7 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 	 */
 	$("div.description-panel div.row-description input, " +
 	"div.description-panel div.row-description textarea").live("focus",function(){
-		$("table.data-table > tbody > tr.odd > td ").css("background-color","#DAFFD9");
+		$("table.data-table > tbody > tr.odd > td ").css("background-color",$("div.row-description input").css("background-color"));
 		if($(this).hasClass("row-label") && $(this).val() == "Enter a label..."){
 			$(this).val("");
 		} else if($(this).hasClass("row-description") && $(this).val() == "Enter a description..."){
@@ -591,6 +601,7 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 	$("div.description-panel div.row-description input, " +
 	"div.description-panel div.row-description textarea").live("keyup",function(){
 		ui.typingPanel.checkRowDescription($(this).parent());
+		$("table.data-table > tbody > tr.odd > td ").css("background-color",$("div.row-description input").css("background-color"));
 	});
 
 	/*

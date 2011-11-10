@@ -75,10 +75,10 @@ body.lg table.data-header-table td.column-header.bad {
      background-color: #FFDCDC;
 }
 body.lg table.data-header-table td.column-header.maybe {
-     background-color: #EFEFEF;
+     /*background-color: #EFEFEF;*/
 }
 body.lg table.data-header-table td.column-header.good {
-     background-color: #D6FFC9;
+     background-color: #F8FCD4;
 }
 body.lg table.data-header-table td.column-header.great {
      background-color: #D6FFC9;
@@ -162,20 +162,22 @@ body.lg div.description-panel {
     left:300px;
 }
 body.lg div.description-panel h3 {
-	margin-bottom:5px;
+    border-bottom: 1px solid #DDDDDD;
+    margin-bottom: 10px;
+    margin-left: 0;
+    padding-bottom: 5px;
 }
 body.lg div.description-panel ul.key {
     list-style-type: none;
     margin-bottom: 10px;
-    margin-left: 10px;
-    margin-top:10px;
+    margin-left: 18px;
+    margin-top: 0;
 }
 body.lg div.description-panel ul.key li {
 	margin-bottom: 5px;
 }
 body.lg div.description-panel div.row-description {
-	margin-bottom: 15px;
-    margin-top: 5px;
+	margin: 5px 7px 15px;
 }
 body.lg div.description-panel div.row-description input {
 	border: 1px solid #D6D6D6;
@@ -196,8 +198,10 @@ body.lg div.description-panel div.row-description textarea {
     width: 96% !important;
 }
 body.lg div.description-panel div.column-list {
-	padding:0px;
-	margin-top:10px;
+    margin-left: 7px;
+    margin-right: 7px;
+    margin-top: 10px;
+    padding: 0;
 }
 body.lg div.description-panel div.column-list ul {
 	margin:0;
@@ -208,19 +212,19 @@ body.lg div.description-panel div.column-list ul li {
 }
 body.lg div.description-panel div.column-list ul li.bad input, body.lg div.description-panel div.row-description.bad input {
 	background-color:#FFDCDC;
-	background-image:url(../images/cross.png);
+	background-image:url(../images/error.png);
 }
 body.lg div.description-panel div.column-list ul li.maybe input, body.lg div.description-panel div.row-description.maybe input {
-	background-color:#EFEFEF;
-	background-image:url(../images/warning.png);
+	/*background-color:#EFEFEF;*/
+	background-image:url(../images/unknown.png);
 }
 body.lg div.description-panel div.column-list ul li.good input, body.lg div.description-panel div.row-description.good input {
-	background-color:#D6FFC9;
-	background-image:url(../images/tick.png);
+	background-color:#F8FCD4;
+	background-image:url(../images/good.png);
 }
 body.lg div.description-panel div.column-list ul li.great input, body.lg div.description-panel div.row-description.great input {
 	background-color:#D6FFC9;
-	background-image:url(../images/double-tick.png);
+	background-image:url(../images/great.png);
 }
 body.lg div.description-panel div.column-list ul li input.column-label {
 	border: 1px solid #D6D6D6;
@@ -294,7 +298,7 @@ body.lg div.wizard-body div.description {
     margin-bottom: 10px;
     padding-bottom: 5px;
     padding-top: 5px;
-    text-align: justify;
+    text-align: left;
 }
 body.lg div.wizard-body div.description a.ex {
     cursor: pointer;
@@ -398,12 +402,14 @@ body.lg div.wizard-body label {
 }
 body.lg div.wizard-body span.note {
     background: none repeat scroll 0 0 #FFFFCC;
-    border: 1px solid #999999;
+    border: 1px solid #FFFE00;
+    border-radius:5px 5px 5px 5px;
     box-shadow: 0 0 10px #7D7D7D;
     color: #000000;
     display:none;
     font-size: 12px;
     left: 315px;
+    line-height:1.3;
     margin: 5px 0;
     padding: 15px 20px;
     position: fixed;
