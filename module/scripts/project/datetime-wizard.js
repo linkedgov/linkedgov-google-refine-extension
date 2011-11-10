@@ -701,7 +701,7 @@ var dateTimeWizard = {
 					"curie":"time:"+fragName,
 					"target":{
 						"nodeType":"cell-as-literal",
-						"expression":"value.split(\":\")["+i+"]",
+						"expression":"value.split(/[^0-9]+/)["+i+"]",
 						"valueType":"http://www.w3.org/2001/XMLSchema#int",
 						"columnName":colName,
 						"isRowNumberCell":false
@@ -777,7 +777,7 @@ var dateTimeWizard = {
 					"curie":"time:"+fragName,
 					"target":{
 						"nodeType":"cell-as-literal",
-						"expression":"value.split(\":\")["+i+"]",
+						"expression":"value.split(/[^0-9]+/)["+i+"]",
 						"valueType":"http://www.w3.org/2001/XMLSchema#int",
 						"columnName":colName,
 						"isRowNumberCell":false

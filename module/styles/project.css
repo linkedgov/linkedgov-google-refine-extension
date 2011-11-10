@@ -361,6 +361,7 @@ body.lg div.next-button a.button {
 body.lg div.wizard-body div.split {
     background: none repeat scroll 0 0 #F9F9F9;
     border: 1px solid #DDDDDD;
+    border-radius: 5px 5px 5px 5px;
     margin-bottom: 0;
     margin-top: 5px;
     padding: 5px 10px 10px;
@@ -430,7 +431,7 @@ body.lg a.info {
     width: 16px;
 }
 body.lg div.split a.info {
-    right: 30px;
+
 }
 body.lg a.info:hover {
 	cursor:pointer;	
