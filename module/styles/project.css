@@ -37,12 +37,12 @@ body.wizard-progress div.dialog-frame, body.wizard-progress div.dialog-overlay {
 }
 body.lg div.wizardProgressMessage {
     bottom: 0;
+    display: none;
     left: 305px;
     position: fixed;
     right: 0;
     text-align: center;
-    top: 102px;
-    display:none;
+    top: 92px;
 }
 body.lg div.wizardProgressMessage div.overlay {
     background-color: #AAAAAA;
