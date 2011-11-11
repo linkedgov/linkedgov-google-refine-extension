@@ -437,8 +437,8 @@ body.lg a.info:hover {
 	cursor:pointer;	
 }
 body.lg div.wizard-body div.selector {
-    background-color: #DAFFD9;
-    border: 1px solid #E3E3E3;
+    background-color: #DAF4DA;
+    border: 1px solid #A2CFA4;
     border-radius: 5px 5px 5px 5px;
     clear: both;
     margin: 5px 0 10px;
@@ -479,25 +479,27 @@ body.lg div.wizard-body ul.selected-columns li span.col {
     padding-top: 2px;
 }
 body.lg div.wizard-body ul.selected-columns li span.remove {
-    background-color: #FFD6D6;
+    background-image: url("../images/delete-hover.png");
+    background-position: -16px 0px; 
+    background-repeat: no-repeat;
     border-radius: 3px 3px 3px 3px;
     color: #773030;
     cursor: pointer;
     float: right;
     font-family: Arial;
     font-size: 9px;
-    height: 13px;
+    height: 16px;
     line-height: 13px;
     margin-left: 0;
     margin-right: 4px;
-    margin-top: 4px;
+    margin-top: 3px;
     padding: 0;
     text-align: center;
-    width: 12px;
+    text-indent: 9999px;
+    width: 16px;
 }
 body.lg div.wizard-body ul.selected-columns li span.remove:hover {
-	background-color:#773030;
-	color:#FFD6D6;
+    background-position: 0 0;
 }
 body.lg div.wizard-body ul.selected-columns li.skip {
 	/*opacity:0.5;
@@ -582,6 +584,7 @@ body.lg div.wizard-body ul.date-checkboxes li span.dateFrags input {
 }
 body.lg div.update-button {
     background-color: #E3E9FF;
+    border-top: 1px solid #BBCCFF;
     bottom: 32px;
     left: 0;
     display:none;
@@ -626,7 +629,7 @@ body.lg .fbs-pane {
     width: 250px;
 }
 body.lg div.rangeSelect div.range {
-    background-color: #F6F6F6;
+    background-color: #FFFFFF;
     border: 1px solid #DDDDDD;
     margin-top: 0;
     padding: 5px;

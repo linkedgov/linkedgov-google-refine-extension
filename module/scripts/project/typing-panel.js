@@ -407,23 +407,27 @@ TypingPanel.prototype.exitWizard = function(){
 TypingPanel.prototype.enterDescriptionPanel = function(){
 
 	/*
-	 * If there the elements in the panel already exist, there's no need to create the 
-	 * panel again, so just slide it in.
+	 * If panel has already been created, just rebuild the column list, 
+	 * otherwise build both the panel and the column list.
 	 */
 	if($("div.description-panel div.column-list ul li").length > 0){
-
-		// list already built
+		
+		// just rebuild the column list in case of changes
 		$("div.typing-panel-body").animate({"left":"-300px"},500);
 		$("div.cancel-button").animate({"left":"0px"},500);
 		$("div.next-button").animate({"left":"-300px"},500);
+		$("div.description-panel div.description-body").show();
 		$("div.description-panel").animate({"left":"0px"},500);
 		$("div.description-panel div.update-button").show().animate({"left":"0px"},500);
 
+		ui.typingPanel.buildColumnDescriptionInputs();
+		
+		/*
 		$("td.column-header span.column-header-name").each(function(){
 			var header = $(this);
 			$("div.description-panel div.column-list ul li input").each(function(){
 				var label = $(this);
-
+				
 				if(header == label){
 					if(label.parent().hasClass("great")){
 						header.parent().parent().addClass("great");
@@ -438,10 +442,13 @@ TypingPanel.prototype.enterDescriptionPanel = function(){
 
 			});
 		});
-
+		 */
+		
+		$("div.description-panel").scrollTop(0);
+		
 	} else {
 
-		// build new list
+		// build panel and column list
 		$("div.description-panel").html(DOM.loadHTML("linkedgov", "html/project/description-panel.html",function(){		
 			$("div.typing-panel-body").animate({"left":"-300px"},500);
 			$("div.cancel-button").animate({"left":"0px"},500);
@@ -449,9 +456,10 @@ TypingPanel.prototype.enterDescriptionPanel = function(){
 			$("div.description-panel").animate({"left":"0px"},500,function(){
 				$("div.description-panel div.update-button").show().animate({"left":"0px"},500);
 				ui.typingPanel.buildDescriptionPanel();
+				ui.typingPanel.buildColumnDescriptionInputs();
+				$("div.description-panel").scrollTop(0);
 			});
 		}));
-
 	}
 }
 
@@ -465,111 +473,10 @@ TypingPanel.prototype.enterDescriptionPanel = function(){
 TypingPanel.prototype.buildDescriptionPanel = function() {
 
 	//log("buildDescriptionPanel");
-
-	/*
-	 * Create the input fields for the column labels and descriptions - adding 
-	 * a CSS class to them to highlight their acceptability status.
-	 */
-	$("div.description-panel div.column-list").hide();
-	var html = "<ul>";
-	$("div.column-header-title span.column-header-name").each(function(){
-		if($(this).html() != "All"){
-			/*
-			 * Column name status can be:
-			 * great - label and description entered
-			 * good - user has entered a name
-			 * bad - is blank or contains the word "column"
-			 * maybe - could be fine
-			 */
-			var status = "maybe";
-			if($(this).html().length < 2 || $(this).html().toLowerCase().indexOf("column") > -1){
-				status = "bad";
-			}
-			html += "<li class='"+status+"'>" +
-			"<input class='column-label' value='"+$(this).html()+"' />" +
-			"<textarea class='column-description' value='Enter a description...'>Enter a description...</textarea>" + 
-			"</li>";
-			$(this).parent().parent().addClass(status);
-		}
-	});
-	html += "</ul>";
-	$("div.description-panel div.column-list").html(html);
-
-	/*
-	 *  Attempts to load the labels and descriptions of the rows and columns from the temporary 
-	 *  global 'labelsAndDescription' object.
-	 *  
-	 *  The global labels object is used to temporarily store the labels and descriptions in the 
-	 *  labels and descriptions panel so the user can switch between the panels without losing any 
-	 *  information they have entered.
-	 *  
-	 *  The labels and descriptions are properly stored in RDF once the user clicks "Save".
-	 */
+	
 	var labelData = LinkedGov.vars.labelsAndDescriptions; 
 	var colData = labelData.cols;
-	/*
-	 * If the global labels object exists, populate the input fields using 
-	 * it's values.
-	 */
-	if(colData.length > 0){
-		
-		if(labelData.rowLabel){
-			$("div.row-decsription input.row-name").val(labelData.rowLabel);
-		}
-		if(labelData.rowDescription){
-			$("div.row-description textarea.row-description").val(labelData.rowDescription);
-		}
-		
-		ui.typingPanel.checkRowDescription($("div.row-decsription"));
-		
-		for(var i=0;i<colData.length;i++){
-			$("div.description-panel div.column-list ul li").each(function(){
-
-				if($(this).find("input.column-label").val() == colData[i].label){
-					//log("Replacing description for "+colData[i].label+": "+colData[i].description);
-					$(this).find("textarea.column-description").val(colData[i].description).html(colData[i].description);
-					ui.typingPanel.checkColumnDescription($(this));
-				}
-
-				$(this).find("input.column-label").data("original-name",$(this).find("input.column-label").val());
-			});
-		}
-	} else {
-		/*
-		 * If the globals labels object doesn't exist, try to load the labels from the RDF schema.
-		 */
-		ui.typingPanel.loadLabelsAndDescription(function(){
-			$("div.description-panel div.column-list").slideDown(1000,function(){
-
-				/*
-				 * Store the row label and description
-				 */
-				labelData.rowLabel = $("div.row-decsription input.row-name").val();
-				labelData.rowDescription = $("div.row-description textarea.row-description").val();
-
-				/*
-				 * Validate the row label and description
-				 */
-				ui.typingPanel.checkRowDescription($("div.description-panel div.row-description"));
-
-				/*
-				 * Populate a global labels object of column names and description so the user can 
-				 * switch between panels before saving and not lose their input values.
-				 */
-				$("div.description-panel div.column-list ul li").each(function(){
-					colData.push({
-						label:$(this).find("input.column-label").val(),
-						description:$(this).find("textarea.column-description").val()
-					});
-					$(this).find("input.column-label").data("original-name",$(this).find("input.column-label").val());
-					//ui.typingPanel.checkColumnDescription($(this));
-				});
-
-
-			});
-		});
-	}
-
+	
 	/*
 	 * Add an on "focus" listener to the row label and description inputs
 	 */
@@ -610,17 +517,16 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 	$("div.description-panel div.column-list ul li input.column-label, " +
 	"div.description-panel div.column-list ul li textarea.column-description").live("focus",function(){
 
+		var liElement = $(this).parent();
 		var colName = $(this).parent("li").find("input.column-label").val();
 
 		/*
 		 * Highlight the column in the data table when the user focuses on their 
-		 * label or description input.
+		 * label or description input using the input's current status
 		 */
 		$("div.column-header-title span.column-header-name").each(function(){
 			if($(this).html() == colName){
-				$(this).parent("div").parent("td").addClass("selected");
-			} else {
-				$(this).parent("div").parent("td").removeClass("selected");
+				$(this).parent("div").parent("td").addClass(liElement.attr("class"));
 			}
 		});
 
@@ -646,7 +552,7 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 		 */
 		$("div.column-header-title span.column-header-name").each(function(){
 			if($(this).html() == colName){
-				$(this).parent("div").parent("td").removeClass("selected");
+				$(this).parent("div").parent("td").removeClass("bad").removeClass("maybe").removeClass("good").removeClass("great");
 			}
 		});
 		/*
@@ -749,9 +655,121 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 			LinkedGov.finaliseRDFSchema.init();
 		}
 	});
-
+	
 }
 
+TypingPanel.prototype.buildColumnDescriptionInputs = function(){
+	
+	/*
+	 * Create the input fields for the column labels and descriptions - adding 
+	 * a CSS class to them to highlight their acceptability status.
+	 */
+	$("div.description-panel div.column-list").hide();
+	var html = "<ul>";
+	$("div.column-header-title span.column-header-name").each(function(){
+		if($(this).html() != "All"){
+			/*
+			 * Column name status can be:
+			 * great - label and description entered
+			 * good - user has entered a name
+			 * bad - is blank or contains the word "column"
+			 * maybe - could be fine
+			 */
+			var status = "maybe";
+			if($(this).html().length < 2 || $(this).html().toLowerCase().indexOf("column") > -1){
+				status = "bad";
+			}
+			html += "<li class='"+status+"'>" +
+			"<input class='column-label' value='"+$(this).html()+"' />" +
+			"<textarea class='column-description' value='Enter a description...'>Enter a description...</textarea>" + 
+			"</li>";
+			$(this).parent().parent().addClass(status);
+		}
+	});
+	html += "</ul>";
+	$("div.description-panel div.column-list").html(html);
+	
+
+	/*
+	 *  Attempts to load the labels and descriptions of the rows and columns from the temporary 
+	 *  global 'labelsAndDescription' object.
+	 *  
+	 *  The global labels object is used to temporarily store the labels and descriptions in the 
+	 *  labels and descriptions panel so the user can switch between the panels without losing any 
+	 *  information they have entered.
+	 *  
+	 *  The labels and descriptions are properly stored in RDF once the user clicks "Save".
+	 */
+	var labelData = LinkedGov.vars.labelsAndDescriptions; 
+	var colData = labelData.cols;
+	
+	/*
+	 * If the global labels object exists, populate the input fields using 
+	 * it's values.
+	 */
+	if(colData.length > 0){
+		
+		log("Loading descriptions from local object...");
+		
+		if(labelData.rowLabel){
+			$("div.row-description input.row-name").val(labelData.rowLabel);
+		}
+		if(labelData.rowDescription){
+			$("div.row-description textarea.row-description").val(labelData.rowDescription);
+		}
+				
+		ui.typingPanel.checkRowDescription($("div.row-description"));
+		
+		for(var i=0;i<colData.length;i++){
+			$("div.description-panel div.column-list ul li").each(function(){
+
+				if($(this).find("input.column-label").val() == colData[i].label){
+					//log("Replacing description for "+colData[i].label+": "+colData[i].description);
+					$(this).find("textarea.column-description").val(colData[i].description).html(colData[i].description);
+					ui.typingPanel.checkColumnDescription($(this));
+				}
+
+				$(this).find("input.column-label").data("original-name",$(this).find("input.column-label").val());
+			});
+		}
+		
+		$("div.description-panel div.column-list").show();
+	} else {
+		/*
+		 * If the globals labels object doesn't exist, try to load the labels from the RDF schema.
+		 */
+		ui.typingPanel.loadLabelsAndDescription(function(){
+			$("div.description-panel div.column-list").show(function(){
+
+				/*
+				 * Store the row label and description
+				 */
+				labelData.rowLabel = $("div.row-description input.row-name").val();
+				labelData.rowDescription = $("div.row-description textarea.row-description").val();
+
+				/*
+				 * Validate the row label and description
+				 */
+				ui.typingPanel.checkRowDescription($("div.description-panel div.row-description"));
+
+				/*
+				 * Populate a global labels object of column names and description so the user can 
+				 * switch between panels before saving and not lose their input values.
+				 */
+				$("div.description-panel div.column-list ul li").each(function(){
+					colData.push({
+						label:$(this).find("input.column-label").val(),
+						description:$(this).find("textarea.column-description").val()
+					});
+					$(this).find("input.column-label").data("original-name",$(this).find("input.column-label").val());
+					//ui.typingPanel.checkColumnDescription($(this));
+				});
+
+
+			});
+		});
+	}
+}
 
 
 /*
@@ -781,6 +799,7 @@ TypingPanel.prototype.loadLabelsAndDescription = function(callback) {
 				 * If the RDF type is owl:Class then we've found the row label & description
 				 */
 				if(schema.rootNodes[i].rdfTypes[0].curie == "owl:Class"){
+					
 					for(var j=0; j<schema.rootNodes[i].links.length; j++){
 						/*
 						 * Locate the label and comment and populate the input fields
@@ -861,7 +880,7 @@ TypingPanel.prototype.loadLabelsAndDescription = function(callback) {
  * Validates the input for the row label and description on interaction.
  */
 TypingPanel.prototype.checkRowDescription = function(divElement){
-
+	
 	var input = divElement.find("input.row-label");
 	var textarea = divElement.find("textarea.row-description");
 	var labelData = LinkedGov.vars.labelsAndDescriptions;
@@ -910,11 +929,14 @@ TypingPanel.prototype.checkColumnDescription = function(liElement){
 		 * status.
 		 */
 		if(textarea.val().length > 2 && textarea.val() != "Enter a description..."){
-			liElement.addClass("great");
+			liElement.removeClass("bad").removeClass("maybe").removeClass("good").addClass("great");
 			status = "great";
+		} else {
+			liElement.removeClass("bad").removeClass("maybe").removeClass("great").addClass("good");
+			status = "good";			
 		}
 	} else {
-		liElement.removeClass("great").removeClass("good").addClass("bad");
+		liElement.removeClass("maybe").removeClass("good").removeClass("great").addClass("bad");
 		status = "bad";
 	}
 
@@ -971,8 +993,6 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 		 * Change the button label to "End Select" and add a CSS
 		 * class to it.
 		 */
-		log("here");
-		
 		$(button).html("End Select");
 		$(button).addClass("selecting");
 		

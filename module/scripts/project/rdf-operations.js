@@ -322,7 +322,7 @@ LinkedGov.saveMetadataToRDF = function(callback){
 				});
 
 				var schema = LinkedGov.getRDFSchema();
-				schema.rootNodes.push(rootNode);
+				schema.rootNodes.splice(0,0,rootNode);
 
 				/*
 				 * Save the RDF.
@@ -658,7 +658,7 @@ var finaliseRDFSchema = {
 			/*
 			 * Add the root node to the schema.
 			 */
-			schema.rootNodes.splice(0,0,rootNode);
+			schema.rootNodes.splice(1,0,rootNode);
 
 			callback();
 
@@ -733,8 +733,11 @@ var finaliseRDFSchema = {
 
 				/*
 				 * Add the root node to the schema.
+				 * 
+				 * i+2 to skip inserting the rootnode before the metadata node or the 
+				 * owl:Class node.
 				 */
-				schema.rootNodes.splice(i+1,0,rootNode);
+				schema.rootNodes.splice(i+2,0,rootNode);
 
 				if (i == cols.length - 1) {
 					callback();

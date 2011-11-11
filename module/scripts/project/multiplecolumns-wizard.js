@@ -165,7 +165,7 @@ var multipleColumnsWizard = {
 			 */
 			self.vars.startColName = $(elmts.multipleColumnsColumns).children("li").eq(0).find("span.col").html();
 			self.vars.colCount = $(elmts.multipleColumnsColumns).children("li").length  - self.vars.colsToSkip.length;
-			self.vars.newColName = window.prompt("New column name:", "");
+			//self.vars.newColName = window.prompt("New column name:", "");
 		},
 
 		/*
@@ -190,8 +190,7 @@ var multipleColumnsWizard = {
 
 			if (self.vars.colsToSkip.length > 0) {
 
-				LinkedGov
-				.silentProcessCall({
+				LinkedGov.silentProcessCall({
 					type : "POST",
 					url : "/command/" + "core" + "/" + "move-column",
 					data : {
@@ -206,11 +205,12 @@ var multipleColumnsWizard = {
 						 */
 						colIndex = colIndex + 1;
 						self.vars.colsToSkip.splice(0, 1);
+						
 						self.reorderColumns(colIndex, callback);
+
 					},
 					error : function() {
-						self
-						.onFail("A problem was encountered when reordering the columns.");
+						self.onFail("A problem was encountered when reordering the columns.");
 					}
 				});
 
@@ -243,18 +243,22 @@ var multipleColumnsWizard = {
 			 * process as a more silent "AJAX" call without the default UI update
 			 * callbacks.
 			 */
-			LinkedGov
-			.silentProcessCall({
+			
+			var newColName = window.prompt("Enter a name for the new column that summarises these columns:","");
+			log(newColName);
+			var valColName = window.prompt("Now enter a name for the new column that will contain it's values:","");
+			log(valColName);
+			
+			LinkedGov.silentProcessCall({
 				type : "POST",
-				url : "/command/" + "core" + "/"
-				+ "transpose-columns-into-rows",
+				url : "/command/" + "core" + "/" + "transpose-columns-into-rows",
 				data : {
-					startColumnName : self.vars.startColName,
 					columnCount : self.vars.colCount,
-					combinedColumnName : self.vars.newColName,
-					prependColumnName : true,
-					separator : LinkedGov.vars.separator,
-					ignoreBlankCells : true
+					fillDown : true,
+					ignoreBlankCells : true,
+					keyColumnName: newColName,
+					startColumnName : self.vars.startColName,
+					valueColumnName : valColName,
 				},
 				success : function() {
 					/*
@@ -263,119 +267,15 @@ var multipleColumnsWizard = {
 					 */
 					Refine.reinitializeProjectData(function() {
 						ui.dataTableView.update(function() {
-							ui.browsingEngine.update(self.splitColumns());
+							ui.browsingEngine.update(self.onComplete());
 						});
 					});
+					
 				},
 				error : function() {
-					self
-					.onFail("A problem was encountered when transposing the columns.");
+					self.onFail("A problem was encountered when transposing the columns.");
 				}
 			});
-
-		},
-
-		/*
-		 * splitColumns
-		 * 
-		 * Splits the newly created column using the global LinkedGov separator.
-		 */
-		splitColumns : function() {
-
-			log("splitColumns");
-
-			var self = this;
-
-			/*
-			 * Post a silent "split-column" process call (without the default UI
-			 * update callbacks).
-			 * 
-			 * After splitting the columns, the transpose has left us with lots of
-			 * blank cells which need to be filled down.
-			 */
-
-			LinkedGov
-			.silentProcessCall({
-				type : "POST",
-				url : "/command/" + "core" + "/" + "split-column",
-				data : {
-					columnName : self.vars.newColName,
-					mode : "separator",
-					separator : LinkedGov.vars.separator,
-					guessCellType : true,
-					removeOriginalColumn : true,
-					regex : false
-				},
-				success : function() {
-					Refine.update({
-						modelsChanged : true
-					}, function() {
-						self.fillDownColumns(
-								theProject.columnModel.columns, 0);
-					});
-				},
-				error : function() {
-					self
-					.onFail("A problem was encountered when splitting the columns.");
-				}
-			});
-
-		},
-
-		/*
-		 * fillDownColumns
-		 * 
-		 * A recursive function that takes the column model's list of columns and an
-		 * iterator as parameters.
-		 * 
-		 * Only fills a column if it's name is not equal to the columns being
-		 * operated on. The column suffixes +" 1" and +" 2" are always the same
-		 * after a column split.
-		 * 
-		 */
-		fillDownColumns : function(columns, i) {
-
-			var self = this;
-
-			// log("fillDownColumns");
-			// log(i);
-			// log(columns);
-			// log("-----------------------------");
-
-			if (i < columns.length) {
-
-				// log("columns[i].name: "+columns[i].name);
-				// log("self.vars.newColName: "+self.vars.newColName);
-
-				if (columns[i].name != self.vars.newColName
-						&& columns[i].name != self.vars.newColName + " 1"
-						&& columns[i].name != self.vars.newColName + " 2") {
-
-					LinkedGov
-					.silentProcessCall({
-						type : "POST",
-						url : "/command/" + "core" + "/" + "fill-down",
-						data : {
-							columnName : columns[i].name
-						},
-						success : function() {
-							i = i + 1;
-							self.fillDownColumns(columns, i);
-						},
-						error : function() {
-							self
-							.onFail("A problem was encountered when filling-down the columns.");
-						}
-					});
-
-				} else {
-					i = i + 1;
-					self.fillDownColumns(columns, i);
-				}
-			} else {
-				log("filDownColumns complete, i = " + i);
-				self.onComplete();
-			}
 
 		},
 
@@ -384,12 +284,9 @@ var multipleColumnsWizard = {
 			/*
 			 * Reset any null cells to blanks again, using the "false" flag
 			 */
-			LinkedGov.setBlanksToNulls(false, theProject.columnModel.columns, 0,
-					function() {
+			LinkedGov.setBlanksToNulls(false, theProject.columnModel.columns, 0,function() {
 				log("Multiple columns wizard failed.\n\n" + message);
-				Refine.update({
-					everythingChanged : true
-				});
+				Refine.update({everythingChanged : true});
 				LinkedGov.resetWizard(self.vars.elmts.multipleColumnsBody);
 				LinkedGov.showWizardProgress(false);
 			});
