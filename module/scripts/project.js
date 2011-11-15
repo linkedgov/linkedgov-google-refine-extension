@@ -101,7 +101,7 @@ var LinkedGov = {
 			 */
 			$("body").addClass("lg");
 			
-			$("#header").html('<img width="129" height="40" alt="Google Refine" src="/extension/linkedgov/images/logo-small.png"><span id="slogan">Fixing government data</span>'+$("#header").html());
+			$("#header").html('<img width="129" height="40" alt="Google Refine" src="/extension/linkedgov/images/logo-small.png"><span id="slogan">Cleaning up government data</span>'+$("#header").html());
 		},
 
 		/*

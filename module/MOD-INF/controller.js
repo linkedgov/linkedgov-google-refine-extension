@@ -28,6 +28,7 @@ function init() {
 			module,
 			[
 			 "scripts/index.js",
+			 //"externals/jquery-ui/jquery-ui.min.js",
 			 "externals/jquery-ui/jquery-ui.datepicker.js"
 			 ]
 	);
@@ -37,7 +38,8 @@ function init() {
 			module,
 			[
 			 "styles/index.css",
-			 "externals/jquery-ui/css/ui-smoothness/jquery-ui-1.8.custom.css",
+			 "externals/jquery-ui/css/ui-smoothness/jquery-ui-1.8.custom.css",			 
+			 //"externals/jquery-ui/smoothness/jquery-ui.css",
 			 "externals/jquery-ui/css/jquery-ui.datepicker.less"
 			 ]
 	);
@@ -47,6 +49,7 @@ function init() {
 			module,
 			[
 			 "scripts/project.js",
+			 "externals/jquery-ui/jquery-ui.min.js",
 			 "externals/jquery-ui/jquery-ui.datepicker.js"
 			 ]
 	);
@@ -57,6 +60,7 @@ function init() {
 			module,
 			[
 			 "styles/project.css",
+			 "externals/jquery-ui/smoothness/jquery-ui.css",
 			 "externals/jquery-ui/css/jquery-ui.datepicker.less"
 			 ]
 	);

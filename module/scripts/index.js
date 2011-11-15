@@ -36,9 +36,11 @@ var LinkedGov = {
 			 * Change logo & slogan
 			 */
 			$("#header img").attr("src","/extension/linkedgov/images/logo-small.png").attr("height","40");
-			$("#header span#slogan").html("Fixing government data");
+			$("#header span#slogan").html("Cleaning up government data");
 			
-			$("body").append('<div id="beta"><img src="/extension/linkedgov/images/beta-ribbon.gif"></div>');
+			$("#header").append(DOM.loadHTML("linkedgov", "html/feedback-form.html"));
+			
+			$("body").append('<div id="beta"><img src="/extension/linkedgov/images/alpha.png"></div>');
 
 			var mode = $.getUrlVar('mode');
 
@@ -48,7 +50,8 @@ var LinkedGov = {
 			} else {
 				this.restyleImportArea();
 				this.setUpImportPanel();	
-			}
+			}			
+
 		},
 
 		/*
@@ -65,7 +68,7 @@ var LinkedGov = {
 			for(var i=0;i<Refine.actionAreas.length;i++){
 				if(typeof Refine.actionAreas[i] != 'undefined' && Refine.actionAreas[i].id == "open-project"){
 					openProjectArea = Refine.actionAreas[i];
-					openProjectArea.bodyElmt.css("z-index","9999");
+					openProjectArea.bodyElmt.css("z-index","100");
 				} else {
 					Refine.actionAreas[i].bodyElmt.remove();
 				}
@@ -95,7 +98,7 @@ var LinkedGov = {
 			for(var i=0;i<Refine.actionAreas.length;i++){
 				if(typeof Refine.actionAreas[i] != 'undefined' && Refine.actionAreas[i].id == "create-project"){
 					createProjectArea = Refine.actionAreas[i];
-					createProjectArea.bodyElmt.css("z-index","9999");
+					createProjectArea.bodyElmt.css("z-index","100");
 				} else {
 					Refine.actionAreas[i].bodyElmt.remove();
 				}
@@ -491,6 +494,11 @@ var LinkedGov = {
 			case 'separator-based-parser-ui' :
 
 				$.getScript(ModuleWirings["linkedgov"] + 'scripts/index/'+pageName+'.js');		
+				break;
+				
+				
+			case 'feedback-form' :
+				//$.getScript(ModuleWirings["linkedgov"] + 'scripts/feedback.js');	
 				break;
 
 			default:

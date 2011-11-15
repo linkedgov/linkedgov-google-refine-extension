@@ -2,9 +2,11 @@
 <!html>
 <head>
 <title>LinkedGov Portal</title>
-<link href="styles/menu.css" type="text/css" rel="stylesheet" /> 
-<script src="externals/jquery.js"></script>
-<script src="scripts/menu.js"></script>
+<link rel="stylesheet" type="text/css" href="styles/menu.css" /> 
+<link rel="stylesheet" type="text/css" href="externals/jquery-ui/smoothness/jquery-ui.css" />
+<script type="text/javascript" charset="utf-8" src="externals/jquery.js"></script>
+<script type="text/javascript" charset="utf-8" src="externals/jquery-ui/jquery-ui.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="scripts/menu.js"></script>
 </head>
 <body>
 </body>

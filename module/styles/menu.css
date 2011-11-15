@@ -24,6 +24,12 @@ body {
     font-style: italic;
     margin: 0 1em;
 }
+div#feedback-button {
+	display:none;
+    float: right;
+    margin-right: 100px;
+    margin-top: 5px;
+}
 img {
     vertical-align: middle;
 }
@@ -102,31 +108,6 @@ margin:0 auto;
     margin: 0;
     padding: 2%;
     width: 96%;
-}
-.panel p {
-    font-size: 100px;
-    margin: 100px 0 0 200px;
-    padding: 0;
-    position: absolute;
-}
-.panel iframe {
-    border: 1px solid #CCCCCC;
-    display: none;
-    height: 95%;
-    margin: auto;
-    width: 100%;
-}
-#import {
-    background-color: #EEEEEE;
-    text-shadow: 2px 2px #999999;
-}
-#resume {
-    background-color: #DDDDDD;
-    text-shadow: 2px 2px #888888;
-}
-#game {
-    background-color: #CCCCCC;
-    text-shadow: 2px 2px #777777;
 }
 #header {
     margin-bottom: 50px;
