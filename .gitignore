@@ -3,4 +3,3 @@
 *.project
 *.svn
 *.classpath
-module/scripts/project/save-rdf.js
