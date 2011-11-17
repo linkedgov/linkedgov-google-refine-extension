@@ -406,7 +406,7 @@ var splitVariablePartColumn = {
 				url : "/command/" + "core" + "/" + "text-transform",
 				data : {
 					columnName : self.vars.colName,
-					expression : 'partition(value,"' + self.vars.separator+ '"+value.split("' + self.vars.separator+ '")[value.split("' + self.vars.separator+ '").length()-2])[0].trim()',
+					expression : 'partition(value,"' + self.vars.separator+ '"+value.split("' + self.vars.separator+ '")[value.split("' + self.vars.separator+ '").length()-'+(self.vars.lowestNumberOfParts-1)+'])[0].trim()',
 					onError : "keep-original",
 					repeat : false,
 					repeatCount : 10

@@ -637,7 +637,7 @@ var finaliseRDFSchema = {
 					value : "http://example.linkedgov.org/example-dataset/terms/"
 						+ camelizedRowLabel
 			};
-			
+
 			/*
 			 * Add the row description separately in case the user hasn't entered a 
 			 * description for it.
@@ -653,7 +653,7 @@ var finaliseRDFSchema = {
 					uri : "http://www.w3.org/2000/01/rdf-schema#comment"
 				});
 			}
-			
+
 
 			/*
 			 * Add the root node to the schema.
@@ -692,7 +692,7 @@ var finaliseRDFSchema = {
 			 * Loop through the column label objects created by the labels and descriptions panel.
 			 */
 			for (var i = 0; i < cols.length; i++) {
-				
+
 				/*
 				 * Add the owl:ObjectProperty statements for the columns which each exist
 				 * as their own root nodes.
@@ -911,15 +911,26 @@ var applyTypeIcons = {
 			var self = this;
 
 			if (key == "columnName") {
+
 				$("td.column-header").each(function() {
-					if ($(this).find("span.column-header-name").html().toLowerCase() == val.toLowerCase()) {
-						$(this).addClass("typed");
+					if($(this).find("span.column-header-name").length > 0){
+						if ($(this).find("span.column-header-name").html().toLowerCase() == val.toLowerCase()) {
+							$(this).addClass("typed");
+						}
 					}
 				});
-			} else if(key == "curie"){
+			} else if(key == "curie" && val != "vcard:Address"){
+				
+				//log("curie: "+val);
+			
 				$("td.column-header").each(function() {		
-					if (val.toLowerCase().split(":")[1] == LinkedGov.camelize($(this).find("span.column-header-name").html().toLowerCase())) {
-						$(this).addClass("typed");
+					if($(this).find("span.column-header-name").length > 0){
+						
+						//log((val.split(":")[1])+" same as "+LinkedGov.camelize($(this).find("span.column-header-name").html().toLowerCase())+"?");
+						
+						if (val.split(":")[1] == LinkedGov.camelize($(this).find("span.column-header-name").html().toLowerCase())) {
+							$(this).addClass("typed");
+						}
 					}
 				});
 			}

@@ -981,7 +981,6 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 	 * If the button does not have the class "selecting", then the user is wanting to 
 	 * select columns.
 	 */
-	log($(button).hasClass("selecting"));
 	if (!$(button).hasClass("selecting")) {
 		
 		/*

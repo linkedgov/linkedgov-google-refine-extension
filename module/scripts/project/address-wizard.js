@@ -26,6 +26,7 @@ var addressWizard = {
 		 */
 		vars : {
 			elmts : {},
+			addressName:"",
 			postCodeRegex : "[A-Z]{1,2}[0-9R][0-9A-Z]? {0,1}[0-9][ABD-HJLNP-UW-Z]{2}",
 			colObjects : [],
 			vocabs : {
@@ -59,6 +60,17 @@ var addressWizard = {
 			self.vars.elmts = elmts;
 
 			/*
+			 * Ask the user to enter a name for the location (as a form 
+			 * of identification if there is more than one location per row).
+			 */
+			while(self.vars.addressName.length < 3){
+				self.vars.addressName = window.prompt("Enter a name for this location, e.g. \"Home address\" :","");
+				if(self.vars.addressName.length < 3){
+					alert("The name must be 3 letters or longer, try again...");
+				}
+			}
+
+			/*
 			 * Build an array of column objects with their options
 			 * 
 			 * {name - column name part - the specified address part
@@ -85,11 +97,20 @@ var addressWizard = {
 					 */
 					self.makeAddressFragments(function() {
 						/*
-						 * Save the RDF
+						 * Create a new column containing the parts of the address
+						 * the user specified and collapse the other columns.
 						 */
-						LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
-							self.saveRDF(rootNode, foundRootNode);
-						});
+						self.createAddressColumn(function(){
+							/*
+							 * Save the RDF
+							 */
+							LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
+
+								self.saveRDF(rootNode, foundRootNode);
+
+							});
+
+						})
 					});
 				});
 
@@ -298,7 +319,7 @@ var addressWizard = {
 		makeAddressFragments : function(callback) {
 
 			log("makeAddressFragments");
-			
+
 			var self = this;
 			var colObjects = self.vars.colObjects;
 			var vocabs = self.vars.vocabs;
@@ -362,14 +383,75 @@ var addressWizard = {
 						 * Create the other vCard address fragments
 						 */
 						uri = vocabs.vcard.uri + colObjects[i].part;
-						curie = vocabs.vcard.curie + ":" + colObjects[i].part;
-						colObjects[i].rdf = self.makeVCardFragment(colObjects[i].name, uri, curie);
-						break;
+					curie = vocabs.vcard.curie + ":" + colObjects[i].part;
+					colObjects[i].rdf = self.makeVCardFragment(colObjects[i].name, uri, curie);
+					break;
 
 					}
 				}
 
 			}
+
+		},
+
+		/*
+		 * createAddressColumn
+		 * 
+		 * Create a new column for the address parts the user specified, with each 
+		 * part separated by a comma.
+		 * 
+		 * Finally, collapse the address-part columns used to create the new column.
+		 */
+		createAddressColumn:function(callback){
+
+			var self = this;
+			var colObjects = self.vars.colObjects;
+
+			/*
+			 * Build the expression used to join the various 
+			 * address parts together as a string.
+			 */
+			var expression = "";
+			var addressParts = ["street-address","extended-address","locality","region","country-name","postcode"];
+			var lastCol = "";
+			
+			for(var h=0; h<addressParts.length;h++){
+				for(var i=0; i<colObjects.length; i++){
+					if(colObjects[i].part == addressParts[h]){
+						expression += 'cells["' + colObjects[i].name + '"].value+", "+';
+						lastCol = colObjects[i].name;
+					}
+				}
+			}
+			expression = expression.substring(0, expression.length - 6);
+
+			Refine.postCoreProcess(
+					"add-column",
+					{
+						baseColumnName : colObjects[0].name,
+						expression : expression,
+						newColumnName : self.vars.addressName,
+						columnInsertIndex : Refine.columnNameToColumnIndex(lastCol) + 1,
+						onError : "keep-original"
+					},
+					null,
+					{
+						modelsChanged : true
+					},
+					{
+						onDone : function() {
+							
+							for(var i=0; i<colObjects.length; i++){
+								ui.dataTableView._collapsedColumnNames[colObjects[i].name] = true;
+							}
+							
+							ui.dataTableView.render();
+							
+							Refine.update({modelsChanged : true},callback);
+						}
+					}
+			);
+
 
 		},
 
@@ -391,12 +473,14 @@ var addressWizard = {
 			 * Any address data will always be the child of a vCard:Address node, 
 			 * which are identified using the hash ID "#location".
 			 */
+			var camelizedLocationName = LinkedGov.camelize(self.vars.addressName);
+
 			var vcardObj = {
-					"uri" : self.vars.vocabs.lg.uri+"location",
-					"curie" : self.vars.vocabs.lg.curie+":location",
+					"uri" : self.vars.vocabs.lg.uri+camelizedLocationName,
+					"curie" : self.vars.vocabs.lg.curie+":"+camelizedLocationName,
 					"target" : {
 						"nodeType" : "cell-as-resource",
-						"expression" : "value+\"#address\"",
+						"expression" : "value+\"#"+camelizedLocationName+"\"",
 						"isRowNumberCell" : true,
 						"rdfTypes" : [ {
 							"uri" : "http://www.w3.org/2006/vcard/ns#Address",
@@ -455,7 +539,7 @@ var addressWizard = {
 		 * address.
 		 */
 		makeVCardFragment : function(colName, uri, curie) {
-			
+
 			var o = {
 					"uri" : uri,
 					"curie" : curie,
@@ -480,7 +564,7 @@ var addressWizard = {
 		makeOSPCFragment : function(colName, uri, curie, pcodeURI) {
 
 			var self = this;
-			
+
 			var o = {
 					"uri" : uri,
 					"curie" : curie,

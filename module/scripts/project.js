@@ -48,6 +48,18 @@ var LinkedGov = {
 			this.injectWizardProgressOverlay();
 			this.quickTools();
 			
+			
+			/*
+			 * Add a listener for un-hiding columns
+			 */
+			$("td.column-header").live("click",function(){
+				if($(this).find("span.column-header-name").length == 0){
+					Refine.update({
+						modelsChanged:true
+					});
+				}
+			});
+			
 			/*
 			 * Load the wizard scripts
 			 */
@@ -142,7 +154,7 @@ var LinkedGov = {
 			 * TODO: Show & hide using CSS.
 			 */
 			$("td.column-header").live("hover",function() {
-						if (!$(this).hasClass("ui-selectee")) {
+						if (!$(this).hasClass("ui-selectee") && $(this).find("span.column-header-name").length > 0) {
 							if ($(this).hasClass("show")) {
 								$(this).find(".quick-tool").hide();
 								$(this).addClass("hide").removeClass("show");
@@ -156,6 +168,7 @@ var LinkedGov = {
 								+ "<li class='remove'>Remove</li>"
 								+ "<li class='move-left'>Move left</li>"
 								+ "<li class='move-right'>Move right</li>"
+								+ "<li class='hide'>Hide</li>"
 								+ "<li class='delete-rdf'>Delete RDF</li>"
 								+ "</ul>" + "</div>";
 
@@ -208,6 +221,16 @@ var LinkedGov = {
 							modelsChanged : true
 						});
 					});
+					break;
+				case "hide":
+					
+					ui.dataTableView._collapsedColumnNames[colName] = true;
+					ui.dataTableView.render();		
+					
+					Refine.update({
+						modelsChanged : true
+					});
+					
 					break;
 				case "delete-rdf":
 					LinkedGov.removeColumnInRDF(colName, function() {
