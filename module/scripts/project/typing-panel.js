@@ -530,6 +530,16 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 			$(this).val("");
 		}
 	});
+	
+	/*
+	 * Add an on "key up" listener to the row label and description inputs
+	 */
+	$("div.description-panel div.row-description input, " +
+	"div.description-panel div.row-description textarea").live("keyup",function(){
+		ui.typingPanel.checkRowDescription($(this).parent());
+		$("table.data-table > tbody > tr.odd > td ").css("background-color",$("div.row-description input").css("background-color"));
+	});
+	
 	/*
 	 * Add an on "blur" listener to the row label and description inputs
 	 */
@@ -542,14 +552,6 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 			$(this).val("Enter a description...");
 		}
 		ui.typingPanel.checkRowDescription($(this).parent());
-	});
-	/*
-	 * Add an on "key up" listener to the row label and description inputs
-	 */
-	$("div.description-panel div.row-description input, " +
-	"div.description-panel div.row-description textarea").live("keyup",function(){
-		ui.typingPanel.checkRowDescription($(this).parent());
-		$("table.data-table > tbody > tr.odd > td ").css("background-color",$("div.row-description input").css("background-color"));
 	});
 
 	/*
@@ -577,6 +579,14 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 		if($(this).val() == "Enter a description..."){
 			$(this).val("");
 		}
+	});
+
+	/*
+	 * Interaction when pressing a key in the column label or description input fields
+	 */
+	$("div.description-panel div.column-list ul li input.column-label, " +
+	"div.description-panel div.column-list ul li textarea.column-description").live("keyup",function(){
+		ui.typingPanel.checkColumnDescription($(this).parent());
 	});
 
 	/*
@@ -653,15 +663,7 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 			}
 		}
 	});
-
-	/*
-	 * Interaction when pressing a key in the column label or description input fields
-	 */
-	$("div.description-panel div.column-list ul li input.column-label, " +
-	"div.description-panel div.column-list ul li textarea.column-description").live("keyup",function(){
-		ui.typingPanel.checkColumnDescription($(this).parent());
-	});
-
+	
 	/*
 	 * Save button functionality
 	 */

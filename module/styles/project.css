@@ -197,6 +197,9 @@ body.lg div.description-panel {
     width: 300px;
     left:300px;
 }
+body.lg div.description-panel div.action-buttons a.button.undo {
+	display:none;
+}
 body.lg div.description-panel h3 {
     border-bottom: 1px solid #DDDDDD;
     margin-bottom: 10px;

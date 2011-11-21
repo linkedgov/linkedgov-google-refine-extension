@@ -12,6 +12,7 @@ var latLongWizard = {
 
 		vars : {
 			elmts : {},
+			coordinateName:"",
 			colObjects : [],
 			vocabs : {
 				geo : {
@@ -37,6 +38,17 @@ var latLongWizard = {
 			var self = this;
 			self.vars.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
 
+			/*
+			 * Ask the user to enter a name for the location (as a form 
+			 * of identification if there is more than one location per row).
+			 */
+			while(self.vars.coordinateName.length < 3){
+				self.vars.coordinateName = window.prompt("Enter a name for these coordniates, e.g. \"Building coordinates\" :","");
+				if(self.vars.coordinateName.length < 3){
+					alert("The name must be 3 letters or longer, try again...");
+				}
+			}
+			
 			LinkedGov.showWizardProgress(true);
 
 			self.vars.elmts = elmts;
@@ -157,8 +169,8 @@ var latLongWizard = {
 			var self = this;
 
 			var obj = {
-					"uri" : self.vars.vocabs.lg.uri+"location",
-					"curie" : self.vars.vocabs.lg.curie+":location",
+					"uri" : self.vars.vocabs.lg.uri+LinkedGov.camelize(self.vars.coordinateName),
+					"curie" : self.vars.vocabs.lg.curie+":"+LinkedGov.camelize(self.vars.coordinateName),
 					"target" : {
 						"nodeType" : "cell-as-resource",
 						"expression" : "value+\"#point\"",
