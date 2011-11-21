@@ -72,6 +72,17 @@ body.lg #header { /*
     padding-top: 9px;
     position: relative;
 }
+body.lg #slogan {
+    color: #444444;
+    display: inline-block;
+    font-size: 110%;
+    font-style: italic;
+    margin-bottom: 0;
+    margin-left: 15px;
+    margin-right: 1em;
+    vertical-align: middle;
+    width: 110px;	
+}
 div#feedback-button {
     display:none;
     float: right;

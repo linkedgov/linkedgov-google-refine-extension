@@ -47,7 +47,8 @@ var addressWizard = {
 					curie: "lg",
 					uri: LinkedGov.vars.lgNameSpace
 				}
-			}
+			},
+			hiddenColumns : []
 		},
 
 		/*
@@ -58,7 +59,9 @@ var addressWizard = {
 
 			var self = this;
 			self.vars.elmts = elmts;
-
+			self.vars.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
+			self.vars.hiddenColumns = [];
+			
 			/*
 			 * Ask the user to enter a name for the location (as a form 
 			 * of identification if there is more than one location per row).
@@ -423,6 +426,7 @@ var addressWizard = {
 					}
 				}
 			}
+			
 			expression = expression.substring(0, expression.length - 6);
 
 			Refine.postCoreProcess(
@@ -442,12 +446,12 @@ var addressWizard = {
 						onDone : function() {
 							
 							for(var i=0; i<colObjects.length; i++){
-								ui.dataTableView._collapsedColumnNames[colObjects[i].name] = true;
+								LinkedGov.hideColumnCompletely(colObjects[i].name);
+								self.vars.hiddenColumns.push(colObjects[i].name);
 							}
 							
-							ui.dataTableView.render();
-							
-							Refine.update({modelsChanged : true},callback);
+							callback();
+
 						}
 					}
 			);
@@ -594,23 +598,32 @@ var addressWizard = {
 
 		/*
 		 * onFail
+		 * 
+		 * Alerts the user of the reason why the wizard failed and resets the wizard.
 		 */
 		onFail : function(message) {
 			var self = this;
 			alert("Address wizard failed.\n\n" + message);
 			LinkedGov.resetWizard(self.vars.elmts.addressBody);
 			LinkedGov.showWizardProgress(false);
+			self.vars.addressName = "";
 		},
 
 		/*
 		 * Return the wizard to its original state.
 		 */
 		onComplete : function() {
+			
+			log("here");
+			
 			var self = this;
-			LinkedGov.resetWizard(self.vars.elmts.addressBody);
+
 			Refine.update({
 				modelsChanged : true
 			}, function() {
+				LinkedGov.resetWizard(self.vars.elmts.addressBody);
+				LinkedGov.showUndoButton(self.vars.elmts.addressBody);
+				//LinkedGov.summariseWizardHistoryEntry("Address wizard", self.vars.historyRestoreID);
 				LinkedGov.showWizardProgress(false);
 			});
 		}

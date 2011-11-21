@@ -42,7 +42,9 @@ var dateTimeWizard = {
 		 */
 		initialise : function(elmts) {
 
-			var self = this;
+			var self = this;			
+			self.vars.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
+			
 			self.vars.elmts = elmts;
 			self.vars.columns = [];
 			self.vars.colFragments = [];
@@ -85,7 +87,9 @@ var dateTimeWizard = {
 					 */
 					self.checkForMultiColumnDateTimes(function() {
 						self.checkCombinations(function() {
+							log("Checking schema...");
 							LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
+								log("About to save RDF...");
 								self.saveRDF(rootNode, foundRootNode);
 							});
 						});
@@ -305,6 +309,8 @@ var dateTimeWizard = {
 				 */
 				for ( var a = 0; a < colObjects.length; a++) {
 					if (colObjects[a].combi == "Y-M-D") {
+						
+						var monthBeforeDay = colObjects[a].monthBeforeDay;
 						/*
 						 * If Y-M-D specified, store the column name
 						 */
@@ -318,11 +324,11 @@ var dateTimeWizard = {
 							if (colObjects[i].combi == "h-m") {
 								colArray.push(colObjects[i].name);
 								log("We have a year, month, day, hours and minutes spread across two columns");
-								self.createSingleColumnDate(colArray, "Y-M-D-h-m", callback);
+								self.createSingleColumnDate(colArray, "Y-M-D-h-m", monthBeforeDay, callback);
 							} else if (colObjects[i].combi == "h-m-s") {
 								colArray.push(colObjects[i].name);
 								log("We have a year, month, day, hours, minutes and seconds spread across two columns");
-								self.createSingleColumnDate(colArray, "Y-M-D-h-m-s", callback);
+								self.createSingleColumnDate(colArray, "Y-M-D-h-m-s", monthBeforeDay, callback);
 							}
 							
 						}
@@ -347,7 +353,7 @@ var dateTimeWizard = {
 							// seconds
 							log("We have a year, month, day, hours, minutes and seconds spread across six columns");
 
-							self.createSingleColumnDate(colArray, "Y-M-D-h-m-s",callback);
+							self.createSingleColumnDate(colArray, "Y-M-D-h-m-s", callback);
 						}
 					}
 				}
@@ -366,7 +372,7 @@ var dateTimeWizard = {
 		 * the column object array, and insert the new column (and it's options)
 		 * into the column object array.
 		 */
-		createSingleColumnDate : function(cols, com, callback) {
+		createSingleColumnDate : function(cols, com, monthBeforeDay, callback) {
 
 			var self = this;
 			var expr = "";
@@ -422,7 +428,7 @@ var dateTimeWizard = {
 						self.vars.colObjects.push({
 							name : newName,
 							combi : com,
-							monthBeforeDay : false
+							monthBeforeDay : monthBeforeDay
 						});
 
 						for(var i=0;i<cols.length;i++){
@@ -446,8 +452,7 @@ var dateTimeWizard = {
 					baseColumnName : cols[0],
 					expression : expr,
 					newColumnName : newName + " (LG)",
-					columnInsertIndex : Refine.columnNameToColumnIndex(cols[0])
-					+ cols.length,
+					columnInsertIndex : Refine.columnNameToColumnIndex(cols[0]) + cols.length,
 					onError : "keep-original"
 				}, null, {
 					modelsChanged : true
@@ -459,7 +464,7 @@ var dateTimeWizard = {
 						self.vars.colObjects.push({
 							name : newName + " (LG)",
 							combi : com,
-							monthBeforeDay : false
+							monthBeforeDay : monthBeforeDay
 						});
 
 						callback();
@@ -491,6 +496,9 @@ var dateTimeWizard = {
 			 */
 			for ( var i = 0; i < colObjects.length; i++) {
 
+				log("Name: "+colObjects[i].name);
+				log("Combination: "+colObjects[i].combi);
+				
 				if(colObjects[i].combi.length > 0) {
 					/*
 					 * Any date/time that includes a year, day and month can be typed
@@ -585,9 +593,9 @@ var dateTimeWizard = {
 		 */
 		formatDateInRefine : function(colObject) {
 
+			//log("formatDateInRefine");
+			
 			var self = this;
-			var colName = colObject.name;
-			var mb4d = colObject.monthBeforeDay;
 
 			/*
 			 * The GREL function toDate() takes a boolean for the 'month before day'
@@ -597,8 +605,9 @@ var dateTimeWizard = {
 				type : "POST",
 				url : "/command/" + "core" + "/" + "text-transform",
 				data : {
-					columnName : colName,
-					expression : 'toDate(value, ' + (mb4d) + ')',
+					columnName : colObject.name,
+					expression : 'toDate(value,' + (colObject.monthBeforeDay) + ')',
+					onError : 'store-error',
 					repeat : false,
 					repeatCount : ""
 				},
@@ -606,7 +615,7 @@ var dateTimeWizard = {
 					Refine.update({cellsChanged : true});
 				},
 				error : function() {
-					self.onFail("A problem was encountered when performing a text transform on the column: \""+ colName + "\".");
+					self.onFail("A problem was encountered when performing a text transform on the column: \""+ colObject.name + "\".");
 				}
 			});
 
@@ -984,7 +993,7 @@ var dateTimeWizard = {
 		 */
 		saveRDF : function(rootNode, newRootNode) {
 
-			//log("saveRDF");
+			log("saveRDF");
 
 			var self = this;
 
@@ -1051,6 +1060,11 @@ var dateTimeWizard = {
 
 		},
 
+		/*
+		 * onFail
+		 * 
+		 * Alerts the user of the reason why the wizard failed and resets the wizard.
+		 */
 		onFail : function(message) {
 			var self = this;
 			alert("Date and time wizard failed.\n\n" + message);
@@ -1063,10 +1077,13 @@ var dateTimeWizard = {
 		 */
 		onComplete : function() {
 			var self = this;
+			
 			Refine.update({
 				everythingChanged : true
 			}, function() {
 				LinkedGov.resetWizard(self.vars.elmts.dateTimeBody);
+				LinkedGov.showUndoButton(self.vars.elmts.dateTimeBody);
+				//LinkedGov.summariseWizardHistoryEntry("Date and Time wizard", self.vars.historyRestoreID);
 				LinkedGov.showWizardProgress(false);
 			});
 

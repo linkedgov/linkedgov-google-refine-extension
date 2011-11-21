@@ -140,7 +140,7 @@ LinkedGov.renameColumn = function(oldName, newName, callback) {
  * Removes a column
  */
 LinkedGov.removeColumn = function(colName, callback) {
-	
+
 	LinkedGov.silentProcessCall({
 		type : "POST",
 		url : "/command/" + "core" + "/" + "remove-column",
@@ -218,6 +218,311 @@ LinkedGov.moveColumn = function(colName, dir, callback) {
 };
 
 
+
+/*
+ * hideColumnCompletely
+ * 
+ * Visually hides the column from the data table as well as 
+ * storing the column name in an array of hidden columns using the 
+ * custom "save-meta-information" command.
+ */
+LinkedGov.hideColumnCompletely = function(colName, callback) {
+
+
+	log("hideColumnCompletely");
+
+	log("hiding - "+colName);
+
+	var alreadyAdded = false;
+
+	/*
+	 * +3 due to the "All" column
+	 */
+	var columnIndex = Refine.columnNameToColumnIndex(colName) + 3;
+
+	$("td.column-header").each(function(){
+		if($(this).find("span.column-header-name").length > 0 && $(this).find("span.column-header-name").html() == colName){
+			$(this).addClass("hiddenCompletely");
+		}
+	});
+
+	$("table.data-table tr").each(function(){
+		$(this).children("td").eq(columnIndex).addClass("hiddenCompletely");
+	});
+
+	var array = LinkedGov.vars.hiddenColumns.split(",");
+
+	if(array.length > 0 && array[0].length > 0){
+
+		for(var i=0; i<array.length; i++){
+			if(array[i] == colName){
+				alreadyAdded = true;
+			}
+		}
+
+		if(!alreadyAdded){
+			array.push(colName);
+		}
+
+		LinkedGov.vars.hiddenColumns = array.join(",");
+
+	} else {
+		LinkedGov.vars.hiddenColumns = colName;
+	}
+
+	if(!alreadyAdded){
+
+		var obj = {
+				"project" : theProject.id,
+				"LinkedGov.hiddenColumns" : LinkedGov.vars.hiddenColumns
+		};
+
+		$.ajax({
+			type : "POST",
+			url : "/command/" + "linkedgov" + "/" + "save-meta-information",
+			data : $.param(obj),
+			success : function(data) {
+				if(callback){
+					callback();
+				}
+			},
+			error : function() {
+				//self.importFail("A problem was encountered when saving metadata");
+			}
+		});
+
+	}
+
+};
+
+/*
+ * unhideHiddenColumn
+ * 
+ * Unhides a hidden column, making sure to amend the project's hidden column 
+ * metadata at the same time.
+ */
+LinkedGov.unhideHiddenColumn = function(colName, callback) {
+
+	log("unhideHiddenColumn");
+
+	log("unhiding - "+colName);
+
+	/*
+	 * +3 due to the "All" column
+	 */
+	var columnIndex = Refine.columnNameToColumnIndex(colName) + 3;
+
+	$("td.column-header").each(function(){
+		if($(this).find("span.column-header-name").length > 0 && $(this).find("span.column-header-name").html() == colName){
+			$(this).removeClass("hiddenCompletely");
+		}
+	});
+
+	$("table.data-table tr").each(function(){
+		$(this).children("td").eq(columnIndex).removeClass("hiddenCompletely");
+	});
+
+	var array = LinkedGov.vars.hiddenColumns.split(",");
+
+	if(array.length > 0 && array[0].length > 0){
+
+		for(var i=0; i<array.length; i++){
+			if(array[i] == colName){
+				array.splice(i,1);
+				i--;
+			}
+		}
+
+		LinkedGov.vars.hiddenColumns = array.join(",");
+
+	} else {
+		log("Cannot unhide column as it is not listed as a hidden column.");
+	}
+
+	var obj = {
+			"project" : theProject.id,
+			"LinkedGov.hiddenColumns" : LinkedGov.vars.hiddenColumns
+	};
+
+	$.ajax({
+		type : "POST",
+		url : "/command/" + "linkedgov" + "/" + "save-meta-information",
+		data : $.param(obj),
+		success : function(data) {
+			if(callback){
+				callback();
+			}
+		},
+		error : function() {
+
+		}
+	});
+
+};
+
+
+/*
+ * getHiddenColumnMetadata
+ * 
+ */
+LinkedGov.getHiddenColumnMetadata = function(callback){
+
+	$.ajax({
+		type : "GET",
+		url : "/command/" + "linkedgov" + "/" + "get-meta-information?project="+theProject.id,
+		data : $.param({
+			keys:"LinkedGov.hiddenColumns"
+		}),
+		success : function(data) {
+			LinkedGov.vars.hiddenColumns = data.customMetadata["LinkedGov.hiddenColumns"];
+			callback();
+		},
+		error: function(){
+			alert("Error retrieving hidden column metadata");
+		}
+	});
+
+};
+
+/*
+ * keepHiddenColumnsHidden
+ */
+LinkedGov.keepHiddenColumnsHidden = function(){
+
+	if(typeof LinkedGov.vars.hiddenColumns != 'undefined') {
+
+		var cols = LinkedGov.vars.hiddenColumns.split(",");
+
+		for(var i=0;i<cols.length;i++){
+
+			var columnIndex = Refine.columnNameToColumnIndex(cols[i]) + 3;
+
+			if(columnIndex >= 3){
+
+				$("td.column-header").each(function(){
+					if($(this).find("span.column-header-name").length > 0 && $(this).find("span.column-header-name").html() == cols[i]){
+						$(this).addClass("hiddenCompletely");
+					}
+				});
+
+				$("table.data-table tr").each(function(){
+					$(this).children("td").eq(columnIndex).addClass("hiddenCompletely");
+				});
+			}
+		}	
+	}
+};
+
+/*
+ * restoreHiddenColumns
+ */
+LinkedGov.restoreHiddenColumns = function(callback){
+
+	$.ajax({
+		type : "POST",
+		url : "/command/" + "linkedgov" + "/" + "save-meta-information",
+		data : $.param({
+			"LinkedGov.hiddenColumns":"",
+			"project":theProject.id
+		}),
+		success : function(data) {
+			if(callback){
+				callback();
+			}
+		},
+		error : function() {
+			//self.importFail("A problem was encountered when saving metadata");
+		}
+	});
+
+};
+
+/*
+ * undoWizardOperations
+ */
+LinkedGov.undoWizardOperations = function(historyID){
+
+	Refine.postCoreProcess(
+			"undo-redo",
+			{ lastDoneID: historyID },
+			null,
+			{ everythingChanged: true }
+	);
+};
+
+
+/*
+ * summariseWizardHistoryEntry
+ */
+LinkedGov.summariseWizardHistoryEntry = function(wizardName, wizardHistoryRestoreID){
+
+	/*
+	 * Find the history entries between the restore point and 
+	 * the "now" entry, remove them all but the first entry and 
+	 * rename it to the name of the wizard.
+	 */
+	var removeEntry = false;
+	for(var i=0; i<ui.historyPanel._data.past.length;i++){
+		if(removeEntry){
+			log("Removing --- "+ui.historyPanel._data.past[i].description);
+			ui.historyPanel._data.past.splice(i,1);
+			i--;
+		}
+		if(ui.historyPanel._data.past[i].id == wizardHistoryRestoreID){
+			removeEntry = true;
+			i++;
+			ui.historyPanel._data.past[i].description = wizardName;
+		}
+
+	}
+
+	ui.historyPanel._render();
+
+};
+
+
+/*
+ * summariseWizardOperations
+ */
+LinkedGov.summariseWizardOperations = function() {
+
+	/*
+	 * - Loop through wizard operations object
+	 * - Find start and end points of operations
+	 * - Delete all but the first, rename the first
+	 * - Render
+	 */
+
+	for(var i=0;i<LinkedGov.vars.wizardOperations.length;i++){
+
+		var name = LinkedGov.vars.wizardOperations[i].name;
+		var restoreID = LinkedGov.vars.wizardOperations[i].restoreID;
+		var finishID = LinkedGov.vars.wizardOperations[i].finishID;
+
+		var removeEntry = false;
+		for(var i=0; i<ui.historyPanel._data.past.length;i++){
+			if(removeEntry){
+				log("Removing --- "+ui.historyPanel._data.past[i].description);
+				ui.historyPanel._data.past.splice(i,1);
+				i--;
+			}
+			if(ui.historyPanel._data.past[i].id == restoreID){
+				removeEntry = true;
+				i++;
+				ui.historyPanel._data.past[i].description = name;
+			} else if(ui.historyPanel._data.past[i].id == finishID){
+				removeEntry = false;
+				log("Removing --- "+ui.historyPanel._data.past[i].description);
+				ui.historyPanel._data.past.splice(i,1);
+				i--;
+			}
+		}
+	}
+
+	ui.historyPanel.simpleRender();	
+
+};
+
 /*
  * splitVariablePartColumn
  * 
@@ -289,7 +594,7 @@ var splitVariablePartColumn = {
 					 */
 					log("data.facets.length = " + data.facets.length);
 					for ( var i = 0; i < data.facets.length; i++) {
-						
+
 						/*
 						 * If the facet matches the column name and has
 						 * choices returned

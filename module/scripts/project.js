@@ -31,7 +31,9 @@ var LinkedGov = {
 				rowDescription : "",
 				cols : []
 			},
-			lgNameSpace: "http://example.linkedgov.org/"
+			lgNameSpace: "http://example.linkedgov.org/",
+			hiddenColumns: ""
+			//wizardOperations:[]
 		},
 
 		/*
@@ -99,6 +101,27 @@ var LinkedGov = {
 				LinkedGov.applyTypeIcons.init();
 				LinkedGov.applyTypeIcons.apply();
 				LinkedGov.saveMetadataToRDF();
+				
+				LinkedGov.getHiddenColumnMetadata(function(){
+					LinkedGov.keepHiddenColumnsHidden();
+				});
+				
+				ui.dataTableView.render2 = ui.dataTableView.render;
+				ui.dataTableView.render = function(){
+
+					//log("Rendered table");
+					ui.dataTableView.render2();
+					LinkedGov.keepHiddenColumnsHidden();
+					LinkedGov.applyTypeIcons.apply();
+
+				}
+				
+				//ui.historyPanel.simpleRender = ui.historyPanel._render;
+				//ui.historyPanel._render = function() {
+				//	LinkedGov.summariseWizardOperations();
+				//	ui.historyPanel.simpleRender();
+				//}
+				
 			});
 		},
 
@@ -291,6 +314,13 @@ var LinkedGov = {
 			 * Call the old resizeAll function - found in the core project.js file.
 			 */
 			resizeAll();
+		},
+		
+		/*
+		 * showUndoButton
+		 */
+		showUndoButton : function(wizardBody) {
+			$(wizardBody).parent().find("div.action-buttons a.undo").css("display","inline-block");
 		},
 
 		/*

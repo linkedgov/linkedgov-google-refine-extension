@@ -34,9 +34,11 @@ var latLongWizard = {
 		 */
 		initialise : function(elmts) {
 
+			var self = this;
+			self.vars.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
+
 			LinkedGov.showWizardProgress(true);
 
-			var self = this;
 			self.vars.elmts = elmts;
 
 			self.vars.colObjects = self.buildColumnObjects();
@@ -88,7 +90,7 @@ var latLongWizard = {
 
 				return array;
 			} else {
-				return array;
+				self.onFail("One or more columns need to be selected in order to proceed with the wizard.");
 			}
 		},
 
@@ -329,7 +331,12 @@ var latLongWizard = {
 			return o;
 		},
 
-		onFail : function() {
+		/*
+		 * onFail
+		 * 
+		 * Alerts the user of the reason why the wizard failed and resets the wizard.
+		 */
+		onFail : function(message) {
 			var self = this;
 			alert("Geolocation wizard failed.\n\n" + message)
 			LinkedGov.resetWizard(self.vars.elmts.latLongBody);
@@ -345,7 +352,9 @@ var latLongWizard = {
 				everythingChanged : true
 			}, function() {
 				LinkedGov.resetWizard(self.vars.elmts.latLongBody);
+				LinkedGov.showUndoButton(self.vars.elmts.latLongBody);
 				// Add typed class to column headers
+				//LinkedGov.summariseWizardHistoryEntry("Latitude and Longitude wizard", self.vars.historyRestoreID);
 				LinkedGov.showWizardProgress(false);
 			});
 		}

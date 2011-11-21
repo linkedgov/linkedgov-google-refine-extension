@@ -1,15 +1,15 @@
 <div class="wizard-body" bind="dateTimeBody">
 
 	<h2>Date and time wizard</h2>
-<div class="description">
-	<p>
-		This wizard will try to understand and format any dates or times you have in your data. 
+	<div class="description">
+		<p>This wizard will try to understand and format any dates or
+			times you have in your data.</p>
+		<p>You might find dates in a single column or perhaps split across
+			multiple columns. To begin, select any columns that contain a
+			complete date, then repeat this process if there are any other dates:
 		</p>
-		<p>You might find dates in a single column or perhaps split across multiple columns. To begin, 
-		select any columns that contain a complete date, then repeat this process if there are any other dates:
-	</p>
-		</div>
-		
+	</div>
+
 	<div class="selector date">
 		<a class="button selectColumn" id="dateSelect">Start Select</a> <a
 			class="info"></a> <span class="note">To select multiple column
@@ -19,10 +19,20 @@
 
 		<ul class="selected-columns" bind="dateTimeColumns">
 		</ul>
-	</div>		
-		
-</div><!--  end date/time wizard -->
+	</div>
+	<!-- 
+	<div class="preview">
+        <a class="button">Preview</a>
+        <a class="info"></a> <span class="note">The first 5 rows are previewed.</span>
+        <ul class="cell-previews">
+        </ul>
+    </div>
+     -->
 
-	<div class="update-button">
-		<a href="javascript:{}" bind="dateTimeButton" class="button update" title="Update">Update</a>
-	</div>	
+</div>
+<!--  end date/time wizard -->
+
+<div class="action-buttons" rel="dateTimeWizard">
+    <a href="javascript:{}" class="button undo" title="Undo">Undo</a>
+	<a href="javascript:{}" bind="dateTimeButton" class="button update" title="Update">Update</a>
+</div>

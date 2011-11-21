@@ -14,6 +14,9 @@ div#feedback-form textarea {
     padding: 0.4em;
     width: 95%;
 }
+.hiddenCompletely {
+	display:none !important;
+}
 div.ui-widget-overlay {
 	z-index:9998 !important;
 }
@@ -32,9 +35,14 @@ body.lg #header {
 }
 body.lg #slogan {
     color: #444444;
+    display: inline-block;
     font-size: 110%;
     font-style: italic;
-    margin: 0 1em 0 14px;
+    margin-bottom: 0;
+    margin-left: 15px;
+    margin-right: 1em;
+    vertical-align: middle;
+    width: 110px;
 }
 body.lg div#feedback-button {
     float: right;
@@ -383,6 +391,7 @@ body.lg div.selector a.selectColumn {
 body.lg div.selector a.selecting {
     background: -moz-linear-gradient(center top , #E3E3E3, #F9F9F9) repeat scroll 0 0 transparent;
 }
+
 body.lg div.next-button a.button {
 	font-weight:bold;
 }
@@ -390,7 +399,7 @@ body.lg div.wizard-body div.split {
     background: none repeat scroll 0 0 #F9F9F9;
     border: 1px solid #DDDDDD;
     border-radius: 5px 5px 5px 5px;
-    margin-bottom: 0;
+    margin-bottom: 10px;
     margin-top: 5px;
     padding: 5px 10px 10px;
     display:none;
@@ -398,7 +407,7 @@ body.lg div.wizard-body div.split {
 body.lg div.wizard-body div.split label {
     float: left;
     margin-bottom: 5px;
-    margin-top: 5px;
+    margin-top: 0px;
     padding-left: 0;
     width: 219px;
 }
@@ -476,6 +485,54 @@ body.lg div.wizard-body div.selector p {
 	padding-bottom: 10px;
     text-align: left;
 }
+body.lg div.wizard-body div.preview {
+    background-color: #FBECD8;
+    border: 1px solid #EFCFAA;
+    border-radius: 5px 5px 5px 5px;
+    clear: both;
+    margin: 5px 0 10px;
+    padding: 5px;
+}
+body.lg div.wizard-body div.preview a.button {
+	
+}
+body.lg div.wizard-body div.preview ul {
+	list-style-type: none;
+}
+body.lg div.wizard-body div.preview ul.cell-previews {
+    background: none repeat scroll 0 0 #FFFFFF;
+    border: 1px solid #DDDDDD;
+    margin-top: 5px;
+    padding-bottom: 1px;
+    padding-left: 1px;
+    padding-right: 1px;
+    display:none;
+}
+body.lg div.wizard-body div.preview ul.cell-previews li {
+    border: 1px solid #DDDDDD;
+    margin-top: 1px;    
+}
+body.lg div.wizard-body div.preview ul.cell-previews li span {
+    display: inline-block;
+    padding-bottom: 0px;
+    padding-left: 6px;
+    padding-top: 2px;    
+    font-weight:bold;
+}
+body.lg div.wizard-body div.preview ul.cell-previews ul.values {
+    background:#FFFFFF;
+}
+body.lg div.wizard-body div.preview ul.cell-previews ul.values li {
+    border-color: #EEEEEE -moz-use-text-color -moz-use-text-color;
+    border-style: solid none none;
+    border-width: 1px medium medium;
+    color: #4266B3;
+    margin: 1px;
+    padding-bottom: 2px;
+    padding-left: 6px;
+    padding-top: 2px;
+    text-align: left; 
+}
 body.lg div.wizard-body ul.selected-columns {
     background: none repeat scroll 0 0 #FFFFFF;
     border: 1px solid #DDDDDD;
@@ -505,6 +562,7 @@ body.lg div.wizard-body ul.selected-columns li span.col {
     padding-bottom: 2px;
     padding-left: 6px;
     padding-top: 2px;
+    font-weight:bold;
 }
 body.lg div.wizard-body ul.selected-columns li span.remove {
     background-image: url("../images/delete-hover.png");
@@ -546,7 +604,7 @@ body.lg div.wizard-body ul.selected-columns li span.colOptions select.duration {
 	width:auto;
 }
 body.lg div.wizard-body ul.selected-columns li span.colOptions {
-    background-color: #F9F9F5;
+    background-color: #F9F9F9;
     border-top:1px solid #EDEDED;
     display: block;
     float: none;
@@ -565,7 +623,7 @@ body.lg div.wizard-body ul.selected-columns li span.colOptions span {
 body.lg div.wizard-body ul.date-checkboxes li span.colOptions.mb4d, 
 body.lg div.wizard-body ul.date-checkboxes li span.colOptions.day, 
 body.lg div.wizard-body ul.date-checkboxes li span.colOptions.year {
-	background-color: #FFFFCC;
+	/*background-color: #FFFFCC;*/
 	display: none;
 }
 body.lg div.wizard-body ul.date-checkboxes li span.colOptions.day span, 
@@ -588,7 +646,7 @@ body.lg div.wizard-body ul.date-checkboxes li span.colOptions.day input {
     width: 60px;
 }
 body.lg div.wizard-body ul.date-checkboxes li span.colOptions.duration {
-	background-color: #FFF6E6;
+	/*background-color: #FFF6E6;*/
 	display:none;
 }
 body.lg div.wizard-body ul.date-checkboxes li span.colOptions div.duration-input {
@@ -610,7 +668,7 @@ body.lg div.wizard-body ul.date-checkboxes li span.dateFrags span {
 body.lg div.wizard-body ul.date-checkboxes li span.dateFrags input {
 	margin-left: 5px;
 }
-body.lg div.update-button {
+body.lg div.action-buttons {
     background-color: #E3E9FF;
     border-top: 1px solid #BBCCFF;
     bottom: 32px;
@@ -622,19 +680,39 @@ body.lg div.update-button {
     text-align: center;
     width: 300px;
 }
-body.lg div.update-button a.update {
+body.lg div.wizard-panel div.action-buttons a.button {
     font-size: 14px;
     font-weight: bold;
-    margin-left: 0;
+    margin-left: 0; 
+    color:#FFFFFF;
 }
-body.lg div.wizard-body a.update {
-    font-size: 14px;
-    font-weight: bold;
-    margin-left: 0;
+body.lg div.wizard-panel div.action-buttons a.button.undo {
+    background: -moz-linear-gradient(center top , #D68C8C, #742F2F) repeat scroll 0 0 transparent;
+    text-shadow: 1px 1px #5B1B1B;
     display:none;
 }
+body.lg div.wizard-panel div.action-buttons a.button.preview {
+    background: -moz-linear-gradient(center top , #8FD68C, #32742F) repeat scroll 0 0 transparent;
+    text-shadow: 1px 1px #153E19;
+}
+body.lg div.wizard-panel div.action-buttons a.button.update {
+    background:-moz-linear-gradient(center top , #79B1FE, #294F8C) repeat scroll 0 0 transparent;
+    text-shadow: 1px 1px #153E19;
+}
+body.lg div.wizard-panel div.action-buttons a.button.undo:active {
+    background: -moz-linear-gradient(center top , #742F2F, #D68C8C) repeat scroll 0 0 transparent;
+    text-shadow: 1px 1px #5B1B1B;
+}
+body.lg div.wizard-panel div.action-buttons a.button.preview:active {
+    background: -moz-linear-gradient(center top , #32742F, #8FD68C) repeat scroll 0 0 transparent;
+    text-shadow: 1px 1px #153E19;
+}
+body.lg div.wizard-panel div.action-buttons a.button.update:active {
+    background:-moz-linear-gradient(center top , #294F8C, #79B1FE) repeat scroll 0 0 transparent;
+    text-shadow: 1px 1px #153E19;
+}
 body.lg div.wizard-body div.updateBG {
-	background: none repeat scroll 0 0 #BBCCFF;
+    background: none repeat scroll 0 0 #BBCCFF;
     margin: 0 -10px -10px;
     padding: 5px 10px 5px 5px;
     text-align: right;

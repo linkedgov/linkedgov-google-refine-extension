@@ -32,8 +32,9 @@ var measurementsWizard = {
 		 * Builds the column objects and saves their RDF. 
 		 */
 		initialise : function(elmts) {
-			
+
 			var self = this;
+			self.vars.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
 			self.vars.elmts = elmts;
 			
 			/*
@@ -197,6 +198,11 @@ var measurementsWizard = {
 
 		},
 
+		/*
+		 * onFail
+		 * 
+		 * Alerts the user of the reason why the wizard failed and resets the wizard.
+		 */
 		onFail : function(message) {
 			var self = this;
 			alert("Measurments wizard failed.\n\n" + message);
@@ -210,6 +216,8 @@ var measurementsWizard = {
 		onComplete : function() {
 			var self = this;
 			LinkedGov.resetWizard(self.vars.elmts.measurementsBody);
+			LinkedGov.showUndoButton(self.vars.elmts.measurementsBody);
+			//LinkedGov.summariseWizardHistoryEntry("Measurements wizard", self.vars.historyRestoreID);
 			LinkedGov.showWizardProgress(false);
 		}
 

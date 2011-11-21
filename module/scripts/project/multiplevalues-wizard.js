@@ -62,6 +62,7 @@ var multipleValuesWizard = {
 		initialise : function(elmts) {
 
 			var self = this;
+			self.vars.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
 			self.vars.elmts = elmts;
 
 			// LinkedGov.setFacetCountLimit(1000);
@@ -812,6 +813,11 @@ var multipleValuesWizard = {
 			});
 		},
 
+		/*
+		 * onFail
+		 * 
+		 * Alerts the user of the reason why the wizard failed and resets the wizard.
+		 */
 		onFail : function(message) {
 			var self = this;
 			LinkedGov.setBlanksToNulls(false, theProject.columnModel.columns, 0,
@@ -841,6 +847,8 @@ var multipleValuesWizard = {
 					everythingChanged : true
 				});
 				LinkedGov.resetWizard(self.vars.elmts.multipleValuesBody);
+				LinkedGov.showUndoButton(self.vars.elmts.multipleValuesBody);
+				//LinkedGov.summariseWizardHistoryEntry("Multiple values wizard", self.vars.historyRestoreID);
 				LinkedGov.showWizardProgress(false);
 			});
 

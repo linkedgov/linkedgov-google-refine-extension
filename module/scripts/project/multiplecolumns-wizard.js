@@ -51,6 +51,7 @@ var multipleColumnsWizard = {
 		initialise : function(elmts) {
 
 			var self = this;
+			self.vars.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
 			self.vars.elmts = elmts;
 
 			if ($(elmts.multipleColumnsColumns).children("li").length > 0) {
@@ -279,7 +280,13 @@ var multipleColumnsWizard = {
 
 		},
 
+		/*
+		 * onFail
+		 * 
+		 * Alerts the user of the reason why the wizard failed and resets the wizard.
+		 */
 		onFail : function(message) {
+			
 			var self = this;
 			/*
 			 * Reset any null cells to blanks again, using the "false" flag
@@ -313,6 +320,8 @@ var multipleColumnsWizard = {
 					ui.typingPanel.populateRangeSelector($(self.vars.elmts.multipleColumnsBody).find("div.range"), function(){
 						$(self.vars.elmts.multipleColumnsBody).find("div.range").slideDown();					
 						LinkedGov.resetWizard(self.vars.elmts.multipleColumnsBody);
+						LinkedGov.showUndoButton(self.vars.elmts.multipleColumnsBody);
+						//LinkedGov.summariseWizardHistoryEntry("Multiple columns wizard", self.vars.historyRestoreID);
 						LinkedGov.showWizardProgress(false);
 					});
 				});

@@ -83,8 +83,11 @@ LinkedGov.checkSchema = function(vocabs, callback) {
 		for ( var i = 0; i < schema.rootNodes.length; i++) {
 
 			if (typeof schema.rootNodes[i].isRowNumberCell != 'undefined' && schema.rootNodes[i].isRowNumberCell === true) {
+				log("found the root node");
 				callback(schema.rootNodes[i], false);
+				i = schema.rootNodes.length;
 			} else if (i == schema.rootNodes.length - 1) {
+				log("created a new root node");
 				rootNode = {
 						"nodeType" : "cell-as-resource",
 						"expression" : "value",
@@ -93,10 +96,12 @@ LinkedGov.checkSchema = function(vocabs, callback) {
 						"links" : []
 				};
 				callback(rootNode, true);
+				i = schema.rootNodes.length;
 			}
 		}
 
 	} else {
+		log("created a new root node 2");
 		rootNode = {
 				"nodeType" : "cell-as-resource",
 				"expression" : "value",
@@ -131,6 +136,11 @@ LinkedGov.saveMetadataToRDF = function(callback){
 	}
 
 	if(!metadataAlreadySaved){
+		
+		/*
+		 * Restore hidden columns when the first metadata save is made
+		 */
+		LinkedGov.restoreHiddenColumns();
 
 		var vocabs = [{
 			name : "dct",
@@ -858,6 +868,7 @@ var applyTypeIcons = {
 				var theCallback = callback;
 				var theOptions = options;
 				var lgCallback = function() {
+					LinkedGov.keepHiddenColumnsHidden();
 					LinkedGov.applyTypeIcons.apply();
 					theCallback();
 				}
@@ -920,14 +931,10 @@ var applyTypeIcons = {
 					}
 				});
 			} else if(key == "curie" && val != "vcard:Address"){
-				
-				//log("curie: "+val);
-			
+							
 				$("td.column-header").each(function() {		
 					if($(this).find("span.column-header-name").length > 0){
-						
-						//log((val.split(":")[1])+" same as "+LinkedGov.camelize($(this).find("span.column-header-name").html().toLowerCase())+"?");
-						
+												
 						if (val.split(":")[1] == LinkedGov.camelize($(this).find("span.column-header-name").html().toLowerCase())) {
 							$(this).addClass("typed");
 						}
