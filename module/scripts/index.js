@@ -36,7 +36,7 @@ var LinkedGov = {
 			 * Change logo & slogan
 			 */
 			$("#header img").attr("src","/extension/linkedgov/images/logo-small.png").attr("height","40");
-			$("#header span#slogan").html("Cleaning up government data");
+			$("#header span#slogan").html("Making government data usable");
 			
 			$("#header").append(DOM.loadHTML("linkedgov", "html/feedback-form.html"));
 			

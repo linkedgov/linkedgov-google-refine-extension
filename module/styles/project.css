@@ -293,7 +293,7 @@ body.lg a.wizard-header {
     color: #444444;
     cursor: pointer;
     display: block;
-    margin: 5px 0 0 0;
+    margin: 5px 0 10px;
     padding: 10px 25px 10px 10px;
     text-decoration: none;
 }

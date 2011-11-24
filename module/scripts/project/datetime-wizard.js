@@ -607,7 +607,7 @@ var dateTimeWizard = {
 				data : {
 					columnName : colObject.name,
 					expression : 'toDate(value,' + (colObject.monthBeforeDay) + ')',
-					onError : 'store-error',
+					onError : 'keep-original',
 					repeat : false,
 					repeatCount : ""
 				},
