@@ -1,5 +1,5 @@
 /*
- * latLongWizard
+ * geolocationWizard
  * 
  * The user can specify if one or more columns contain a latitude, 
  * longitude, northing or easting.
@@ -8,7 +8,7 @@
  * the geolocation types.
  * 
  */
-var latLongWizard = {
+var geolocationWizard = {
 
 		vars : {
 			elmts : {},
@@ -86,8 +86,8 @@ var latLongWizard = {
 			 * create a column object for each of them - storing their name and their 
 			 * geolocation type.
 			 */
-			if ($(self.vars.elmts.latLongColumns).children("li").length > 0) {
-				$(self.vars.elmts.latLongColumns).children("li").each(function() {
+			if ($(self.vars.elmts.geolocationColumns).children("li").length > 0) {
+				$(self.vars.elmts.geolocationColumns).children("li").each(function() {
 					var el = $(this);
 					/*
 					 * Skip any columns that have been removed
@@ -351,7 +351,7 @@ var latLongWizard = {
 		onFail : function(message) {
 			var self = this;
 			alert("Geolocation wizard failed.\n\n" + message)
-			LinkedGov.resetWizard(self.vars.elmts.latLongBody);
+			LinkedGov.resetWizard(self.vars.elmts.geolocationBody);
 			LinkedGov.showWizardProgress(false);
 		},
 
@@ -363,8 +363,8 @@ var latLongWizard = {
 			Refine.update({
 				everythingChanged : true
 			}, function() {
-				LinkedGov.resetWizard(self.vars.elmts.latLongBody);
-				LinkedGov.showUndoButton(self.vars.elmts.latLongBody);
+				LinkedGov.resetWizard(self.vars.elmts.geolocationBody);
+				LinkedGov.showUndoButton(self.vars.elmts.geolocationBody);
 				// Add typed class to column headers
 				//LinkedGov.summariseWizardHistoryEntry("Latitude and Longitude wizard", self.vars.historyRestoreID);
 				LinkedGov.showWizardProgress(false);

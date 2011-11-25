@@ -1,6 +1,6 @@
 
 /*
- * multipleColumnsWizard
+ * columnsToRowsWizard
  * 
  * Rotates columns to rows (i.e. 24 columns labelled by the hour, rotated into
  * one column named "Time" with 24 values per every original row).
@@ -31,7 +31,7 @@
  * 5. fillDownColumns() Fills in all the blank cells as a result of the rotate.
  * 
  */
-var multipleColumnsWizard = {
+var columnsToRowsWizard = {
 
 		vars : {
 			startColName : "",
@@ -54,9 +54,9 @@ var multipleColumnsWizard = {
 			self.vars.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
 			self.vars.elmts = elmts;
 
-			if ($(elmts.multipleColumnsColumns).children("li").length > 0) {
+			if ($(elmts.columnsToRowsColumns).children("li").length > 0) {
 
-				log("Starting multipleColumnsWizard");
+				log("Starting columnsToRowsWizard");
 
 				LinkedGov.showWizardProgress(true);
 
@@ -70,7 +70,7 @@ var multipleColumnsWizard = {
 				 * Remove all RDF relating to the columns involved in the rotation 
 				 * operation as this will break their mappings.
 				 */
-				$(elmts.multipleColumnsColumns).children("li").find("span.col").each(function(){
+				$(elmts.columnsToRowsColumns).children("li").find("span.col").each(function(){
 					//log("Removing RDF for: "+$(this).html());
 					LinkedGov.removeColumnInRDF($(this).html());
 				});
@@ -115,45 +115,45 @@ var multipleColumnsWizard = {
 			var elmts = self.vars.elmts;
 
 			log("Before:");
-			log($(elmts.multipleColumnsColumns).children("li"));
+			log($(elmts.columnsToRowsColumns).children("li"));
 
 			/*
 			 * Loop through the user's selected columns and trim any columns that
 			 * have been marked as "skip" from the beginning and end.
 			 */
-			for ( var i = 0; i < $(elmts.multipleColumnsColumns).children("li").length; i++) {
+			for ( var i = 0; i < $(elmts.columnsToRowsColumns).children("li").length; i++) {
 				/*
 				 * If a selected column has been removed, but was at the beginning,
 				 * remove it from the array of columns.
 				 */
-				if ($($(elmts.multipleColumnsColumns).children("li")[i]).hasClass(
+				if ($($(elmts.columnsToRowsColumns).children("li")[i]).hasClass(
 				"skip")
 				&& i == 0) {
-					$($(elmts.multipleColumnsColumns).children("li")[i]).remove();
+					$($(elmts.columnsToRowsColumns).children("li")[i]).remove();
 					i--;
 					/*
 					 * If a selected column has been removed, but was at the end,
 					 * remove it from the array of columns.
 					 */
-				} else if ($($(elmts.multipleColumnsColumns).children("li")[i])
+				} else if ($($(elmts.columnsToRowsColumns).children("li")[i])
 						.hasClass("skip")
-						&& i == $(elmts.multipleColumnsColumns).children("li").length - 1) {
-					$($(elmts.multipleColumnsColumns).children("li")[i]).remove();
+						&& i == $(elmts.columnsToRowsColumns).children("li").length - 1) {
+					$($(elmts.columnsToRowsColumns).children("li")[i]).remove();
 					i--;
 					i--;
 				}
 			}
 			log("After:");
-			log($(elmts.multipleColumnsColumns).children("li"));
+			log($(elmts.columnsToRowsColumns).children("li"));
 
 			/*
 			 * Once trimmed, the array should only contain columns to skip after and
 			 * before the start and end columns, so reassess which columns need to
 			 * be skipped and populate the "colsToSkip" array.
 			 */
-			for ( var j = 0, len = $(elmts.multipleColumnsColumns).children("li").length; j < len; j++) {
-				if ($($(elmts.multipleColumnsColumns).children("li")[j]).hasClass("skip")) {
-					self.vars.colsToSkip.push($($(elmts.multipleColumnsColumns).children("li")[j]).find("span.col").html());
+			for ( var j = 0, len = $(elmts.columnsToRowsColumns).children("li").length; j < len; j++) {
+				if ($($(elmts.columnsToRowsColumns).children("li")[j]).hasClass("skip")) {
+					self.vars.colsToSkip.push($($(elmts.columnsToRowsColumns).children("li")[j]).find("span.col").html());
 					self.vars.gapInRange = true;
 				}
 			}
@@ -164,8 +164,8 @@ var multipleColumnsWizard = {
 			/*
 			 * Recalculate how many columns to transpose.
 			 */
-			self.vars.startColName = $(elmts.multipleColumnsColumns).children("li").eq(0).find("span.col").html();
-			self.vars.colCount = $(elmts.multipleColumnsColumns).children("li").length  - self.vars.colsToSkip.length;
+			self.vars.startColName = $(elmts.columnsToRowsColumns).children("li").eq(0).find("span.col").html();
+			self.vars.colCount = $(elmts.columnsToRowsColumns).children("li").length  - self.vars.colsToSkip.length;
 			//self.vars.newColName = window.prompt("New column name:", "");
 		},
 
@@ -292,9 +292,9 @@ var multipleColumnsWizard = {
 			 * Reset any null cells to blanks again, using the "false" flag
 			 */
 			LinkedGov.setBlanksToNulls(false, theProject.columnModel.columns, 0,function() {
-				log("Multiple columns wizard failed.\n\n" + message);
+				log("Columns to rows wizard failed.\n\n" + message);
 				Refine.update({everythingChanged : true});
-				LinkedGov.resetWizard(self.vars.elmts.multipleColumnsBody);
+				LinkedGov.resetWizard(self.vars.elmts.columnsToRowsBody);
 				LinkedGov.showWizardProgress(false);
 			});
 		},
@@ -313,14 +313,14 @@ var multipleColumnsWizard = {
 			 */
 			LinkedGov.setBlanksToNulls(false, theProject.columnModel.columns, 0, function() {
 				
-				log("Multiple columns wizard complete");
+				log("Columns to rows wizard complete");
 				Refine.update({everythingChanged:true},function(){
 					// Refresh the content of the select inputs
-					ui.typingPanel.rangeSelector($(self.vars.elmts.multipleColumnsBody).find("div.range").find("select").eq(0));
-					ui.typingPanel.populateRangeSelector($(self.vars.elmts.multipleColumnsBody).find("div.range"), function(){
-						$(self.vars.elmts.multipleColumnsBody).find("div.range").slideDown();					
-						LinkedGov.resetWizard(self.vars.elmts.multipleColumnsBody);
-						LinkedGov.showUndoButton(self.vars.elmts.multipleColumnsBody);
+					ui.typingPanel.rangeSelector($(self.vars.elmts.columnsToRowsBody).find("div.range").find("select").eq(0));
+					ui.typingPanel.populateRangeSelector($(self.vars.elmts.columnsToRowsBody).find("div.range"), function(){
+						$(self.vars.elmts.columnsToRowsBody).find("div.range").slideDown();					
+						LinkedGov.resetWizard(self.vars.elmts.columnsToRowsBody);
+						LinkedGov.showUndoButton(self.vars.elmts.columnsToRowsBody);
 						//LinkedGov.summariseWizardHistoryEntry("Multiple columns wizard", self.vars.historyRestoreID);
 						LinkedGov.showWizardProgress(false);
 					});

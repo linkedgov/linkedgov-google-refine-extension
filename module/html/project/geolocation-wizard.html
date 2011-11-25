@@ -1,23 +1,29 @@
 
-<div class="wizard-body" bind="latLongBody">
+<div class="wizard-body" bind="geolocationBody">
 
-	<h2>Geo-location wizard</h2>
-<div class="description">
-	<p>
+    <h2>
+    Geolocation wizard
+       <span class="wizardIcon">
+        <img src="/extension/linkedgov/images/geolocation_wizard_icon.png" width="32" height="32" />
+       </span>
+    </h2>
+    
+    <div class="description">
+	   <p>
 		This wizard lets you specify any columns containing latitude, longitude, 
 		northing or easting values. Once you have selected the columns, you may 
 		select their type from their drop-down list.
-	</p>
-</div>
+	   </p>
+    </div>
 	<div class="selector">
-		<a class="button selectColumn" id="latLongSelect">Start Select</a> <a
+		<a class="button selectColumn" id="geolocationSelect">Start Select</a> <a
 			class="info"></a> <span class="note">To select multiple column
 			headings, hold down CTRL (Windows) or Apple (Mac). You can also drag
 			your mouse across multiple column headers while holding down the
 			relevant key.<br /> <br />Click anywhere in the table to unselect
 			the columns.</span>
 
-		<ul class="selected-columns" bind="latLongColumns">
+		<ul class="selected-columns" bind="geolocationColumns">
 		</ul>
 	</div>
 
@@ -26,8 +32,8 @@
 <!-- end lat long wizard -->
 
 
-<div class="action-buttons" rel="latLongWizard">
+<div class="action-buttons" rel="geolocationWizard">
     <a href="javascript:{}" class="button undo" title="Undo">Undo</a>
-		<a href="javascript:{}" bind="latLongButton" class="button update"
+		<a href="javascript:{}" bind="geolocationButton" class="button update"
 			title="Update">Update</a>
 	</div>

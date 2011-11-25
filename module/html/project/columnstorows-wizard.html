@@ -1,6 +1,12 @@
-<div class="wizard-body rangeSelect" bind="multipleColumnsBody">
+<div class="wizard-body rangeSelect" bind="columnsToRowsBody">
 
-	<h2>Multiple columns wizard</h2>
+    <h2>
+    Columns to rows wizard
+       <span class="wizardIcon">
+        <img src="/extension/linkedgov/images/columns_to_rows_wizard_icon.png" width="32" height="32" />
+       </span>
+    </h2>
+    
 	<div class="description">
 		<p class="description">This wizard aims to move related values of
 			the same type (i.e. times or measurements) in multiple columns into
@@ -27,14 +33,14 @@
 				class="to"></select>
 		</div>
 
-		<ul class="selected-columns range" bind="multipleColumnsColumns">
+		<ul class="selected-columns range" bind="columnsToRowsColumns">
 		</ul>
 	</div>
 
 </div>
 <!-- end multiple columns wizard -->
 
-<div class="action-buttons" rel="multipleColumnsWizard">
+<div class="action-buttons" rel="columnsToRowsWizard">
     <a href="javascript:{}" class="button undo" title="Undo">Undo</a>
-	<a href="javascript:{}" bind="multipleColumnsButton" class="button update" title="Update">Update</a>
+	<a href="javascript:{}" bind="columnsToRowsButton" class="button update" title="Update">Update</a>
 </div>

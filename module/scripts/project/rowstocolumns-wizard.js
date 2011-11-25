@@ -1,6 +1,6 @@
 
 /*
- * multipleValuesWizard
+ * rowsToColumnsWizard
  * 
  * Wizard for transposing a column of multiple values into a set of new headed
  * columns. The user is asked to select three types of column:
@@ -40,7 +40,7 @@
  */
 
 
-var multipleValuesWizard = {
+var rowsToColumnsWizard = {
 
 		vars : {
 			headersColName : "",
@@ -67,8 +67,8 @@ var multipleValuesWizard = {
 
 			// LinkedGov.setFacetCountLimit(1000);
 
-			if ($(elmts.multipleValuesColumns).children("li").length < 1
-					|| $(elmts.multipleValuesColumns2).children("li").length < 1) {
+			if ($(elmts.rowsToColumnsColumns).children("li").length < 1
+					|| $(elmts.rowsToColumnsColumns2).children("li").length < 1) {
 				alert("You must select a single column containing multiple types and another "
 						+ "column containing their corresponding values.\n\nSelecting any columns "
 						+ "to exclude from the operation is optional.");
@@ -77,10 +77,10 @@ var multipleValuesWizard = {
 				LinkedGov.showWizardProgress(true);
 
 				// Store the column containing the new column header values
-				self.vars.headersColName = $(elmts.multipleValuesColumns).children(
+				self.vars.headersColName = $(elmts.rowsToColumnsColumns).children(
 				"li").eq(0).find("span.col").html();
 				// Store the column containing the values for the new columns
-				self.vars.valuesColName = $(elmts.multipleValuesColumns2).children(
+				self.vars.valuesColName = $(elmts.rowsToColumnsColumns2).children(
 				"li").eq(0).find("span.col").html();
 
 				log(self.vars.headersColName + "," + self.vars.valuesColName);
@@ -89,7 +89,7 @@ var multipleValuesWizard = {
 				 * Store the columns to exclude from the operation (e.g. a totals
 				 * column)
 				 */
-				$(elmts.multipleValuesColumns3).children("li").each(function() {
+				$(elmts.rowsToColumnsColumns3).children("li").each(function() {
 					self.vars.colsToExclude.push($(this).find("span.col").html())
 				});
 
@@ -490,7 +490,7 @@ var multipleValuesWizard = {
 								 * wizard because they are trying to
 								 * transpose too many rows to columns.
 								 */
-								log("Aborting multiple values wizard - facet count limit reached.")
+								log("Aborting rows to columns wizard - facet count limit reached.")
 								self.vars.abortOperation = true;
 							}
 						}
@@ -822,8 +822,8 @@ var multipleValuesWizard = {
 			var self = this;
 			LinkedGov.setBlanksToNulls(false, theProject.columnModel.columns, 0,
 					function() {
-				alert("Multiple Values wizard failed. \n\n" + message);
-				LinkedGov.resetWizard(self.vars.elmts.multipleValuesBody);
+				alert("Rows to columns wizard failed. \n\n" + message);
+				LinkedGov.resetWizard(self.vars.elmts.rowsToColumnsBody);
 				LinkedGov.showWizardProgress(false);
 			});
 
@@ -846,8 +846,8 @@ var multipleValuesWizard = {
 				Refine.update({
 					everythingChanged : true
 				});
-				LinkedGov.resetWizard(self.vars.elmts.multipleValuesBody);
-				LinkedGov.showUndoButton(self.vars.elmts.multipleValuesBody);
+				LinkedGov.resetWizard(self.vars.elmts.rowsToColumnsBody);
+				LinkedGov.showUndoButton(self.vars.elmts.rowsToColumnsBody);
 				//LinkedGov.summariseWizardHistoryEntry("Multiple values wizard", self.vars.historyRestoreID);
 				LinkedGov.showWizardProgress(false);
 			});

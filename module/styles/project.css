@@ -293,7 +293,8 @@ body.lg a.wizard-header {
     color: #444444;
     cursor: pointer;
     display: block;
-    margin: 5px 0 10px;
+    float: left;
+    margin: 5px 0;
     padding: 10px 25px 10px 10px;
     text-decoration: none;
 }
@@ -302,6 +303,37 @@ body.lg a.wizard-header.exp {
 }
 body.lg a.wizard-header:hover {
 	border:1px solid #444444;
+}
+body.lg a.wizard-header span.wizardIcon {
+    display: inline-block;
+    float: left;
+    padding-right: 10px;
+}
+body.lg a.wizard-header span.wizardIcon img {
+/*
+    background-color: #FFFFFF;
+    border: 1px solid #BBCCFF;
+    border-radius: 3px 3px 3px 3px;
+    padding: 6px 5px 5px 6px;
+    */
+}
+body.lg div.wizard-body span.wizardIcon {
+    display: inline;
+    float: right;
+    padding-left: 10px;
+}
+body.lg div.wizard-body span.wizardIcon img {
+/*
+    background-color: #FFFFFF;
+    border: 1px solid #BBCCFF;
+    border-radius: 3px 3px 3px 3px;
+    padding: 6px 5px 5px 6px;
+    */
+}
+body.lg a.wizard-header span.question {
+    display: block;
+    float: left;
+    width: 80%;
 }
 body.lg a.wizard-header span.highlight {
     color: #333333;
@@ -319,8 +351,9 @@ body.lg div.wizard-body {
 }
 body.lg div.wizard-body h2 {
     border-bottom: 1px solid #DDDDDD;
+    line-height: 30px;
     margin-bottom: 10px;
-    padding-bottom: 5px;
+    padding-bottom: 10px;
     padding-left: 0;
     padding-top: 5px;
     text-align: left;

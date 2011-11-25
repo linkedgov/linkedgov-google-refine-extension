@@ -390,7 +390,7 @@ TypingPanel.prototype.enterWizard = function(wizardName) {
 
 				break;
 
-			case "rangecolumns-wizard" :
+			case "columnstorows-wizard" :
 
 				/*
 				 * If the wizard contains a range selector, retrieve the 

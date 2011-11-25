@@ -71,17 +71,17 @@ var LinkedGov = {
 			$.getScript("extension/linkedgov/scripts/project/datetime-wizard.js",function(){
 				LinkedGov.dateTimeWizard = dateTimeWizard;
 			});
-			$.getScript("extension/linkedgov/scripts/project/latlong-wizard.js",function(){
-				LinkedGov.latLongWizard = latLongWizard;
+			$.getScript("extension/linkedgov/scripts/project/geolocation-wizard.js",function(){
+				LinkedGov.geolocationWizard = geolocationWizard;
 			});
 			$.getScript("extension/linkedgov/scripts/project/measurements-wizard.js",function(){
 				LinkedGov.measurementsWizard = measurementsWizard;
 			});
-			$.getScript("extension/linkedgov/scripts/project/multiplecolumns-wizard.js",function(){
-				LinkedGov.multipleColumnsWizard = multipleColumnsWizard;
+			$.getScript("extension/linkedgov/scripts/project/columnsToRows-wizard.js",function(){
+				LinkedGov.columnsToRowsWizard = columnsToRowsWizard;
 			});
-			$.getScript("extension/linkedgov/scripts/project/multiplevalues-wizard.js",function(){
-				LinkedGov.multipleValuesWizard = multipleValuesWizard;
+			$.getScript("extension/linkedgov/scripts/project/rowsToColumns-wizard.js",function(){
+				LinkedGov.rowsToColumnsWizard = rowsToColumnsWizard;
 			});
 			
 			/*
