@@ -61,17 +61,6 @@ var addressWizard = {
 			self.vars.elmts = elmts;
 			self.vars.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
 			self.vars.hiddenColumns = [];
-			
-			/*
-			 * Ask the user to enter a name for the location (as a form 
-			 * of identification if there is more than one location per row).
-			 */
-			while(self.vars.addressName.length < 3){
-				self.vars.addressName = window.prompt("Enter a name for this location, e.g. \"Home address\" :","");
-				if(self.vars.addressName.length < 3){
-					alert("The name must be 3 letters or longer, try again...");
-				}
-			}
 
 			/*
 			 * Build an array of column objects with their options
@@ -83,6 +72,17 @@ var addressWizard = {
 			self.vars.colObjects = self.buildColumnObjects();
 
 			if (self.vars.colObjects.length > 0) {
+				
+				/*
+				 * Ask the user to enter a name for the location (as a form 
+				 * of identification if there is more than one location per row).
+				 */
+				while(self.vars.addressName.length < 3){
+					self.vars.addressName = window.prompt("Enter a name for this location, e.g. \"Home address\" :","");
+					if(self.vars.addressName.length < 3){
+						alert("The name must be 3 letters or longer, try again...");
+					}
+				}
 
 				LinkedGov.showWizardProgress(true);
 

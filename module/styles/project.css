@@ -333,7 +333,7 @@ body.lg div.wizard-body span.wizardIcon img {
 body.lg a.wizard-header span.question {
     display: block;
     float: left;
-    width: 80%;
+    width: 78%;
 }
 body.lg a.wizard-header span.highlight {
     color: #333333;

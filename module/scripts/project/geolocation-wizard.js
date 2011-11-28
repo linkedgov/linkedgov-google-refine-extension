@@ -38,37 +38,40 @@ var geolocationWizard = {
 			var self = this;
 			self.vars.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
 
-			/*
-			 * Ask the user to enter a name for the location (as a form 
-			 * of identification if there is more than one location per row).
-			 */
-			while(self.vars.coordinateName.length < 3){
-				self.vars.coordinateName = window.prompt("Enter a name for these coordniates, e.g. \"Building coordinates\" :","");
-				if(self.vars.coordinateName.length < 3){
-					alert("The name must be 3 letters or longer, try again...");
-				}
-			}
-			
 			LinkedGov.showWizardProgress(true);
 
 			self.vars.elmts = elmts;
 
 			self.vars.colObjects = self.buildColumnObjects();
 
-			if(self.vars.colObjects.length == 2 && self.vars.colObjects[0].type == "northing" || self.vars.colObjects[0].type == "easting"){
-				self.convertNorthingEastingToLatLong(function(){
+			if(self.vars.colObjects.length > 0){
+				/*
+				 * Ask the user to enter a name for the location (as a form 
+				 * of identification if there is more than one location per row).
+				 */
+				while(self.vars.coordinateName.length < 3){
+					self.vars.coordinateName = window.prompt("Enter a name for these coordniates, e.g. \"Building coordinates\" :","");
+					if(self.vars.coordinateName.length < 3){
+						alert("The name must be 3 letters or longer, try again...");
+					}
+				}
+
+				if(self.vars.colObjects.length == 2 && self.vars.colObjects[0].type == "northing" || self.vars.colObjects[0].type == "easting"){
+					self.convertNorthingEastingToLatLong(function(){
+						LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
+							self.saveRDF(rootNode, foundRootNode);
+						});
+					});
+				} else {
 					LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
 						self.saveRDF(rootNode, foundRootNode);
 					});
-				});
+				}
 			} else {
-				LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
-					self.saveRDF(rootNode, foundRootNode);
-				});
+				self.onFail("One or more columns need to be selected in order to proceed with the wizard.");				
 			}
-
 		},
-		
+
 		/*
 		 * buildColumnObjects
 		 * 
@@ -113,13 +116,13 @@ var geolocationWizard = {
 		 * an Easting,Northing to a Latitude,Longitude
 		 */
 		convertNorthingEastingToLatLong:function(callback){
-			
+
 			var self = this;
 			var northingCol = "";
 			var eastingCol = "";
-			
+
 			for(var i=0;i<self.vars.colObjects.length; i++){
-			
+
 				if(self.vars.colObjects[i].type == "northing") {
 					northingCol = self.vars.colObjects[i].name;
 					eastingCol = self.vars.colObjects[i?0:1].name;
@@ -127,9 +130,9 @@ var geolocationWizard = {
 					eastingCol = self.vars.colObjects[i].name;
 					northingCol = self.vars.colObjects[i?0:1].name;					
 				}
-				
+
 			}
-			
+
 			Refine.postCoreProcess("add-column", {
 				baseColumnName : eastingCol,
 				expression : "northingEastingToLatLong(cells[\""+eastingCol+"\"].value,cells[\""+northingCol+"\"].value)",
@@ -151,10 +154,10 @@ var geolocationWizard = {
 					callback();
 				}
 			});
-			
+
 		},
 
-		
+
 		/*
 		 * saveRDF
 		 * 
@@ -182,7 +185,7 @@ var geolocationWizard = {
 						"links" : []
 					}
 			};
-			
+
 
 			var colObjects = self.vars.colObjects;
 
@@ -317,17 +320,17 @@ var geolocationWizard = {
 
 			return o;
 		},
-		
+
 		makeLatLongRDFCombined: function(type, colName, uri, curie) {
-			
+
 			var segmentSplit = 0;
-			
+
 			if(type == "lat"){
 				segmentSplit = 0;
 			} else {
 				segmentSplit = 1;
 			}
-			
+
 			var o = {
 					"uri" : uri,
 					"curie" : curie,

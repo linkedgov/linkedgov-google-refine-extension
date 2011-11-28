@@ -136,7 +136,7 @@ LinkedGov.saveMetadataToRDF = function(callback){
 	}
 
 	if(!metadataAlreadySaved){
-		
+
 		/*
 		 * Restore hidden columns when the first metadata save is made
 		 */
@@ -367,7 +367,7 @@ LinkedGov.saveMetadataToRDF = function(callback){
  */
 LinkedGov.removeColumnInRDF = function(colName,callback) {
 
-	log("removeColumnInRDF");
+	//log("removeColumnInRDF");
 
 	var schema = LinkedGov.getRDFSchema();
 	var rootNodes = schema.rootNodes;
@@ -799,14 +799,17 @@ var finaliseRDFSchema = {
 					 * 
 					 * The @en tag is specified for *any* string value, i.e. "14:00:00" and "12/10/2010".
 					 */
-					if(typeof theProject.rowModel.rows[0].cells[Refine.columnNameToColumnIndex($(this).find("span.column-header-name").html())].v == "number"){
-						if(theProject.rowModel.rows[0].cells[Refine.columnNameToColumnIndex($(this).find("span.column-header-name").html())].v % 1 == 0){
-							o.target.valueType = "http://www.w3.org/2001/XMLSchema#int";
-						} else {
-							o.target.valueType = "http://www.w3.org/2001/XMLSchema#float";
+
+					if(theProject.rowModel.rows[0].cells[Refine.columnNameToColumnIndex($(this).find("span.column-header-name").html())] != null){
+						if(typeof theProject.rowModel.rows[0].cells[Refine.columnNameToColumnIndex($(this).find("span.column-header-name").html())].v == "number"){
+							if(theProject.rowModel.rows[0].cells[Refine.columnNameToColumnIndex($(this).find("span.column-header-name").html())].v % 1 == 0){
+								o.target.valueType = "http://www.w3.org/2001/XMLSchema#int";
+							} else {
+								o.target.valueType = "http://www.w3.org/2001/XMLSchema#float";
+							}
+						} else if(typeof theProject.rowModel.rows[0].cells[Refine.columnNameToColumnIndex($(this).find("span.column-header-name").html())].v == "string"){
+							o.target.lang = "en";
 						}
-					} else if(typeof theProject.rowModel.rows[0].cells[Refine.columnNameToColumnIndex($(this).find("span.column-header-name").html())].v == "string"){
-						o.target.lang = "en";
 					}
 
 					rootNode.links.push(o);
@@ -931,10 +934,10 @@ var applyTypeIcons = {
 					}
 				});
 			} else if(key == "curie" && val != "vcard:Address"){
-							
+
 				$("td.column-header").each(function() {		
 					if($(this).find("span.column-header-name").length > 0){
-												
+
 						if (val.split(":")[1] == LinkedGov.camelize($(this).find("span.column-header-name").html().toLowerCase())) {
 							$(this).addClass("typed");
 						}
