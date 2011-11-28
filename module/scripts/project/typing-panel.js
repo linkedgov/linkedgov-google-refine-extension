@@ -1636,12 +1636,12 @@ TypingPanel.prototype.getFragmentData = function(columnList) {
 		 */
 		columnList.addClass("address-fragments");
 		break;
-	case "latLongColumns" :
+	case "geolocationColumns" :
 
 		fragmentHTML = "<span class='colOptions'>";
 
 		fragmentHTML += 
-			"<select class='latlong-select'>" + 
+			"<select class='geolocation-select'>" + 
 			"<option value='lat'>Latitude</option>" + 
 			"<option value='long'>Longitude</option>" +
 			"<option value='northing'>Northing</option>" + 
