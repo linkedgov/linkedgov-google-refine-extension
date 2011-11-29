@@ -29,6 +29,35 @@ LinkedGov.getRDFSchema = function() {
 }
 
 /*
+ * checkPrefixes
+ * 
+ * Check that a wizards namespace prefixes are present in the RDF schema,
+ * if not, then add them.
+ */
+LinkedGov.checkPrefixes = function(vocabs){
+	
+	var schema = LinkedGov.getRDFSchema();
+	
+	$.each(vocabs, function(k, v) {
+
+		for (var i = 0; i < schema.prefixes.length; i++) {
+			if (schema.prefixes[i].name == v.curie) {
+				// log("Found existing RDF prefixes, removing...");
+				schema.prefixes.splice(i, 1);
+				i--;
+			}
+		}
+
+		schema.prefixes.push({
+			name : v.curie,
+			uri : v.uri
+		});
+
+	});
+	
+};
+
+/*
  * checkSchema
  * 
  * Called when a wizard saves it's RDF.
@@ -53,22 +82,7 @@ LinkedGov.checkSchema = function(vocabs, callback) {
 	 * Loop through the wizard's vocabularies and make 
 	 * sure they all exist in the RDF schema.
 	 */
-	$.each(vocabs, function(k, v) {
-
-		for (var i = 0; i < schema.prefixes.length; i++) {
-			if (schema.prefixes[i].name == v.curie) {
-				// log("Found existing RDF prefixes, removing...");
-				schema.prefixes.splice(i, 1);
-				i--;
-			}
-		}
-
-		schema.prefixes.push({
-			name : v.curie,
-			uri : v.uri
-		});
-
-	});
+	LinkedGov.checkPrefixes(vocabs);
 
 	/*
 	 * Check to see if a root node exists for the rows already by checking 
@@ -84,7 +98,9 @@ LinkedGov.checkSchema = function(vocabs, callback) {
 
 			if (typeof schema.rootNodes[i].isRowNumberCell != 'undefined' && schema.rootNodes[i].isRowNumberCell === true) {
 				log("found the root node");
-				callback(schema.rootNodes[i], false);
+				if(callback){
+					callback(schema.rootNodes[i], false);
+				}
 				i = schema.rootNodes.length;
 			} else if (i == schema.rootNodes.length - 1) {
 				log("created a new root node");
@@ -95,7 +111,9 @@ LinkedGov.checkSchema = function(vocabs, callback) {
 						"rdfTypes" : [],
 						"links" : []
 				};
-				callback(rootNode, true);
+				if(callback){
+					callback(rootNode, true);
+				}
 				i = schema.rootNodes.length;
 			}
 		}
@@ -109,7 +127,9 @@ LinkedGov.checkSchema = function(vocabs, callback) {
 				"rdfTypes" : [],
 				"links" : []
 		};
-		callback(rootNode, true);
+		if(callback){
+			callback(rootNode, true);
+		}
 	}
 
 }
@@ -545,6 +565,14 @@ var finaliseRDFSchema = {
 				lg : {
 					curie : "lg",
 					uri : "http://example.linkedgov.org/"
+				},
+				rdfs: {
+					curie: "rdfs",
+					uri: "http://www.w3.org/2000/01/rdf-schema#"
+				},
+				owl :{
+					curie: "owl",
+					uri: "http://www.w3.org/2002/07/owl#"					
 				}
 			}
 		},
@@ -560,6 +588,8 @@ var finaliseRDFSchema = {
 			self.vars.rowLabel = LinkedGov.vars.labelsAndDescriptions.rowLabel;
 			self.vars.rowDescription = LinkedGov.vars.labelsAndDescriptions.rowDescription;
 
+			LinkedGov.checkPrefixes(self.vars.vocabs);
+			
 			/*
 			 * Chain together a series of save operations using callback functions.
 			 * 
@@ -616,7 +646,7 @@ var finaliseRDFSchema = {
 			 */
 			for(var i=0; i<schema.rootNodes.length; i++){
 				for(var j=0; j<schema.rootNodes[i].rdfTypes.length; j++){
-					if(schema.rootNodes[i].rdfTypes[j].curie == "owl:Class"){
+					if(schema.rootNodes[i].rdfTypes[j].curie == self.vars.vocabs.owl.curie+":Class"){
 						schema.rootNodes.splice(i,1);
 						i--;
 					}
@@ -631,18 +661,18 @@ var finaliseRDFSchema = {
 			 */
 			var rootNode = {
 					links : [ {
-						curie : "rdfs:label",
+						curie : self.vars.vocabs.rdfs.curie+":label",
 						target : {
 							lang : "en",
 							nodeType : "literal",
 							value : LinkedGov.vars.labelsAndDescriptions.rowLabel
 						},
-						uri : "http://www.w3.org/2000/01/rdf-schema#label"
+						uri : self.vars.vocabs.rdfs.uri+"label"
 					}],
 					nodeType : "resource",
 					rdfTypes : [ {
 						curie : "owl:Class",
-						uri : "http://www.w3.org/2002/07/owl#Class"
+						uri : self.vars.vocabs.owl.uri+"Class"
 					} ],
 					value : "http://example.linkedgov.org/example-dataset/terms/"
 						+ camelizedRowLabel
@@ -654,13 +684,13 @@ var finaliseRDFSchema = {
 			 */
 			if (LinkedGov.vars.labelsAndDescriptions.rowDescription.length > 2 && LinkedGov.vars.labelsAndDescriptions.rowDescription != "Enter a description...") {
 				rootNode.links.push({
-					curie : "rdfs:comment",
+					curie : self.vars.vocabs.rdfs.curie+":comment",
 					target : {
 						lang : "en",
 						nodeType : "literal",
 						value : LinkedGov.vars.labelsAndDescriptions.rowDescription
 					},
-					uri : "http://www.w3.org/2000/01/rdf-schema#comment"
+					uri : self.vars.vocabs.rdfs.uri+"comment"
 				});
 			}
 
@@ -691,7 +721,7 @@ var finaliseRDFSchema = {
 			 */
 			for(var i=0; i<schema.rootNodes.length; i++){
 				for(var j=0; j<schema.rootNodes[i].rdfTypes.length; j++){
-					if(schema.rootNodes[i].rdfTypes[j].curie == "owl:ObjectProperty"){
+					if(schema.rootNodes[i].rdfTypes[j].curie == self.vars.vocabs.owl.curie+":ObjectProperty"){
 						schema.rootNodes.splice(i,1);
 						i--;
 					}
@@ -710,18 +740,18 @@ var finaliseRDFSchema = {
 				var rootNode = {
 						nodeType : "resource",
 						rdfTypes : [ {
-							curie : "owl:ObjectProperty",
-							uri : "http://www.w3.org/2002/07/owl#ObjectProperty"
+							curie : self.vars.vocabs.owl.curie+":ObjectProperty",
+							uri : self.vars.vocabs.owl.uri+"ObjectProperty"
 						} ],
 						value : "http://example.linkedgov.org/example-dataset/terms/" + LinkedGov.camelize(cols[i].label).replace(/:/g,"-"),
 						links : [ {
-							curie : "rdfs:label",
+							curie : self.vars.vocabs.rdfs.curie+":label",
 							target : {
 								lang : "en",
 								nodeType : "literal",
 								value : cols[i].label
 							},
-							uri : "http://www.w3.org/2000/01/rdf-schema#label"
+							uri : self.vars.vocabs.rdfs.uri+"label"
 						} ]
 				}
 
@@ -731,13 +761,13 @@ var finaliseRDFSchema = {
 				 */
 				if (cols[i].description.length > 2 && cols[i].description != "Enter a description...") {
 					rootNode.links.push({
-						curie : "rdfs:comment",
+						curie : self.vars.vocabs.rdfs.curie+":comment",
 						target : {
 							lang : "en",
 							nodeType : "literal",
 							value : cols[i].description
 						},
-						uri : "http://www.w3.org/2000/01/rdf-schema#comment"
+						uri : self.vars.vocabs.rdfs.uri+"comment"
 					})
 				}
 
@@ -798,19 +828,33 @@ var finaliseRDFSchema = {
 					 * Detect and specify types & language for the generic RDF about columns.
 					 * 
 					 * The @en tag is specified for *any* string value, i.e. "14:00:00" and "12/10/2010".
+					 * 
+					 * The row model isn't an exact replication of the order of the columns (and therefore cells)
+					 * in the data table, so we need to iterate through the column model and select each 
+					 * columns "cellIndex" instead.
 					 */
+					var columns = theProject.columnModel.columns;
+					for(var i=0;i<columns.length;i++){
+												
+						if(columns[i].name == $(this).find("span.column-header-name").html()){
 
-					if(theProject.rowModel.rows[0].cells[Refine.columnNameToColumnIndex($(this).find("span.column-header-name").html())] != null){
-						if(typeof theProject.rowModel.rows[0].cells[Refine.columnNameToColumnIndex($(this).find("span.column-header-name").html())].v == "number"){
-							if(theProject.rowModel.rows[0].cells[Refine.columnNameToColumnIndex($(this).find("span.column-header-name").html())].v % 1 == 0){
-								o.target.valueType = "http://www.w3.org/2001/XMLSchema#int";
+							if(!isNaN(theProject.rowModel.rows[0].cells[columns[i].cellIndex].v)){
+								if(theProject.rowModel.rows[0].cells[columns[i].cellIndex].v % 1 == 0){
+									o.target.valueType = "http://www.w3.org/2001/XMLSchema#int";
+								} else {
+									o.target.valueType = "http://www.w3.org/2001/XMLSchema#float";
+								}
 							} else {
-								o.target.valueType = "http://www.w3.org/2001/XMLSchema#float";
+								o.target.lang = "en";
 							}
-						} else if(typeof theProject.rowModel.rows[0].cells[Refine.columnNameToColumnIndex($(this).find("span.column-header-name").html())].v == "string"){
-							o.target.lang = "en";
+							
+							i = columns.length;
 						}
+						
 					}
+					
+					
+
 
 					rootNode.links.push(o);
 				}

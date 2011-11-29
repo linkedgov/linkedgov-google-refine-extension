@@ -204,8 +204,7 @@ var rowsToColumnsWizard = {
 						"mode" : "row-based"
 				};
 
-				LinkedGov
-				.silentProcessCall({
+				LinkedGov.silentProcessCall({
 					type : "POST",
 					url : "/command/" + "core" + "/" + "compute-facets",
 					data : {

@@ -369,7 +369,7 @@ var LinkedGov = {
 		 * 
 		 * o = the ajax object
 		 */
-		silentProcessCall : function(o) {
+		silentProcessCall : function(o,args) {
 
 			o.type = o.type || "POST";
 			o.dataType = o.dataType || "json";
