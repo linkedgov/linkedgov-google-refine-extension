@@ -61,6 +61,7 @@ function init() {
 			module,
 			[
 			 "styles/project.css",
+			 "externals/jquery-ui/css/ui-smoothness/jquery-ui-1.8.custom.css",	
 			 //"externals/jquery-ui/smoothness/jquery-ui.css",
 			 "externals/jquery-ui/css/jquery-ui.datepicker.less"
 			 ]

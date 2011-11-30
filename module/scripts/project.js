@@ -48,7 +48,9 @@ var LinkedGov = {
 			this.restyle();
 			this.injectTypingPanel();
 			this.injectWizardProgressOverlay();
+			this.injectFeedbackForm();
 			this.quickTools();
+			
 			
 			
 			/*
@@ -163,6 +165,17 @@ var LinkedGov = {
 
 		},
 
+		/*
+		 * injectFeedbackForm
+		 * 
+		 * Injects the feedback form in the top right of the page
+		 */
+		injectFeedbackForm : function() {
+			
+			$("#header").append(DOM.loadHTML("linkedgov", "html/feedback-form.html"));
+			
+		},
+		
 		/*
 		 * Initialises the quick tools for column headings.
 		 */
