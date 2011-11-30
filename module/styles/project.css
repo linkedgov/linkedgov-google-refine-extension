@@ -767,6 +767,23 @@ body.lg div.wizard-body div.measurementSearch label {
 body.lg div.wizard-body div.measurementSearch input#unitInputField {
 	width: 97%;
 }
+body.lg div.wizard-body div.nullValueInput {
+    background-color: #FFFFC9;
+    border: 1px solid #E3E3E3;
+    border-radius: 5px 5px 5px 5px;
+    padding: 15px;
+}
+body.lg div.wizard-body div.nullValueInput label {
+    display: block;
+    margin-bottom: 5px;
+    padding: 0;
+}
+body.lg div.wizard-body div.nullValueInput input#nullValueInputField {
+    width: 97%;
+}
+body.lg table.data-table tr td.blankValueHighlight {
+	background-color:#FFFFAA;
+}
 body.lg .fbs-pane {
     width: 250px;
 }

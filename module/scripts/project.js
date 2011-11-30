@@ -83,7 +83,9 @@ var LinkedGov = {
 			$.getScript("extension/linkedgov/scripts/project/rowsToColumns-wizard.js",function(){
 				LinkedGov.rowsToColumnsWizard = rowsToColumnsWizard;
 			});
-			
+			$.getScript("extension/linkedgov/scripts/project/nullvalue-wizard.js",function(){
+				LinkedGov.nullValueWizard = nullValueWizard;
+			});			
 			/*
 			 * Load the refine operations script
 			 */

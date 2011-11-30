@@ -1068,7 +1068,7 @@ var dateTimeWizard = {
 		onFail : function(message) {
 			var self = this;
 			alert("Date and time wizard failed.\n\n" + message);
-			LinkedGov.resetWizard(self.vars.elmts.addressBody);
+			LinkedGov.resetWizard(self.vars.elmts.dateTimeBody);
 			LinkedGov.showWizardProgress(false);
 		},
 

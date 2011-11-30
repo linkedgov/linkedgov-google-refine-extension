@@ -100,31 +100,6 @@ TypingPanel.prototype._render = function () {
 	 * allows access to the individual elements through the object
 	 * "elmts".
 	 */
-	/*$("a[bind='dateTimeButton']").live("click",function () {
-		LinkedGov.dateTimeWizard.initialise(DOM.bind(self._div));
-	});
-	$("a[bind='measurementsButton']").live("click",function () {
-		self.destroyColumnSelector();
-		LinkedGov.measurementsWizard.initialise(DOM.bind(self._div));
-	});
-	$("a[bind='latLongButton']").live("click",function(){
-		self.destroyColumnSelector();
-		LinkedGov.latLongWizard.initialise(DOM.bind(self._div));	 
-	});
-	$("a[bind='addressButton']").live("click",function () {
-		self.destroyColumnSelector();
-		LinkedGov.addressWizard.initialise(DOM.bind(self._div));
-	});
-	$("a[bind='multipleColumnsButton']").live("click",function () {
-		self.destroyColumnSelector();
-		LinkedGov.multipleColumnsWizard.initialise(DOM.bind(self._div));
-	});
-	$("a[bind='multipleValuesButton']").live("click",function () {
-		self.destroyColumnSelector();
-		LinkedGov.multipleValuesWizard.initialise(DOM.bind(self._div));
-	});*/
-
-
 	$("div.wizard-panel div.action-buttons a").live("click",function(){
 
 		self.destroyColumnSelector();
@@ -150,7 +125,7 @@ TypingPanel.prototype._render = function () {
 					}
 				}	
 			}
-			
+
 			$(this).hide();
 
 		} else if($(this).hasClass("update")){
@@ -352,6 +327,33 @@ TypingPanel.prototype.setupWizardInteraction = function() {
 		}
 	});
 
+	/*
+	 * Blank value highlighting for the blank values wizard
+	 */
+	$("input#nullValueInputField").live("keyup",function(){
+		var val = $(this).val();
+		$("table.data-table tr td div.data-table-cell-content span").each(function(){
+			if($(this).html() == val) {
+				$(this).parent().parent().addClass("blankValueHighlight");
+			} else {
+				$(this).parent().parent().removeClass("blankValueHighlight");
+			}
+		})
+	});
+	$("input#nullValueInputField").live("focus",function(){
+		var val = $(this).val();
+		if(val.length > 0){
+			$("table.data-table tr td div.data-table-cell-content span").each(function(){
+				if($(this).html() == val) {
+					$(this).parent().parent().addClass("blankValueHighlight");
+				}
+			});
+		}
+	});	
+	$("input#nullValueInputField").live("blur",function(){
+		$("table.data-table tr td").removeClass("blankValueHighlight");
+	});
+
 }
 
 /*
@@ -530,7 +532,7 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 			$(this).val("");
 		}
 	});
-	
+
 	/*
 	 * Add an on "key up" listener to the row label and description inputs
 	 */
@@ -539,7 +541,7 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 		ui.typingPanel.checkRowDescription($(this).parent());
 		$("table.data-table > tbody > tr.odd > td ").css("background-color",$("div.row-description input").css("background-color"));
 	});
-	
+
 	/*
 	 * Add an on "blur" listener to the row label and description inputs
 	 */
@@ -663,7 +665,7 @@ TypingPanel.prototype.buildDescriptionPanel = function() {
 			}
 		}
 	});
-	
+
 	/*
 	 * Save button functionality
 	 */

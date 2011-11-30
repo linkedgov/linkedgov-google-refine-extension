@@ -206,7 +206,7 @@ var measurementsWizard = {
 		onFail : function(message) {
 			var self = this;
 			alert("Measurments wizard failed.\n\n" + message);
-			LinkedGov.resetWizard(self.vars.elmts.addressBody);
+			LinkedGov.resetWizard(self.vars.elmts.measurementsBody);
 			LinkedGov.showWizardProgress(false);
 		},
 

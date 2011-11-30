@@ -1,0 +1,39 @@
+<div class="wizard-body" bind="nullValueBody">
+
+	<h2>
+		Blank values wizard <span class="wizardIcon"> <img
+			src="/extension/linkedgov/images/nullValue_wizard_icon.png"
+			width="32" height="32" />
+		</span>
+	</h2>
+
+	<div class="description">
+		<p>The blank values wizard is used to blank out any "missing"
+			values in the data - which is a better way of storing blank values
+			than using a particular value.</p>
+		<p>"Blank" values exist in many different forms across datasets
+			(e.g. "NULL", "missing", "-"), so it's important for us to recognise
+			that these values are indeed blanks and not potentially correct
+			values that should be processed later on.</p>
+
+		<ol class="steps">
+			<li>Try to find your dataset's own "missing" or "blank" value</li>
+			<li>Enter that value in the text box below</li>
+			<li>Click "Update"</li>
+		</ol>
+		
+		<p>You should then see your "missing" values be wiped clean from the table.</p>
+	</div>
+
+	<div class="nullValueInput">
+		<label for="nullValueInputField">Blank out the following value:</label> 
+		<input class="text" id="nullValueInputField" type="text" name="nullValueInputField" bind="nullValueInputField" />
+	</div>
+
+</div>
+<!-- end measurements wizard -->
+
+<div class="action-buttons" rel="nullValueWizard">
+	<a href="javascript:{}" class="button undo" title="Undo">Undo</a> 
+	<a href="javascript:{}" bind="nullValueButton" class="button update" title="Update">Update</a>
+</div>
