@@ -35,9 +35,9 @@ LinkedGov.getRDFSchema = function() {
  * if not, then add them.
  */
 LinkedGov.checkPrefixes = function(vocabs){
-	
+
 	var schema = LinkedGov.getRDFSchema();
-	
+
 	$.each(vocabs, function(k, v) {
 
 		for (var i = 0; i < schema.prefixes.length; i++) {
@@ -54,7 +54,7 @@ LinkedGov.checkPrefixes = function(vocabs){
 		});
 
 	});
-	
+
 };
 
 /*
@@ -192,192 +192,225 @@ LinkedGov.saveMetadataToRDF = function(callback){
 			schema.prefixes.push(vocabs[h]);
 		}
 
-		$.ajax({
-			type : "GET",
-			url : "/command/" + "linkedgov" + "/" + "get-meta-information?project="+theProject.id,
-			data : $.param({
-				keys:"LinkedGov.name," +
-				"LinkedGov.license," +
-				"LinkedGov.licenseLocation," +
-				"LinkedGov.frequency," +
-				"LinkedGov.organisation," +
-				"LinkedGov.datePublished," +
-				"LinkedGov.source," +
-				"LinkedGov.webLocation," +
-				"LinkedGov.descriptionLocation," +
-				"LinkedGov.keywords"
-			}),
-			success : function(data) {
+		
+		LinkedGov.getDatasetMetadata(function(metadataObject){
 
-				var rootNode = {
-						links : [],
-						nodeType : "resource",
-						rdfTypes : [],
-						value : "http://example.linkedgov.org/example-dataset/" + theProject.id
-				};
+			var rootNode = {
+					links : [],
+					nodeType : "resource",
+					rdfTypes : [],
+					value : "http://example.linkedgov.org/example-dataset/" + theProject.id
+			};
 
-				$.each(data.customMetadata,function(key,value){
+			$.each(metadataObject,function(key,val){
 
-					//log(key+" : "+value);
+				log(key+" : "+val);
 
-					switch(key){
-					case "LinkedGov.name" :
+				switch(key){
+				case "LinkedGov.name" :
+					rootNode.links.push({
+						curie : "dct:title",
+						target : {
+							lang : "en",
+							nodeType : "literal",
+							value : val
+						},
+						uri : "http://purl.org/dc/terms/title"
+					});
+
+					/*
+					 * Manually add the oo:corrections description
+					 */
+					rootNode.links.push({
+						curie : "oo:corrections",
+						target : {
+							nodeType : "literal",
+							value : "mailto:fixme@linkedgov.org"
+						},
+						uri : "http://purl.org/openorg/corrections"
+					});
+
+					break;
+				case "LinkedGov.source" :
+					rootNode.links.push({
+						curie : "dct:source",
+						target : {
+							lang : "en",
+							nodeType : "literal",
+							value : val
+						},
+						uri : "http://purl.org/dc/terms/source"
+					});
+					break;
+				case "LinkedGov.license" :
+					rootNode.links.push({
+						curie : "dct:license",
+						target : {
+							lang : "en",
+							nodeType : "literal",
+							value : val
+						},
+						uri : "http://purl.org/dc/terms/license"
+					});
+					break;
+				case "LinkedGov.licenseLocation" :
+					rootNode.links.push({
+						curie : "cc:attributionURL",
+						target : {
+							nodeType : "literal",
+							value : val
+						},
+						uri : "http://creativecommons.org/ns#attributionURL"
+					});
+					break;
+				case "LinkedGov.organisation" :				
+					rootNode.links.push({
+						curie : "dct:publisher",
+						target : {
+							lang : "en",
+							nodeType : "literal",
+							value : val
+						},
+						uri : "http://purl.org/dc/terms/publisher"
+					});
+					break;
+				case "LinkedGov.datePublished" :
+					rootNode.links.push({
+						curie : "dct:created",
+						target : {
+							lang : "en",
+							nodeType : "literal",
+							value : val
+						},
+						uri : "http://purl.org/dc/terms/created"
+					});
+					break;
+				case "LinkedGov.webLocation" :
+					rootNode.links.push({
+						curie : "foaf:page",
+						target : {
+							lang : "en",
+							nodeType : "literal",
+							value : val
+						},
+						uri : "http://xmlns.com/foaf/0.1/page"
+					});
+					break;
+				case "LinkedGov.descriptionLocation" :
+					break;
+
+				case "LinkedGov.frequency" :
+					rootNode.links.push({
+						curie : "dct:accrualPeriodicity",
+						target : {
+							lang : "en",
+							nodeType : "literal",
+							value : val
+						},
+						uri : "http://purl.org/dc/terms/accrualPeriodicity"
+					});
+					break;
+				case "LinkedGov.keywords" :
+					var keywords = val.split(",");
+					for(var i=0;i<keywords.length;i++){
+
 						rootNode.links.push({
-							curie : "dct:title",
-							target : {
-								lang : "en",
-								nodeType : "literal",
-								value : value
-							},
-							uri : "http://purl.org/dc/terms/title"
-						});
-
-						/*
-						 * Manually add the oo:corrections description
-						 */
-						rootNode.links.push({
-							curie : "oo:corrections",
-							target : {
-								nodeType : "literal",
-								value : "mailto:fixme@linkedgov.org"
-							},
-							uri : "http://purl.org/openorg/corrections"
-						});
-
-						break;
-					case "LinkedGov.source" :
-						rootNode.links.push({
-							curie : "dct:source",
-							target : {
-								lang : "en",
-								nodeType : "literal",
-								value : value
-							},
-							uri : "http://purl.org/dc/terms/source"
-						});
-						break;
-					case "LinkedGov.license" :
-						rootNode.links.push({
-							curie : "dct:license",
-							target : {
-								lang : "en",
-								nodeType : "literal",
-								value : value
-							},
-							uri : "http://purl.org/dc/terms/license"
-						});
-						break;
-					case "LinkedGov.licenseLocation" :
-						rootNode.links.push({
-							curie : "cc:attributionURL",
-							target : {
-								nodeType : "literal",
-								value : value
-							},
-							uri : "http://creativecommons.org/ns#attributionURL"
-						});
-						break;
-					case "LinkedGov.organisation" :				
-						rootNode.links.push({
-							curie : "dct:publisher",
-							target : {
-								lang : "en",
-								nodeType : "literal",
-								value : value
-							},
-							uri : "http://purl.org/dc/terms/publisher"
-						});
-						break;
-					case "LinkedGov.datePublished" :
-						rootNode.links.push({
-							curie : "dct:created",
-							target : {
-								lang : "en",
-								nodeType : "literal",
-								value : value
-							},
-							uri : "http://purl.org/dc/terms/created"
-						});
-						break;
-					case "LinkedGov.webLocation" :
-						rootNode.links.push({
-							curie : "foaf:page",
-							target : {
-								lang : "en",
-								nodeType : "literal",
-								value : value
-							},
-							uri : "http://xmlns.com/foaf/0.1/page"
-						});
-						break;
-					case "LinkedGov.descriptionLocation" :
-						break;
-
-					case "LinkedGov.frequency" :
-						rootNode.links.push({
-							curie : "dct:accrualPeriodicity",
-							target : {
-								lang : "en",
-								nodeType : "literal",
-								value : value
-							},
-							uri : "http://purl.org/dc/terms/accrualPeriodicity"
-						});
-						break;
-					case "LinkedGov.keywords" :
-						var keywords = value.split(",");
-						for(var i=0;i<keywords.length;i++){
-
-							rootNode.links.push({
-								"uri":"http://www.holygoat.co.uk/owl/redwood/0.1/tags/taggedWithTag",
-								"curie":"tags:taggedWithTag",
-								"target":{
-									"nodeType":"blank",
-									"rdfTypes":[],
-									"links":[
-									         {
-									        	 "uri":"http://www.holygoat.co.uk/owl/redwood/0.1/tags/tag",
-									        	 "curie":"tags:tag",
-									        	 "target":{
-									        		 "nodeType":"literal",
-									        		 "value":keywords[i].trim()
-									        	 }
-									         }
-									         ]
-								}
-							});
-						}
-						break;
-					}
-				});
-
-				var schema = LinkedGov.getRDFSchema();
-				schema.rootNodes.splice(0,0,rootNode);
-
-				/*
-				 * Save the RDF.
-				 */
-				Refine.postProcess("rdf-extension", "save-rdf-schema", {}, {
-					schema : JSON.stringify(schema)
-				}, {}, {
-					onDone : function() {
-						Refine.update({
-							everythingChanged : true
+							"uri":"http://www.holygoat.co.uk/owl/redwood/0.1/tags/taggedWithTag",
+							"curie":"tags:taggedWithTag",
+							"target":{
+								"nodeType":"blank",
+								"rdfTypes":[],
+								"links":[
+								         {
+								        	 "uri":"http://www.holygoat.co.uk/owl/redwood/0.1/tags/tag",
+								        	 "curie":"tags:tag",
+								        	 "target":{
+								        		 "nodeType":"literal",
+								        		 "value":keywords[i].trim()
+								        	 }
+								         }
+								         ]
+							}
 						});
 					}
-				});
+					break;
+				}
+			});
 
-				callback();
+			var schema = LinkedGov.getRDFSchema();
+			schema.rootNodes.splice(0,0,rootNode);
 
-			},
-			error : function() {
+			/*
+			 * Save the RDF.
+			 */
+			Refine.postProcess("rdf-extension", "save-rdf-schema", {}, {
+				schema : JSON.stringify(schema)
+			}, {}, {
+				onDone : function() {
+					Refine.update({
+						modelsChanged : true
+					});
+				}
+			});
 
-			}
+			callback();
+
 		});
+		
 	} else {
 		log("Metadata has already been saved.");
 	}
 
+};
+
+/*
+ * getDatasetMetadata
+ * 
+ * Iterates through an object of metadata keys and requests 
+ * their values using the get-preference command.
+ * 
+ * Passes the populated object to the callback, which is to 
+ * then save the metadata as RDF.
+ */
+LinkedGov.getDatasetMetadata = function(callback){
+	
+	var metadataObject = {
+			"LinkedGov.name":"",
+			"LinkedGov.license":"",
+			"LinkedGov.licenseLocation":"",
+			"LinkedGov.frequency":"",
+			"LinkedGov.organisation":"",
+			"LinkedGov.datePublished":"",
+			"LinkedGov.source":"",
+			"LinkedGov.webLocation":"",
+			"LinkedGov.descriptionLocation":"",
+			"LinkedGov.keywords":""
+	};
+	
+	var length = 0;
+	var iterator = 0;
+	$.each(metadataObject,function(key,val){length++;});
+	
+	$.each(metadataObject,function(key,val){
+		$.ajax({
+		    type: "GET",
+		    url: "/command/core/get-preference?" + $.param({ 
+		      name: key,
+		      project : theProject.id
+		    }),
+		    success:function(data){
+		    	metadataObject[key] = decodeURIComponent(data.value);
+		  
+		    	if(iterator == length-1){
+		    		callback(metadataObject);
+		    	}
+		  
+		    	iterator++;
+		    },
+		    dataType: "json"
+		  });
+	});
+		
 };
 
 /*
@@ -589,7 +622,7 @@ var finaliseRDFSchema = {
 			self.vars.rowDescription = LinkedGov.vars.labelsAndDescriptions.rowDescription;
 
 			LinkedGov.checkPrefixes(self.vars.vocabs);
-			
+
 			/*
 			 * Chain together a series of save operations using callback functions.
 			 * 
@@ -835,7 +868,7 @@ var finaliseRDFSchema = {
 					 */
 					var columns = theProject.columnModel.columns;
 					for(var i=0;i<columns.length;i++){
-												
+
 						if(columns[i].name == $(this).find("span.column-header-name").html()){
 
 							if(!isNaN(theProject.rowModel.rows[0].cells[columns[i].cellIndex].v)){
@@ -847,13 +880,13 @@ var finaliseRDFSchema = {
 							} else {
 								o.target.lang = "en";
 							}
-							
+
 							i = columns.length;
 						}
-						
+
 					}
-					
-					
+
+
 
 
 					rootNode.links.push(o);

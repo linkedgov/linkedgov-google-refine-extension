@@ -358,19 +358,21 @@ var LinkedGov = {
 
 			var self = this;
 
-			LinkedGov.vars.metadataObject.project = projectID;
+			//LinkedGov.vars.metadataObject.project = projectID;
 
-			$.ajax({
-				type : "POST",
-				url : "/command/" + "linkedgov" + "/" + "save-meta-information",
-				data : $.param(LinkedGov.vars.metadataObject),
-				success : function(data) {
-					callback(jobID,projectID);
-				},
-				error : function() {
-					self.importFail("A problem was encountered when saving metadata");
-				}
+			$.each(LinkedGov.vars.metadataObject,function(key,val){
+				$.ajax({
+				    type: "POST",
+				    url: "/command/core/set-preference?" + $.param({ 
+				      name: key,
+				      value : encodeURIComponent(val),
+				      project : projectID
+				    }),
+				    dataType: "json"
+				  });
 			});
+			
+			callback(jobID,projectID);
 
 		},
 
@@ -495,8 +497,7 @@ var LinkedGov = {
 
 				$.getScript(ModuleWirings["linkedgov"] + 'scripts/index/'+pageName+'.js');		
 				break;
-				
-				
+			
 			case 'feedback-form' :
 				//$.getScript(ModuleWirings["linkedgov"] + 'scripts/feedback.js');	
 				break;
@@ -582,6 +583,7 @@ Refine.DefaultImportingController.prototype._onImportJobReady = function() {
  * Store the original 'pollImportJob' before we overwrite Refine's version.
  */
 LinkedGov.pollImportJob = Refine.CreateProjectUI.prototype.pollImportJob;
+
 Refine.CreateProjectUI.prototype.pollImportJob = function(start, jobID, timerID, checkDone, callback, onError) {
 
 	/*
@@ -596,7 +598,7 @@ Refine.CreateProjectUI.prototype.pollImportJob = function(start, jobID, timerID,
 		 * "project" page.
 		 * 
 		 * The second time round is when the projectID is present, so we 
-		 * intercept and fire-off a call to save our custom metadata.
+		 * intercept it to make a call to save our custom metadata.
 		 */
 		if(typeof job.config.projectID != 'undefined'){
 			LinkedGov.saveMetadata(jobID, job.config.projectID, function(jobID, projectID){
