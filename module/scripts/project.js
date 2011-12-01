@@ -87,7 +87,10 @@ var LinkedGov = {
 			});
 			$.getScript("extension/linkedgov/scripts/project/nullvalue-wizard.js",function(){
 				LinkedGov.nullValueWizard = nullValueWizard;
-			});			
+			});
+			$.getScript("extension/linkedgov/scripts/project/enumeration-wizard.js",function(){
+				LinkedGov.enumerationWizard = enumerationWizard;
+			});	
 			/*
 			 * Load the refine operations script
 			 */

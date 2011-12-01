@@ -317,6 +317,39 @@ body.lg a.wizard-header span.wizardIcon img {
     padding: 6px 5px 5px 6px;
     */
 }
+body.lg a.wizard-header.collapsed {
+    background: none no-repeat scroll right center #EBEEF8;
+    margin: 5px;
+    padding: 9px;
+}
+body.lg a.wizard-header.collapsed span.question {
+    display:none;
+}
+body.lg a.wizard-header.collapsed span.wizardIcon {
+    padding-right: 0;
+}
+body.lg div#refine-tabs-typing a.collapse-expand {
+    background-color: #FFFFFF;
+    border-radius: 3px 3px 3px 3px;
+    bottom: 6px;
+    color: #1111CC;
+    cursor: pointer;
+    display: block;
+    font-family: Lucida Grande;
+    font-size: 13px;
+    height: 18px;
+    padding: 0;
+    position: absolute;
+    right: 5px;
+    text-align: center;
+    text-decoration: none;
+    width: 18px;
+    z-index: 1000;
+}
+body.lg div#refine-tabs-typing a.collapse-expand:hover {
+    background-color: #EBEEF8;
+    text-decoration: none;
+}
 body.lg div.wizard-body span.wizardIcon {
     display: inline;
     float: right;
@@ -398,12 +431,12 @@ body.lg div.wizard-body ol.steps li {
 }
 body.lg div.next-button {
     background: none repeat scroll 0 0 #BBCCFF;
+    border-top: 1px solid #CCCCCC;
     bottom: 0;
     padding: 4px 0;
     position: absolute;
     text-align: center;
     width: 300px;
-    left: 0px;
 }
 body.lg div.cancel-button {
     background: none repeat scroll 0 0 #BBCCFF;
@@ -655,6 +688,13 @@ body.lg div.wizard-body ul.selected-columns li span.colOptions input {
 }
 body.lg div.wizard-body ul.selected-columns li span.colOptions span {
 	padding-left:3px;
+}
+body.lg div.wizard-body ul.selected-columns li span.colOptions input.textbox {
+    margin-bottom: 5px;
+    margin-top: 5px;
+    width: 92%;
+    font-size: 14px;
+    background-color:#FFFFCC;
 }
 body.lg div.wizard-body ul.date-checkboxes li span.colOptions.mb4d, 
 body.lg div.wizard-body ul.date-checkboxes li span.colOptions.day, 

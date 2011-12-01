@@ -1,0 +1,42 @@
+<div class="wizard-body" bind="enumerationBody">
+
+	<h2>
+		Enumeration wizard <span class="wizardIcon"> <img
+			src="/extension/linkedgov/images/enumeration_wizard_icon.png"
+			width="32" height="32" />
+		</span>
+	</h2>
+
+	<div class="description">
+		<p>The enumeration wizard is used to expand any cryptic codes/symbols within the data.</p>
+		<p>These can range from simple compass directions (N, S, E, W) to government department acronyms (DfT, HMRC, DEFRA)</p>
+        <!-- p>It's also possible that some codes or symbols may be missing from your data, take the compass directions example, 
+        there may be "N", "W" and "S", but no "E".</p -->
+        <p>This wizard asks you to:</p>
+		<ol class="steps">
+			<li>Select a column containing any codes/symbols</li>
+			<li>Expand them so they are readable by typing into their text-boxes</li>
+			<li>Try to complete the group by adding any other missing codes/symbols</li>
+			<li>Click "Update"</li>
+		</ol>
+	</div>
+
+        <div class="selector">
+            <a class="button selectColumn text-input">Start Select</a> <a
+                class="info"> <!-- info --> </a> <span class="note">To select
+                multiple column headings, hold down CTRL (Windows) or Apple (Mac).
+                You can also drag your mouse across multiple column headers while
+                holding down the relevant key.<br /> <br />Click anywhere in the
+                table to unselect the columns.</span>
+
+            <ul class="selected-columns text-input" bind="enumerationSymbols">
+            </ul>
+        </div>
+
+</div>
+<!-- end measurements wizard -->
+
+<div class="action-buttons" rel="enumerationWizard">
+	<a href="javascript:{}" class="button undo" title="Undo">Undo</a> 
+	<a href="javascript:{}" bind="enumerationButton" class="button update" title="Update">Update</a>
+</div>

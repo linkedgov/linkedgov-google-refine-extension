@@ -69,7 +69,7 @@ var nullValueWizard = {
 						self.nullifyValues(value,index);
 					},
 					error : function() {
-						self.onFail("A problem was encountered when replpacing the values in the column: \""+ columns[index].name + "\".");
+						self.onFail("A problem was encountered when replacing the values in the column: \""+ columns[index].name + "\".");
 					}
 				});
 

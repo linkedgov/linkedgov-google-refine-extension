@@ -374,6 +374,9 @@ LinkedGov.saveMetadataToRDF = function(callback){
  */
 LinkedGov.getDatasetMetadata = function(callback){
 	
+	/*
+	 * Manually code the keys
+	 */
 	var metadataObject = {
 			"LinkedGov.name":"",
 			"LinkedGov.license":"",
@@ -387,10 +390,17 @@ LinkedGov.getDatasetMetadata = function(callback){
 			"LinkedGov.keywords":""
 	};
 	
+	/*
+	 * Calculate the length of the metadata object so 
+	 * we can call the callback at the correct time.
+	 */
 	var length = 0;
 	var iterator = 0;
 	$.each(metadataObject,function(key,val){length++;});
 	
+	/*
+	 * Loop through the keys and request their values
+	 */
 	$.each(metadataObject,function(key,val){
 		$.ajax({
 		    type: "GET",

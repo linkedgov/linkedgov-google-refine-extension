@@ -65,6 +65,36 @@ TypingPanel.prototype._render = function () {
 	$('a.wizard-header').live("click",function() {
 		ui.typingPanel.enterWizard($(this).attr("rel"));
 	});
+
+	/*
+	 * Interaction for collapsing and expanding the wizard 
+	 * questions.
+	 */
+	$('a.collapse-expand').live("click",function() {
+		if(!$(this).data("hasBeenClicked")){
+			$(this).html("+");
+			$(this).attr("title","Expand wizards");
+			$("a.wizard-header").each(function(){
+				$(this).fadeOut(250,function(){
+					$(this).addClass("collapsed");
+					$(this).fadeIn(250);
+				});
+			});
+			$(this).data("hasBeenClicked",true);
+		} else {
+			$(this).html("-");
+			$(this).attr("title","Collapse wizards");
+			$("a.wizard-header").each(function(){
+				$(this).fadeOut(250,function(){
+					$(this).removeClass("collapsed");
+					$(this).fadeIn(250);
+				});
+			});
+			$(this).data("hasBeenClicked",false);
+		}
+	});
+
+
 	/*
 	 * Interaction for "Return to wizards" button.
 	 */
@@ -153,6 +183,8 @@ TypingPanel.prototype._render = function () {
 			ui.typingPanel.buttonSelector($(this),"splitter");			
 		} else if($(this).hasClass("single-column")){ 
 			ui.typingPanel.buttonSelector($(this),"single-column");
+		} else if($(this).hasClass("text-input")){ 
+			ui.typingPanel.buttonSelector($(this),"text-input");			
 		} else {
 			ui.typingPanel.buttonSelector($(this),"default");			
 		}
@@ -363,7 +395,8 @@ TypingPanel.prototype.setupWizardInteraction = function() {
  */
 TypingPanel.prototype.enterWizard = function(wizardName) {
 
-	$("div.wizard-panel").html(DOM.loadHTML("linkedgov", "html/project/"+wizardName+".html",function(){		
+	$("div.wizard-panel").html(DOM.loadHTML("linkedgov", "html/project/"+wizardName+".html",function(){	
+		$("a.collapse-expand").hide();
 		$("div.typing-panel-body").animate({"left":"-300px"},500);
 		$("div.cancel-button").animate({"left":"0px"},500);
 		$("div.next-button").animate({"left":"-300px"},500);
@@ -432,6 +465,7 @@ TypingPanel.prototype.exitWizard = function(){
 	$("div.cancel-button").animate({"left":"300px"},500);
 	$("div.next-button").animate({"left":"0px"},500);
 	$("div.wizard-panel").animate({"left":"300px"},500, function(){
+		$("a.collapse-expand").show();
 		$("div.wizard-panel").find("div.wizard-body").remove();
 	});
 
@@ -457,6 +491,7 @@ TypingPanel.prototype.enterDescriptionPanel = function(){
 
 		// just rebuild the column list in case of changes
 		$("div.typing-panel-body").animate({"left":"-300px"},500);
+		$("a.collapse-expand").hide();
 		$("div.cancel-button").animate({"left":"0px"},500);
 		$("div.next-button").animate({"left":"-300px"},500);
 		$("div.description-panel div.description-body").show();
@@ -494,6 +529,7 @@ TypingPanel.prototype.enterDescriptionPanel = function(){
 		// build panel and column list
 		$("div.description-panel").html(DOM.loadHTML("linkedgov", "html/project/description-panel.html",function(){		
 			$("div.typing-panel-body").animate({"left":"-300px"},500);
+			$("a.collapse-expand").hide();
 			$("div.cancel-button").animate({"left":"0px"},500);
 			$("div.next-button").animate({"left":"-300px"},500);
 			$("div.description-panel").animate({"left":"0px"},500,function(){
@@ -1173,6 +1209,38 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 							.show();	
 							break;
 
+						case "text-input" :
+							
+							RefineUI.typingPanel.generateColumnFacet($(ui.selected).children().find(".column-header-name").html(),10,function(html){
+								$cols.html(html);
+								$cols.data("colName",$(ui.selected).children().find(".column-header-name").html());
+								$cols.children("li").each(function(){
+									$(this).html(
+											"<span class='col'>" +
+											$(this).html() +
+											"</span>" +
+											"<span class='remove'>X</span>" +
+											"<span class='colOptions'>" +
+											"<input type='text' class='textbox "+$(this).html()+"' />" +
+											"</span>");
+								});	
+								$cols.show();
+							});
+
+							
+							/*
+							$cols.children("li").each(function(){
+								$(this).append(
+										"<span class='col'>" +
+										"<input type='text' class='"+$(this).html()+"' />" +
+										"</span>" +
+										"<span class='remove'>X</span>");
+							});
+							*/
+							
+							
+							break;
+							
 						default:
 							break;
 						}
@@ -1369,6 +1437,100 @@ TypingPanel.prototype.rangeSelector = function(select) {
 		 */
 		$cols.html(colsHTML).show();
 	}
+
+}
+
+
+/*
+ * generateColumnFacet
+ * 
+ * Given a column name and a number (count), this will generate an unordered 
+ * list of the (count)-most occuring values in that column
+ */
+TypingPanel.prototype.generateColumnFacet = function(colName, count, callback){
+
+	var html = "";
+
+	/*
+	 * Build a parameter object using the first of the column names.
+	 */
+	var facetParams = {
+			"facets" : [ {
+				"type" : "list",
+				"name" : colName,
+				"columnName" : colName,
+				"expression" : "value",
+				"omitBlank" : false,
+				"omitError" : false,
+				"selection" : [],
+				"selectBlank" : false,
+				"selectError" : false,
+				"invert" : false
+			} ],
+			"mode" : "row-based"
+	};
+
+	/*
+	 * Post a silent facet call.
+	 */
+	LinkedGov.silentProcessCall({
+		type : "POST",
+		url : "/command/" + "core" + "/" + "compute-facets",
+		data : {
+			engine : JSON.stringify(facetParams)
+		},
+		success : function(data) {
+			/*
+			 * Loop through the UI facets
+			 */
+			//log("data.facets.length = " + data.facets.length);
+			for ( var i = 0; i < data.facets.length; i++) {
+
+				/*
+				 * If the facet matches the column name and has
+				 * choices returned
+				 */
+				if (data.facets[i].columnName == colName && typeof data.facets[i].choices != 'undefined') {
+					/*
+					 * Loop through the returned facet choices (count) number of times
+					 * and append them to the unordered list.
+					 */
+					var highest = 0;
+					var choices = data.facets[i].choices.length;
+					var choicesArray = [];
+					for(var j=0; j<choices; j++){
+						
+						//log("data.facets[i].choices[j].c = "+data.facets[i].choices[j].c);
+						
+						if(data.facets[i].choices[j].c >= highest){
+							choicesArray.splice(0,0,data.facets[i].choices[j].v.l);
+							highest = data.facets[i].choices[j].c;
+						} else {
+							choicesArray.push(data.facets[i].choices[j].v.l);
+						}
+					}
+					
+					if(choicesArray.length > count){
+						choicesArray.length = count;
+					}
+					
+					for(var k=0;k<choicesArray.length;k++){
+						html += "<li>"+choicesArray[k]+"</li>";
+					}
+
+					i=data.facets.length;
+					
+					log(html);
+					
+					callback(html);
+					
+				}
+			}
+		},
+		error : function() {
+			alert("A problem was encountered when computing facets.");
+		}
+	});	
 
 }
 
