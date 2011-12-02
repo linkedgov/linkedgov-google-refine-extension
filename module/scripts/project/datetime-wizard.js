@@ -832,7 +832,7 @@ var dateTimeWizard = {
 					"curie":self.vars.vocabs.lg.curie+":"+camelColName,
 					"target":{
 						"nodeType":"cell-as-literal",
-						"expression":"value.toDate("+mb4d+").toString(\"yyyy-MM-dd\")",
+						"expression":"if(type(value)==\"date\",value.toDate("+mb4d+").toString(\"yyyy-MM-dd\"),value)",
 						"valueType":"http://www.w3.org/2001/XMLSchema#date",
 						"columnName":colName,
 						"isRowNumberCell":false
@@ -842,6 +842,7 @@ var dateTimeWizard = {
 			return o;
 		},
 
+		
 		/*
 		 * makeXSDDateTimeFragment
 		 * 
@@ -863,7 +864,7 @@ var dateTimeWizard = {
 					"curie":self.vars.vocabs.lg.curie+":"+camelColName,
 					"target":{
 						"nodeType":"cell-as-literal",
-						"expression":"value.toDate("+mb4d+").toString(\"yyyy-MM-dd\")+\"T\"+value.toDate("+mb4d+").toString(\"HH-mm-ss\")",
+						"expression":"if(type(value)==\"date\",value.toDate("+mb4d+").toString(\"yyyy-MM-dd\")+\"T\"+value.toDate("+mb4d+").toString(\"HH-mm-ss\"),value)",
 						"valueType":"http://www.w3.org/2001/XMLSchema#dateTime",
 						"columnName":colName,
 						"isRowNumberCell":false
@@ -893,12 +894,15 @@ var dateTimeWizard = {
 			var mb4d = colObject.monthBeforeDay;
 			var camelColName = LinkedGov.camelize(colName);
 
+			
+			
+				
 			var o = {
 					"uri":self.vars.vocabs.lg.uri+camelColName,
 					"curie":self.vars.vocabs.lg.curie+":"+camelColName,
 					"target":{
 						"nodeType":"cell-as-resource",
-						"expression":"\"http://reference.data.gov.uk/doc/gregorian-instant/\"+value.toDate("+mb4d+").toString(\"yyyy-MM-dd\")+\"T\"+value.toDate("+mb4d+").toString(\"HH:mm:ss\")",
+						"expression":"if(type(value)==\"date\",\"http://reference.data.gov.uk/doc/gregorian-instant/\"+value.toDate("+mb4d+").toString(\"yyyy-MM-dd\")+\"T\"+value.toDate("+mb4d+").toString(\"HH:mm:ss\"),value)",
 						"columnName":colName,
 						"isRowNumberCell":false,
 						"rdfTypes":[],
@@ -929,6 +933,7 @@ var dateTimeWizard = {
 			var unit = colObject.durationUnit;
 			var value = colObject.durationValue;
 
+		
 			/*
 			 * Create the RDF object and the first part of the date-time's URI.
 			 */
@@ -937,7 +942,7 @@ var dateTimeWizard = {
 					"curie":self.vars.vocabs.lg.curie+":"+camelColName,
 					"target":{
 						"nodeType":"cell-as-resource",
-						"expression":"\"http://reference.data.gov.uk/doc/gregorian-interval/\"+value.toDate(false).toString(\"yyyy-MM-dd\")+\"T\"+value.toDate(false).toString(\"HH:mm:ss\")",
+						"expression":"if(type(value)==\"date\",\"http://reference.data.gov.uk/doc/gregorian-interval/\"+value.toDate("+mb4d+").toString(\"yyyy-MM-dd\")+\"T\"+value.toDate("+mb4d+").toString(\"HH:mm:ss\"),value)",
 						"columnName":colName,
 						"isRowNumberCell":false,
 						"rdfTypes":[],
