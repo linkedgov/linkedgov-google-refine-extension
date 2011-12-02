@@ -49,6 +49,7 @@ var LinkedGov = {
 			this.injectTypingPanel();
 			this.injectWizardProgressOverlay();
 			this.injectFeedbackForm();
+			this.addUnhideColumnButton();
 			this.quickTools();
 			
 			
@@ -175,9 +176,40 @@ var LinkedGov = {
 		 */
 		injectFeedbackForm : function() {
 			
-			$("#header").append(DOM.loadHTML("linkedgov", "html/feedback-form.html"));
+			$("div#project-controls").prepend(DOM.loadHTML("linkedgov", "html/feedback-form.html"));
+			
+			//<a id="send-feedback" title="Send feedback" href="#" class="button">Feedback</a>
 			
 		},
+		
+		addUnhideColumnButton : function() {
+		
+			var self = this;
+			
+			$("div#project-controls").prepend('<a id="unhide-columns-button" title="Unhide columns" class="button">Unhide columns</a>');
+			$("a#unhide-columns-button").live("click",function(){
+				LinkedGov.vars.hiddenColumns = "";
+				LinkedGov.keepHiddenColumnsHidden();
+				Refine.update({modelsChanged:true});
+				self.showHideUnhideColumnButton("hide");
+			});
+		},
+		
+		showHideUnhideColumnButton : function(showHide){
+			(showHide == "show" ? $("a#unhide-columns-button").css("display","inline-block") : $("a#unhide-columns-button").hide());
+		},
+		
+		updateUnhideColumnButton : function(count){
+			var self = this;
+			if(count > 0){
+				var str = "Unhide "+count+" column"+(count == 1 ? "" : "s");
+				$("a#unhide-columns-button").html(str).attr("title",str);
+				self.showHideUnhideColumnButton("show");
+			} else{
+				self.showHideUnhideColumnButton("hide");
+			}
+		},
+		
 		
 		/*
 		 * Initialises the quick tools for column headings.

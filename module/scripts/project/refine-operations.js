@@ -410,6 +410,13 @@ LinkedGov.keepHiddenColumnsHidden = function(){
 				});
 			}
 		}	
+		
+		if(cols.length == "1" && cols[0].length == 0){
+			LinkedGov.updateUnhideColumnButton(0);
+		} else {
+			LinkedGov.updateUnhideColumnButton(cols.length);			
+		}
+		
 	}
 };
 

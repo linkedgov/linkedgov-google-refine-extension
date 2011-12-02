@@ -18,10 +18,8 @@ body.lg #slogan {
     vertical-align: middle;
     width: 110px;
 }
-body.lg div#feedback-button {
-    float: right;
-    margin-right: 187px;
-    margin-top: 7px;
+body.lg a#unhide-columns-button {
+	display:none;
 }
 div#feedback-form {
     min-height: 0;

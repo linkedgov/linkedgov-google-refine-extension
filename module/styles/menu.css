@@ -24,11 +24,12 @@ body {
     font-style: italic;
     margin: 0 1em;
 }
-div#feedback-button {
-	display:none;
-    float: right;
-    margin-right: 100px;
-    margin-top: 5px;
+#send-feedback {
+    font-size: 1.3em;
+    font-weight: normal;
+    position: absolute;
+    right: 100px;
+    top: 18px;
 }
 img {
     vertical-align: middle;
@@ -161,4 +162,28 @@ display: block;
 clear:both;
 height:0;
 width:0;
+}
+
+.button, a.button {
+    background: -moz-linear-gradient(center top , #F9F9F9, #E3E3E3) repeat scroll 0 0 transparent;
+}
+.button, a.button {
+    border: 1px solid #BBBBBB;
+    border-radius: 3px 3px 3px 3px;
+    color: #000000;
+    cursor: pointer;
+    display: inline-block;
+    font-family: Arial,Helvetica,sans-serif;
+    font-size: 1em;
+    line-height: 1.4;
+    overflow: visible;
+    padding: 1px 6px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.button:active, a.button:active {
+    background: -moz-linear-gradient(center top , #E3E3E3, #F9F9F9) repeat scroll 0 0 transparent;
+}
+.button:active, a.button:active {
+    border: 1px solid #000000;
 }

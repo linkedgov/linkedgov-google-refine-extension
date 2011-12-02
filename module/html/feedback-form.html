@@ -1,5 +1,4 @@
-<div id="feedback-button">
-	<a id="send-feedback" href="#" title="Send feedback">Feedback</a>
+	<a id="send-feedback" href="#" title="Send feedback" class="button">Feedback</a>
 
 	<div id="feedback-form" title="Send feedback">
 		<p class="validateTips">All fields are required.</p>
@@ -17,10 +16,9 @@
 		</form>
 	</div>
 
-</div>
 
 <script type="text/javascript">
 $.get("extension/linkedgov/scripts/feedback.js",function(){
-    $("div#feedback-button").show();
+    $("a#send-feedback").removeClass("ui-button").removeClass("ui-button-text-only").show();
 });
 </script>
