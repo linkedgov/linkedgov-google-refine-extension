@@ -205,7 +205,7 @@ var addressWizard = {
 						"add-column",
 						{
 							baseColumnName : colObjects[i].name,
-							expression : "partition(value,/"+ self.vars.postCodeRegex + "/)[1]",
+							expression : "if(partition(value,/[A-Z]{1,2}[0-9R][0-9A-Z]? {0,1}[0-9][ABD-HJLNP-UW-Z]{2}/)[1].length() > 0,partition(value,/[A-Z]{1,2}[0-9R][0-9A-Z]? {0,1}[0-9][ABD-HJLNP-UW-Z]{2}/)[1],value)",
 							newColumnName : colObjects[i].name + " Postcode (LG)",
 							columnInsertIndex : Refine.columnNameToColumnIndex(colObjects[i].name) + 1,
 							onError : "keep-original"
