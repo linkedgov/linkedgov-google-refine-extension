@@ -327,26 +327,28 @@ body.lg a.wizard-header.collapsed span.wizardIcon {
     padding-right: 0;
 }
 body.lg div#refine-tabs-typing a.collapse-expand {
-    background-color: #FFFFFF;
+    background: url("../images/wizard_layout.png") no-repeat scroll 0 0 #FFFFFF;
     border-radius: 3px 3px 3px 3px;
-    bottom: 6px;
+    bottom: 3px;
     color: #1111CC;
     cursor: pointer;
-    display: block;
     font-family: Lucida Grande;
     font-size: 13px;
-    height: 18px;
+    height: 25px;
     padding: 0;
     position: absolute;
-    right: 5px;
+    right: 0;
     text-align: center;
     text-decoration: none;
-    width: 18px;
+    width: 25px;
     z-index: 1000;
 }
+body.lg div#refine-tabs-typing a.collapse-expand.expand {
+    background: url("../images/wizard_layout2.png") no-repeat scroll 0 0 #FFFFFF;
+}
 body.lg div#refine-tabs-typing a.collapse-expand:hover {
-    background-color: #EBEEF8;
-    text-decoration: none;
+    /*background-color: #EBEEF8;
+    text-decoration: none;*/
 }
 body.lg div.wizard-body span.wizardIcon {
     display: inline;

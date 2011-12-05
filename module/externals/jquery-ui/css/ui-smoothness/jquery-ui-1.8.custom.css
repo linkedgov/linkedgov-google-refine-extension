@@ -8,6 +8,10 @@
  * http://docs.jquery.com/UI/Theming/API
  */
 
+div.ui-dialog div.ui-dialog-buttonpane {
+    margin:0;
+}
+
 /* Layout helpers
 ----------------------------------*/
 .ui-helper-hidden { display: none; }
