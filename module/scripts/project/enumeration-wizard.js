@@ -1,9 +1,9 @@
 /*
  * enumerationWizard
  * 
- * Allows the user to select a column for typing against a particular
- * measurement.
- * 
+ * Allows the user to select a column containing symbols or codes 
+ * which they can expand by entering their expanded values within the 
+ * wizard panel.
  * 
  */
 var enumerationWizard = {

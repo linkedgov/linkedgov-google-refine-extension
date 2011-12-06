@@ -192,7 +192,7 @@ LinkedGov.saveMetadataToRDF = function(callback){
 			schema.prefixes.push(vocabs[h]);
 		}
 
-		
+
 		LinkedGov.getDatasetMetadata(function(metadataObject){
 
 			var rootNode = {
@@ -356,7 +356,7 @@ LinkedGov.saveMetadataToRDF = function(callback){
 			callback();
 
 		});
-		
+
 	} else {
 		log("Metadata has already been saved.");
 	}
@@ -373,7 +373,7 @@ LinkedGov.saveMetadataToRDF = function(callback){
  * then save the metadata as RDF.
  */
 LinkedGov.getDatasetMetadata = function(callback){
-	
+
 	/*
 	 * Manually code the keys
 	 */
@@ -389,7 +389,7 @@ LinkedGov.getDatasetMetadata = function(callback){
 			"LinkedGov.descriptionLocation":"",
 			"LinkedGov.keywords":""
 	};
-	
+
 	/*
 	 * Calculate the length of the metadata object so 
 	 * we can call the callback at the correct time.
@@ -397,30 +397,30 @@ LinkedGov.getDatasetMetadata = function(callback){
 	var length = 0;
 	var iterator = 0;
 	$.each(metadataObject,function(key,val){length++;});
-	
+
 	/*
 	 * Loop through the keys and request their values
 	 */
 	$.each(metadataObject,function(key,val){
 		$.ajax({
-		    type: "GET",
-		    url: "/command/core/get-preference?" + $.param({ 
-		      name: key,
-		      project : theProject.id
-		    }),
-		    success:function(data){
-		    	metadataObject[key] = decodeURIComponent(data.value);
-		  
-		    	if(iterator == length-1){
-		    		callback(metadataObject);
-		    	}
-		  
-		    	iterator++;
-		    },
-		    dataType: "json"
-		  });
+			type: "GET",
+			url: "/command/core/get-preference?" + $.param({ 
+				name: key,
+				project : theProject.id
+			}),
+			success:function(data){
+				metadataObject[key] = decodeURIComponent(data.value);
+
+				if(iterator == length-1){
+					callback(metadataObject);
+				}
+
+				iterator++;
+			},
+			dataType: "json"
+		});
 	});
-		
+
 };
 
 /*
@@ -880,15 +880,17 @@ var finaliseRDFSchema = {
 					for(var i=0;i<columns.length;i++){
 
 						if(columns[i].name == $(this).find("span.column-header-name").html()){
-
-							if(!isNaN(theProject.rowModel.rows[0].cells[columns[i].cellIndex].v)){
-								if(theProject.rowModel.rows[0].cells[columns[i].cellIndex].v % 1 == 0){
-									o.target.valueType = "http://www.w3.org/2001/XMLSchema#int";
+							
+							if(theProject.rowModel.rows[0].cells[columns[i].cellIndex] != null){
+								if(!isNaN(theProject.rowModel.rows[0].cells[columns[i].cellIndex].v)){
+									if(theProject.rowModel.rows[0].cells[columns[i].cellIndex].v % 1 == 0){
+										o.target.valueType = "http://www.w3.org/2001/XMLSchema#int";
+									} else {
+										o.target.valueType = "http://www.w3.org/2001/XMLSchema#float";
+									}
 								} else {
-									o.target.valueType = "http://www.w3.org/2001/XMLSchema#float";
+									o.target.lang = "en";
 								}
-							} else {
-								o.target.lang = "en";
 							}
 
 							i = columns.length;

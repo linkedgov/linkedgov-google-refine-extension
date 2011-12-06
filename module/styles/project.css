@@ -347,8 +347,8 @@ body.lg div#refine-tabs-typing a.collapse-expand.expand {
     background: url("../images/wizard_layout2.png") no-repeat scroll 0 0 #FFFFFF;
 }
 body.lg div#refine-tabs-typing a.collapse-expand:hover {
-    /*background-color: #EBEEF8;
-    text-decoration: none;*/
+    background-color: #111CCC;
+    text-decoration: none;
 }
 body.lg div.wizard-body span.wizardIcon {
     display: inline;
@@ -845,6 +845,7 @@ body.lg div.rangeSelect div.range span {
 body.lg div.rangeSelect div.range select {
 	margin-bottom: 5px;
     width: 99%;
+    font-family:inherit;
 }
 	
 /**** jQuery UI Selectable styles ****/
