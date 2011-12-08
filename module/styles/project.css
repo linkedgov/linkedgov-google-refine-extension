@@ -341,7 +341,7 @@ body.lg div#refine-tabs-typing a.collapse-expand {
     text-align: center;
     text-decoration: none;
     width: 25px;
-    z-index: 1000;
+    z-index: 99;
 }
 body.lg div#refine-tabs-typing a.collapse-expand.expand {
     background: url("../images/wizard_layout2.png") no-repeat scroll 0 0 #FFFFFF;

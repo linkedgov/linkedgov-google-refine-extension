@@ -748,7 +748,11 @@ TypingPanel.prototype.buildColumnDescriptionInputs = function(){
 	$("div.description-panel div.column-list").hide();
 	var html = "<ul>";
 	$("div.column-header-title span.column-header-name").each(function(){
-		if($(this).html() != "All"){
+		/*
+		 * Only create a label and description input for a column if it's not the "All" column and 
+		 * not in the hidden columns list (because these columns aren't stored in the data
+		 */
+		if($(this).html() != "All" && $.inArray($(this).html(),LinkedGov.vars.hiddenColumns.split(",")) < 0){
 			/*
 			 * Column name status can be:
 			 * great - label and description entered

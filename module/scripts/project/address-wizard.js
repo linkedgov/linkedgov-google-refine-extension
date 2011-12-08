@@ -26,7 +26,6 @@ var addressWizard = {
 		 */
 		vars : {
 			elmts : {},
-			addressName:"",
 			postCodeRegex : "[A-Z]{1,2}[0-9R][0-9A-Z]? {0,1}[0-9][ABD-HJLNP-UW-Z]{2}",
 			colObjects : [],
 			vocabs : {
@@ -61,6 +60,7 @@ var addressWizard = {
 			self.vars.elmts = elmts;
 			self.vars.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
 			self.vars.hiddenColumns = [];
+			self.vars.addressName = "";
 
 			/*
 			 * Build an array of column objects with their options

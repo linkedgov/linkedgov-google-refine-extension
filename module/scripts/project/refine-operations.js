@@ -308,7 +308,6 @@ LinkedGov.moveColumn = function(colName, dir, callback) {
  */
 LinkedGov.hideColumnCompletely = function(colName, callback) {
 
-
 	log("hideColumnCompletely");
 
 	log("hiding - "+colName);
@@ -354,12 +353,13 @@ LinkedGov.hideColumnCompletely = function(colName, callback) {
 
 		var obj = {
 				"project" : theProject.id,
-				"LinkedGov.hiddenColumns" : LinkedGov.vars.hiddenColumns
+				"name" : "LinkedGov.hiddenColumns",
+				"value" : encodeURIComponent(LinkedGov.vars.hiddenColumns)
 		};
 
 		$.ajax({
 			type : "POST",
-			url : "/command/" + "linkedgov" + "/" + "save-meta-information",
+			url : "/command/" + "core" + "/" + "set-preference",
 			data : $.param(obj),
 			success : function(data) {
 				if(callback){
@@ -421,12 +421,13 @@ LinkedGov.unhideHiddenColumn = function(colName, callback) {
 
 	var obj = {
 			"project" : theProject.id,
-			"LinkedGov.hiddenColumns" : LinkedGov.vars.hiddenColumns
+			"name" : "LinkedGov.hiddenColumns",
+			"value" : encodeURIComponent(LinkedGov.vars.hiddenColumns)
 	};
 
 	$.ajax({
 		type : "POST",
-		url : "/command/" + "linkedgov" + "/" + "save-meta-information",
+		url : "/command/" + "core" + "/" + "set-preference",
 		data : $.param(obj),
 		success : function(data) {
 			if(callback){
@@ -434,7 +435,7 @@ LinkedGov.unhideHiddenColumn = function(colName, callback) {
 			}
 		},
 		error : function() {
-
+			alert("Error saving hidden column metadata")
 		}
 	});
 
@@ -449,12 +450,13 @@ LinkedGov.getHiddenColumnMetadata = function(callback){
 
 	$.ajax({
 		type : "GET",
-		url : "/command/" + "linkedgov" + "/" + "get-meta-information?project="+theProject.id,
+		url : "/command/" + "core" + "/" + "get-preference",
 		data : $.param({
-			keys:"LinkedGov.hiddenColumns"
+			project: theProject.id,
+			name:"LinkedGov.hiddenColumns"
 		}),
 		success : function(data) {
-			LinkedGov.vars.hiddenColumns = data.customMetadata["LinkedGov.hiddenColumns"];
+			LinkedGov.vars.hiddenColumns = decodeURIComponent(data.value);
 			callback();
 		},
 		error: function(){
