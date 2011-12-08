@@ -421,6 +421,7 @@ var LinkedGov = {
 		 */
 		silentProcessCall : function(o,args) {
 
+			o.aync = o.async || true;
 			o.type = o.type || "POST";
 			o.dataType = o.dataType || "json";
 			o.url = o.url || "";

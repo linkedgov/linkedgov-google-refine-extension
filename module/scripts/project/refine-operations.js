@@ -41,6 +41,86 @@ LinkedGov.setFacetCountLimit = function(n) {
 
 };
 
+
+/*
+ * findHighestFacetValue
+ * 
+ */
+LinkedGov.findHighestFacetValue = function(colName, expression){
+	
+	var myVal = "";
+	
+	/*
+	 * Build a parameter object using the first of the column names.
+	 */
+	var facetParams = {
+			"facets" : [ {
+				"type" : "list",
+				"name" : colName,
+				"columnName" : colName,
+				"expression" : expression,
+				"omitBlank" : false,
+				"omitError" : false,
+				"selection" : [],
+				"selectBlank" : false,
+				"selectError" : false,
+				"invert" : false
+			} ],
+			"mode" : "row-based"
+	};
+
+	$.ajax({
+		async : false,
+		type : "POST",
+		url : "/command/" + "core" + "/" + "compute-facets",
+		data : {
+			engine : JSON.stringify(facetParams),
+			project : theProject.id
+		},
+		success : function(data) {
+			/*
+			 * Loop through the UI facets
+			 */
+			for ( var i = 0; i < data.facets.length; i++) {
+
+				/*
+				 * If the facet matches the column name and has
+				 * choices returned
+				 */
+				if (data.facets[i].columnName == colName && typeof data.facets[i].choices != 'undefined') {
+					/*
+					 * Loop through the returned facet choices (count) number of times
+					 * and append them to the unordered list.
+					 */
+					var highest = 0;
+					var value = "";
+					var length = data.facets[i].choices.length;
+
+					for(var j=0; j<length; j++){
+
+						if(data.facets[i].choices[j].c >= highest){
+							value = data.facets[i].choices[j].v.l;
+							highest = data.facets[i].choices[j].c;
+						}
+					}
+
+					i=data.facets.length;
+					
+					myVal = value;
+
+				}
+			}
+						
+		},
+		error : function() {
+			alert("A problem was encountered when computing facets.");
+		}
+	});	
+		
+	return myVal;
+}
+
+
 /*
  * setBlanksToNulls
  * 
@@ -410,13 +490,13 @@ LinkedGov.keepHiddenColumnsHidden = function(){
 				});
 			}
 		}	
-		
+
 		if(cols.length == "1" && cols[0].length == 0){
 			LinkedGov.updateUnhideColumnButton(0);
 		} else {
 			LinkedGov.updateUnhideColumnButton(cols.length);			
 		}
-		
+
 	}
 };
 

@@ -351,14 +351,12 @@ var LinkedGov = {
 		/*
 		 * saveMetadata
 		 * 
-		 * Posts the metadata object to our "save-meta-information" command 
+		 * Posts the metadata object to Refine's "set-preference" command 
 		 * which stores the key-value pairs in the project's metadata.json file.
 		 */
 		saveMetadata:function(jobID, projectID, callback){
 
 			var self = this;
-
-			//LinkedGov.vars.metadataObject.project = projectID;
 
 			$.each(LinkedGov.vars.metadataObject,function(key,val){
 				$.ajax({

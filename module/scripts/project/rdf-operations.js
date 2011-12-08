@@ -374,9 +374,7 @@ LinkedGov.saveMetadataToRDF = function(callback){
  */
 LinkedGov.getDatasetMetadata = function(callback){
 
-	/*
-	 * Manually code the keys
-	 */
+	// Create the object to store the metadata in
 	var metadataObject = {
 			"LinkedGov.name":"",
 			"LinkedGov.license":"",
@@ -390,17 +388,13 @@ LinkedGov.getDatasetMetadata = function(callback){
 			"LinkedGov.keywords":""
 	};
 
-	/*
-	 * Calculate the length of the metadata object so 
-	 * we can call the callback at the correct time.
-	 */
 	var length = 0;
 	var iterator = 0;
+
+	// Count how many keys we have
 	$.each(metadataObject,function(key,val){length++;});
 
-	/*
-	 * Loop through the keys and request their values
-	 */
+	// For each key, request it's value using "get-preference"
 	$.each(metadataObject,function(key,val){
 		$.ajax({
 			type: "GET",
@@ -409,8 +403,10 @@ LinkedGov.getDatasetMetadata = function(callback){
 				project : theProject.id
 			}),
 			success:function(data){
+				// Decode any encoded URLs in the metadata
 				metadataObject[key] = decodeURIComponent(data.value);
 
+				// If we've requested all the keys
 				if(iterator == length-1){
 					callback(metadataObject);
 				}
@@ -856,6 +852,7 @@ var finaliseRDFSchema = {
 					/*
 					 * Default description is: <Row> <lg:columnName> "cell value"
 					 */
+					
 					var o = {
 							"uri" : self.vars.vocabs.lg.uri + camelizedColumnName.replace(/:/g,"-"),
 							"curie" : self.vars.vocabs.lg.curie + ":" + camelizedColumnName.replace(/:/g,"-"),
@@ -867,6 +864,7 @@ var finaliseRDFSchema = {
 							}
 					};
 
+					
 					/*
 					 * Detect and specify types & language for the generic RDF about columns.
 					 * 
@@ -878,19 +876,28 @@ var finaliseRDFSchema = {
 					 */
 					var columns = theProject.columnModel.columns;
 					for(var i=0;i<columns.length;i++){
-
 						if(columns[i].name == $(this).find("span.column-header-name").html()){
-							
+
 							if(theProject.rowModel.rows[0].cells[columns[i].cellIndex] != null){
-								if(!isNaN(theProject.rowModel.rows[0].cells[columns[i].cellIndex].v)){
-									if(theProject.rowModel.rows[0].cells[columns[i].cellIndex].v % 1 == 0){
-										o.target.valueType = "http://www.w3.org/2001/XMLSchema#int";
-									} else {
-										o.target.valueType = "http://www.w3.org/2001/XMLSchema#float";
-									}
-								} else {
+
+								var expression = "grel:if(type(value) == 'number',(if(value % 1 == 0,'int','float')),if(((type(value.match(/\\b\\d{4}[\\-]\\d{1,2}[\\-]\\d{1,2}\\b/))=='array')),'date','string'))";
+
+								/*
+								 * Recursive function to compute a facet for each column to find 
+								 * the most frequently occuring value type (int, float, string...)
+								 */
+								var type = LinkedGov.findHighestFacetValue(columns[i].name,expression);
+								
+								if(type == "string"){
 									o.target.lang = "en";
+								} else if(type == "int"){
+									o.target.valueType = "http://www.w3.org/2001/XMLSchema#int";
+								} else if(type == "float"){
+									o.target.valueType = "http://www.w3.org/2001/XMLSchema#float";
+								} else if(type == "date"){
+									o.target.valueType = "http://www.w3.org/2001/XMLSchema#date";
 								}
+
 							}
 
 							i = columns.length;
@@ -902,6 +909,7 @@ var finaliseRDFSchema = {
 
 
 					rootNode.links.push(o);
+			
 				}
 			});
 
