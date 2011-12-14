@@ -625,6 +625,15 @@ var addressWizard = {
 				LinkedGov.showUndoButton(self.vars.elmts.addressBody);
 				//LinkedGov.summariseWizardHistoryEntry("Address wizard", self.vars.historyRestoreID);
 				LinkedGov.showWizardProgress(false);
+				/*
+				 * Check that the postcode column contains a significant number of 
+				 * valid postcodes
+				 */
+				var expression = 'grel:if(partition(value,/[A-Z]{1,2}[0-9R][0-9A-Z]? {0,1}[0-9][ABD-HJLNP-UW-Z]{2}/)[1].length() > 0,"postcode","error")';
+				var result = LinkedGov.verifyValueTypes(self.vars.addressName, expression, "postcode");
+				if(result.type != "success"){
+					ui.typingPanel.displayUnexpectedValuesPanel(result,self.vars.elmts.addressBody);
+				}
 			});
 		}
 };

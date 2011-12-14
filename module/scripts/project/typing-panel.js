@@ -1833,6 +1833,121 @@ TypingPanel.prototype.getFragmentData = function(columnList) {
 
 
 /*
+ * displayUnexpectedValuesPanel
+ * 
+ * After a user has completed a wizard and we have detected
+ * that there are a certain number of unexpected values.
+ * 
+ * It offers the user the choice of fixing or ignoring any errors
+ * that may have been produced by incorrectly typing a column.
+ * 
+ */
+TypingPanel.prototype.displayUnexpectedValuesPanel = function(result, wizardBody){
+	
+	var html = '<div class="warning"><p class="title"><!--'+result.type+'--></p>';
+	
+	html += '<p class="message">'+result.message+'</p>';
+	
+	/*
+	 * The maximum number of unexpected values we ask the user 
+	 * to attempt to correct.
+	 */
+	var correctionLimit = 15;
+	
+	var unexpectedValues = (theProject.rowModel.total - result.count);
+	var percentage = (1/(100/unexpectedValues))*100;
+	
+	if((theProject.rowModel.total - result.count) <= correctionLimit){
+		html+= '<p class="message"><span class="count">'+unexpectedValues+'</span> unexpected values have been detected.</p>';
+		html+= '<p class="details">Can you fix them?</p>';
+	} else {
+		html+= '<p class="message">Around '+percentage+'% of the values ('+unexpectedValues+') have been deteceted as unexpected values.'
+		html+= '<p class="details">Are you sure you have selected the correct column?</p>';
+	}
+	
+	html+= '<div class="buttons">';
+	html+= '<a title="Undo" class="button undo" bind="undoButton" href="javascript:{}">Undo</a>';
+	html+= '<a title="Let me see" class="button fix" bind="fixButton" href="javascript:{}">Let me see</a>';
+	html+= '<a title="Carry on" class="button carryon" bind="carryOnButton" href="javascript:{}">Carry on</a>';
+	html+= '</div>';
+	
+	html += '</div>';
+	
+	$(wizardBody).append('<div class="wizardComplete" />');
+	$(wizardBody).find("div.wizardComplete").html(html);
+	$("div.action-buttons").hide();
+	$("div.wizard-body").children().hide().end().find("h2, div.wizardComplete").show();
+	$("div.wizard-panel").css("bottom","32px");
+	
+	/*
+	 * Action buttons for the unexpected values panel
+	 */
+	$("div.wizardComplete").find("a.button").click(function(){
+		
+		if($(this).hasClass("undo")){
+			
+			$("div.action-buttons a.undo").click();
+			LinkedGov.restoreWizardBody();
+			
+		} else if($(this).hasClass("fix")){
+			
+			ui.typingPanel.showUnexpectedValues(result);
+			
+			$("div.wizardComplete").find("p.details").hide();
+			$("div.wizardComplete").find("div.buttons").find("a.button").hide();
+			$("div.wizardComplete").find("div.buttons").append("<a class='button done' />");
+			$("div.wizardComplete").find("div.buttons").find("a.done").html("Done").show();
+			$("div.wizardComplete").find("div.buttons").find("a.done").click(function(){
+				// Remove the "error" facet
+				var facets = ui.browsingEngine._facets;
+				for(var i=0; i < facets.length; i++){
+					if(facets[i].facet._config.columnName == result.colName){
+				         facets[i].facet._remove();
+					}
+				}
+				// Return the wizard to it's original state
+				LinkedGov.restoreWizardBody();
+			});
+			
+		} else if($(this).hasClass("carryon")){
+			LinkedGov.restoreWizardBody();
+		}
+	});
+	
+};
+
+TypingPanel.prototype.showUnexpectedValues = function(result){
+	
+	ui.browsingEngine.addFacet("list",{
+		"name": result.colName,
+		"columnName": result.colName,
+		"expression": result.expression
+	});
+
+	var facets = ui.browsingEngine._facets;
+				
+	for(var i=0; i < facets.length; i++){
+
+		if(facets[i].facet._config.columnName == result.colName){
+		
+			var colFacet = facets[i].facet;
+			
+			colFacet._selection.push({
+				"v":{
+					"v":"error",
+					"l":"error"
+				}
+			});
+		}
+	}
+	
+	$("div#left-panel div.refine-tabs").tabs('select', 1);
+	
+};
+
+
+
+/*
  * Execute when page is loaded.
  */
 $(document).ready(function() {

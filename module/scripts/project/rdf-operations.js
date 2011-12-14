@@ -154,13 +154,15 @@ LinkedGov.saveMetadataToRDF = function(callback){
 			}
 		}
 	}
+	
+	log("metadataAlreadySaved = "+metadataAlreadySaved);
 
 	if(!metadataAlreadySaved){
 
 		/*
-		 * Restore hidden columns when the first metadata save is made
+		 * Destroy and hidden column data
 		 */
-		LinkedGov.restoreHiddenColumns();
+		LinkedGov.eraseHiddenColumnData();
 
 		var vocabs = [{
 			name : "dct",
@@ -347,18 +349,16 @@ LinkedGov.saveMetadataToRDF = function(callback){
 				schema : JSON.stringify(schema)
 			}, {}, {
 				onDone : function() {
-					Refine.update({
-						modelsChanged : true
-					});
+					Refine.update({everythingChanged : true}, callback);
 				}
 			});
-
-			callback();
 
 		});
 
 	} else {
 		log("Metadata has already been saved.");
+
+		callback();
 	}
 
 };
@@ -433,14 +433,14 @@ LinkedGov.removeColumnInRDF = function(colName,callback) {
 
 	//Loop through root nodes
 	for(var i=0;i<rootNodes.length; i++){
-		//if "nodeType" = "cell-as-resource" then we've found the ROW root node
+		//if "nodeType" == "cell-as-resource" then we've found the ROW root node
 		if(typeof rootNodes[i].nodeType != 'undefined' && rootNodes[i].nodeType == "cell-as-resource"){
 			// for each of the links for the ROW root node
 			for(var j=0;j<rootNodes[i].links.length;j++){
 				// non-blank and blank nodes all exist in the first "target" 
 				// object of a link
 				if(typeof rootNodes[i].links[j].target != 'undefined') {
-					//check non-blank-node links
+					//check for the column name in non-blank-node links
 					if(typeof rootNodes[i].links[j].target.columnName != 'undefined' 
 						&& rootNodes[i].links[j].target.columnName == colName) {
 						// remove link from root node
@@ -461,6 +461,11 @@ LinkedGov.removeColumnInRDF = function(colName,callback) {
 						});
 						return false;
 					} else if(typeof rootNodes[i].links[j].target.links != "undefined") {
+						/*
+						 * Else traverse a level deeper into the node and scan for the 
+						 * column name across the node's links (this is usually for 
+						 * blank node links that require another hop - in terms of graph hopping).
+						 */
 						for(var k=0;k<rootNodes[i].links[j].target.links.length;k++){
 							if(rootNodes[i].links[j].target.links[k].target != "undefined" 
 								&& typeof rootNodes[i].links[j].target.links[k].target.columnName != "undefined" 
@@ -494,15 +499,6 @@ LinkedGov.removeColumnInRDF = function(colName,callback) {
 
 		}
 	}
-
-}
-
-/*
- * Orders the root nodes in the RDF schema so it's 
- * easier to read.
- */
-LinkedGov.orderRDFSchema = function(callback){
-
 
 }
 
@@ -904,9 +900,6 @@ var finaliseRDFSchema = {
 						}
 
 					}
-
-
-
 
 					rootNode.links.push(o);
 			

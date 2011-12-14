@@ -37,6 +37,43 @@ div#feedback-form textarea {
     padding: 0.4em;
     width: 95%;
 }
+div#beta {
+    position: fixed;
+    width: 150px;
+    top: -25px;
+    right: -28px;
+    z-index: 100;
+    text-align: center;
+    padding: 7px 40px 10px 40px;
+    -webkit-transform-origin: top left;
+    -webkit-transform: translateX(85px) translateY(-30px) rotate(42deg);
+    -moz-transform-origin: top left;
+    -moz-transform: translateX(85px) translateY(-30px) rotate(42deg);
+    -webkit-transform-origin-x: 0%;
+    -webkit-transform-origin-y: 0%;
+    background: -moz-linear-gradient(90deg, #718AD3 0%, #99BAFF 100%) repeat scroll 0 0 #FEFEFE;
+    background: -webkit-gradient(linear, left bottom, left top, from(#718AD3), to(#99BAFF)) #FEFEFE;
+    color: white !important;
+    text-decoration: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    border-radius: 6px;
+    -moz-box-shadow: 0 0 1px rgba(0, 0, 0, 0.2) inset, 0 2px 0 rgba(255, 255, 255, 0.2) inset, 0 1px 4px rgba(0, 0, 0, 0.4);
+    -webkit-box-shadow: 0 0 1px rgba(0, 0, 0, 0.2) inset, 0 2px 0 rgba(255, 255, 255, 0.2) inset, 0 1px 4px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 1px rgba(0, 0, 0, 0.2) inset, 0 2px 0 rgba(255, 255, 255, 0.2) inset, 0 1px 4px rgba(0, 0, 0, 0.4);
+    text-transform: none;
+}
+div#beta p {
+    font-family: Tahoma;
+    font-size: 20px;
+    font-weight: inherit;
+    line-height: 1;
+    margin: 0;
+    padding: 0;
+    text-shadow: -1px 1px 0 rgba(38, 48, 85, 0.75);
+    text-transform: uppercase;
+}
 .hiddenCompletely {
     display:none !important;
 }
@@ -347,7 +384,7 @@ body.lg div#refine-tabs-typing a.collapse-expand.expand {
     background: url("../images/wizard_layout2.png") no-repeat scroll 0 0 #FFFFFF;
 }
 body.lg div#refine-tabs-typing a.collapse-expand:hover {
-    background-color: #111CCC;
+    background-color: #E7E7E7;
     text-decoration: none;
 }
 body.lg div.wizard-body span.wizardIcon {
@@ -390,6 +427,102 @@ body.lg div.wizard-body h2 {
     padding-left: 0;
     padding-top: 0px;
     text-align: left;
+}
+body.lg div.wizard-body div.wizardComplete {
+/*    background: none repeat scroll 0 0 #FFFFFF;
+    position: absolute;
+    width: 275px;
+    z-index: 99;
+    display:none;	*/
+}
+body.lg div.wizard-body div.wizardComplete p {
+	padding:10px;
+}
+body.lg div.wizard-body div.wizardComplete div.warning {
+    background: none repeat scroll 0 0 #FFF4CB;
+    border: 1px solid #EAD799;
+    border-radius: 5px 5px 5px 5px;
+    padding: 12px 12px 25px;
+}
+body.lg div.wizard-body div.wizardComplete div.warning p.title {
+    background: url("../images/warning-small.png") no-repeat scroll center top transparent;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 55px 0 0;
+    text-align: center;
+    vertical-align: middle;
+    text-transform: capitalize;
+}
+body.lg div.wizard-body div.wizardComplete div.warning p.message {
+    background: none repeat scroll 0 0 #FFFFFF;
+    border: 1px solid #E8E7E7;
+    border-radius: 5px 5px 5px 5px;
+    margin-top: 10px;
+}
+body.lg div.wizard-body div.wizardComplete div.warning span.colName {
+    background: none repeat scroll 0 0 #D5E6FF;
+    border-radius: 3px 3px 3px 3px;
+    font-weight: bold;
+    padding: 1px 3px;
+    display:inline-block;
+}
+body.lg div.wizard-body div.wizardComplete div.warning span.valueType {
+    background: none repeat scroll 0 0 #D5E6FF;
+    border-radius: 3px 3px 3px 3px;
+    font-weight: bold;
+    padding: 1px 3px;
+    display:inline-block;
+}
+body.lg div.wizard-body div.wizardComplete div.warning span.count {
+    background: none repeat scroll 0 0 #D5E6FF;
+    border-radius: 3px 3px 3px 3px;
+    font-weight: bold;
+    padding: 1px 6px;
+}
+body.lg div.wizard-body div.wizardComplete div.warning p.details {
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 0;
+    margin-top: 10px;
+    text-align: center;
+}
+body.lg div.wizard-body div.wizardComplete div.warning a.button {
+    color: #FFFFFF;
+    font-weight: bold;
+    margin: 0 4px;
+    padding: 2px 10px;
+}
+body.lg div.wizard-body div.wizardComplete div.warning div.buttons {
+    margin-top: 20px;
+    text-align: center;
+}
+body.lg div.wizard-body div.wizardComplete div.warning a.button.undo {
+    background: -moz-linear-gradient(center top , #D68C8C, #742F2F) repeat scroll 0 0 transparent;	
+    text-shadow: 1px 1px #5B1B1B;
+}
+body.lg div.wizard-body div.wizardComplete div.warning a.button.fix {
+    background: -moz-linear-gradient(center top , #A3D68C, #40742F) repeat scroll 0 0 transparent;	
+    text-shadow: 1px 1px #153E19;
+}
+body.lg div.wizard-body div.wizardComplete div.warning a.button.carryon {
+    background: -moz-linear-gradient(center top , #79B1FE, #294F8C) repeat scroll 0 0 transparent;	
+    text-shadow: 1px 1px #1E2E6A;
+}
+body.lg div.wizard-body div.wizardComplete div.warning a.button.done {
+    background: -moz-linear-gradient(center top , #79B1FE, #294F8C) repeat scroll 0 0 transparent;  
+    text-shadow: 1px 1px #1E2E6A;
+}
+body.lg div.wizard-body div.wizardComplete div.warning a.button.undo:active {
+    background: -moz-linear-gradient(center top , #742F2F, #D68C8C) repeat scroll 0 0 transparent;  
+}
+body.lg div.wizard-body div.wizardComplete div.warning a.button.fix:active {
+    background: -moz-linear-gradient(center top , #40742F, #A3D68C) repeat scroll 0 0 transparent;  
+}
+body.lg div.wizard-body div.wizardComplete div.warning a.button.carryon:active {
+    background: -moz-linear-gradient(center top , #294F8C, #79B1FE) repeat scroll 0 0 transparent;  
+}
+body.lg div.wizard-body div.wizardComplete div.warning a.button.done:active {
+    background: -moz-linear-gradient(center top , #294F8C, #79B1FE) repeat scroll 0 0 transparent;  
 }
 body.lg div.wizard-body div.description p {
     line-height: 1.3;
@@ -773,7 +906,7 @@ body.lg div.wizard-panel div.action-buttons a.button.preview {
 }
 body.lg div.wizard-panel div.action-buttons a.button.update {
     background:-moz-linear-gradient(center top , #79B1FE, #294F8C) repeat scroll 0 0 transparent;
-    text-shadow: 1px 1px #153E19;
+    text-shadow: 1px 1px #1E2E6A;
 }
 body.lg div.wizard-panel div.action-buttons a.button.undo:active {
     background: -moz-linear-gradient(center top , #742F2F, #D68C8C) repeat scroll 0 0 transparent;
@@ -850,10 +983,10 @@ body.lg div.rangeSelect div.range select {
 	
 /**** jQuery UI Selectable styles ****/
 body.lg .ui-selectable .ui-selecting { 
-	background-color: #CCFFCC; 
+	background-color: #FFF; 
 }
 body.lg .ui-selected, body.lg .ui-selectable .ui-selected { 
-    background-color: #DAFFD9;
+    background-color: #DAF4DA;
 }
 body.lg .ui-selectable { 
 	list-style-type: none; 
@@ -861,7 +994,7 @@ body.lg .ui-selectable {
 	padding: 0; 
 }
 body.lg table.ui-selectable td.column-header:hover {
-	background-color:#CCFFCC;
+	background-color:#FFF;
 }
 
 body.lg div.ui-datepicker {

@@ -40,7 +40,7 @@ var LinkedGov = {
 			
 			$("#header").append(DOM.loadHTML("linkedgov", "html/feedback-form.html"));
 			
-			$("body").append('<div id="beta"><img src="/extension/linkedgov/images/alpha.png"></div>');
+			$("body").append("<div id='beta'><p>Alpha</p></div>");
 
 			var mode = $.getUrlVar('mode');
 

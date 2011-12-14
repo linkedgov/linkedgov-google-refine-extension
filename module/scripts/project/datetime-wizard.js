@@ -25,6 +25,7 @@ var dateTimeWizard = {
 			colFragments : [],
 			colObjects : [],
 			elmts : {},
+			resultColumn:"",
 			vocabs : {
 				time : {
 					curie : "time",
@@ -422,6 +423,8 @@ var dateTimeWizard = {
 					modelsChanged : true
 				}, {
 					onDone : function() {
+						
+						self.vars.resultColumn = newName;
 						/*
 						 * Create the column object for the new column
 						 */
@@ -574,6 +577,7 @@ var dateTimeWizard = {
 					 * Place callback inside the loop to prevent it being called too early.
 					 */
 					if (i == colObjects.length - 1) {
+						self.vars.resultColumn = colObjects[i].name;
 						callback();
 					}
 
@@ -612,6 +616,7 @@ var dateTimeWizard = {
 					repeatCount : ""
 				},
 				success : function() {
+					self.vars.resultColumn = colObject.name;
 					Refine.update({cellsChanged : true});
 				},
 				error : function() {
@@ -1090,6 +1095,16 @@ var dateTimeWizard = {
 				LinkedGov.showUndoButton(self.vars.elmts.dateTimeBody);
 				//LinkedGov.summariseWizardHistoryEntry("Date and Time wizard", self.vars.historyRestoreID);
 				LinkedGov.showWizardProgress(false);
+				
+				/*
+				 * Detect whether there are any non-date values in the column
+				 */
+				var expression = 'grel:if(type(value) == "date","date","error")';
+				var result = LinkedGov.verifyValueTypes(self.vars.resultColumn, expression, "date");
+				if(result.type != "success"){
+					ui.typingPanel.displayUnexpectedValuesPanel(result,self.vars.elmts.dateTimeBody);
+				}
+				
 			});
 
 		}

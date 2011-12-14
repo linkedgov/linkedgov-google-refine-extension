@@ -371,6 +371,13 @@ var geolocationWizard = {
 				// Add typed class to column headers
 				//LinkedGov.summariseWizardHistoryEntry("Latitude and Longitude wizard", self.vars.historyRestoreID);
 				LinkedGov.showWizardProgress(false);
+				
+				var expression = 'grel:if(type(value) == "number",(if(value % 1 == 0,"int","float")),if(((type(value.match(/\\b\\d{4}[\\-]\\d{1,2}[\\-]\\d{1,2}\\b/))=="array")),"error","error")))';
+				var result = LinkedGov.verifyValueTypes(self.vars.colObjects[0].name, expression, "float");
+				if(result.type != "success"){
+					ui.typingPanel.displayUnexpectedValuesPanel(result,self.vars.elmts.geolocationBody);
+				}
+				
 			});
 		}
 };

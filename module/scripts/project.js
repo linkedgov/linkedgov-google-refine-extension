@@ -97,40 +97,47 @@ var LinkedGov = {
 			 */
 			$.getScript("extension/linkedgov/scripts/project/refine-operations.js",function(){
 				LinkedGov.splitVariablePartColumn = splitVariablePartColumn;
-			});
-			
-			/*
-			 * Load our custom save-rdf operations script
-			 */
-			$.getScript("extension/linkedgov/scripts/project/rdf-operations.js",function(){
-				LinkedGov.renameColumnInRDF = renameColumnInRDF;
-				LinkedGov.finaliseRDFSchema = finaliseRDFSchema;
-				LinkedGov.applyTypeIcons = applyTypeIcons;
-				LinkedGov.applyTypeIcons.init();
-				LinkedGov.applyTypeIcons.apply();
-				LinkedGov.saveMetadataToRDF();
 				
-				LinkedGov.getHiddenColumnMetadata(function(){
-					LinkedGov.keepHiddenColumnsHidden();
+				/*
+				 * Load our custom save-rdf operations script
+				 */
+				$.getScript("extension/linkedgov/scripts/project/rdf-operations.js",function(){
+					
+					LinkedGov.renameColumnInRDF = renameColumnInRDF;
+					LinkedGov.finaliseRDFSchema = finaliseRDFSchema;
+					LinkedGov.applyTypeIcons = applyTypeIcons;
+					LinkedGov.applyTypeIcons.init();
+					LinkedGov.applyTypeIcons.apply();
+					
+					LinkedGov.saveMetadataToRDF(function(){
+						
+						LinkedGov.getHiddenColumnMetadata(function(){
+							LinkedGov.keepHiddenColumnsHidden();
+						});
+						
+						ui.dataTableView.render2 = ui.dataTableView.render;
+						ui.dataTableView.render = function(){
+
+							//log("Rendered table");
+							ui.dataTableView.render2();
+							LinkedGov.keepHiddenColumnsHidden();
+							LinkedGov.applyTypeIcons.apply();
+
+						}
+
+						Refine.update({everythingChanged:true});
+						
+						//ui.historyPanel.simpleRender = ui.historyPanel._render;
+						//ui.historyPanel._render = function() {
+						//	LinkedGov.summariseWizardOperations();
+						//	ui.historyPanel.simpleRender();
+						//}					
+						
+					});
 				});
 				
-				ui.dataTableView.render2 = ui.dataTableView.render;
-				ui.dataTableView.render = function(){
-
-					//log("Rendered table");
-					ui.dataTableView.render2();
-					LinkedGov.keepHiddenColumnsHidden();
-					LinkedGov.applyTypeIcons.apply();
-
-				}
-				
-				//ui.historyPanel.simpleRender = ui.historyPanel._render;
-				//ui.historyPanel._render = function() {
-				//	LinkedGov.summariseWizardOperations();
-				//	ui.historyPanel.simpleRender();
-				//}
-				
 			});
+			
 		},
 
 		/*
@@ -145,6 +152,10 @@ var LinkedGov = {
 			$("body").addClass("lg");
 			
 			$("#header").html('<img width="129" height="40" alt="Google Refine" src="/extension/linkedgov/images/logo-small.png"><span id="slogan">Making government data usable</span>'+$("#header").html());
+		
+			$("body").append("<div id='beta'><p>Alpha</p></div>");
+			$("#project-controls").css("margin-right","100px");
+			$("#extension-bar").css("margin-right","45px");
 		},
 
 		/*
