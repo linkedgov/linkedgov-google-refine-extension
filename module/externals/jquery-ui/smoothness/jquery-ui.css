@@ -7,27 +7,6 @@
  *
  * http://docs.jquery.com/UI/Theming/API
  */
- 
- /* Feedback form CSS */
-  
-div#feedback-form {
-    min-height: 0;
-    width: auto;
-}
-div#feedback-form label, div#feedback-form input { display:block; }
-div#feedback-form input.text { margin-bottom:12px; width:95%; padding: .4em; }
-div#feedback-form fieldset { padding:0; border:0; margin-top:25px; }
-div#feedback-form h1 { font-size: 1.2em; margin: .6em 0; }
-div#feedback-form .ui-dialog .ui-state-error { padding: .3em; }
-div#feedback-form .validateTips { border: 1px solid transparent; padding: 0.3em; } 
-div#feedback-form textarea { 
-    height: 95px;
-    margin-bottom: 12px;
-    padding: 0.4em;
-    width: 95%;
-}
- 
- 
 
 /* Layout helpers
 ----------------------------------*/

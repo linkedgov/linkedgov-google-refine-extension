@@ -9,6 +9,51 @@ body {
     font-family: Arial,sans-serif;
     font-size: 62.5%;
 }
+ /* Feedback form CSS */
+div#feedback-form {
+    min-height: 0;
+    width: auto;
+}
+div#feedback-form label {
+    display:block;
+    margin-bottom: 5px; 
+}
+div#feedback-form input { 
+    display:block; 
+    margin-bottom: 10px;    
+}
+div#feedback-form input.text {
+    padding: 5px;
+    width: 100%;
+}
+div#feedback-form fieldset { 
+    padding:0; border:0; margin-top:25px; 
+}
+div#feedback-form h1 { 
+    font-size: 1.2em; margin: .6em 0; 
+}
+div#feedback-form .validateTips {
+    background: none repeat scroll 0 0 #FFE6E6;
+    border: 1px solid #EAC0C0;
+    padding: 10px;
+    display:none;
+}
+div#feedback-form textarea { 
+    padding: 5px;
+    height: 95px;
+    width: 100%;
+}
+div#feedback-form .ui-state-error {
+    background: none repeat scroll 0 0 #FFE6E6;
+    border: 1px solid #EAC0C0;  
+}
+.dialog-footer {
+    text-align: right;
+}
+.dialog-footer button {
+    margin-right:6px;   
+}
+
 div#beta {
 	position: fixed;
 	width: 150px;

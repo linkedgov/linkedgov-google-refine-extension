@@ -1,24 +1,14 @@
-	<a id="send-feedback" href="#" title="Send feedback" class="button">Feedback</a>
+<div id="feedback-form" title="Send feedback">
+	<p class="validateTips">All fields are required.</p>
 
-	<div id="feedback-form" title="Send feedback">
-		<p class="validateTips">All fields are required.</p>
-
-		<form>
-			<fieldset>
-				<label for="name">Name</label> <input type="text" name="name"
-					id="name" class="text ui-widget-content ui-corner-all" /> <label
-					for="email">Email</label> <input type="text" name="email"
-					id="email" value="" class="text ui-widget-content ui-corner-all" />
-				<label for="comment">Comment</label>
-				<textarea name="comment" id="comment" value=""
-					class="text ui-widget-content ui-corner-all"></textarea>
-			</fieldset>
-		</form>
-	</div>
-
-
-<script type="text/javascript">
-$.get("extension/linkedgov/scripts/feedback.js",function(){
-    $("a#send-feedback").removeClass("ui-button").removeClass("ui-button-text-only").show();
-});
-</script>
+	<form>
+		<fieldset>
+			<label for="name">Name</label> 
+			<input type="text" name="name" id="name" class="text" /> 
+			<label for="email">Email</label> 
+			<input type="text" name="email" id="email" value="" class="text" />
+			<label for="comment">Comment</label>
+			<textarea name="comment" id="comment" class="text"></textarea>
+		</fieldset>
+	</form>
+</div>

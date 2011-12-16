@@ -186,10 +186,10 @@ var LinkedGov = {
 		 * Injects the feedback form in the top right of the page
 		 */
 		injectFeedbackForm : function() {
-			
-			$("div#project-controls").prepend(DOM.loadHTML("linkedgov", "html/feedback-form.html"));
-			
-			//<a id="send-feedback" title="Send feedback" href="#" class="button">Feedback</a>
+						
+			$.get("/extension/linkedgov/scripts/feedback.js",function(){
+				$("div#project-controls").append('<a class="button" id="send-feedback" href="#" title="Send feedback">Feedback</a>');				
+			});
 			
 		},
 		

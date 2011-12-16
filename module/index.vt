@@ -4,8 +4,13 @@
 <title>LinkedGov Portal</title>
 <link rel="stylesheet" type="text/css" href="styles/menu.css" /> 
 <link rel="stylesheet" type="text/css" href="externals/jquery-ui/smoothness/jquery-ui.css" />
-<script type="text/javascript" charset="utf-8" src="externals/jquery.js"></script>
+<link rel="stylesheet" type="text/css" href="/styles/util/dialog.less" />
+
+<!--script type="text/javascript" charset="utf-8" src="externals/jquery.js"></script-->
+<script type="text/javascript" charset="utf-8" src="/externals/jquery-1.4.2.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="/externals/jquery.eventstack-0.3.js"></script>
 <script type="text/javascript" charset="utf-8" src="externals/jquery-ui/jquery-ui.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="/scripts/util/dialog.js"></script>
 <script type="text/javascript" charset="utf-8" src="scripts/menu.js"></script>
 </head>
 <body>

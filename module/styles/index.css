@@ -434,21 +434,49 @@ body.lg #header #send-feedback {
     right: 100px;
     top: 18px;
 }
+ /* Feedback form CSS */
 div#feedback-form {
     min-height: 0;
     width: auto;
 }
-div#feedback-form label, div#feedback-form input { display:block; }
-div#feedback-form input.text { margin-bottom:12px; width:95%; padding: .4em; }
-div#feedback-form fieldset { padding:0; border:0; margin-top:25px; }
-div#feedback-form h1 { font-size: 1.2em; margin: .6em 0; }
-div#feedback-form .ui-dialog .ui-state-error { padding: .3em; }
-div#feedback-form .validateTips { border: 1px solid transparent; padding: 0.3em; } 
+div#feedback-form label {
+    display:block;
+    margin-bottom: 5px; 
+}
+div#feedback-form input { 
+    display:block; 
+    margin-bottom: 10px;    
+}
+div#feedback-form input.text {
+    padding: 5px;
+    width: 96%;
+}
+div#feedback-form fieldset { 
+    padding:0; border:0; margin-top:25px; 
+}
+div#feedback-form h1 { 
+    font-size: 1.2em; margin: .6em 0; 
+}
+div#feedback-form .validateTips {
+    background: none repeat scroll 0 0 #FFE6E6;
+    border: 1px solid #EAC0C0;
+    padding: 10px;
+    display:none;
+}
 div#feedback-form textarea { 
+    padding: 5px;
     height: 95px;
-    margin-bottom: 12px;
-    padding: 0.4em;
-    width: 95%;
+    width: 96%;
+}
+div#feedback-form .ui-state-error {
+    background: none repeat scroll 0 0 #FFE6E6;
+    border: 1px solid #EAC0C0;  
+}
+.dialog-footer {
+    text-align: right;
+}
+.dialog-footer button {
+    margin-right:6px;   
 }
 div#beta {
     position: fixed;

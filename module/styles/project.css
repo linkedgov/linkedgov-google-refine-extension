@@ -21,21 +21,49 @@ body.lg #slogan {
 body.lg a#unhide-columns-button {
 	display:none;
 }
+ /* Feedback form CSS */
 div#feedback-form {
     min-height: 0;
     width: auto;
 }
-div#feedback-form label, div#feedback-form input { display:block; }
-div#feedback-form input.text { margin-bottom:12px; width:95%; padding: .4em; }
-div#feedback-form fieldset { padding:0; border:0; margin-top:25px; }
-div#feedback-form h1 { font-size: 1.2em; margin: .6em 0; }
-div#feedback-form .ui-dialog .ui-state-error { padding: .3em; }
-div#feedback-form .validateTips { border: 1px solid transparent; padding: 0.3em; } 
+div#feedback-form label {
+    display:block;
+    margin-bottom: 5px; 
+}
+div#feedback-form input { 
+    display:block; 
+    margin-bottom: 10px;    
+}
+div#feedback-form input.text {
+    padding: 5px;
+    width: 96%;
+}
+div#feedback-form fieldset { 
+    padding:0; border:0; margin-top:25px; 
+}
+div#feedback-form h1 { 
+    font-size: 1.2em; margin: .6em 0; 
+}
+div#feedback-form .validateTips {
+    background: none repeat scroll 0 0 #FFE6E6;
+    border: 1px solid #EAC0C0;
+    padding: 10px;
+    display:none;
+}
 div#feedback-form textarea { 
+    padding: 5px;
     height: 95px;
-    margin-bottom: 12px;
-    padding: 0.4em;
-    width: 95%;
+    width: 96%;
+}
+div#feedback-form .ui-state-error {
+    background: none repeat scroll 0 0 #FFE6E6;
+    border: 1px solid #EAC0C0;  
+}
+.dialog-footer {
+    text-align: right;
+}
+.dialog-footer button {
+    margin-right:6px;   
 }
 div#beta {
     position: fixed;
@@ -436,13 +464,25 @@ body.lg div.wizard-body div.wizardComplete {
     display:none;	*/
 }
 body.lg div.wizard-body div.wizardComplete p {
-	padding:10px;
+    line-height: 1.3;
+    padding: 7px 15px;
 }
 body.lg div.wizard-body div.wizardComplete div.warning {
+	/*
     background: none repeat scroll 0 0 #FFF4CB;
     border: 1px solid #EAD799;
     border-radius: 5px 5px 5px 5px;
     padding: 12px 12px 25px;
+    */
+    background: none repeat scroll 0 0 #EBEEF8;
+    border: 1px solid #BBCCFF;
+    border-radius: 5px 5px 5px 5px;
+    color: #444444;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    text-align: left;
+    
 }
 body.lg div.wizard-body div.wizardComplete div.warning p.title {
     background: url("../images/warning-small.png") no-repeat scroll center top transparent;
@@ -498,31 +538,39 @@ body.lg div.wizard-body div.wizardComplete div.warning div.buttons {
 }
 body.lg div.wizard-body div.wizardComplete div.warning a.button.undo {
     background: -moz-linear-gradient(center top , #D68C8C, #742F2F) repeat scroll 0 0 transparent;	
+    background: -webkit-gradient(linear, left bottom, left top, from(#742F2F), to(#D68C8C)) #DDDDDD;
     text-shadow: 1px 1px #5B1B1B;
 }
 body.lg div.wizard-body div.wizardComplete div.warning a.button.fix {
-    background: -moz-linear-gradient(center top , #A3D68C, #40742F) repeat scroll 0 0 transparent;	
+    background: -moz-linear-gradient(center top , #A3D68C, #40742F) repeat scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#40742F), to(#A3D68C)) #DDDDDD;	
     text-shadow: 1px 1px #153E19;
 }
 body.lg div.wizard-body div.wizardComplete div.warning a.button.carryon {
     background: -moz-linear-gradient(center top , #79B1FE, #294F8C) repeat scroll 0 0 transparent;	
+    background: -webkit-gradient(linear, left bottom, left top, from(#294F8C), to(#79B1FE)) #DDDDDD;
     text-shadow: 1px 1px #1E2E6A;
 }
 body.lg div.wizard-body div.wizardComplete div.warning a.button.done {
     background: -moz-linear-gradient(center top , #79B1FE, #294F8C) repeat scroll 0 0 transparent;  
+    background: -webkit-gradient(linear, left bottom, left top, from(#294F8C), to(#79B1FE)) #DDDDDD;
     text-shadow: 1px 1px #1E2E6A;
 }
 body.lg div.wizard-body div.wizardComplete div.warning a.button.undo:active {
     background: -moz-linear-gradient(center top , #742F2F, #D68C8C) repeat scroll 0 0 transparent;  
+    background: -webkit-gradient(linear, left bottom, left top, from(#D68C8C), to(#742F2F)) #DDDDDD;
 }
 body.lg div.wizard-body div.wizardComplete div.warning a.button.fix:active {
     background: -moz-linear-gradient(center top , #40742F, #A3D68C) repeat scroll 0 0 transparent;  
+    background: -webkit-gradient(linear, left bottom, left top, from(#A3D68C), to(#40742F)) #DDDDDD;    
 }
 body.lg div.wizard-body div.wizardComplete div.warning a.button.carryon:active {
     background: -moz-linear-gradient(center top , #294F8C, #79B1FE) repeat scroll 0 0 transparent;  
+    background: -webkit-gradient(linear, left bottom, left top, from(#79B1FE), to(#294F8C)) #DDDDDD;
 }
 body.lg div.wizard-body div.wizardComplete div.warning a.button.done:active {
     background: -moz-linear-gradient(center top , #294F8C, #79B1FE) repeat scroll 0 0 transparent;  
+    background: -webkit-gradient(linear, left bottom, left top, from(#79B1FE), to(#294F8C)) #DDDDDD;
 }
 body.lg div.wizard-body div.description p {
     line-height: 1.3;
@@ -592,6 +640,7 @@ body.lg div.selector a.selectColumn {
 }
 body.lg div.selector a.selecting {
     background: -moz-linear-gradient(center top , #E3E3E3, #F9F9F9) repeat scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#F9F9F9), to(#E3E3E3)) #DDDDDD;
 }
 
 body.lg div.next-button a.button {
@@ -897,27 +946,33 @@ body.lg div.wizard-panel div.action-buttons a.button {
 }
 body.lg div.wizard-panel div.action-buttons a.button.undo {
     background: -moz-linear-gradient(center top , #D68C8C, #742F2F) repeat scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#742F2F), to(#D68C8C)) #DDDDDD;
     text-shadow: 1px 1px #5B1B1B;
     display:none;
 }
 body.lg div.wizard-panel div.action-buttons a.button.preview {
     background: -moz-linear-gradient(center top , #8FD68C, #32742F) repeat scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#742F2F), to(#D68C8C)) #DDDDDD;
     text-shadow: 1px 1px #153E19;
 }
 body.lg div.wizard-panel div.action-buttons a.button.update {
     background:-moz-linear-gradient(center top , #79B1FE, #294F8C) repeat scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#294F8C), to(#79B1FE)) #DDDDDD;
     text-shadow: 1px 1px #1E2E6A;
 }
 body.lg div.wizard-panel div.action-buttons a.button.undo:active {
     background: -moz-linear-gradient(center top , #742F2F, #D68C8C) repeat scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#D68C8C), to(#742F2F)) #DDDDDD;
     text-shadow: 1px 1px #5B1B1B;
 }
 body.lg div.wizard-panel div.action-buttons a.button.preview:active {
     background: -moz-linear-gradient(center top , #32742F, #8FD68C) repeat scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#8FD68C), to(#32742F)) #DDDDDD;
     text-shadow: 1px 1px #153E19;
 }
 body.lg div.wizard-panel div.action-buttons a.button.update:active {
     background:-moz-linear-gradient(center top , #294F8C, #79B1FE) repeat scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#79B1FE), to(#294F8C)) #DDDDDD;
     text-shadow: 1px 1px #153E19;
 }
 body.lg div.wizard-body div.updateBG {

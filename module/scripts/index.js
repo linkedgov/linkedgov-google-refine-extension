@@ -38,7 +38,9 @@ var LinkedGov = {
 			$("#header img").attr("src","/extension/linkedgov/images/logo-small.png").attr("height","40");
 			$("#header span#slogan").html("Making government data usable");
 			
-			$("#header").append(DOM.loadHTML("linkedgov", "html/feedback-form.html"));
+			$.get("/extension/linkedgov/scripts/feedback.js",function(){
+				$("#header").append('<a class="button" id="send-feedback" href="#" title="Send feedback">Feedback</a>');				
+			});
 			
 			$("body").append("<div id='beta'><p>Alpha</p></div>");
 
