@@ -1848,7 +1848,7 @@ TypingPanel.prototype.displayUnexpectedValuesPanel = function(result, wizardBody
 	
 	var html = '<div class="warning"><p class="title">'+result.type+'</p>';
 	
-	html += '<p class="message">'+result.message+'</p>';
+	//html += '<p class="message">'+result.message+'</p>';
 	
 	/*
 	 * The maximum number of unexpected values we ask the user 
@@ -1860,10 +1860,10 @@ TypingPanel.prototype.displayUnexpectedValuesPanel = function(result, wizardBody
 	var percentage = (1/(100/unexpectedValues))*100;
 	
 	if((theProject.rowModel.total - result.count) <= correctionLimit){
-		html+= '<p class="message"><span class="count">'+unexpectedValues+'</span> unexpected value'+(unexpectedValues == 1 ? ' has ' : 's have ')+'been detected.</p>';
+		html+= '<p class="message"><span class="count">'+unexpectedValues+'</span> unexpected value'+(unexpectedValues == 1 ? ' has ' : 's have ')+'been detected in the column <span class="colName">'+result.colName+'</span>.</p>';
 		html+= '<p class="details">Can you fix '+(unexpectedValues == 1 ? 'it' : 'them')+'?</p>';
 	} else {
-		html+= '<p class="message">Around '+percentage+'% of the values ('+unexpectedValues+') have been deteceted as unexpected values.'
+		html+= '<p class="message">Around '+percentage+'% of the values ('+unexpectedValues+') in the <span class="colName">'+result.colName+'</span> have been deteceted as unexpected values.'
 		html+= '<p class="details">Are you sure you have selected the correct column?</p>';
 	}
 	

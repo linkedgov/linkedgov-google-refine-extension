@@ -41,6 +41,26 @@ LinkedGov.setFacetCountLimit = function(n) {
 
 };
 
+/*
+ * removeFacet
+ * 
+ * Removes a facet using a column name.
+ */
+LinkedGov.removeFacet = function(colName) {
+	
+	var facets = ui.browsingEngine._facets;
+
+	for(var i=0; i < facets.length; i++){
+
+		if(facets[i].facet._config.columnName == colName){
+		
+			facets[i].facet._remove();
+		}
+	}
+	
+	return false;
+}
+
 
 /*
  * findHighestFacetValue

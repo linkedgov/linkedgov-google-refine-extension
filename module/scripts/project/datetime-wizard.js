@@ -1093,7 +1093,7 @@ var dateTimeWizard = {
 				//LinkedGov.summariseWizardHistoryEntry("Date and Time wizard", self.vars.historyRestoreID);
 				LinkedGov.showWizardProgress(false);
 
-				if(!self.vars.beingReRun){
+				//if(!self.vars.beingReRun){
 					/*
 					 * Detect whether there are any non-date values in the column
 					 */
@@ -1101,8 +1101,11 @@ var dateTimeWizard = {
 					var result = LinkedGov.verifyValueTypes(self.vars.resultColumn, expression, "date");
 					if(result.type != "success"){
 						ui.typingPanel.displayUnexpectedValuesPanel(result,self.vars.elmts.dateTimeBody);
+					} else {
+						LinkedGov.restoreWizardBody();
+						LinkedGov.removeFacet(result.colName);
 					}
-				}
+				//}
 
 			});
 

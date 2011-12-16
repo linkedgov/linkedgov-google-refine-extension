@@ -539,6 +539,9 @@ body.lg div.wizard-body div.wizardComplete div.warning p.details {
     margin-top: 10px;
     text-align: center;
 }
+body.lg div.wizard-body div.wizardComplete div.warning p.rerun-tip {
+	background-color:#FBFED3;
+}
 body.lg div.wizard-body div.wizardComplete div.warning a.button {
     color: #FFFFFF;
     font-weight: bold;

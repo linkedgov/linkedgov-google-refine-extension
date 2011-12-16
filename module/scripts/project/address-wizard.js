@@ -627,7 +627,7 @@ var addressWizard = {
 				//LinkedGov.summariseWizardHistoryEntry("Address wizard", self.vars.historyRestoreID);
 				LinkedGov.showWizardProgress(false);
 
-				if(!self.vars.beingReRun){
+				//if(!self.vars.beingReRun){
 					/*
 					 * Check that the postcode column contains a significant number of 
 					 * valid postcodes
@@ -636,8 +636,11 @@ var addressWizard = {
 					var result = LinkedGov.verifyValueTypes(self.vars.addressName, expression, "postcode");
 					if(result.type != "success"){
 						ui.typingPanel.displayUnexpectedValuesPanel(result,self.vars.elmts.addressBody);
+					} else {
+						LinkedGov.restoreWizardBody();
+						LinkedGov.removeFacet(result.colName);
 					}
-				}
+				//}
 			});
 		},
 
