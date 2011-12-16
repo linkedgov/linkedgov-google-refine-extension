@@ -45,7 +45,7 @@ var dateTimeWizard = {
 
 			var self = this;			
 			self.vars.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
-			
+			self.vars.beingReRun = false;
 			self.vars.elmts = elmts;
 			self.vars.columns = [];
 			self.vars.colFragments = [];
@@ -72,17 +72,17 @@ var dateTimeWizard = {
 				});
 
 				if (!error) {
-					
+
 					/*
 					 * Display the "working..." sign
 					 */
 					LinkedGov.showWizardProgress(true);
-					
+
 					/*
 					 * Store the column names and their options
 					 */
 					self.vars.colObjects = self.buildColumnObjects();
-					
+
 					/*
 					 * Begin a series of operations and finally save the RDF.
 					 */
@@ -95,7 +95,7 @@ var dateTimeWizard = {
 							});
 						});
 					});
-					
+
 				} else {
 					return false;
 				}
@@ -134,7 +134,7 @@ var dateTimeWizard = {
 			var self = this;
 
 			var cols = self.vars.elmts.dateTimeColumns.children("li");
-			
+
 			var frags = [ 'Y', 'M', 'D', 'h', 'm', 's' ];
 
 			var colObjects = [];
@@ -144,7 +144,7 @@ var dateTimeWizard = {
 			 * options.
 			 */
 			for ( var i = 0; i < cols.length; i++) {
-				
+
 				var colObject = {};
 
 				colObject.name = cols.eq(i).find('span.col').html();
@@ -159,7 +159,7 @@ var dateTimeWizard = {
 					colObject.combi += checkedInputs.eq(j).val() + "-";
 				}
 				colObject.combi = colObject.combi.substring(0, colObject.combi.length - 1);
-				
+
 				/*
 				 * Store the month before day value
 				 */
@@ -170,17 +170,17 @@ var dateTimeWizard = {
 				 */
 				if (cols.eq(i).children("span.duration").find('input.duration').attr('checked') && 
 						cols.eq(i).children("span.duration").find('div.duration-input').find("input.duration-value").val().length > 0) {
-					
+
 					colObject.durationValue = cols.eq(i).children("span.duration")
 					.find('div.duration-input')
 					.find("input.duration-value")
 					.val();
-					
+
 					colObject.durationUnit = cols.eq(i).children("span.duration")
 					.find('div.duration-input')
 					.find("select.duration")
 					.val();
-					
+
 				}
 				/*
 				 * Store the particular year value
@@ -200,7 +200,7 @@ var dateTimeWizard = {
 				colObjects.push(colObject);
 
 			} // end for
-			
+
 			return colObjects;
 
 		},
@@ -310,7 +310,7 @@ var dateTimeWizard = {
 				 */
 				for ( var a = 0; a < colObjects.length; a++) {
 					if (colObjects[a].combi == "Y-M-D") {
-						
+
 						var monthBeforeDay = colObjects[a].monthBeforeDay;
 						/*
 						 * If Y-M-D specified, store the column name
@@ -321,7 +321,7 @@ var dateTimeWizard = {
 						 * is the other half of the date-time.
 						 */
 						for ( var i = 0; i < colObjects.length; i++) {
-							
+
 							if (colObjects[i].combi == "h-m") {
 								colArray.push(colObjects[i].name);
 								log("We have a year, month, day, hours and minutes spread across two columns");
@@ -331,7 +331,7 @@ var dateTimeWizard = {
 								log("We have a year, month, day, hours, minutes and seconds spread across two columns");
 								self.createSingleColumnDate(colArray, "Y-M-D-h-m-s", monthBeforeDay, callback);
 							}
-							
+
 						}
 					}
 				}
@@ -423,7 +423,7 @@ var dateTimeWizard = {
 					modelsChanged : true
 				}, {
 					onDone : function() {
-						
+
 						self.vars.resultColumn = newName;
 						/*
 						 * Create the column object for the new column
@@ -442,7 +442,7 @@ var dateTimeWizard = {
 								});
 							}
 						}
-						
+
 					}
 				});
 			} catch (e) {
@@ -501,7 +501,7 @@ var dateTimeWizard = {
 
 				log("Name: "+colObjects[i].name);
 				log("Combination: "+colObjects[i].combi);
-				
+
 				if(colObjects[i].combi.length > 0) {
 					/*
 					 * Any date/time that includes a year, day and month can be typed
@@ -552,8 +552,8 @@ var dateTimeWizard = {
 						} else {
 							colObjects[i].rdf = self.makeInstantFragment(colObjects[i]);
 						}	
-					
-						break;
+
+					break;
 
 					} // end switch
 
@@ -598,7 +598,7 @@ var dateTimeWizard = {
 		formatDateInRefine : function(colObject) {
 
 			//log("formatDateInRefine");
-			
+
 			var self = this;
 
 			/*
@@ -847,7 +847,7 @@ var dateTimeWizard = {
 			return o;
 		},
 
-		
+
 		/*
 		 * makeXSDDateTimeFragment
 		 * 
@@ -899,9 +899,6 @@ var dateTimeWizard = {
 			var mb4d = colObject.monthBeforeDay;
 			var camelColName = LinkedGov.camelize(colName);
 
-			
-			
-				
 			var o = {
 					"uri":self.vars.vocabs.lg.uri+camelColName,
 					"curie":self.vars.vocabs.lg.curie+":"+camelColName,
@@ -938,7 +935,7 @@ var dateTimeWizard = {
 			var unit = colObject.durationUnit;
 			var value = colObject.durationValue;
 
-		
+
 			/*
 			 * Create the RDF object and the first part of the date-time's URI.
 			 */
@@ -1087,7 +1084,7 @@ var dateTimeWizard = {
 		 */
 		onComplete : function() {
 			var self = this;
-			
+
 			Refine.update({
 				everythingChanged : true
 			}, function() {
@@ -1095,16 +1092,52 @@ var dateTimeWizard = {
 				LinkedGov.showUndoButton(self.vars.elmts.dateTimeBody);
 				//LinkedGov.summariseWizardHistoryEntry("Date and Time wizard", self.vars.historyRestoreID);
 				LinkedGov.showWizardProgress(false);
-				
-				/*
-				 * Detect whether there are any non-date values in the column
-				 */
-				var expression = 'grel:if(type(value) == "date","date","error")';
-				var result = LinkedGov.verifyValueTypes(self.vars.resultColumn, expression, "date");
-				if(result.type != "success"){
-					ui.typingPanel.displayUnexpectedValuesPanel(result,self.vars.elmts.dateTimeBody);
+
+				if(!self.vars.beingReRun){
+					/*
+					 * Detect whether there are any non-date values in the column
+					 */
+					var expression = 'grel:if(type(value) == "date","date","error")';
+					var result = LinkedGov.verifyValueTypes(self.vars.resultColumn, expression, "date");
+					if(result.type != "success"){
+						ui.typingPanel.displayUnexpectedValuesPanel(result,self.vars.elmts.dateTimeBody);
+					}
 				}
-				
+
+			});
+
+		},
+
+		/*
+		 * rerunWizard
+		 * 
+		 * Called in the unexpected values panel - runs the wizard from the point 
+		 * of which it's already set-up and built it's column objects (i.e. 
+		 * misses out a few initial function calls).
+		 */
+		rerunWizard: function(){
+
+			var self = this;
+			self.vars.beingReRun = true;
+			/*
+			 * Display the "working..." sign
+			 */
+			LinkedGov.showWizardProgress(true);
+
+			/*
+			 * Begin a series of operations from the point at which 
+			 * the colObjects have already been built.
+			 * 
+			 * Finally save the RDF.
+			 */
+			self.checkForMultiColumnDateTimes(function() {
+				self.checkCombinations(function() {
+					log("Checking schema...");
+					LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
+						log("About to save RDF...");
+						self.saveRDF(rootNode, foundRootNode);
+					});
+				});
 			});
 
 		}

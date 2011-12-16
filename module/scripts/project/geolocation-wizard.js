@@ -36,6 +36,8 @@ var geolocationWizard = {
 		initialise : function(elmts) {
 
 			var self = this;
+			self.vars.beingReRun = false;
+			
 			self.vars.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
 
 			LinkedGov.showWizardProgress(true);
@@ -371,13 +373,46 @@ var geolocationWizard = {
 				// Add typed class to column headers
 				//LinkedGov.summariseWizardHistoryEntry("Latitude and Longitude wizard", self.vars.historyRestoreID);
 				LinkedGov.showWizardProgress(false);
-				
-				var expression = 'grel:if(type(value) == "number",(if(value % 1 == 0,"int","float")),if(((type(value.match(/\\b\\d{4}[\\-]\\d{1,2}[\\-]\\d{1,2}\\b/))=="array")),"error","error")))';
-				var result = LinkedGov.verifyValueTypes(self.vars.colObjects[0].name, expression, "float");
-				if(result.type != "success"){
-					ui.typingPanel.displayUnexpectedValuesPanel(result,self.vars.elmts.geolocationBody);
+
+				if(!self.vars.beingReRun){
+					var expression = 'grel:if(type(value) == "number",(if(value % 1 == 0,"int","float")),if(((type(value.match(/\\b\\d{4}[\\-]\\d{1,2}[\\-]\\d{1,2}\\b/))=="array")),"error","error")))';
+					var result = LinkedGov.verifyValueTypes(self.vars.colObjects[0].name, expression, "float");
+					if(result.type != "success"){
+						ui.typingPanel.displayUnexpectedValuesPanel(result,self.vars.elmts.geolocationBody);
+					}
 				}
-				
+
 			});
+		},
+
+		/*
+		 * rerunWizard
+		 * 
+		 * Called in the unexpected values panel - runs the wizard from the point 
+		 * of which it's already set-up and built it's column objects (i.e. 
+		 * misses out a few initial function calls).
+		 */
+		rerunWizard: function(){
+
+			var self = this;
+			self.vars.beingReRun = true;
+			
+			/*
+			 * Display the "working..." sign
+			 */
+			LinkedGov.showWizardProgress(true);
+
+			if(self.vars.colObjects.length == 2 && self.vars.colObjects[0].type == "northing" || self.vars.colObjects[0].type == "easting"){
+				self.convertNorthingEastingToLatLong(function(){
+					LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
+						self.saveRDF(rootNode, foundRootNode);
+					});
+				});
+			} else {
+				LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
+					self.saveRDF(rootNode, foundRootNode);
+				});
+			}
+
 		}
 };

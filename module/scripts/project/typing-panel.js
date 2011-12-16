@@ -1844,7 +1844,9 @@ TypingPanel.prototype.getFragmentData = function(columnList) {
  */
 TypingPanel.prototype.displayUnexpectedValuesPanel = function(result, wizardBody){
 	
-	var html = '<div class="warning"><p class="title"><!--'+result.type+'--></p>';
+	$(wizardBody).find('div.wizardComplete').remove();
+	
+	var html = '<div class="warning"><p class="title">'+result.type+'</p>';
 	
 	html += '<p class="message">'+result.message+'</p>';
 	
@@ -1895,9 +1897,23 @@ TypingPanel.prototype.displayUnexpectedValuesPanel = function(result, wizardBody
 			
 			$("div.wizardComplete").find("p.details").hide();
 			$("div.wizardComplete").find("div.buttons").find("a.button").hide();
+			$("div.wizardComplete").find("div.buttons").append("<a class='button rerun' />");
 			$("div.wizardComplete").find("div.buttons").append("<a class='button done' />");
+			$("div.wizardComplete").find("div.buttons").find("a.rerun").html("Re-run wizard").show();
 			$("div.wizardComplete").find("div.buttons").find("a.done").html("Done").show();
+			
+			$("div.wizardComplete").find("div.buttons").find("a.rerun").click(function(){
+				/*
+				 * Re-run the current wizard using it's last configuration
+				 */
+				LinkedGov[$("div.wizard-panel").find("div.action-buttons").attr('rel')].rerunWizard();		
+				if($("div.wizardComplete").find('p.rerun-tip').length == 0){
+					$("div.wizardComplete").find("div.buttons").before('<p class="message rerun-tip">If the values have been typed properly, there should be no more rows for you to edit!</p>');
+				}
+			});
+			
 			$("div.wizardComplete").find("div.buttons").find("a.done").click(function(){
+				
 				// Remove the "error" facet
 				var facets = ui.browsingEngine._facets;
 				for(var i=0; i < facets.length; i++){
@@ -1907,6 +1923,7 @@ TypingPanel.prototype.displayUnexpectedValuesPanel = function(result, wizardBody
 				}
 				// Return the wizard to it's original state
 				LinkedGov.restoreWizardBody();
+				
 			});
 			
 		} else if($(this).hasClass("carryon")){
@@ -1918,13 +1935,21 @@ TypingPanel.prototype.displayUnexpectedValuesPanel = function(result, wizardBody
 
 TypingPanel.prototype.showUnexpectedValues = function(result){
 	
+	var facets = ui.browsingEngine._facets;
+
+	for(var i=0; i < facets.length; i++){
+
+		if(facets[i].facet._config.columnName == result.colName){
+		
+			facets[i].facet._remove();
+		}
+	}
+	
 	ui.browsingEngine.addFacet("list",{
 		"name": result.colName,
 		"columnName": result.colName,
 		"expression": result.expression
 	});
-
-	var facets = ui.browsingEngine._facets;
 				
 	for(var i=0; i < facets.length; i++){
 
@@ -1981,6 +2006,7 @@ $(document).ready(function() {
 					ui.historyPanel.resize();
 				}
 			});
+			
 			/*
 			 * Switch to index 1 - where the "Typing" tab is located.
 			 */
@@ -1988,6 +2014,7 @@ $(document).ready(function() {
 			$("div#left-panel div.refine-tabs").css("visibility", "visible");			
 
 			clearInterval(interval);
+			
 		}
 
 	}, 100);

@@ -57,6 +57,7 @@ var addressWizard = {
 		initialise : function(elmts) {
 
 			var self = this;
+			self.vars.beingReRun = false;
 			self.vars.elmts = elmts;
 			self.vars.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
 			self.vars.hiddenColumns = [];
@@ -72,7 +73,7 @@ var addressWizard = {
 			self.vars.colObjects = self.buildColumnObjects();
 
 			if (self.vars.colObjects.length > 0) {
-				
+
 				/*
 				 * Ask the user to enter a name for the location (as a form 
 				 * of identification if there is more than one location per row).
@@ -417,7 +418,7 @@ var addressWizard = {
 			var expression = "";
 			var addressParts = ["street-address","extended-address","locality","region","country-name","postcode"];
 			var lastCol = "";
-			
+
 			for(var h=0; h<addressParts.length;h++){
 				for(var i=0; i<colObjects.length; i++){
 					if(colObjects[i].part == addressParts[h]){
@@ -426,7 +427,7 @@ var addressWizard = {
 					}
 				}
 			}
-			
+
 			expression = expression.substring(0, expression.length - 6);
 
 			Refine.postCoreProcess(
@@ -444,12 +445,12 @@ var addressWizard = {
 					},
 					{
 						onDone : function() {
-							
+
 							for(var i=0; i<colObjects.length; i++){
 								LinkedGov.hideColumnCompletely(colObjects[i].name);
 								self.vars.hiddenColumns.push(colObjects[i].name);
 							}
-							
+
 							callback();
 
 						}
@@ -613,9 +614,9 @@ var addressWizard = {
 		 * Return the wizard to its original state.
 		 */
 		onComplete : function() {
-			
+
 			log("here");
-			
+
 			var self = this;
 
 			Refine.update({
@@ -625,15 +626,79 @@ var addressWizard = {
 				LinkedGov.showUndoButton(self.vars.elmts.addressBody);
 				//LinkedGov.summariseWizardHistoryEntry("Address wizard", self.vars.historyRestoreID);
 				LinkedGov.showWizardProgress(false);
-				/*
-				 * Check that the postcode column contains a significant number of 
-				 * valid postcodes
-				 */
-				var expression = 'grel:if(partition(value,/[A-Z]{1,2}[0-9R][0-9A-Z]? {0,1}[0-9][ABD-HJLNP-UW-Z]{2}/)[1].length() > 0,"postcode","error")';
-				var result = LinkedGov.verifyValueTypes(self.vars.addressName, expression, "postcode");
-				if(result.type != "success"){
-					ui.typingPanel.displayUnexpectedValuesPanel(result,self.vars.elmts.addressBody);
+
+				if(!self.vars.beingReRun){
+					/*
+					 * Check that the postcode column contains a significant number of 
+					 * valid postcodes
+					 */
+					var expression = 'grel:if(partition(value,/[A-Z]{1,2}[0-9R][0-9A-Z]? {0,1}[0-9][ABD-HJLNP-UW-Z]{2}/)[1].length() > 0,"postcode","error")';
+					var result = LinkedGov.verifyValueTypes(self.vars.addressName, expression, "postcode");
+					if(result.type != "success"){
+						ui.typingPanel.displayUnexpectedValuesPanel(result,self.vars.elmts.addressBody);
+					}
 				}
 			});
+		},
+
+		/*
+		 * fixPostcodes
+		 * 
+		 * Specifically for postcodes, and called within the unexpected values panel,
+		 * this function simply performs a text-transform on a column containing postcodes, 
+		 * as the RDF fragments have already been set up.
+		 */
+		fixPostcodes: function(callback){
+			
+			var self = this;
+			
+			/*
+			 * The GREL function toDate() takes a boolean for the 'month before day'
+			 * value, which changes the order of the month-day in the date.
+			 */
+			LinkedGov.silentProcessCall({
+				type : "POST",
+				url : "/command/" + "core" + "/" + "text-transform",
+				data : {
+					columnName : self.vars.addressName,
+					expression : 'if(partition(value,/[A-Z]{1,2}[0-9R][0-9A-Z]? {0,1}[0-9][ABD-HJLNP-UW-Z]{2}/)[1].length() > 0,partition(value,/[A-Z]{1,2}[0-9R][0-9A-Z]? {0,1}[0-9][ABD-HJLNP-UW-Z]{2}/)[1],value)',
+					onError : 'keep-original',
+					repeat : false,
+					repeatCount : ""
+				},
+				success : function() {
+					Refine.update({cellsChanged : true},callback);
+				},
+				error : function() {
+					self.onFail("A problem was encountered when fixing postcodes in the column: \""+ self.vars.addressName + "\".");
+				}
+			});
+			
+		},
+
+		/*
+		 * rerunWizard
+		 * 
+		 * Called from the unexpected values panel. The user is given the 
+		 * choice to manually fix postcodes, which they can verify their changes
+		 * against by pressing "Re-run wizard", which calls this function.
+		 * 
+		 * This calls a simple postcode fixing function.
+		 */
+		rerunWizard: function(){
+
+			var self = this;
+			self.vars.beingReRun = true;
+
+			LinkedGov.showWizardProgress(true);
+
+			self.fixPostcodes(function(){
+				LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
+					self.saveRDF(rootNode, foundRootNode);
+				});				
+			});
+
+
+
 		}
 };

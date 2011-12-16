@@ -637,23 +637,23 @@ LinkedGov.verifyValueTypes = function(columnName, expression, expectedType){
 	//log("averageType = "+averageType);
 	
 	if(averageTypeCount == theProject.rowModel.total){
-		result.message = "All values in the <span class='colName'>\""+result.colName+"\"</span> column successfully typed as <span class='valueType'>\""+averageType+"\"</span>.";
+		result.message = "All values in the <span class='colName'>"+result.colName+"</span> column successfully typed as <span class='valueType'>"+averageType+"</span>.";
 		result.success = true;
 		result.type = "success";		
 	} else if(averageTypeCount >= (theProject.rowModel.total*percentage) && expectedType == averageType){
-		result.message = "At least "+percentage*100+"% of the <span class='colName'>\""+result.colName+"\"</span> column's values are of the expected type <span class='valueType'>\""+averageType+"\"</span>.";
+		result.message = "At least "+percentage*100+"% of the <span class='colName'>"+result.colName+"</span> column's values are of the expected type <span class='valueType'>"+averageType+"</span>.";
 		result.success = true;
 		result.type = "warning";
 	} else if(expectedType == averageType){
-		result.message = "The <span class='colName'>\""+result.colName+"\"</span> column contains values that were expected, but there are some unexpected values too.";
+		result.message = "The <span class='colName'>"+result.colName+"</span> column contains values that were expected, but there are some unexpected values too.";
 		result.success = true;
 		result.type = "warning";
 	} else if(averageTypeCount >= (theProject.rowModel.total*percentage)){
-		result.message = "The <span class='colName'>\""+result.colName+"\"</span> column mostly contains values are of the type <span class='valueType'>\""+averageType+"\"</span> - which was not expected.";
+		result.message = "The <span class='colName'>"+result.colName+"</span> column mostly contains values are of the type <span class='valueType'>"+averageType+"</span> - which was not expected.";
 		result.success = false;	
 		result.type = "warning";
 	} else {
-		result.message = "There's no clear value type in the <span class='colName'>\""+result.colName+"\"</span> column - but the most frequently occurring is <span class='valueType'>\""+averageType+"\"</span>.";
+		result.message = "There's no clear value type in the <span class='colName'>"+result.colName+"</span> column - but the most frequently occurring is <span class='valueType'>"+averageType+"</span>.";
 		result.success = false;	
 		result.type = "notclear"
 	}
