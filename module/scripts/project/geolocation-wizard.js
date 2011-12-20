@@ -27,7 +27,8 @@ var geolocationWizard = {
 					curie: "lg",
 					uri: LinkedGov.vars.lgNameSpace
 				}
-			}
+			},
+			unexpectedValueRegex : 'grel:if(type(value) == "number",(if(value % 1 == 0,"int","float")),if(((type(value.match(/\\b\\d{4}[\\-]\\d{1,2}[\\-]\\d{1,2}\\b/))=="array")),"error","error")))'
 		},
 
 		/*
@@ -364,33 +365,27 @@ var geolocationWizard = {
 		 * Return the wizard to its original state.
 		 */
 		onComplete : function() {
+			
 			var self = this;
-			Refine.update({
-				everythingChanged : true
-			}, function() {
+			
+			Refine.update({everythingChanged : true}, function() {
+				
 				LinkedGov.resetWizard(self.vars.elmts.geolocationBody);
 				LinkedGov.showUndoButton(self.vars.elmts.geolocationBody);
 				// Add typed class to column headers
-				//LinkedGov.summariseWizardHistoryEntry("Latitude and Longitude wizard", self.vars.historyRestoreID);
 				LinkedGov.showWizardProgress(false);
-
-				//if(!self.vars.beingReRun){
-					var expression = 'grel:if(type(value) == "number",(if(value % 1 == 0,"int","float")),if(((type(value.match(/\\b\\d{4}[\\-]\\d{1,2}[\\-]\\d{1,2}\\b/))=="array")),"error","error")))';
-					var result = LinkedGov.verifyValueTypes(self.vars.colObjects[0].name, expression, "float");
-					console.log("result");
-					console.log(result);
-					
-					if(result.type != "success"){
-						ui.typingPanel.displayUnexpectedValuesPanel(result,self.vars.elmts.geolocationBody);
-					} else {
-						LinkedGov.restoreWizardBody();
-						LinkedGov.removeFacet(result.colName);
-					}
-				//}
+				
+				var expression = self.vars.unexpectedValueRegex;
+				var colName = self.vars.colObjects[0].name;
+				var expectedType = "float";
+				var exampleValue = "51.0032";
+				var wizardBody = self.vars.elmts.geolocationBody;
+				
+				LinkedGov.checkForUnexpectedValues(expression, colName, expectedType, exampleValue, wizardBody);
 
 			});
 		},
-
+		
 		/*
 		 * rerunWizard
 		 * 
@@ -401,7 +396,6 @@ var geolocationWizard = {
 		rerunWizard: function(){
 
 			var self = this;
-			self.vars.beingReRun = true;
 			
 			/*
 			 * Display the "working..." sign
@@ -410,14 +404,10 @@ var geolocationWizard = {
 
 			if(self.vars.colObjects.length == 2 && self.vars.colObjects[0].type == "northing" || self.vars.colObjects[0].type == "easting"){
 				self.convertNorthingEastingToLatLong(function(){
-					LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
-						self.saveRDF(rootNode, foundRootNode);
-					});
+					self.onComplete();
 				});
 			} else {
-				LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
-					self.saveRDF(rootNode, foundRootNode);
-				});
+				self.onComplete();
 			}
 
 		}

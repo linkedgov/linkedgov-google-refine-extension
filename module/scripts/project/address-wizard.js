@@ -26,7 +26,7 @@ var addressWizard = {
 		 */
 		vars : {
 			elmts : {},
-			postCodeRegex : "[A-Z]{1,2}[0-9R][0-9A-Z]? {0,1}[0-9][ABD-HJLNP-UW-Z]{2}",
+			postCodeRegex : '/([Gg][Ii][Rr] 0[Aa]{2})|((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9]?[A-Za-z])))) {0,1}[0-9][A-Za-z]{2})/',
 			colObjects : [],
 			vocabs : {
 				rdfs : {
@@ -47,7 +47,9 @@ var addressWizard = {
 					uri: LinkedGov.vars.lgNameSpace
 				}
 			},
-			hiddenColumns : []
+			hiddenColumns : [],
+			postcodePresent: false,
+			unexpectedValueRegex:''
 		},
 
 		/*
@@ -57,11 +59,16 @@ var addressWizard = {
 		initialise : function(elmts) {
 
 			var self = this;
-			self.vars.beingReRun = false;
+			
+			log(self.vars.postCodeRegex);
+			log(self.vars.unexpectedValueRegex);
+			
 			self.vars.elmts = elmts;
 			self.vars.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
 			self.vars.hiddenColumns = [];
 			self.vars.addressName = "";
+			self.vars.postcodePresent = false;
+			self.vars.unexpectedValueRegex = 'grel:if(isError(if(partition(value,'+self.vars.postCodeRegex+')[1].length() > 0,"postcode","error")),"error",if(partition(value,'+self.vars.postCodeRegex+')[1].length() > 0,"postcode","error"))';
 
 			/*
 			 * Build an array of column objects with their options
@@ -192,6 +199,7 @@ var addressWizard = {
 				callback();
 			} else if (colObjects[i].containsPostcode || colObjects[i].part == "postcode") {
 
+				self.vars.postcodePresent = true;
 				/*
 				 * We create a new column based on the specified postcode column (
 				 * 
@@ -206,7 +214,7 @@ var addressWizard = {
 						"add-column",
 						{
 							baseColumnName : colObjects[i].name,
-							expression : "if(partition(value,/[A-Z]{1,2}[0-9R][0-9A-Z]? {0,1}[0-9][ABD-HJLNP-UW-Z]{2}/)[1].length() > 0,partition(value,/[A-Z]{1,2}[0-9R][0-9A-Z]? {0,1}[0-9][ABD-HJLNP-UW-Z]{2}/)[1],value)",
+							expression : "if(partition(value,"+self.vars.postCodeRegex+")[1].length() > 0,toUppercase(partition(value,"+self.vars.postCodeRegex+")[1]),value)",
 							newColumnName : colObjects[i].name + " Postcode (LG)",
 							columnInsertIndex : Refine.columnNameToColumnIndex(colObjects[i].name) + 1,
 							onError : "keep-original"
@@ -408,6 +416,8 @@ var addressWizard = {
 		 */
 		createAddressColumn:function(callback){
 
+			log("createAddressColumn");
+
 			var self = this;
 			var colObjects = self.vars.colObjects;
 
@@ -422,13 +432,22 @@ var addressWizard = {
 			for(var h=0; h<addressParts.length;h++){
 				for(var i=0; i<colObjects.length; i++){
 					if(colObjects[i].part == addressParts[h]){
-						expression += 'cells["' + colObjects[i].name + '"].value+", "+';
+						expression += 'if(isError(cells["' + colObjects[i].name + '"].value),"",cells["' + colObjects[i].name + '"].value)+", "+';
 						lastCol = colObjects[i].name;
 					}
 				}
 			}
 
-			expression = expression.substring(0, expression.length - 6);
+			var trimStart = 0;
+			if(expression[0] == ","){
+				trimStart = 2;
+			}
+
+			expression = expression.substring(trimStart, expression.length - 6);
+
+
+
+			log("expression = "+expression);
 
 			Refine.postCoreProcess(
 					"add-column",
@@ -615,8 +634,6 @@ var addressWizard = {
 		 */
 		onComplete : function() {
 
-			log("here");
-
 			var self = this;
 
 			Refine.update({
@@ -627,56 +644,25 @@ var addressWizard = {
 				//LinkedGov.summariseWizardHistoryEntry("Address wizard", self.vars.historyRestoreID);
 				LinkedGov.showWizardProgress(false);
 
-				//if(!self.vars.beingReRun){
-					/*
-					 * Check that the postcode column contains a significant number of 
-					 * valid postcodes
-					 */
-					var expression = 'grel:if(partition(value,/[A-Z]{1,2}[0-9R][0-9A-Z]? {0,1}[0-9][ABD-HJLNP-UW-Z]{2}/)[1].length() > 0,"postcode","error")';
-					var result = LinkedGov.verifyValueTypes(self.vars.addressName, expression, "postcode");
-					if(result.type != "success"){
-						ui.typingPanel.displayUnexpectedValuesPanel(result,self.vars.elmts.addressBody);
-					} else {
-						LinkedGov.restoreWizardBody();
-						LinkedGov.removeFacet(result.colName);
-					}
-				//}
-			});
-		},
 
-		/*
-		 * fixPostcodes
-		 * 
-		 * Specifically for postcodes, and called within the unexpected values panel,
-		 * this function simply performs a text-transform on a column containing postcodes, 
-		 * as the RDF fragments have already been set up.
-		 */
-		fixPostcodes: function(callback){
-			
-			var self = this;
-			
-			/*
-			 * The GREL function toDate() takes a boolean for the 'month before day'
-			 * value, which changes the order of the month-day in the date.
-			 */
-			LinkedGov.silentProcessCall({
-				type : "POST",
-				url : "/command/" + "core" + "/" + "text-transform",
-				data : {
-					columnName : self.vars.addressName,
-					expression : 'if(partition(value,/[A-Z]{1,2}[0-9R][0-9A-Z]? {0,1}[0-9][ABD-HJLNP-UW-Z]{2}/)[1].length() > 0,partition(value,/[A-Z]{1,2}[0-9R][0-9A-Z]? {0,1}[0-9][ABD-HJLNP-UW-Z]{2}/)[1],value)',
-					onError : 'keep-original',
-					repeat : false,
-					repeatCount : ""
-				},
-				success : function() {
-					Refine.update({cellsChanged : true},callback);
-				},
-				error : function() {
-					self.onFail("A problem was encountered when fixing postcodes in the column: \""+ self.vars.addressName + "\".");
+				if(self.vars.postcodePresent){
+					var expression = self.vars.unexpectedValueRegex;
+					var colName = self.vars.addressName;
+					var expectedType = "postcode";
+					var exampleValue = "NW5 2QT";
+					var wizardBody = self.vars.elmts.addressBody;
+
+					if(self.vars.colObjects.length > 1 || self.vars.colObjects.length == 1 && self.vars.colObjects[0].containsPostcode){
+						exampleValue = "27 Boscastle Road, Kentish Town, NW5 2QT";
+					}
+					if(self.vars.colObjects.length == 1 && self.vars.colObjects[0].part == "postcode"){
+						exampleValue = "NW5 2QT";
+					}	
+					
+					LinkedGov.checkForUnexpectedValues(expression, colName, expectedType, exampleValue, wizardBody);
 				}
+
 			});
-			
 		},
 
 		/*
@@ -691,17 +677,12 @@ var addressWizard = {
 		rerunWizard: function(){
 
 			var self = this;
-			self.vars.beingReRun = true;
 
 			LinkedGov.showWizardProgress(true);
 
-			self.fixPostcodes(function(){
-				LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
-					self.saveRDF(rootNode, foundRootNode);
-				});				
-			});
-
-
+			//self.fixPostcodes(function(){
+				self.onComplete();		
+			//});
 
 		}
 };

@@ -35,7 +35,8 @@ var dateTimeWizard = {
 					curie: "lg",
 					uri : LinkedGov.vars.lgNameSpace
 				}
-			}
+			},
+			unexpectedValueRegex:'grel:if(type(value) == "date","date",if(isError(toDate(value).toString("HH:mm:ss")),"error","date"))'
 		},
 
 		/*
@@ -511,11 +512,13 @@ var dateTimeWizard = {
 
 					case "Y-M-D":
 						// Format and type as an XSD date
+						self.vars.expectedValue = "date";
 						self.formatDateInRefine(colObjects[i]);
 						colObjects[i].rdf = self.makeXSDDateTimeFragment(colObjects[i]);
 						break;
 					case "Y-M-D-h":
 						// Format and create gregorian data.gov.uk URI
+						self.vars.expectedValue = "date";
 						self.formatDateInRefine(colObjects[i]);
 						if(typeof colObjects[i].durationValue != 'undefined') {
 							colObjects[i].rdf = self.makeXSDDateTimeIntervalURIFragment(colObjects[i]);
@@ -525,6 +528,7 @@ var dateTimeWizard = {
 						break;
 					case "Y-M-D-h-m":
 						// Format and create gregorian data.gov.uk URI
+						self.vars.expectedValue = "date-time";
 						self.formatDateInRefine(colObjects[i]);
 						if(typeof colObjects[i].durationValue != 'undefined') {
 							colObjects[i].rdf = self.makeXSDDateTimeIntervalURIFragment(colObjects[i]);
@@ -534,6 +538,7 @@ var dateTimeWizard = {
 						break;
 					case "Y-M-D-h-m-s":
 						// Format and create gregorian data.gov.uk URI
+						self.vars.expectedValue = "date-time";
 						self.formatDateInRefine(colObjects[i]);
 						if(typeof colObjects[i].durationValue != 'undefined') {
 							colObjects[i].rdf = self.makeXSDDateTimeIntervalURIFragment(colObjects[i]);
@@ -547,6 +552,12 @@ var dateTimeWizard = {
 						 * Depending on whether the column has been specified as containing a duration, 
 						 * a time:Interval or time:Instant is created.
 						 */
+						if(colObjects[i].combi == "h-m-s"){
+							self.vars.expectedValue = "time";
+						} else {
+							self.vars.expectedValue = "fragment";
+						}
+						
 						if(typeof colObjects[i].durationValue != 'undefined') {
 							colObjects[i].rdf = self.makeIntervalFragment(colObjects[i]);
 						} else {
@@ -1093,19 +1104,17 @@ var dateTimeWizard = {
 				//LinkedGov.summariseWizardHistoryEntry("Date and Time wizard", self.vars.historyRestoreID);
 				LinkedGov.showWizardProgress(false);
 
-				//if(!self.vars.beingReRun){
-					/*
-					 * Detect whether there are any non-date values in the column
-					 */
-					var expression = 'grel:if(type(value) == "date","date","error")';
-					var result = LinkedGov.verifyValueTypes(self.vars.resultColumn, expression, "date");
-					if(result.type != "success"){
-						ui.typingPanel.displayUnexpectedValuesPanel(result,self.vars.elmts.dateTimeBody);
-					} else {
-						LinkedGov.restoreWizardBody();
-						LinkedGov.removeFacet(result.colName);
-					}
-				//}
+				var expression = self.vars.unexpectedValueRegex;
+				var colName = self.vars.resultColumn;
+				var expectedType = "date";
+				var exampleValue = (self.vars.expectedValue == "date" ? "29/04/2009" : "13:30:00");
+				var wizardBody = self.vars.elmts.dateTimeBody;
+
+				if(self.vars.expectedValue == "date-time"){
+					exampleValue = "29/04/2009-13:30:00";
+				}
+
+				LinkedGov.checkForUnexpectedValues(expression, colName, expectedType, exampleValue, wizardBody);
 
 			});
 
@@ -1121,25 +1130,14 @@ var dateTimeWizard = {
 		rerunWizard: function(){
 
 			var self = this;
-			self.vars.beingReRun = true;
 			/*
 			 * Display the "working..." sign
 			 */
 			LinkedGov.showWizardProgress(true);
 
-			/*
-			 * Begin a series of operations from the point at which 
-			 * the colObjects have already been built.
-			 * 
-			 * Finally save the RDF.
-			 */
 			self.checkForMultiColumnDateTimes(function() {
 				self.checkCombinations(function() {
-					log("Checking schema...");
-					LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
-						log("About to save RDF...");
-						self.saveRDF(rootNode, foundRootNode);
-					});
+					self.onComplete();
 				});
 			});
 

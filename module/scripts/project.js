@@ -238,7 +238,7 @@ var LinkedGov = {
 			 * TODO: Show & hide using CSS.
 			 */
 			$("td.column-header").live("hover",function() {
-						if (!$(this).hasClass("ui-selectee") && $(this).find("span.column-header-name").length > 0) {
+						if (!$(this).hasClass("ui-selectee") && $(this).find("span.column-header-name").length > 0 && $(this).find("span.column-header-name").html() != "All") {
 							if ($(this).hasClass("show")) {
 								$(this).find(".quick-tool").hide();
 								$(this).addClass("hide").removeClass("show");
@@ -430,9 +430,12 @@ var LinkedGov = {
 		 * 
 		 * o = the ajax object
 		 */
-		silentProcessCall : function(o,args) {
+		silentProcessCall : function(o) {
 
-			o.aync = o.async || true;
+			log("silentProcessCall");
+			log(o);
+			
+			o.async = o.async || true;
 			o.type = o.type || "POST";
 			o.dataType = o.dataType || "json";
 			o.url = o.url || "";

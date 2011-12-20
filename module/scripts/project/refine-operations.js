@@ -558,6 +558,26 @@ LinkedGov.keepHiddenColumnsHidden = function(){
 };
 
 /*
+ * checkForUnexpectedValues
+ * 
+ * Runs a test to see if there are any unexpected values left in a column after a 
+ * wizard has completed.
+ * 
+ */
+LinkedGov.checkForUnexpectedValues = function(expression,colName,expectedType,exampleValue,wizardBody){
+	
+	var result = LinkedGov.verifyValueTypes(colName, expression, expectedType, exampleValue);
+	
+	if(result.type != "success"){
+		ui.typingPanel.displayUnexpectedValuesPanel(result,wizardBody);
+	} else {
+		LinkedGov.restoreWizardBody();
+		LinkedGov.removeFacet(result.colName);
+	}
+
+};
+
+/*
  * verifyValueTypes
  * 
  * Uses a facet to calculate whether at least 90%
@@ -570,11 +590,12 @@ LinkedGov.keepHiddenColumnsHidden = function(){
  * message
  * success
  */
-LinkedGov.verifyValueTypes = function(columnName, expression, expectedType){
+LinkedGov.verifyValueTypes = function(columnName, expression, expectedType, exampleValue){
 	
 	var percentage = 0.9;
 	var averageType = "";
 	var averageTypeCount = 0;
+	var errorCount = 0;
 	
 	/*
 	 * Build a parameter object using the first of the column names.
@@ -624,7 +645,11 @@ LinkedGov.verifyValueTypes = function(columnName, expression, expectedType){
 
 						if(data.facets[i].choices[j].c >= averageTypeCount){
 							averageType = data.facets[i].choices[j].v.l;
-							averageTypeCount = data.facets[i].choices[j].c;
+							averageTypeCount = data.facets[i].choices[j].c;							
+						}
+						
+						if(data.facets[i].choices[j].v.l == "error"){
+							errorCount = data.facets[i].choices[j].c;
 						}
 					}
 
@@ -641,9 +666,11 @@ LinkedGov.verifyValueTypes = function(columnName, expression, expectedType){
 	
 	var result = {
 			colName:columnName,
+			exampleValue:exampleValue,
 			averageType:averageType,
 			count:averageTypeCount,
-			expression:expression
+			expression:expression,
+			errorCount:errorCount
 	};
 	
 	/*
@@ -656,10 +683,14 @@ LinkedGov.verifyValueTypes = function(columnName, expression, expectedType){
 	//log("expectedType = "+expectedType);
 	//log("averageType = "+averageType);
 	
-	if(averageTypeCount == theProject.rowModel.total){
+	if(averageTypeCount == theProject.rowModel.total && expectedType == averageType){
 		result.message = "All values in the <span class='colName'>"+result.colName+"</span> column successfully typed as <span class='valueType'>"+averageType+"</span>.";
 		result.success = true;
-		result.type = "success";		
+		result.type = "success";
+	} else if(averageTypeCount == theProject.rowModel.total && expectedType !== averageType) {
+		result.message = "None of values in the <span class='colName'>"+result.colName+"</span> column could by typed propery. Is this the correct column for this wizard?";
+		result.success = true;
+		result.type = "fail";		
 	} else if(averageTypeCount >= (theProject.rowModel.total*percentage) && expectedType == averageType){
 		result.message = "At least "+percentage*100+"% of the <span class='colName'>"+result.colName+"</span> column's values are of the expected type <span class='valueType'>"+averageType+"</span>.";
 		result.success = true;
@@ -669,14 +700,17 @@ LinkedGov.verifyValueTypes = function(columnName, expression, expectedType){
 		result.success = true;
 		result.type = "warning";
 	} else if(averageTypeCount >= (theProject.rowModel.total*percentage)){
-		result.message = "The <span class='colName'>"+result.colName+"</span> column mostly contains values are of the type <span class='valueType'>"+averageType+"</span> - which was not expected.";
+		result.message = "The <span class='colName'>"+result.colName+"</span> column mostly contains values of the type <span class='valueType'>"+averageType+"</span> - which was not expected.";
 		result.success = false;	
 		result.type = "warning";
 	} else {
 		result.message = "There's no clear value type in the <span class='colName'>"+result.colName+"</span> column - but the most frequently occurring is <span class='valueType'>"+averageType+"</span>.";
 		result.success = false;	
-		result.type = "notclear"
+		result.type = "notclear";
 	}
+	
+	log("verifyValueTypes, result: ");
+	log(result);
 	
 	return result;
 	

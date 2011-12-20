@@ -497,8 +497,9 @@ body.lg div.wizard-body div.wizardComplete div.warning p.title {
     text-transform: capitalize;
     */
     background: none repeat scroll 0 0 #FFD2D2;
-    border: 1px solid #DAB9B9;
-    font-size: 16px;
+    border: 1px solid #E3C2C2;
+    border-radius:5px;
+    font-size: 14px;
     font-weight: bold;
     margin-top: 10px;
     padding: 5px;
@@ -539,8 +540,37 @@ body.lg div.wizard-body div.wizardComplete div.warning p.details {
     margin-top: 10px;
     text-align: center;
 }
+body.lg div.wizard-body div.wizardComplete div.warning ul.unexpectedValueList {
+    background: none repeat scroll 0 0 #FFD2D2;
+    border: 1px solid #E3C2C2;
+    border-radius: 5px 5px 5px 5px;
+    list-style-type: none;
+    margin: 10px;
+    padding: 10px;
+}
+body.lg div.wizard-body div.wizardComplete div.warning ul.unexpectedValueList li {
+    margin-bottom: 3px;
+    padding: 0;
+}
+body.lg div.wizard-body div.wizardComplete div.warning ul.unexpectedValueList li input.unexpectedValue {
+    padding: 3px;
+    width: 96%;
+}
+body.lg div.wizard-body div.wizardComplete div.warning ul.unexpectedValueList li input.unexpectedValue:hover {
+	color:#0059FB;
+}
+body.lg div.wizard-body div.wizardComplete div.warning ul.unexpectedValueList li input.unexpectedValue:focus {
+    background: none repeat scroll 0 0 #FFFFD3;
+}
 body.lg div.wizard-body div.wizardComplete div.warning p.rerun-tip {
-	background-color:#FBFED3;
+    background-color: #FBFED3;
+    border: 1px solid #DEE0BB;
+}
+body.lg div.wizard-body div.wizardComplete div.warning p.exampleValue span {
+    background-color: #E0F7DB;
+    border-radius: 3px 3px 3px 3px;
+    font-weight: bold;
+    padding: 1px 6px;
 }
 body.lg div.wizard-body div.wizardComplete div.warning a.button {
     color: #FFFFFF;

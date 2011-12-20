@@ -1214,7 +1214,7 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 							break;
 
 						case "text-input" :
-							
+
 							RefineUI.typingPanel.generateColumnFacet($(ui.selected).children().find(".column-header-name").html(),10,function(html){
 								$cols.html(html);
 								$cols.data("colName",$(ui.selected).children().find(".column-header-name").html());
@@ -1226,12 +1226,12 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 											"<span class='remove'>X</span>" +
 											"<span class='colOptions'>" +
 											"<input type='text' class='textbox "+$(this).html()+"' />" +
-											"</span>");
+									"</span>");
 								});	
 								$cols.show();
 							});
 
-							
+
 							/*
 							$cols.children("li").each(function(){
 								$(this).append(
@@ -1240,11 +1240,11 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 										"</span>" +
 										"<span class='remove'>X</span>");
 							});
-							*/
-							
-							
+							 */
+
+
 							break;
-							
+
 						default:
 							break;
 						}
@@ -1503,9 +1503,9 @@ TypingPanel.prototype.generateColumnFacet = function(colName, count, callback){
 					var choices = data.facets[i].choices.length;
 					var choicesArray = [];
 					for(var j=0; j<choices; j++){
-						
+
 						//log("data.facets[i].choices[j].c = "+data.facets[i].choices[j].c);
-						
+
 						if(data.facets[i].choices[j].c >= highest){
 							choicesArray.splice(0,0,data.facets[i].choices[j].v.l);
 							highest = data.facets[i].choices[j].c;
@@ -1513,21 +1513,21 @@ TypingPanel.prototype.generateColumnFacet = function(colName, count, callback){
 							choicesArray.push(data.facets[i].choices[j].v.l);
 						}
 					}
-					
+
 					if(choicesArray.length > count){
 						choicesArray.length = count;
 					}
-					
+
 					for(var k=0;k<choicesArray.length;k++){
 						html += "<li>"+choicesArray[k]+"</li>";
 					}
 
 					i=data.facets.length;
-					
+
 					log(html);
-					
+
 					callback(html);
-					
+
 				}
 			}
 		},
@@ -1843,120 +1843,212 @@ TypingPanel.prototype.getFragmentData = function(columnList) {
  * 
  */
 TypingPanel.prototype.displayUnexpectedValuesPanel = function(result, wizardBody){
-	
+
 	$(wizardBody).find('div.wizardComplete').remove();
-	
-	var html = '<div class="warning"><p class="title">'+result.type+'</p>';
-	
+
+	//var html = '<div class="warning"><p class="title">'+result.type+'</p>';
+	var html = '<div class="warning"><p class="title">Unexpected values</p>';
+
 	//html += '<p class="message">'+result.message+'</p>';
-	
+
 	/*
 	 * The maximum number of unexpected values we ask the user 
 	 * to attempt to correct.
 	 */
 	var correctionLimit = 15;
-	
-	var unexpectedValues = (theProject.rowModel.total - result.count);
-	var percentage = (1/(100/unexpectedValues))*100;
-	
-	if((theProject.rowModel.total - result.count) <= correctionLimit){
-		html+= '<p class="message"><span class="count">'+unexpectedValues+'</span> unexpected value'+(unexpectedValues == 1 ? ' has ' : 's have ')+'been detected in the column <span class="colName">'+result.colName+'</span>.</p>';
+
+	var unexpectedValues = result.errorCount;
+	var percentage = Math.round(((unexpectedValues/theProject.rowModel.total)*100)*Math.pow(10,2))/Math.pow(10,2);
+
+	if(result.count == theProject.rowModel.total && result.type != "success"){
+		html+= '<p class="message">None of the values in the <span class="colName">'+result.colName+'</span> column could be typed properly!</p>';
+		html+= '<p class="details">Are you sure you picked the right column?</p>';		
+	} else if((theProject.rowModel.total - result.errorCount) <= correctionLimit){
+		html+= '<p class="message"><span class="count">'+result.errorCount+'</span> unexpected value'+(unexpectedValues == 1 ? ' has ' : 's have ')+'been detected in the column <span class="colName">'+result.colName+'</span>.</p>';
 		html+= '<p class="details">Can you fix '+(unexpectedValues == 1 ? 'it' : 'them')+'?</p>';
 	} else {
-		html+= '<p class="message">Around '+percentage+'% of the values ('+unexpectedValues+') in the <span class="colName">'+result.colName+'</span> have been deteceted as unexpected values.'
+		html+= '<p class="message">Around '+percentage+'% of the values ('+unexpectedValues+') in the <span class="colName">'+result.colName+'</span> column have been deteceted as unexpected values.'
 		html+= '<p class="details">Are you sure you have selected the correct column?</p>';
 	}
+
+	html+= '<p class="message exampleValue">Example value: <span>'+result.exampleValue+'</span></p>';
 	
 	html+= '<div class="buttons">';
 	html+= '<a title="Undo" class="button undo" bind="undoButton" href="javascript:{}">Undo</a>';
-	html+= '<a title="Let me see" class="button fix" bind="fixButton" href="javascript:{}">Let me see</a>';
+	if(!(result.count == theProject.rowModel.total && result.type != "success")){
+		html+= '<a title="Let me see" class="button fix" bind="fixButton" href="javascript:{}">Let me see</a>';
+	}
 	html+= '<a title="Carry on" class="button carryon" bind="carryOnButton" href="javascript:{}">Carry on</a>';
 	html+= '</div>';
-	
+
 	html += '</div>';
-	
+
 	$(wizardBody).append('<div class="wizardComplete" />');
 	$(wizardBody).find("div.wizardComplete").html(html);
 	$("div.action-buttons").hide();
 	$("div.wizard-body").children().hide().end().find("h2, div.wizardComplete").show();
 	$("div.wizard-panel").css("bottom","32px");
-	
+
 	/*
 	 * Action buttons for the unexpected values panel
 	 */
 	$("div.wizardComplete").find("a.button").click(function(){
-		
+
 		if($(this).hasClass("undo")){
-			
+			LinkedGov.vars.hasFixedValue = false;
 			$("div.action-buttons a.undo").click();
 			LinkedGov.restoreWizardBody();
-			
+
 		} else if($(this).hasClass("fix")){
-			
-			ui.typingPanel.showUnexpectedValues(result);
-			
+
+			ui.typingPanel.showUnexpectedValues(result,function(result){
+				Refine.update({modelsChanged:true},function(){
+					ui.typingPanel.populateUnexpectedValuePanelList(result);
+				});
+			});
+
 			$("div.wizardComplete").find("p.details").hide();
 			$("div.wizardComplete").find("div.buttons").find("a.button").hide();
 			$("div.wizardComplete").find("div.buttons").append("<a class='button rerun' />");
 			$("div.wizardComplete").find("div.buttons").append("<a class='button done' />");
 			$("div.wizardComplete").find("div.buttons").find("a.rerun").html("Re-run wizard").show();
 			$("div.wizardComplete").find("div.buttons").find("a.done").html("Done").show();
-			
+			//$("div.wizardComplete").find("div.buttons").before('<p class="message exampleValue">Example value: <span>'+result.exampleValue+'</span></p>');
+
+			if(LinkedGov.vars.hasFixedValue){
+				$("div.wizardComplete").find("div.buttons").before('<p class="message rerun-tip">If you have corrected all of the values properly, there should be no more rows left for you to edit.</p>');
+			}
+
 			$("div.wizardComplete").find("div.buttons").find("a.rerun").click(function(){
+
 				/*
-				 * Re-run the current wizard using it's last configuration
+				 * Edit the cells using the values the user has typed in in the uenxepected values panel
 				 */
-				LinkedGov[$("div.wizard-panel").find("div.action-buttons").attr('rel')].rerunWizard();		
-				if($("div.wizardComplete").find('p.rerun-tip').length == 0){
-					$("div.wizardComplete").find("div.buttons").before('<p class="message rerun-tip">If the values have been typed properly, there should be no more rows for you to edit!</p>');
-				}
-			});
+				ui.typingPanel.fixUnexpectedValues(result, function(){
+					LinkedGov.vars.hasFixedValue = true;
+					Refine.update({cellsChanged:true}, function(){
+						/*
+						 * Re-run the current wizard using it's last configuration
+						 */
+						LinkedGov[$("div.wizard-panel").find("div.action-buttons").attr('rel')].rerunWizard();						
+					})
 			
+				})
+
+			});
+
 			$("div.wizardComplete").find("div.buttons").find("a.done").click(function(){
-				
+
+				LinkedGov.vars.hasFixedValue = false;
+
 				// Remove the "error" facet
 				var facets = ui.browsingEngine._facets;
 				for(var i=0; i < facets.length; i++){
 					if(facets[i].facet._config.columnName == result.colName){
-				         facets[i].facet._remove();
+						facets[i].facet._remove();
 					}
 				}
 				// Return the wizard to it's original state
 				LinkedGov.restoreWizardBody();
-				
+
 			});
-			
+
 		} else if($(this).hasClass("carryon")){
+			
+			LinkedGov.vars.hasFixedValue = false;
+			
+			// Remove the "error" facet
+			var facets = ui.browsingEngine._facets;
+			for(var i=0; i < facets.length; i++){
+				if(facets[i].facet._config.columnName == result.colName){
+					facets[i].facet._remove();
+				}
+			}
+			
+			LinkedGov.vars.hasFixedValue = false;
 			LinkedGov.restoreWizardBody();
 		}
 	});
-	
+
 };
 
-TypingPanel.prototype.showUnexpectedValues = function(result){
-	
+TypingPanel.prototype.fixUnexpectedValues = function(result, callback){
+
+	$("div.wizardComplete").find("ul.unexpectedValueList").children("li").each(function(){
+
+		var li = $(this);
+		
+		var data = {
+				cell : $(li).children("input").attr("data-cell"),
+				row : $(li).children("input").attr("data-row"),
+				value : $(li).children("input").val(),
+				engine : JSON.stringify(ui.browsingEngine.getJSON())
+		};
+		
+		console.log("Data: ", data);
+		
+		LinkedGov.silentProcessCall({
+			type : "POST",
+			url : "/command/" + "core" + "/" + "edit-one-cell",
+			data : data,
+			success : function(data) {
+				//
+			}
+		});
+		
+		if(li[0] == $("div.wizardComplete").find("ul.unexpectedValueList").children("li").eq($("div.wizardComplete").find("ul.unexpectedValueList").children("li").length-1)[0]){
+			callback();
+		}
+	});
+
+
+}
+
+TypingPanel.prototype.populateUnexpectedValuePanelList = function(result){
+
+	var html = '<ul class="unexpectedValueList">';
+
+	var columns = theProject.columnModel.columns;
+	for(var i=0;i<columns.length;i++){
+		if(columns[i].name == result.colName){
+			for(var j=0;j<theProject.rowModel.rows.length;j++){
+				if(theProject.rowModel.rows[j].cells[columns[i].cellIndex] != null){
+					html += '<li><input class="unexpectedValue" type="text" data-cell="'+columns[i].cellIndex+'" data-row="'+theProject.rowModel.rows[j].i+'" rel="'+theProject.rowModel.rows[j].cells[columns[i].cellIndex].v+'" value="'+theProject.rowModel.rows[j].cells[columns[i].cellIndex].v+'" /></li>';
+				}
+			}
+		}
+	}
+
+	html += "</ul>";
+
+	$("div.wizardComplete").find("div.buttons").before(html);
+}
+
+
+TypingPanel.prototype.showUnexpectedValues = function(result, callback){
+
 	var facets = ui.browsingEngine._facets;
 
 	for(var i=0; i < facets.length; i++){
 
 		if(facets[i].facet._config.columnName == result.colName){
-		
+
 			facets[i].facet._remove();
 		}
 	}
-	
+
 	ui.browsingEngine.addFacet("list",{
 		"name": result.colName,
 		"columnName": result.colName,
 		"expression": result.expression
 	});
-				
+
 	for(var i=0; i < facets.length; i++){
 
 		if(facets[i].facet._config.columnName == result.colName){
-		
+
 			var colFacet = facets[i].facet;
-			
+
 			colFacet._selection.push({
 				"v":{
 					"v":"error",
@@ -1965,11 +2057,12 @@ TypingPanel.prototype.showUnexpectedValues = function(result){
 			});
 		}
 	}
-	
-	$("div#left-panel div.refine-tabs").tabs('select', 1);
-	
-};
 
+	$("div#left-panel div.refine-tabs").tabs('select', 1);
+
+	callback(result);
+
+};
 
 
 /*
@@ -2006,7 +2099,7 @@ $(document).ready(function() {
 					ui.historyPanel.resize();
 				}
 			});
-			
+
 			/*
 			 * Switch to index 1 - where the "Typing" tab is located.
 			 */
@@ -2014,7 +2107,7 @@ $(document).ready(function() {
 			$("div#left-panel div.refine-tabs").css("visibility", "visible");			
 
 			clearInterval(interval);
-			
+
 		}
 
 	}, 100);
