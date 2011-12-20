@@ -221,11 +221,9 @@ var LinkedGov = {
 				if($("div.create-project-ui-source-selection-tab-body.selected").find("input[bind='urlInput']").length === 1){
 					// User is downloading data
 					source = "urlInput";
-					metadataObject["LinkedGov.source"] = "urlInput";
 				} else if($("div.create-project-ui-source-selection-tab-body.selected").find("input[bind='fileInput']").length === 1){
 					// User is uploading data
 					source = "fileInput";
-					metadataObject["LinkedGov.source"] = "fileInput";
 				} else {
 					//alert("Data source error");
 					errorMessages += "<li>You must specify a source to import data from. Please select a file to upload or enter a web address to download from.</li>";
@@ -263,6 +261,7 @@ var LinkedGov = {
 				} else {
 					$("input#data-webpage-input").removeClass("error");
 					metadataObject["LinkedGov.webLocation"] = $("input#data-webpage-input").val();
+					metadataObject["LinkedGov.source"] = $("input#data-webpage-input").val();
 				}
 
 				if ($("input#data-organisation-input").val().length === 0) {
