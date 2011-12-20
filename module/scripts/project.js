@@ -200,6 +200,7 @@ var LinkedGov = {
 			$("div#project-controls").prepend('<a id="unhide-columns-button" title="Unhide columns" class="button">Unhide columns</a>');
 			$("a#unhide-columns-button").live("click",function(){
 				LinkedGov.vars.hiddenColumns = "";
+				LinkedGov.eraseHiddenColumnData();
 				LinkedGov.keepHiddenColumnsHidden();
 				Refine.update({modelsChanged:true});
 				self.showHideUnhideColumnButton("hide");
