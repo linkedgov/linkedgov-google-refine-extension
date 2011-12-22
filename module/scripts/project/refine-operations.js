@@ -8,6 +8,20 @@
  * 
  */
 
+
+/*
+ * Returns true or false depending on whether a column 
+ * name exists already.
+ */
+LinkedGov.isUniqueColumnName = function(name){
+	var columns = theProject.columnModel.columns;
+	for(var i=0;i<columns.length;i++){
+		if(name == columns[i].name)
+			return false;
+	}
+	return true;
+};
+
 /*
  * setFacetCountLimit
  * 

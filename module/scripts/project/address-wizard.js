@@ -59,10 +59,10 @@ var addressWizard = {
 		initialise : function(elmts) {
 
 			var self = this;
-			
+
 			log(self.vars.postCodeRegex);
 			log(self.vars.unexpectedValueRegex);
-			
+
 			self.vars.elmts = elmts;
 			self.vars.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
 			self.vars.hiddenColumns = [];
@@ -214,7 +214,7 @@ var addressWizard = {
 						"add-column",
 						{
 							baseColumnName : colObjects[i].name,
-							expression : "if(partition(value,"+self.vars.postCodeRegex+")[1].length() > 0,toUppercase(partition(value,"+self.vars.postCodeRegex+")[1]),value)",
+							expression : "if(partition(value,"+self.vars.postCodeRegex+")[1].length() > 0,toUppercase(partition(value,"+self.vars.postCodeRegex+")[1].replace(' ','')),value)",
 							newColumnName : colObjects[i].name + " Postcode (LG)",
 							columnInsertIndex : Refine.columnNameToColumnIndex(colObjects[i].name) + 1,
 							onError : "keep-original"
@@ -641,24 +641,22 @@ var addressWizard = {
 			}, function() {
 				LinkedGov.resetWizard(self.vars.elmts.addressBody);
 				LinkedGov.showUndoButton(self.vars.elmts.addressBody);
-				//LinkedGov.summariseWizardHistoryEntry("Address wizard", self.vars.historyRestoreID);
 				LinkedGov.showWizardProgress(false);
-
 
 				if(self.vars.postcodePresent){
 					var expression = self.vars.unexpectedValueRegex;
 					var colName = self.vars.addressName;
 					var expectedType = "postcode";
-					var exampleValue = "NW5 2QT";
+					var exampleValue = "NW52QT";
 					var wizardBody = self.vars.elmts.addressBody;
 
 					if(self.vars.colObjects.length > 1 || self.vars.colObjects.length == 1 && self.vars.colObjects[0].containsPostcode){
-						exampleValue = "27 Boscastle Road, Kentish Town, NW5 2QT";
+						exampleValue = "27 Boscastle Road, Kentish Town, NW52QT";
 					}
 					if(self.vars.colObjects.length == 1 && self.vars.colObjects[0].part == "postcode"){
-						exampleValue = "NW5 2QT";
+						exampleValue = "NW52QT";
 					}	
-					
+
 					LinkedGov.checkForUnexpectedValues(expression, colName, expectedType, exampleValue, wizardBody);
 				}
 
@@ -680,9 +678,46 @@ var addressWizard = {
 
 			LinkedGov.showWizardProgress(true);
 
-			//self.fixPostcodes(function(){
+			self.fixPostcodes(function(){
 				self.onComplete();		
-			//});
+			});
 
-		}
+		},
+
+		/*
+		 * fixPostcodes
+		 *
+		 * Specifically for postcodes, and called within the unexpected values panel,
+		 * this function simply performs a text-transform on a column containing postcodes,
+		 * as the RDF fragments have already been set up.
+		 */
+		fixPostcodes: function(callback){
+
+			var self = this;
+
+			/*
+			 * The GREL function toDate() takes a boolean for the 'month before day'
+			 * value, which changes the order of the month-day in the date.
+			 */
+			LinkedGov.silentProcessCall({
+				type : "POST",
+				url : "/command/" + "core" + "/" + "text-transform",
+				data : {
+					columnName : self.vars.addressName,
+					expression : 'if(partition(value,'+self.vars.postCodeRegex+')[1].length() > 0,partition(value,'+self.vars.postCodeRegex+')[1].replace(" ",""),value)',
+					onError : 'keep-original',
+					repeat : false,
+					repeatCount : ""
+				},
+				success : function() {
+					Refine.update({cellsChanged : true},callback);
+				},
+				error : function() {
+					self.onFail("A problem was encountered when fixing postcodes in the column: \""+ self.vars.addressName + "\".");
+				}
+			});
+
+		},
+
+
 };

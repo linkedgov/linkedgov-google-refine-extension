@@ -1,3 +1,9 @@
+body {
+	display:none;
+}
+#header {
+	display:none;
+}
 body.lg #left-panel {
     display:none !important;
 }
@@ -514,4 +520,34 @@ div#beta p {
     padding: 0;
     text-shadow: -1px 1px 0 rgba(38, 48, 85, 0.75);
     text-transform: uppercase;
+}
+
+body.lg #create-project-progress-panel {
+    background: none repeat scroll 0 0 #F2F6FF;
+    border: 1px solid #DDDDDD;
+    border-radius: 5px 5px 5px 5px;
+    font-size: 1.3em;
+    left: 35%;
+    margin: 0 auto;
+    padding: 20px 30px;
+    position: fixed;
+    text-align: center;
+    top: 40%;
+}
+body.lg #create-project-progress-message {
+	font-weight:bold;
+}
+body.lg #create-project-progress-cancel-button {
+    display: block;
+    margin-bottom: 10px;
+}
+body.lg span#create-project-progress-memory {
+	font-style:italic;
+	color:#666666;
+	margin-bottom: 10px;
+	display: block;
+}
+body.lg span#create-project-progress-timing {
+    color:#666666;
+    display: block;
 }

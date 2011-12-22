@@ -52,8 +52,6 @@ var LinkedGov = {
 			this.addUnhideColumnButton();
 			this.quickTools();
 			
-			
-			
 			/*
 			 * Add a listener for un-hiding columns
 			 */
@@ -64,6 +62,16 @@ var LinkedGov = {
 					});
 				}
 			});
+
+			this.loadScripts();
+			
+		},
+		
+		/*
+		 * loadScripts
+		 */
+		loadScripts: function(){
+			
 			
 			/*
 			 * Load the wizard scripts
@@ -92,6 +100,12 @@ var LinkedGov = {
 			$.getScript("extension/linkedgov/scripts/project/enumeration-wizard.js",function(){
 				LinkedGov.enumerationWizard = enumerationWizard;
 			});	
+			
+			/*
+			 * Load the descriptions panel script
+			 */
+			$.getScript("extension/linkedgov/scripts/project/descriptions-panel.js");
+			
 			/*
 			 * Load the refine operations script
 			 */
@@ -99,22 +113,39 @@ var LinkedGov = {
 				LinkedGov.splitVariablePartColumn = splitVariablePartColumn;
 				
 				/*
-				 * Load our custom save-rdf operations script
+				 * Load the rdf-operations script once the refine-operations script has 
+				 * successfully loaded
 				 */
 				$.getScript("extension/linkedgov/scripts/project/rdf-operations.js",function(){
 					
+					/*
+					 * Set up the variables inside the LinkedGov namespace
+					 */
 					LinkedGov.renameColumnInRDF = renameColumnInRDF;
 					LinkedGov.finaliseRDFSchema = finaliseRDFSchema;
 					LinkedGov.applyTypeIcons = applyTypeIcons;
 					LinkedGov.applyTypeIcons.init();
 					LinkedGov.applyTypeIcons.apply();
 					
+					/*
+					 * Save the project's metadata straightaway
+					 */
 					LinkedGov.saveMetadataToRDF(function(){
 						
+						/*
+						 * Load the project's hidden columns from the 
+						 * metadata file - hide any columns if there are 
+						 * some present.
+						 */
 						LinkedGov.getHiddenColumnMetadata(function(){
 							LinkedGov.keepHiddenColumnsHidden();
 						});
 						
+						/*
+						 * Overwrite Refine's data table "render" function, 
+						 * so we can include a couple of our functions that 
+						 * need to be called every time the table is updated.
+						 */
 						ui.dataTableView.render2 = ui.dataTableView.render;
 						ui.dataTableView.render = function(){
 
@@ -125,13 +156,10 @@ var LinkedGov = {
 
 						}
 
+						/*
+						 * Perform a generic update once everything has loaded
+						 */
 						Refine.update({everythingChanged:true});
-						
-						//ui.historyPanel.simpleRender = ui.historyPanel._render;
-						//ui.historyPanel._render = function() {
-						//	LinkedGov.summariseWizardOperations();
-						//	ui.historyPanel.simpleRender();
-						//}					
 						
 					});
 				});

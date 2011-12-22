@@ -37,11 +37,11 @@ var LinkedGov = {
 			 */
 			$("#header img").attr("src","/extension/linkedgov/images/logo-small.png").attr("height","40");
 			$("#header span#slogan").html("Making government data usable");
-			
+
 			$.get("/extension/linkedgov/scripts/feedback.js",function(){
 				$("#header").append('<a class="button" id="send-feedback" href="#" title="Send feedback">Feedback</a>');				
 			});
-			
+
 			$("body").append("<div id='beta'><p>Alpha</p></div>");
 
 			var mode = $.getUrlVar('mode');
@@ -52,7 +52,12 @@ var LinkedGov = {
 			} else {
 				this.restyleImportArea();
 				this.setUpImportPanel();	
-			}			
+			}
+
+			setTimeout(function(){
+				$("#header").show();
+				$("body").show();
+			},50);
 
 		},
 
@@ -290,11 +295,9 @@ var LinkedGov = {
 					$("textarea#data-keywords-input").removeClass("error");
 					metadataObject["LinkedGov.keywords"] = $("textarea#data-keywords-input").val();
 				}	
-				
+
 			} else {
-				
-				log("here");
-				
+
 				if ($("input#data-name-input").val().length < 1) {
 					error = true;
 					errorMessages += "<li>You must specify a project name</li>";
@@ -311,12 +314,49 @@ var LinkedGov = {
 				} else {
 					$("input#data-license-other-input").removeClass("error");
 				}
-				
+
 				/*
 				 * TODO: Do something with the dataset, it's name and the custom license that 
 				 * has been entered.
 				 */
+
+			}
+
+			if($("input#data-date-input").val().length > 0){
 				
+				if($( "input.datepicker" ).val().indexOf("/") > 0){
+					var formattedDate = "";
+					var dateVal = $( "input.datepicker" ).val().split("/");
+					for(var i=0;i<dateVal.length;i++){
+						if(dateVal[i].length == 4){
+							var year = dateVal[i];
+							dateVal.splice(i,1);
+							dateVal.splice(0,0,year);
+						}
+					}
+					for(var i=0;i<dateVal.length;i++){
+						if(dateVal[i].length == 4){
+							formattedDate += dateVal[i]+"-";
+							if (parseInt(dateVal[i+1]) > 12){
+								formattedDate += dateVal[i+2]+"-";
+								formattedDate += dateVal[i+1];
+							} else if (parseInt(dateVal[i+2]) > 12){
+								formattedDate += dateVal[i+1]+"-";
+								formattedDate += dateVal[i+2];
+							} else {
+								formattedDate += dateVal[i+2]+"-";
+								formattedDate += dateVal[i+1];   
+							}
+						}
+					}
+					metadataObject["LinkedGov.datePublished"] = formattedDate;
+				} else {
+					metadataObject["LinkedGov.datePublished"] = $("input#data-date-input").val();
+				}
+			}
+
+			if($("select#data-update-freq-input").val() != "Please select..."){
+				metadataObject["LinkedGov.frequency"] = $("select#data-update-freq-input").val();
 			}
 
 			/*
@@ -331,22 +371,12 @@ var LinkedGov = {
 				$("div.metadata ul.errorMessages").html(errorMessages).show().focus();
 			}	
 
-
 			/*
 			 * Store the other form fields that are not required
 			 */
 			if($("input#data-license-webpage-input").val().length > 0 && $("input#data-license-webpage-input").val() != "http://"){
 				metadataObject["LinkedGov.licenseLocation"] = $("input#data-license-webpage-input").val();
 			}
-
-			if($("input#data-date-input").val().length > 0){
-				metadataObject["LinkedGov.datePublished"] = $("input#data-date-input").val();
-			}
-
-			if($("select#data-update-freq-input").val() != "Please select..."){
-				metadataObject["LinkedGov.frequency"] = $("select#data-update-freq-input").val();
-			}
-
 		},
 
 		/*
@@ -361,16 +391,16 @@ var LinkedGov = {
 
 			$.each(LinkedGov.vars.metadataObject,function(key,val){
 				$.ajax({
-				    type: "POST",
-				    url: "/command/core/set-preference?" + $.param({ 
-				      name: key,
-				      value : encodeURIComponent(val),
-				      project : projectID
-				    }),
-				    dataType: "json"
-				  });
+					type: "POST",
+					url: "/command/core/set-preference?" + $.param({ 
+						name: key,
+						value : encodeURIComponent(val),
+						project : projectID
+					}),
+					dataType: "json"
+				});
 			});
-			
+
 			callback(jobID,projectID);
 
 		},
@@ -383,7 +413,7 @@ var LinkedGov = {
 		 */
 		importFail:function(message){
 			alert(message);
-			
+
 			/*
 			 * TODO: Do something if the import fails?
 			 */
@@ -496,7 +526,7 @@ var LinkedGov = {
 
 				$.getScript(ModuleWirings["linkedgov"] + 'scripts/index/'+pageName+'.js');		
 				break;
-			
+
 			case 'feedback-form' :
 				//$.getScript(ModuleWirings["linkedgov"] + 'scripts/feedback.js');	
 				break;

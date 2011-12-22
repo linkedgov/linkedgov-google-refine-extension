@@ -336,6 +336,20 @@ body.lg div.description-panel div.column-list ul li input.column-label {
     padding: 3px;
     width: 96%;
 }
+/*
+body.lg div.description-panel div.column-list ul li input.column-label {
+    background: -moz-linear-gradient(90deg, #B4C5FE 0%, #D6DFFF 100%) repeat scroll 0 0 #FEFEFE;
+    border: 1px solid #CBD1EB;
+    border-radius: 5px 5px 5px 5px;
+    color: #323232;
+    font-size: 13px;
+    font-weight: bold;
+    margin: 10px 0 3px;
+    padding: 4px 3px 4px 9px;
+    text-shadow: 1px 1px 0 #FFFFFF;
+    width: 94%;
+}
+*/
 body.lg div.description-panel div.column-list ul li input.column-label:hover {
 	color:#0059D5;
 }
@@ -349,6 +363,19 @@ body.lg div.description-panel div.column-list ul li textarea {
     padding: 3px;
     width: 96% !important;
 }
+/*
+body.lg div.description-panel div.column-list ul li textarea {
+    border: 1px solid #D6D6D6;
+    border-radius: 5px 5px 5px 5px;
+    color: #999999;
+    display: inline-block;
+    font-style: italic;
+    height: 32px;
+    margin: 3px 0 0;
+    padding: 5px;
+    width: 95% !important;
+}
+*/
 body.lg a.wizard-header {
     background: url("../images/arrow.png") no-repeat scroll right center #EBEEF8;
     border: 1px solid #BBCCFF;

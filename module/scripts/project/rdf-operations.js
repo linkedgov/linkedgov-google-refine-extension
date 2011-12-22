@@ -154,7 +154,7 @@ LinkedGov.saveMetadataToRDF = function(callback){
 			}
 		}
 	}
-	
+
 	log("metadataAlreadySaved = "+metadataAlreadySaved);
 
 	if(!metadataAlreadySaved){
@@ -235,54 +235,73 @@ LinkedGov.saveMetadataToRDF = function(callback){
 					break;
 				case "LinkedGov.source" :
 					rootNode.links.push({
-						curie : "dct:source",
-						target : {
-							lang : "en",
-							nodeType : "literal",
-							value : val
-						},
-						uri : "http://purl.org/dc/terms/source"
+						uri:"http://purl.org/dc/terms/source",
+						curie:"dct:source",
+						target:{
+							nodeType:"resource",
+							value:val,
+							rdfTypes:[],
+							links:[]
+						}
 					});
 					break;
 				case "LinkedGov.license" :
 					rootNode.links.push({
 						curie : "dct:license",
-						target : {
-							lang : "en",
-							nodeType : "literal",
-							value : val
+						target:{
+							nodeType:"resource",
+							value:val,
+							rdfTypes:[],
+							links:[]
 						},
 						uri : "http://purl.org/dc/terms/license"
 					});
 					break;
 				case "LinkedGov.licenseLocation" :
-					rootNode.links.push({
-						curie : "cc:attributionURL",
-						target : {
-							nodeType : "literal",
-							value : val
-						},
-						uri : "http://creativecommons.org/ns#attributionURL"
-					});
+					if(val != 'null' && val != null && val.length > 4){
+						rootNode.links.push({
+							curie : "cc:attributionURL",
+							target:{
+								nodeType:"resource",
+								value:val,
+								rdfTypes:[],
+								links:[]
+							},
+							uri : "http://creativecommons.org/ns#attributionURL"
+						});
+					}
 					break;
 				case "LinkedGov.organisation" :				
-					rootNode.links.push({
-						curie : "dct:publisher",
-						target : {
+
+					var targetVar = {
 							lang : "en",
 							nodeType : "literal",
 							value : val
-						},
+					};
+					
+					if(val.indexOf("http") > 0){
+						targetVar = {
+							nodeType:"resource",
+							value:val,
+							rdfTypes:[],
+							links:[]
+						};
+					}
+					
+					rootNode.links.push({
+						curie : "dct:publisher",
+						target : targetVar,
 						uri : "http://purl.org/dc/terms/publisher"
 					});
+					
 					break;
 				case "LinkedGov.datePublished" :
 					rootNode.links.push({
 						curie : "dct:created",
 						target : {
-							lang : "en",
 							nodeType : "literal",
-							value : val
+							value : val,
+							valueType : "http://www.w3.org/2001/XMLSchema#date"
 						},
 						uri : "http://purl.org/dc/terms/created"
 					});
@@ -290,10 +309,11 @@ LinkedGov.saveMetadataToRDF = function(callback){
 				case "LinkedGov.webLocation" :
 					rootNode.links.push({
 						curie : "foaf:page",
-						target : {
-							lang : "en",
-							nodeType : "literal",
-							value : val
+						target:{
+							nodeType:"resource",
+							value:val,
+							rdfTypes:[],
+							links:[]
 						},
 						uri : "http://xmlns.com/foaf/0.1/page"
 					});
@@ -838,8 +858,10 @@ var finaliseRDFSchema = {
 			 * If the column doesn't have an indicator, then produce generic RDF for it and add it to the existing root
 			 * node for the wizard column RDF.
 			 */
+			//var columns = theProject.columnModel.columns;
+			//for(var a=0;a<columns.length;a++){
 			$("td.column-header").each(function() {
-				if ($(this).find("span.column-header-name").html() != "All" && !$(this).hasClass("typed")) {
+				if ($(this).find("span.column-header-name").html() != "All" && !$(this).hasClass("typed") && ($.inArray($(this).find("span.column-header-name").html(), LinkedGov.vars.hiddenColumns.split(",")) < 0)) {
 
 					log("\""+ $(this).find("span.column-header-name").html() + "\" has no RDF, generating generic RDF for it.");
 
@@ -848,7 +870,7 @@ var finaliseRDFSchema = {
 					/*
 					 * Default description is: <Row> <lg:columnName> "cell value"
 					 */
-					
+
 					var o = {
 							"uri" : self.vars.vocabs.lg.uri + camelizedColumnName.replace(/:/g,"-"),
 							"curie" : self.vars.vocabs.lg.curie + ":" + camelizedColumnName.replace(/:/g,"-"),
@@ -860,7 +882,7 @@ var finaliseRDFSchema = {
 							}
 					};
 
-					
+
 					/*
 					 * Detect and specify types & language for the generic RDF about columns.
 					 * 
@@ -883,7 +905,7 @@ var finaliseRDFSchema = {
 								 * the most frequently occuring value type (int, float, string...)
 								 */
 								var type = LinkedGov.findHighestFacetValue(columns[i].name,expression);
-								
+
 								if(type == "string"){
 									o.target.lang = "en";
 								} else if(type == "int"){
@@ -902,7 +924,7 @@ var finaliseRDFSchema = {
 					}
 
 					rootNode.links.push(o);
-			
+
 				}
 			});
 
