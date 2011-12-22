@@ -936,7 +936,8 @@ body.lg div.wizard-body ul.selected-columns li span.colOptions input.textbox {
 }
 body.lg div.wizard-body ul.date-checkboxes li span.colOptions.mb4d, 
 body.lg div.wizard-body ul.date-checkboxes li span.colOptions.day, 
-body.lg div.wizard-body ul.date-checkboxes li span.colOptions.year {
+body.lg div.wizard-body ul.date-checkboxes li span.colOptions.year,
+body.lg div.wizard-body ul.date-checkboxes li span.colOptions.unseparated {
 	/*background-color: #FFFFCC;*/
 	display: none;
 }
@@ -960,12 +961,22 @@ body.lg div.wizard-body ul.date-checkboxes li span.colOptions.day input {
     width: 60px;
 }
 body.lg div.wizard-body ul.date-checkboxes li span.colOptions.duration {
-	/*background-color: #FFF6E6;*/
 	display:none;
 }
 body.lg div.wizard-body ul.date-checkboxes li span.colOptions div.duration-input {
 	display:none;
 	padding-bottom: 2px;
+}
+body.lg div.wizard-body ul.date-checkboxes li span.colOptions.unseparated {
+    display:none;
+}
+body.lg div.wizard-body ul.date-checkboxes li span.colOptions div.unseparated-input {
+    display:none;
+    padding-bottom: 2px;
+}
+body.lg div.wizard-body ul.date-checkboxes li span.colOptions div.unseparated-input select {
+    font-size: 10px;
+    width: auto;
 }
 body.lg div.wizard-body ul.address-fragments li span.postcode {
 	display:none;

@@ -305,12 +305,17 @@ TypingPanel.prototype.setupWizardInteraction = function() {
 				// Display the year input
 				$(this).parent("span").parent("li").children("span.year").data("olddisplay","block");
 				$(this).parent("span").parent("li").children("span.year").slideDown(250);
+				$(this).parent("span").parent("li").children("span.unseparated").slideUp(250);
 			} else {
+				// Year, month, day selected
 				$(this).parent("span").parent("li").children("span.year").slideUp(250);
+				$(this).parent("span").parent("li").children("span.unseparated").data("olddisplay","block");
+				$(this).parent("span").parent("li").children("span.unseparated").slideDown(250);
 			}
 		} else {
 			$(this).parent("span").parent("li").children("span.mb4d").slideUp(250);
 			$(this).parent("span").parent("li").children("span.year").slideUp(250);
+			$(this).parent("span").parent("li").children("span.unseparated").slideUp(250);
 		}
 
 		/*
@@ -347,6 +352,18 @@ TypingPanel.prototype.setupWizardInteraction = function() {
 		}
 	});
 
+	/*
+	 * Detect unseparated date selection
+	 */
+	$("ul.date-checkboxes input.unseparated").live("change",function(){
+		if($(this).attr("checked")){
+			$(this).parent("span").parent("li").children("span.unseparated").find("div.unseparated-input").data("olddisplay","block");
+			$(this).parent("span").parent("li").children("span.unseparated").find("div.unseparated-input").slideDown(250);				
+		} else {
+			$(this).parent("span").parent("li").children("span.unseparated").find("div.unseparated-input").slideUp(250);
+		}
+	});
+	
 	/*
 	 * Interaction for address column options
 	 */
@@ -1767,6 +1784,29 @@ TypingPanel.prototype.getFragmentData = function(columnList) {
 		fragmentHTML += "<span class='colOptions day'>" +
 		"<span>Do you know the day?</span>" +
 		"<input id='datepicker-"+$.generateId()+"' type='text' class='day datepicker' value='' />" +
+		"</span>";
+		fragmentHTML += "<span class='colOptions unseparated'>" +
+		"<input type='checkbox' class='unseparated' value='unseparated' />" +
+		"<span>Unseparated date (20090724)</span>" +
+		"<div class='unseparated-input'>" + 
+		"<select class='duration1'>" +
+		"<option value='--'>--</option>" +
+		"<option value='year'>Year</option>" +
+		"<option value='month'>Month</option>" +
+		"<option value='day'>Day</option>" +
+		"</select>" +
+		"<select class='duration2'>" +
+		"<option value='--'>--</option>" +
+		"<option value='year'>Year</option>" +
+		"<option value='month'>Month</option>" +
+		"<option value='day'>Day</option>" +
+		"</select>" +
+		"<select class='duration3'>" +
+		"<option value='--'>--</option>" +
+		"<option value='year'>Year</option>" +
+		"<option value='month'>Month</option>" +
+		"<option value='day'>Day</option>" +
+		"</select>" +
 		"</span>";
 
 		/*

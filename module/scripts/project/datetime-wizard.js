@@ -58,8 +58,12 @@ var dateTimeWizard = {
 				/*
 				 * Remove any skipped columns or columns that have no date fragments
 				 * specified.
+				 * 
+				 * Check for any options that may have been incorrectly specified that may 
+				 * lead to problems later.
 				 */
 				self.vars.elmts.dateTimeColumns.children("li").each(function() {
+
 					if ($(this).hasClass("skip")) {
 						$(this).remove();
 					} else {
@@ -70,6 +74,21 @@ var dateTimeWizard = {
 							error = true;
 						}
 					}
+
+					if($(this).children("span.unseparated").find('input.unseparated').attr('checked')){
+						var unseparatedVal1 = $(this).children("span.unseparated").find('div.unseparated-input').find("select.duration1").val();
+						var unseparatedVal2 = $(this).children("span.unseparated").find('div.unseparated-input').find("select.duration2").val();
+						var unseparatedVal3 = $(this).children("span.unseparated").find('div.unseparated-input').find("select.duration3").val();
+
+						if(unseparatedVal1 == unseparatedVal2 || unseparatedVal1 == unseparatedVal3 || unseparatedVal2 == unseparatedVal3) {
+							error = true;
+							self.onFail("The order of an unseparated date must contain unique values only.");
+						} else if(unseparatedVal1 == "--" || unseparatedVal2 == "--" || unseparatedVal3 == "--"){
+							error = true;
+							self.onFail("You need to specify the order of the unseparated date.");						
+						}
+					}
+
 				});
 
 				if (!error) {
@@ -89,9 +108,9 @@ var dateTimeWizard = {
 					 */
 					self.checkForMultiColumnDateTimes(function() {
 						self.checkCombinations(function() {
-							log("Checking schema...");
+							//log("Checking schema...");
 							LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
-								log("About to save RDF...");
+								//log("About to save RDF...");
 								self.saveRDF(rootNode, foundRootNode);
 							});
 						});
@@ -183,6 +202,24 @@ var dateTimeWizard = {
 					.val();
 
 				}
+
+				/*
+				 * Store the 'unseparated date' information
+				 */
+				if (cols.eq(i).children("span.unseparated").find('input.unseparated').attr('checked')) {
+
+					colObject.unseparated = true;
+
+					colObject.unseparatedOrder = 
+						cols.eq(i).children("span.unseparated").find('div.unseparated-input').find("select.duration1").val()+"-"+
+						cols.eq(i).children("span.unseparated").find('div.unseparated-input').find("select.duration2").val()+"-"+
+						cols.eq(i).children("span.unseparated").find('div.unseparated-input').find("select.duration3").val();
+
+					log("colObject.unseparatedOrder:");
+					log(colObject.unseparatedOrder);
+
+				}			
+
 				/*
 				 * Store the particular year value
 				 */
@@ -310,7 +347,7 @@ var dateTimeWizard = {
 				 * If we have Y-M-D selected, check if we have h-m or h-m-s selected
 				 */
 				for ( var a = 0; a < colObjects.length; a++) {
-					if (colObjects[a].combi == "Y-M-D") {
+					if (colObjects[a].combi == "Y-M-D" && (colObjects[(a == 0 ? 1 : 0)].combi == "h-m" || colObjects[(a == 0 ? 1 : 0)].combi == "h-m-s")) {
 
 						var monthBeforeDay = colObjects[a].monthBeforeDay;
 						/*
@@ -334,6 +371,8 @@ var dateTimeWizard = {
 							}
 
 						}
+					} else {
+						callback();
 					}
 				}
 
@@ -500,8 +539,8 @@ var dateTimeWizard = {
 			 */
 			for ( var i = 0; i < colObjects.length; i++) {
 
-				log("Name: "+colObjects[i].name);
-				log("Combination: "+colObjects[i].combi);
+				//log("Name: "+colObjects[i].name);
+				//log("Combination: "+colObjects[i].combi);
 
 				if(colObjects[i].combi.length > 0) {
 					/*
@@ -557,12 +596,12 @@ var dateTimeWizard = {
 						} else {
 							self.vars.expectedValue = "fragment";
 						}
-						
-						if(typeof colObjects[i].durationValue != 'undefined') {
-							colObjects[i].rdf = self.makeIntervalFragment(colObjects[i]);
-						} else {
-							colObjects[i].rdf = self.makeInstantFragment(colObjects[i]);
-						}	
+
+					if(typeof colObjects[i].durationValue != 'undefined') {
+						colObjects[i].rdf = self.makeIntervalFragment(colObjects[i]);
+					} else {
+						colObjects[i].rdf = self.makeInstantFragment(colObjects[i]);
+					}	
 
 					break;
 
@@ -612,28 +651,68 @@ var dateTimeWizard = {
 
 			var self = this;
 
-			/*
-			 * The GREL function toDate() takes a boolean for the 'month before day'
-			 * value, which changes the order of the month-day in the date.
-			 */
-			LinkedGov.silentProcessCall({
-				type : "POST",
-				url : "/command/" + "core" + "/" + "text-transform",
-				data : {
-					columnName : colObject.name,
-					expression : 'toDate(value,' + (colObject.monthBeforeDay) + ')',
-					onError : 'keep-original',
-					repeat : false,
-					repeatCount : ""
-				},
-				success : function() {
-					self.vars.resultColumn = colObject.name;
-					Refine.update({cellsChanged : true});
-				},
-				error : function() {
-					self.onFail("A problem was encountered when performing a text transform on the column: \""+ colObject.name + "\".");
+			if(colObject.unseparated){
+
+				var dateOrder = colObject.unseparatedOrder.split("-");
+
+				if(dateOrder.length != 3) {
+					self.onFail("Unseparated date values not selected properly.");
+				} else {
+
+					for(var i=0;i<dateOrder.length;i++){
+						if(dateOrder[i] == "year"){
+							dateOrder[i] = "value[0,4]";
+						} else if(dateOrder[i] == "month"){
+							dateOrder[i] = "value[4,6]";
+						} else if(dateOrder[i] == "day"){
+							dateOrder[i] = "value[6,8]";
+						}
+					}
+
+					LinkedGov.silentProcessCall({
+						type : "POST",
+						url : "/command/" + "core" + "/" + "text-transform",
+						data : {
+							columnName : colObject.name,
+							expression : 'if(value.length()==8,toDate('+dateOrder[0]+'+"-"+'+dateOrder[1]+'+"-"+'+dateOrder[2]+'),value)',
+							onError : 'keep-original',
+							repeat : false,
+							repeatCount : ""
+						},
+						success : function() {
+							self.vars.resultColumn = colObject.name;
+							Refine.update({cellsChanged : true});
+						},
+						error : function() {
+							self.onFail("A problem was encountered when performing a text transform on the column: \""+ colObject.name + "\".");
+						}
+					});			
 				}
-			});
+
+			} else {
+				/*
+				 * The GREL function toDate() takes a boolean for the 'month before day'
+				 * value, which changes the order of the month-day in the date.
+				 */
+				LinkedGov.silentProcessCall({
+					type : "POST",
+					url : "/command/" + "core" + "/" + "text-transform",
+					data : {
+						columnName : colObject.name,
+						expression : 'toDate(value,' + (colObject.monthBeforeDay) + ')',
+						onError : 'keep-original',
+						repeat : false,
+						repeatCount : ""
+					},
+					success : function() {
+						self.vars.resultColumn = colObject.name;
+						Refine.update({cellsChanged : true});
+					},
+					error : function() {
+						self.onFail("A problem was encountered when performing a text transform on the column: \""+ colObject.name + "\".");
+					}
+				});
+			}
 
 		},
 
@@ -880,7 +959,7 @@ var dateTimeWizard = {
 					"curie":self.vars.vocabs.lg.curie+":"+camelColName,
 					"target":{
 						"nodeType":"cell-as-literal",
-						"expression":"if(type(value)==\"date\",value.toDate("+mb4d+").toString(\"yyyy-MM-dd\")+\"T\"+value.toDate("+mb4d+").toString(\"HH-mm-ss\"),value)",
+						"expression":"if(type(value)==\"date\",value.toDate("+mb4d+").toString(\"yyyy-MM-dd\")+\"T\"+value.toDate("+mb4d+").toString(\"HH:mm:ss\"),value)",
 						"valueType":"http://www.w3.org/2001/XMLSchema#dateTime",
 						"columnName":colName,
 						"isRowNumberCell":false
