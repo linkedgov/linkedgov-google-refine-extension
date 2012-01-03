@@ -980,15 +980,22 @@ var applyTypeIcons = {
 			var lgUpdate = Refine.update;
 
 			Refine.update = function(options, callback) {
+				
+				//log("callback");
+				//log(callback);
 				var theCallback = callback;
 				var theOptions = options;
 				var lgCallback = function() {
 					LinkedGov.keepHiddenColumnsHidden();
 					LinkedGov.applyTypeIcons.apply();
-					theCallback();
+					if(theCallback){
+						theCallback();
+					}
 				}
+				
 				lgUpdate(theOptions, lgCallback);
 			}
+			
 
 		},
 

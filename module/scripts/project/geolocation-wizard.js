@@ -38,7 +38,7 @@ var geolocationWizard = {
 
 			var self = this;
 			self.vars.beingReRun = false;
-			
+
 			self.vars.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
 
 			LinkedGov.showWizardProgress(true);
@@ -59,20 +59,55 @@ var geolocationWizard = {
 					}
 				}
 
-				if(self.vars.colObjects.length == 2 && self.vars.colObjects[0].type == "northing" || self.vars.colObjects[0].type == "easting"){
-					self.convertNorthingEastingToLatLong(function(){
+				/*
+				 * Convert the lat/long columns to numbers before operating on them
+				 */
+				self.convertColumnsToNumber(function(){
+					if(self.vars.colObjects.length == 2 && self.vars.colObjects[0].type == "northing" || self.vars.colObjects[0].type == "easting"){
+						self.convertNorthingEastingToLatLong(function(){
+							LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
+								self.saveRDF(rootNode, foundRootNode);
+							});
+						});
+					} else {
 						LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
 							self.saveRDF(rootNode, foundRootNode);
 						});
-					});
-				} else {
-					LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
-						self.saveRDF(rootNode, foundRootNode);
-					});
-				}
+					}
+				});
+
 			} else {
 				self.onFail("One or more columns need to be selected in order to proceed with the wizard.");				
 			}
+		},
+
+		/*
+		 * convertColumnsToNumber
+		 */
+		convertColumnsToNumber: function(callback){
+
+			var self = this;
+
+			for(var i=0; i<self.vars.colObjects.length;i++){
+				LinkedGov.silentProcessCall({
+					type : "POST",
+					url : "/command/" + "core" + "/" + "text-transform",
+					data : {
+						columnName : self.vars.colObjects[i].name,
+						expression : 'value.toNumber()',
+						onError : 'keep-original',
+						repeat : false,
+						repeatCount : ""
+					},
+					success : function() {
+						Refine.update({cellsChanged : true}, callback);
+					},
+					error : function() {
+						self.onFail("There was a problem when converting the \""+self.vars.colObjects[i].name+"\" column to numbers.");
+					}
+				});	
+			}
+
 		},
 
 		/*
@@ -356,7 +391,8 @@ var geolocationWizard = {
 		 */
 		onFail : function(message) {
 			var self = this;
-			alert("Geolocation wizard failed.\n\n" + message)
+			alert("Geolocation wizard failed.\n\n" + message);
+			self.vars.coordinateName = "";
 			LinkedGov.resetWizard(self.vars.elmts.geolocationBody);
 			LinkedGov.showWizardProgress(false);
 		},
@@ -365,27 +401,29 @@ var geolocationWizard = {
 		 * Return the wizard to its original state.
 		 */
 		onComplete : function() {
-			
+
 			var self = this;
-			
+
 			Refine.update({everythingChanged : true}, function() {
-				
+
 				LinkedGov.resetWizard(self.vars.elmts.geolocationBody);
 				LinkedGov.showUndoButton(self.vars.elmts.geolocationBody);
 				// Add typed class to column headers
 				LinkedGov.showWizardProgress(false);
-				
+
 				var expression = self.vars.unexpectedValueRegex;
 				var colName = self.vars.colObjects[0].name;
 				var expectedType = "float";
 				var exampleValue = "51.0032";
 				var wizardBody = self.vars.elmts.geolocationBody;
-				
+
 				LinkedGov.checkForUnexpectedValues(expression, colName, expectedType, exampleValue, wizardBody);
 
+				self.vars.coordinateName = "";
+				
 			});
 		},
-		
+
 		/*
 		 * rerunWizard
 		 * 
@@ -396,7 +434,7 @@ var geolocationWizard = {
 		rerunWizard: function(){
 
 			var self = this;
-			
+
 			/*
 			 * Display the "working..." sign
 			 */

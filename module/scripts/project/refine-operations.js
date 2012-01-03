@@ -61,17 +61,17 @@ LinkedGov.setFacetCountLimit = function(n) {
  * Removes a facet using a column name.
  */
 LinkedGov.removeFacet = function(colName) {
-	
+
 	var facets = ui.browsingEngine._facets;
 
 	for(var i=0; i < facets.length; i++){
 
 		if(facets[i].facet._config.columnName == colName){
-		
+
 			facets[i].facet._remove();
 		}
 	}
-	
+
 	return false;
 }
 
@@ -81,9 +81,9 @@ LinkedGov.removeFacet = function(colName) {
  * 
  */
 LinkedGov.findHighestFacetValue = function(colName, expression){
-	
+
 	var myVal = "";
-	
+
 	/*
 	 * Build a parameter object using the first of the column names.
 	 */
@@ -139,18 +139,18 @@ LinkedGov.findHighestFacetValue = function(colName, expression){
 					}
 
 					i=data.facets.length;
-					
+
 					myVal = value;
 
 				}
 			}
-						
+
 		},
 		error : function() {
 			alert("A problem was encountered when computing facets.");
 		}
 	});	
-		
+
 	return myVal;
 }
 
@@ -235,19 +235,25 @@ LinkedGov.setBlanksToNulls = function(toNulls, columns, i, callback) {
  * Renames a column
  */
 LinkedGov.renameColumn = function(oldName, newName, callback) {
-	LinkedGov.silentProcessCall({
-		type : "POST",
-		url : "/command/" + "core" + "/" + "rename-column",
-		data : {
-			oldColumnName : oldName,
-			newColumnName : newName
-		},
-		success : callback,
-		error : function() {
-			alert("A problem was encountered when renaming the column: \""
-					+ oldName + "\".");
-		}
-	});
+
+	if(LinkedGov.isUniqueColumnName(newName)){
+		LinkedGov.silentProcessCall({
+			type : "POST",
+			url : "/command/" + "core" + "/" + "rename-column",
+			data : {
+				oldColumnName : oldName,
+				newColumnName : newName
+			},
+			success : callback,
+			error : function() {
+				alert("A problem was encountered when renaming the column: \""
+						+ oldName + "\".");
+			}
+		});
+	} else {
+		alert("Could not rename the \"" + oldName + "\" column to \"" + newName + "\" - a column already exists with that name.");
+		return false;
+	}
 };
 
 /*
@@ -476,9 +482,9 @@ LinkedGov.unhideHiddenColumn = function(colName, callback) {
 };
 
 LinkedGov.eraseHiddenColumnData = function(){
-	
+
 	log("eraseHiddenColumnData");
-	
+
 	var obj = {
 			"project" : theProject.id,
 			"name" : "LinkedGov.hiddenColumns",
@@ -567,7 +573,7 @@ LinkedGov.keepHiddenColumnsHidden = function(){
 		}
 
 	}
-	
+
 	return false;
 };
 
@@ -579,9 +585,9 @@ LinkedGov.keepHiddenColumnsHidden = function(){
  * 
  */
 LinkedGov.checkForUnexpectedValues = function(expression,colName,expectedType,exampleValue,wizardBody){
-	
+
 	var result = LinkedGov.verifyValueTypes(colName, expression, expectedType, exampleValue);
-	
+
 	if(result.type != "success"){
 		ui.typingPanel.displayUnexpectedValuesPanel(result,wizardBody);
 	} else {
@@ -605,12 +611,12 @@ LinkedGov.checkForUnexpectedValues = function(expression,colName,expectedType,ex
  * success
  */
 LinkedGov.verifyValueTypes = function(columnName, expression, expectedType, exampleValue){
-	
+
 	var percentage = 0.9;
 	var averageType = "";
 	var averageTypeCount = 0;
 	var errorCount = 0;
-	
+
 	/*
 	 * Build a parameter object using the first of the column names.
 	 */
@@ -661,23 +667,23 @@ LinkedGov.verifyValueTypes = function(columnName, expression, expectedType, exam
 							averageType = data.facets[i].choices[j].v.l;
 							averageTypeCount = data.facets[i].choices[j].c;							
 						}
-						
+
 						if(data.facets[i].choices[j].v.l == "error"){
 							errorCount = data.facets[i].choices[j].c;
 						}
 					}
 
 					i=data.facets.length;
-					
+
 				}
 			}
-						
+
 		},
 		error : function() {
 			alert("A problem was encountered when computing facets.");
 		}
 	});	
-	
+
 	var result = {
 			colName:columnName,
 			exampleValue:exampleValue,
@@ -686,17 +692,17 @@ LinkedGov.verifyValueTypes = function(columnName, expression, expectedType, exam
 			expression:expression,
 			errorCount:errorCount
 	};
-	
+
 	/*
 	 * If the averageType resembles 90% or more of the total 
 	 * number of types, then the column has been typed successfully
 	 */
-	
+
 	//log("averageTypeCount = "+averageTypeCount);
 	//log("(theProject.rowModel.total*"+percentage+") = "+(theProject.rowModel.total*percentage));
 	//log("expectedType = "+expectedType);
 	//log("averageType = "+averageType);
-	
+
 	if(averageTypeCount == theProject.rowModel.total && expectedType == averageType){
 		result.message = "All values in the <span class='colName'>"+result.colName+"</span> column successfully typed as <span class='valueType'>"+averageType+"</span>.";
 		result.success = true;
@@ -722,12 +728,12 @@ LinkedGov.verifyValueTypes = function(columnName, expression, expectedType, exam
 		result.success = false;	
 		result.type = "notclear";
 	}
-	
+
 	log("verifyValueTypes, result: ");
 	log(result);
-	
+
 	return result;
-	
+
 };
 
 /*
@@ -738,7 +744,7 @@ LinkedGov.verifyValueTypes = function(columnName, expression, expectedType, exam
  * incorrectly.
  */
 LinkedGov.restoreWizardBody = function(){
-	
+
 	$("div.wizardComplete").remove();
 	$("div.wizard-panel").css("bottom","72px");
 	$("div.wizard-body").children().show();

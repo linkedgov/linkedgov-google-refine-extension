@@ -31,10 +31,12 @@ var DescriptionsPanel = {
 				$("div.cancel-button").animate({"left":"0px"},500);
 				$("div.next-button").animate({"left":"-300px"},500);
 				$("div.description-panel div.description-body").show();
+				$("div.description-panel div.action-buttons").show();
+				$("div.description-panel div.action-buttons").animate({"left":"0px"},500);
 				$("div.description-panel").animate({"left":"0px"},500,function(){
-					$("div.description-panel div.action-buttons").show().animate({"left":"0px"},500);
-					DescriptionsPanel.buildColumnDescriptionInputs();
 					$("div.description-panel").scrollTop(0);
+					DescriptionsPanel.buildColumnDescriptionInputs();
+					
 				});
 
 			} else {
@@ -49,11 +51,16 @@ var DescriptionsPanel = {
 					$("a.collapse-expand").hide();
 					$("div.cancel-button").animate({"left":"0px"},500);
 					$("div.next-button").animate({"left":"-300px"},500);
+					log($("div.description-panel div.action-buttons"));
+					$("div.description-panel div.action-buttons").css("display","block");
+					//$("div.description-panel div.action-buttons").show();
+					//$("div.description-panel div.action-buttons").animate({"left":"0px"},500);
 					$("div.description-panel").animate({"left":"0px"},500,function(){
-						$("div.description-panel div.action-buttons").show().animate({"left":"0px"},500);
+						$("div.description-panel div.action-buttons").show();
+						$("div.description-panel").scrollTop(0);
 						DescriptionsPanel.buildDescriptionPanel();
 						DescriptionsPanel.buildColumnDescriptionInputs();
-						$("div.description-panel").scrollTop(0);
+						
 					});
 				}));
 			}
@@ -177,9 +184,7 @@ var DescriptionsPanel = {
 				 * does not exist for a column already.
 				 */
 				if($(this).hasClass("column-label") && LinkedGov.isUniqueColumnName(el.val())){
-
 					if($(this).parent("li").hasClass("maybe") || $(this).parent("li").hasClass("good") || $(this).parent("li").hasClass("great")){
-
 						/*
 						 * The old labels of the columns are stored using the elements "data" property as  
 						 * a temporary holding spot. This gets overriden whenever the label is changed for the 
@@ -221,6 +226,9 @@ var DescriptionsPanel = {
 						el.val(el.data("original-name"));
 					}
 				} else if($(this).data("original-name") == el.val()){
+					// Do nothing
+					//el.val(el.data("original-name"));
+				} else if($(this).hasClass("column-description")){
 					// Do nothing
 				} else {
 					//alert("A column already exists with this name.");
