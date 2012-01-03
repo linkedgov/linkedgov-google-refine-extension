@@ -511,6 +511,9 @@ var LinkedGov = {
 		
 		/*
 		 * Formats and returns a string in camel case.
+		 * 
+		 * Removes and converts non-alpha characters so column names
+		 * can be used as RDF/XML properties without causing errors when parsing.
 		 */
 		camelize : function(str) {
 
@@ -520,7 +523,14 @@ var LinkedGov = {
 		    return str
 	        .replace(/\s(.)/g, function($1) { return $1.toUpperCase(); })
 	        .replace(/\s/g, '')
-	        .replace(/^(.)/, function($1) { return $1.toLowerCase(); });
+	        .replace(/^(.)/, function($1) { return $1.toLowerCase(); })
+	    	.replace(")","")
+	    	.replace("(","")
+	    	.replace("=","-")
+	    	.replace("&","and")
+	    	.replace(/:/g,"-")
+	    	.replace("<","-")
+	    	.replace(">","-");
 
 		}
 

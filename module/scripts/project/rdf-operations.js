@@ -669,7 +669,7 @@ var finaliseRDFSchema = {
 						rootNode.rdfTypes = [ {
 							uri : self.vars.vocabs.lg.uri + camelizedRowLabel,
 							curie : self.vars.vocabs.lg.curie + ":"
-							+ camelizedRowLabel,
+							+ camelizedRowLabel
 						} ];
 
 						/*
@@ -720,7 +720,7 @@ var finaliseRDFSchema = {
 						target : {
 							lang : "en",
 							nodeType : "literal",
-							value : LinkedGov.vars.labelsAndDescriptions.rowLabel
+							value : camelizedRowLabel
 						},
 						uri : self.vars.vocabs.rdfs.uri+"label"
 					}],
@@ -792,13 +792,16 @@ var finaliseRDFSchema = {
 				 * Add the owl:ObjectProperty statements for the columns which each exist
 				 * as their own root nodes.
 				 */
+				
+				log("LinkedGov.camelize(cols[i].label): "+LinkedGov.camelize(cols[i].label));
+				
 				var rootNode = {
 						nodeType : "resource",
 						rdfTypes : [ {
 							curie : self.vars.vocabs.owl.curie+":ObjectProperty",
 							uri : self.vars.vocabs.owl.uri+"ObjectProperty"
 						} ],
-						value : "http://example.linkedgov.org/example-dataset/terms/" + LinkedGov.camelize(cols[i].label).replace(/:/g,"-"),
+						value : "http://example.linkedgov.org/example-dataset/terms/" + LinkedGov.camelize(cols[i].label),
 						links : [ {
 							curie : self.vars.vocabs.rdfs.curie+":label",
 							target : {
@@ -955,7 +958,6 @@ var finaliseRDFSchema = {
 			});
 		}
 };
-
 
 /*
  * applyTypeIcons
