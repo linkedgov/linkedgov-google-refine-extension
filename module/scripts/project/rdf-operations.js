@@ -582,21 +582,28 @@ var renameColumnInRDF = {
 		/*
 		 * Check if we've found a column name, check if it's the one 
 		 * we need to rename, rename it.
+		 * 
+		 * It's possible for column names to exist as the object of a triple 
+		 * (e.g. x - y - column name), or within a GREL expression string, so 
+		 * we need to check for both.
 		 */
 		recursiveFunction : function(key, val) {
 			var self = this;
-			// self.actualFunction(key, val);
 
 			if (val instanceof Object) {
-				if (typeof val.columnName != 'undefined') {
-					log("Found something containing a columnName key");
-					log(val);
+				
+				if (typeof val.columnName != 'undefined') {			
 					if (val.columnName == self.vars.oldName) {
-						log("Changing " + val.columnName + " - to: "
-								+ self.vars.newName);
 						val.columnName = self.vars.newName;
 					}
 				}
+				
+				if(typeof val.expression != 'undefined'){
+					if(val.expression.indexOf(self.vars.oldName) > 0){
+						val.expression = val.expression.replace(self.vars.oldName, self.vars.newName);
+					}
+				}
+				
 				$.each(val, function(key, value) {
 					self.recursiveFunction(key, value)
 				});
@@ -889,8 +896,6 @@ var finaliseRDFSchema = {
 					/*
 					 * Detect and specify types & language for the generic RDF about columns.
 					 * 
-					 * The @en tag is specified for *any* string value, i.e. "14:00:00" and "12/10/2010".
-					 * 
 					 * The row model isn't an exact replication of the order of the columns (and therefore cells)
 					 * in the data table, so we need to iterate through the column model and select each 
 					 * columns "cellIndex" instead.
@@ -901,7 +906,7 @@ var finaliseRDFSchema = {
 
 							if(theProject.rowModel.rows[0].cells[columns[i].cellIndex] != null){
 
-								var expression = "grel:if(type(value) == 'number',(if(value % 1 == 0,'int','float')),if(((type(value.match(/\\b\\d{4}[\\-]\\d{1,2}[\\-]\\d{1,2}\\b/))=='array')),'date','string'))";
+								var expression = "grel:if(type(value) == 'number',(if(value % 1 == 0,'int','float')),if(((type(value.match(/\\b\\d{4}[\\-]\\d{1,2}[\\-]\\d{1,2}\\b/))=='array')),'date',if(isBlank(value),null,'string')))";
 
 								/*
 								 * Recursive function to compute a facet for each column to find 
@@ -909,6 +914,10 @@ var finaliseRDFSchema = {
 								 */
 								var type = LinkedGov.findHighestFacetValue(columns[i].name,expression);
 
+								log("Finding type of generic column...");
+								log("columns[i].name: "+columns[i].name);
+								log("type: "+type);
+								
 								if(type == "string"){
 									o.target.lang = "en";
 								} else if(type == "int"){
