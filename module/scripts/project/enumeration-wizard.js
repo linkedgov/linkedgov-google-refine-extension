@@ -49,7 +49,7 @@ var enumerationWizard = {
 			var self = this;
 
 			self.vars.elmts.enumerationSymbols.children("li").each(function(){
-				if(!$(this).hasClass("skip")){
+				if(!$(this).hasClass("skip") && $(this).find("input.textbox").val().length > 0){
 					self.vars.symbolList.push({
 						symbol:$(this).find("span.col").html(),
 						enumVal:$(this).find("input.textbox").val()
@@ -101,6 +101,7 @@ var enumerationWizard = {
 							self.onFail("A problem was encountered when replacing the values in the column: \""+ self.vars.elmts.enumerationSymbols.data("colName") + "\".");
 						}
 					});
+
 				}
 			}
 

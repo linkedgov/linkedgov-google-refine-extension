@@ -597,13 +597,13 @@ var dateTimeWizard = {
 							self.vars.expectedValue = "fragment";
 						}
 
-					if(typeof colObjects[i].durationValue != 'undefined') {
-						colObjects[i].rdf = self.makeIntervalFragment(colObjects[i]);
-					} else {
-						colObjects[i].rdf = self.makeInstantFragment(colObjects[i]);
-					}	
+						if(typeof colObjects[i].durationValue != 'undefined') {
+							colObjects[i].rdf = self.makeIntervalFragment(colObjects[i]);
+						} else {
+							colObjects[i].rdf = self.makeInstantFragment(colObjects[i]);
+						}	
 
-					break;
+						break;
 
 					} // end switch
 
@@ -769,6 +769,7 @@ var dateTimeWizard = {
 
 				case "Y" :
 					fragName = "year";
+
 					break;
 				case "M" :
 					fragName = "month";
@@ -789,6 +790,13 @@ var dateTimeWizard = {
 					break;
 
 				}
+
+				/*
+				 * This tells us what value to expect when we perform our 
+				 * unexpected values test.
+				 */
+				self.vars.expectedValue = fragName;
+
 
 				/*
 				 * Create the Instant fragment and attach it to the Instant
@@ -1180,20 +1188,33 @@ var dateTimeWizard = {
 			}, function() {
 				LinkedGov.resetWizard(self.vars.elmts.dateTimeBody);
 				LinkedGov.showUndoButton(self.vars.elmts.dateTimeBody);
-				//LinkedGov.summariseWizardHistoryEntry("Date and Time wizard", self.vars.historyRestoreID);
 				LinkedGov.showWizardProgress(false);
 
-				var expression = self.vars.unexpectedValueRegex;
-				var colName = self.vars.resultColumn;
-				var expectedType = "date";
-				var exampleValue = (self.vars.expectedValue == "date" ? "29/04/2009" : "13:30:00");
-				var wizardBody = self.vars.elmts.dateTimeBody;
+				if(self.vars.expectedValue == "date" || self.vars.expectedValue == "time" || self.vars.expectedValue == "date-time"){
+					
+					var expression = self.vars.unexpectedValueRegex;
+					var colName = self.vars.resultColumn;
+					var expectedType = self.vars.expectedValue;
+					var exampleValue = (self.vars.expectedValue == "date" ? "29/04/2009" : "13:30:00");
+					var wizardBody = self.vars.elmts.dateTimeBody;
 
-				if(self.vars.expectedValue == "date-time"){
-					exampleValue = "29/04/2009-13:30:00";
+					if(self.vars.expectedValue == "date-time"){
+						exampleValue = "29/04/2009-13:30:00";
+					}
+					
+					/*
+					else if(self.vars.expectedValue == "year"){
+						exampleValue = "1972";
+					} else if(self.vars.expectedValue == "month"){
+						exampleValue = "Feb, Feburary, 02, 2";
+					} else if(self.vars.expectedValue == "day"){
+						exampleValue = "Mon, Monday, 01, 1";
+					}
+					*/
+
+					LinkedGov.checkForUnexpectedValues(expression, colName, expectedType, exampleValue, wizardBody);
+
 				}
-
-				LinkedGov.checkForUnexpectedValues(expression, colName, expectedType, exampleValue, wizardBody);
 
 			});
 

@@ -7,7 +7,11 @@
  * short description - which is optional.
  */
 var DescriptionsPanel = {
-
+		
+		vars : {
+			illegalChars : [ "*", "@", "%", ":", "=", "&", "<", ">", "/", "\\", "."]
+		},
+		
 		/*
 		 * enterDescriptionPanel
 		 * 
@@ -36,7 +40,7 @@ var DescriptionsPanel = {
 				$("div.description-panel").animate({"left":"0px"},500,function(){
 					$("div.description-panel").scrollTop(0);
 					DescriptionsPanel.buildColumnDescriptionInputs();
-					
+
 				});
 
 			} else {
@@ -51,7 +55,6 @@ var DescriptionsPanel = {
 					$("a.collapse-expand").hide();
 					$("div.cancel-button").animate({"left":"0px"},500);
 					$("div.next-button").animate({"left":"-300px"},500);
-					log($("div.description-panel div.action-buttons"));
 					$("div.description-panel div.action-buttons").css("display","block");
 					//$("div.description-panel div.action-buttons").show();
 					//$("div.description-panel div.action-buttons").animate({"left":"0px"},500);
@@ -60,7 +63,7 @@ var DescriptionsPanel = {
 						$("div.description-panel").scrollTop(0);
 						DescriptionsPanel.buildDescriptionPanel();
 						DescriptionsPanel.buildColumnDescriptionInputs();
-						
+
 					});
 				}));
 			}
@@ -107,13 +110,27 @@ var DescriptionsPanel = {
 			 */
 			$("div.description-panel div.row-description input, " +
 			"div.description-panel div.row-description textarea").live("blur",function(){
+				
+				/*
+				 * Highlight the rows in the table to indicate to the user they 
+				 * are labeling rows.
+				 */
 				$("table.data-table > tbody > tr.odd > td ").css("background-color","#F2F2F2");
+				
 				if($(this).hasClass("row-label") && $(this).val() == ""){
 					$(this).val("Each row is a...");
 				} else if($(this).hasClass("row-description") && $(this).val() == ""){
 					$(this).val("Enter a description...");
+				} else {
+					/*
+					 * Trim whitespace from row name and check it
+					 */
+					$(this).val($(this).val().trim());
+					
+					DescriptionsPanel.checkRowDescription($(this).parent());
 				}
-				DescriptionsPanel.checkRowDescription($(this).parent());
+				
+				
 			});
 
 			/*
@@ -174,9 +191,11 @@ var DescriptionsPanel = {
 				if($(this).hasClass("column-description") && $(this).val() == ""){
 					$(this).val("Enter a description...");
 				}
+
 				/*
-				 * Validate the label and description.
+				 * Trim the whitespace and validate the column
 				 */
+				$(this).val($(this).val().trim());
 				DescriptionsPanel.checkColumnDescription($(this).parent());
 
 				/*
@@ -194,7 +213,7 @@ var DescriptionsPanel = {
 						var newName = el.val();
 						var status = ($(this).parent("li").hasClass("maybe") ? "maybe" : ($(this).parent("li").hasClass("good") ? "good" : "great" )); 
 						log("DescriptionsPanel, status: "+status);
-						
+
 						for(var i=0;i<colData.length;i++){
 							if(colData[i].label == oldName){
 								colData[i].label = newName;
@@ -234,7 +253,7 @@ var DescriptionsPanel = {
 					//alert("A column already exists with this name.");
 					el.val(el.data("original-name"));
 				}
-				
+
 			});
 
 			/*
@@ -508,10 +527,12 @@ var DescriptionsPanel = {
 			var input = divElement.find("input.row-label");
 			var textarea = divElement.find("textarea.row-description");
 			var labelData = LinkedGov.vars.labelsAndDescriptions;
+
 			/*
 			 * Add the status's CSS class
 			 */
 			if(input.val().trim().length > 2 && input.val() != "Each row is a..."){
+				
 				divElement.removeClass("bad").removeClass("maybe").addClass("good");
 				if(textarea.val().length > 2 && textarea.val() != "Enter a description..."){
 					divElement.addClass("great");
@@ -530,7 +551,7 @@ var DescriptionsPanel = {
 			 */
 			labelData.rowLabel = input.val();
 			labelData.rowDescription = textarea.val();
-			
+
 
 		},
 
@@ -541,6 +562,7 @@ var DescriptionsPanel = {
 		 */
 		checkColumnDescription : function(liElement){
 
+			var self = this;
 			var input = liElement.find("input.column-label");
 			var textarea = liElement.find("textarea.column-description");
 			var colData = LinkedGov.vars.labelsAndDescriptions.cols;
@@ -584,5 +606,28 @@ var DescriptionsPanel = {
 					el.removeClass("bad").removeClass("maybe").removeClass("good").removeClass("great").addClass(status);
 				}
 			});
+		},
+
+
+		/*
+		 * Checks to see if a column name contains an illegal character.
+		 * Returns a boolean.
+		 */
+		colNameContainsIllegalCharacter: function(colName) {
+
+			var self = this;
+
+			for(var i=0;i<colName.length;i++){
+				for(var j=0;j<self.vars.illegalChars.length;j++){
+					if(colName[i]==self.vars.illegalChars[j]){
+						log("'"+colName+"' contains an illegal character: "+self.vars.illegalChars[j]);
+						return true;
+					} else if(i==colName.length-1 && j==self.vars.illegalChars.length-1){
+						log("'"+colName+"' does not contain an illegal character");
+						return false;
+					}
+				}
+			}
+
 		}
 }

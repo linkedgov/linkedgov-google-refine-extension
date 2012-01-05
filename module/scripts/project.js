@@ -521,16 +521,18 @@ var LinkedGov = {
 			//log(str);
 			
 		    return str
+		    .toLowerCase()
 	        .replace(/\s(.)/g, function($1) { return $1.toUpperCase(); })
 	        .replace(/\s/g, '')
 	        .replace(/^(.)/, function($1) { return $1.toLowerCase(); })
-	    	.replace(")","")
-	    	.replace("(","")
-	    	.replace("=","-")
-	    	.replace("&","and")
+	    	.replace(/\)/g,"")
+	    	.replace(/\(/g,"")
+	    	.replace(/=/g,"-equals-")
+	    	.replace(/&/g,"-and-")
 	    	.replace(/:/g,"-")
-	    	.replace("<","-")
-	    	.replace(">","-");
+	    	.replace(/</g,"-less than-")
+	    	.replace(/>/g,"-more than-")
+	    	.replace(/_/g,"-");
 
 		}
 
