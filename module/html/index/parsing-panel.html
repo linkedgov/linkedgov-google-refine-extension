@@ -57,6 +57,7 @@ $("button.no-success").click(function(){
 	$("div.default-importing-parsing-control-panel table").show();
 	$("input[bind='guessCellValueTypesCheckbox']").click();
 	$("input[bind='guessCellValueTypesCheckbox']").removeAttr("checked");
+	$("input[bind='guessCellValueTypesCheckbox']").attr("disabled","true");
 });
 
 if(typeof parserResizer != "undefined"){

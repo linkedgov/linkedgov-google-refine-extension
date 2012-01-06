@@ -481,7 +481,7 @@ LinkedGov.unhideHiddenColumn = function(colName, callback) {
 
 };
 
-LinkedGov.eraseHiddenColumnData = function(){
+LinkedGov.eraseHiddenColumnData = function(callback){
 
 	log("eraseHiddenColumnData");
 

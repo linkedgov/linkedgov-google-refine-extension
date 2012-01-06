@@ -380,7 +380,7 @@ var DescriptionsPanel = {
 				/*
 				 * If the globals labels object doesn't exist, try to load the labels from the RDF schema.
 				 */
-				DescriptionsPanel.loadLabelsAndDescription(function(){
+				DescriptionsPanel.loadLabelsAndDescriptionFromRDF(function(){
 					$("div.description-panel div.column-list").show(function(){
 
 						/*
@@ -413,17 +413,17 @@ var DescriptionsPanel = {
 				});
 			}
 		},
-
+		
 
 		/*
-		 * loadLabelsAndDescription
+		 * loadLabelsAndDescriptionFromRDF
 		 * 
 		 * Loop through the root nodes in the RDF schema, locating the 
 		 * row and column label and descriptions, using them to populate 
 		 * the input fields in the labels and descriptions panel.
 		 * 
 		 */
-		loadLabelsAndDescription : function(callback) {
+		loadLabelsAndDescriptionFromRDF : function(callback) {
 
 			/*
 			 * Make sure the RDF schema exists

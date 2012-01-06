@@ -150,6 +150,39 @@ var measurementsWizard = {
 						j--;
 					}
 				}
+				
+				var expression = "grel:if(type(value) == 'number',(if(value % 1 == 0,'int','float')),if(((type(value.match(/\\b\\d{4}[\\-]\\d{1,2}[\\-]\\d{1,2}\\b/))=='array')),'date',if(isBlank(value),null,'string')))";
+
+				/*
+				 * Recursive function to compute a facet for each column to find 
+				 * the most frequently occuring value type (int, float, string...)
+				 */
+				var type = LinkedGov.findHighestFacetValue(colObjects[i].name,expression);
+
+				log("Finding type of measurement column...");
+				log("colObjects[i].name: "+colObjects[i].name);
+				log("type: "+type);
+				
+				var o =  {
+		            	  "uri" : uri,
+		            	  "curie" : curie,
+		            	  "target" : {
+		            		  "nodeType" : "cell-as-literal",
+		            		  "expression" : "value",
+		            		  "columnName" : colObjects[i].name,
+		            		  "isRowNumberCell" : false
+		            	  }
+		        };
+				
+				if(type == "string"){
+					o.target.lang = "en";
+				} else if(type == "int"){
+					o.target.valueType = "http://www.w3.org/2001/XMLSchema#int";
+				} else if(type == "float"){
+					o.target.valueType = "http://www.w3.org/2001/XMLSchema#float";
+				} else if(type == "date"){
+					o.target.valueType = "http://www.w3.org/2001/XMLSchema#date";
+				}
 
 				rootNode.links.push({
 					"uri" : "http://example.linkedgov.org/" + camelColName,
@@ -157,20 +190,8 @@ var measurementsWizard = {
 					"target" : {
 						"nodeType" : "cell-as-blank",
 						"isRowNumberCell" : true,
-						"rdfTypes" : [
-
-						              ],
-						              "links" : [ {
-						            	  "uri" : uri,
-						            	  "curie" : curie,
-						            	  "target" : {
-						            		  "nodeType" : "cell-as-literal",
-						            		  "expression" : "value",
-						            		  "valueType" : "http://www.w3.org/2001/XMLSchema#int",
-						            		  "columnName" : colObjects[i].name,
-						            		  "isRowNumberCell" : false
-						            	  }
-						              } ]
+						"rdfTypes" : [],
+						"links" : [o]
 					}
 				});
 
