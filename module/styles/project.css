@@ -282,15 +282,21 @@ body.lg div.description-panel div.row-description {
 	margin: 5px 7px 15px;
 }
 body.lg div.description-panel div.row-description input {
-	border: 1px solid #D6D6D6;
-    background-position: right center;
+    background-position: 5px 3px;
     background-repeat: no-repeat;
-    margin: 0 0 0;
-    padding: 3px;
-    width: 96%;
+    border-right: 1px solid #D6D6D6;
+    border-bottom:1px solid #D6D6D6;
+    border-left: 1px solid #8F8F8F;
+    border-top:1px solid #8F8F8F;
+    margin: 0;
+    padding: 4px 3px 4px 25px;
+    width: 87%;
 }
 body.lg div.description-panel div.row-description textarea {
-	border: 1px solid #D6D6D6;
+	border-right: 1px solid #D6D6D6;
+	border-bottom:1px solid #D6D6D6;
+	border-left: 1px solid #8F8F8F;
+    border-top:1px solid #8F8F8F;
     color: #999999;
     display: inline-block;
     font-style: italic;
@@ -310,7 +316,7 @@ body.lg div.description-panel div.column-list ul {
 	list-style-type:none;
 }
 body.lg div.description-panel div.column-list ul li {
-	margin-bottom:5px;
+	margin-bottom:15px;
 }
 body.lg div.description-panel div.column-list ul li.bad input, body.lg div.description-panel div.row-description.bad input {
 	background-color:#FFDCDC;
@@ -329,12 +335,22 @@ body.lg div.description-panel div.column-list ul li.great input, body.lg div.des
 	background-image:url(../images/great.png);
 }
 body.lg div.description-panel div.column-list ul li input.column-label {
-	border: 1px solid #D6D6D6;
+/*	border: 1px solid #D6D6D6;
     background-position: right center;
     background-repeat: no-repeat;
     margin: 0 0 0;
     padding: 3px;
     width: 96%;
+    */
+    background-position: 5px 3px;
+    background-repeat: no-repeat;
+    border-right: 1px solid #D6D6D6;
+    border-bottom:1px solid #D6D6D6;
+    border-left: 1px solid #8F8F8F;
+    border-top:1px solid #8F8F8F;
+    margin: 0;
+    padding: 4px 3px 4px 25px;
+    width: 87%;
 }
 /*
 body.lg div.description-panel div.column-list ul li input.column-label {
@@ -354,7 +370,10 @@ body.lg div.description-panel div.column-list ul li input.column-label:hover {
 	color:#0059D5;
 }
 body.lg div.description-panel div.column-list ul li textarea {
-	border: 1px solid #D6D6D6;
+    border-right: 1px solid #D6D6D6;
+    border-bottom:1px solid #D6D6D6;
+    border-left: 1px solid #8F8F8F;
+    border-top:1px solid #8F8F8F;
     color: #999999;
     display: inline-block;
     font-style: italic;

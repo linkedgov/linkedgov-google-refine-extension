@@ -305,13 +305,15 @@ var LinkedGov = {
 				switch ($(this).attr("class")) {
 
 				case "rename":
-					var name = window.prompt("Name:", colName);
-					if (name.length > 0) {
+					var name = window.prompt("Name:", colName) || "";
+					if (name.trim().length > 0) {
 						LinkedGov.renameColumn(colName, name, function() {
 							Refine.update({
 								modelsChanged : true
 							});
 						});
+					} else {
+						alert("Not a valid column name.");
 					}
 					break;
 				case "remove":
@@ -520,19 +522,19 @@ var LinkedGov = {
 			//log("Camelizing: ")
 			//log(str);
 			
-		    return str
+		    return escape($("<div/>").html(str).text()
 		    .toLowerCase()
 	        .replace(/\s(.)/g, function($1) { return $1.toUpperCase(); })
 	        .replace(/\s/g, '')
 	        .replace(/^(.)/, function($1) { return $1.toLowerCase(); })
-	    	.replace(/\)/g,"")
-	    	.replace(/\(/g,"")
-	    	.replace(/=/g,"-equals-")
-	    	.replace(/&/g,"-and-")
-	    	.replace(/:/g,"-")
-	    	.replace(/</g,"-less than-")
-	    	.replace(/>/g,"-more than-")
-	    	.replace(/_/g,"-");
+	    	.replace(/\)/g,"-")
+	    	.replace(/\(/g,"-")
+	    	//.replace(/=/g,"-equals-")
+	    	.replace(/&/g,"and")
+	    	//.replace(/:/g,"-")
+	    	//.replace(/</g,"-less than-")
+	    	//.replace(/>/g,"-more than-")
+	    	.replace(/_/g,"-"));
 
 		}
 
@@ -590,6 +592,15 @@ $.fn.generateId = function() {
 		this.id = $.generateId();
 	});
 };
+
+/*
+ * DecodeHTMLEntity
+ * 
+ * Decodes HTML entities like &amp; and &apos; 
+ */
+function decodeHTMLEntity(str){
+	return $("<div/>").html(str).text();
+}
 
 /*
  * A degradable logging function - can be 

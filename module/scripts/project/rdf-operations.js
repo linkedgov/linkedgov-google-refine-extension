@@ -653,7 +653,7 @@ var finaliseRDFSchema = {
 			LinkedGov.checkPrefixes(self.vars.vocabs);
 
 			/*
-			 * Chain together a series of save operations using callback functions.
+			 * Chain together a series of save operations using callbacks.
 			 * 
 			 * saveRowClass - save the owl:Class description for the row.
 			 */
@@ -880,14 +880,14 @@ var finaliseRDFSchema = {
 					/*
 					 * Default description is: <Row> <lg:columnName> "cell value"
 					 */
-
+					
 					var o = {
-							"uri" : self.vars.vocabs.lg.uri + camelizedColumnName.replace(/:/g,"-"),
-							"curie" : self.vars.vocabs.lg.curie + ":" + camelizedColumnName.replace(/:/g,"-"),
+							"uri" : self.vars.vocabs.lg.uri + camelizedColumnName,
+							"curie" : self.vars.vocabs.lg.curie + ":" + camelizedColumnName,
 							"target" : {
 								"nodeType" : "cell-as-literal",
 								"expression" : "value",
-								"columnName" : $(this).find("span.column-header-name").html(),
+								"columnName" : decodeHTMLEntity($(this).find("span.column-header-name").html()),
 								"isRowNumberCell" : false
 							}
 					};

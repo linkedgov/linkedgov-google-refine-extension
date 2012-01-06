@@ -305,11 +305,13 @@ var DescriptionsPanel = {
 			$("div.description-panel div.column-list").hide();
 			var html = "<ul>";
 			$("div.column-header-title span.column-header-name").each(function(){
+				
+				var colName = decodeHTMLEntity($(this).html());
 				/*
 				 * Only create a label and description input for a column if it's not the "All" column and 
 				 * not in the hidden columns list (because these columns aren't stored in the data
 				 */
-				if($(this).html() != "All" && $.inArray($(this).html(),LinkedGov.vars.hiddenColumns.split(",")) < 0){
+				if(colName != "All" && $.inArray(colName,LinkedGov.vars.hiddenColumns.split(",")) < 0){
 					/*
 					 * Column name status can be:
 					 * great - label and description entered
@@ -318,11 +320,11 @@ var DescriptionsPanel = {
 					 * maybe - could be fine
 					 */
 					var status = "maybe";
-					if($(this).html().length < 2 || $(this).html().toLowerCase().indexOf("column") > -1){
+					if(colName.length < 2 || colName.toLowerCase().indexOf("column") > -1){
 						status = "bad";
 					}
 					html += "<li class='"+status+"'>" +
-					"<input class='column-label' value='"+$(this).html()+"' />" +
+					"<input class='column-label' value='"+colName+"' />" +
 					"<textarea class='column-description' value='Enter a description...'>Enter a description...</textarea>" + 
 					"</li>";
 					$(this).parent().parent().addClass(status);
@@ -483,16 +485,23 @@ var DescriptionsPanel = {
 
 												if($(this).find("textarea.column-description").val().length > 2){
 
+													/*
+													 * We use decodeHTMLEntity here because we are grabbing the name from the  
+													 * table header which is a HTML element
+													 */
 													$("td.column-header span.column-header-name").each(function(){
-														if($(this).html() == $(this).find("input.column-label").val()){
+														if(decodeHTMLEntity($(this).html()) == $(this).find("input.column-label").val()){
 															$(this).removeClass("bad").removeClass("maybe").removeClass("good").addClass("great");
 														}
 													});
 
 												} else {
-
+													/*
+													 * We use decodeHTMLEntity here because we are grabbing the name from the  
+													 * table header which is a HTML element
+													 */
 													$("td.column-header span.column-header-name").each(function(){
-														if($(this).html() == $(this).find("input.column-label").val()){
+														if(decodeHTMLEntity($(this).html()) == $(this).find("input.column-label").val()){
 															$(this).removeClass("bad").removeClass("maybe").removeClass("great").addClass("good");
 														}
 													});
@@ -599,9 +608,13 @@ var DescriptionsPanel = {
 					colData[i].status = status;
 				}
 			}
-
+			
+			/*
+			 * We use decodeHTMLEntity here because we are grabbing the name from the  
+			 * table header which is a HTML element
+			 */
 			$("td.column-header span.column-header-name").each(function(){
-				if($(this).html() == input.val()){
+				if(decodeHTMLEntity($(this).html()) == input.val()){
 					var el = $(this).parent().parent();
 					el.removeClass("bad").removeClass("maybe").removeClass("good").removeClass("great").addClass(status);
 				}
@@ -613,7 +626,7 @@ var DescriptionsPanel = {
 		 * Checks to see if a column name contains an illegal character.
 		 * Returns a boolean.
 		 */
-		colNameContainsIllegalCharacter: function(colName) {
+		/*colNameContainsIllegalCharacter: function(colName) {
 
 			var self = this;
 
@@ -629,5 +642,5 @@ var DescriptionsPanel = {
 				}
 			}
 
-		}
+		}*/
 }
