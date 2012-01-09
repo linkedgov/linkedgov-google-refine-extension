@@ -33,7 +33,7 @@ var LinkedGov = {
 			},
 			lgNameSpace: "http://example.linkedgov.org/",
 			hiddenColumns: ""
-			//wizardOperations:[]
+				//wizardOperations:[]
 		},
 
 		/*
@@ -44,14 +44,14 @@ var LinkedGov = {
 		initialise : function() {
 
 			$("#app-home-button").remove();
-			
+
 			this.restyle();
 			this.injectTypingPanel();
 			this.injectWizardProgressOverlay();
 			this.injectFeedbackForm();
 			this.addUnhideColumnButton();
 			this.quickTools();
-			
+
 			/*
 			 * Add a listener for un-hiding columns
 			 */
@@ -64,15 +64,15 @@ var LinkedGov = {
 			});
 
 			this.loadScripts();
-			
+
 		},
-		
+
 		/*
 		 * loadScripts
 		 */
 		loadScripts: function(){
-			
-			
+
+
 			/*
 			 * Load the wizard scripts
 			 */
@@ -100,24 +100,24 @@ var LinkedGov = {
 			$.getScript("extension/linkedgov/scripts/project/enumeration-wizard.js",function(){
 				LinkedGov.enumerationWizard = enumerationWizard;
 			});	
-			
+
 			/*
 			 * Load the descriptions panel script
 			 */
 			$.getScript("extension/linkedgov/scripts/project/descriptions-panel.js");
-			
+
 			/*
 			 * Load the refine operations script
 			 */
 			$.getScript("extension/linkedgov/scripts/project/refine-operations.js",function(){
 				LinkedGov.splitVariablePartColumn = splitVariablePartColumn;
-				
+
 				/*
 				 * Load the rdf-operations script once the refine-operations script has 
 				 * successfully loaded
 				 */
 				$.getScript("extension/linkedgov/scripts/project/rdf-operations.js",function(){
-					
+
 					/*
 					 * Set up the variables inside the LinkedGov namespace
 					 */
@@ -126,12 +126,12 @@ var LinkedGov = {
 					LinkedGov.applyTypeIcons = applyTypeIcons;
 					LinkedGov.applyTypeIcons.init();
 					LinkedGov.applyTypeIcons.apply();
-					
+
 					/*
 					 * Save the project's metadata straightaway
 					 */
 					LinkedGov.saveMetadataToRDF(function(){
-						
+
 						/*
 						 * Load the project's hidden columns from the 
 						 * metadata file - hide any columns if there are 
@@ -140,7 +140,7 @@ var LinkedGov = {
 						LinkedGov.getHiddenColumnMetadata(function(){
 							LinkedGov.keepHiddenColumnsHidden();
 						});
-						
+
 						/*
 						 * Overwrite Refine's data table "render" function, 
 						 * so we can include a couple of our functions that 
@@ -160,12 +160,31 @@ var LinkedGov = {
 						 * Perform a generic update once everything has loaded
 						 */
 						Refine.update({everythingChanged:true});
-						
+
+						/*
+						 * Attach a listener to the first history entry, 
+						 * so that when it's clicked, the page is reloaded.
+						 * 
+						 * We need to reload the page so the project metadata is saved (which 
+						 * is the first history entry for the projects).
+						 */
+
+						var timeout = setTimeout(function(){
+	
+								$("div.history-panel-body a").eq(0).bind("click",function(){
+									alert("The project page must now be reloaded");
+									window.location.href = "/project?project="+theProject.id;
+								});
+
+								clearTimeout(timeout);
+
+						},500);
+
 					});
 				});
-				
+
 			});
-			
+
 		},
 
 		/*
@@ -178,9 +197,9 @@ var LinkedGov = {
 			 * Giving the body our own class applies our CSS rules.
 			 */
 			$("body").addClass("lg");
-			
+
 			$("#header").html('<img width="129" height="40" alt="Google Refine" src="/extension/linkedgov/images/logo-small.png"><span id="slogan">Making government data usable</span>'+$("#header").html());
-		
+
 			$("body").append("<div id='beta'><p>Alpha</p></div>");
 			$("#project-controls").css("margin-right","100px");
 			$("#extension-bar").css("margin-right","45px");
@@ -214,17 +233,17 @@ var LinkedGov = {
 		 * Injects the feedback form in the top right of the page
 		 */
 		injectFeedbackForm : function() {
-						
+
 			$.get("/extension/linkedgov/scripts/feedback.js",function(){
 				$("div#project-controls").append('<a class="button" id="send-feedback" href="#" title="Send feedback">Feedback</a>');				
 			});
-			
+
 		},
-		
+
 		addUnhideColumnButton : function() {
-		
+
 			var self = this;
-			
+
 			$("div#project-controls").prepend('<a id="unhide-columns-button" title="Unhide columns" class="button">Unhide columns</a>');
 			$("a#unhide-columns-button").live("click",function(){
 				LinkedGov.vars.hiddenColumns = "";
@@ -234,11 +253,11 @@ var LinkedGov = {
 				self.showHideUnhideColumnButton("hide");
 			});
 		},
-		
+
 		showHideUnhideColumnButton : function(showHide){
 			(showHide == "show" ? $("a#unhide-columns-button").css("display","inline-block") : $("a#unhide-columns-button").hide());
 		},
-		
+
 		updateUnhideColumnButton : function(count){
 			var self = this;
 			if(count > 0){
@@ -249,8 +268,8 @@ var LinkedGov = {
 				self.showHideUnhideColumnButton("hide");
 			}
 		},
-		
-		
+
+
 		/*
 		 * Initialises the quick tools for column headings.
 		 */
@@ -267,30 +286,30 @@ var LinkedGov = {
 			 * TODO: Show & hide using CSS.
 			 */
 			$("td.column-header").live("hover",function() {
-						if (!$(this).hasClass("ui-selectee") && $(this).find("span.column-header-name").length > 0 && $(this).find("span.column-header-name").html() != "All") {
-							if ($(this).hasClass("show")) {
-								$(this).find(".quick-tool").hide();
-								$(this).addClass("hide").removeClass("show");
-							} else if ($(this).hasClass("hide")) {
-								$(this).find(".quick-tool").show();
-								$(this).addClass("show").removeClass("hide");
-							} else {
+				if (!$(this).hasClass("ui-selectee") && $(this).find("span.column-header-name").length > 0 && $(this).find("span.column-header-name").html() != "All") {
+					if ($(this).hasClass("show")) {
+						$(this).find(".quick-tool").hide();
+						$(this).addClass("hide").removeClass("show");
+					} else if ($(this).hasClass("hide")) {
+						$(this).find(".quick-tool").show();
+						$(this).addClass("show").removeClass("hide");
+					} else {
 
-								var html = "<div class='quick-tool'>" + "<ul>"
-								+ "<li class='rename'>Rename</li>"
-								+ "<li class='remove'>Remove</li>"
-								+ "<li class='move-left'>Move left</li>"
-								+ "<li class='move-right'>Move right</li>"
-								+ "<li class='hide'>Hide</li>"
-								+ "<li class='delete-rdf'>Delete RDF</li>"
-								+ "</ul>" + "</div>";
+						var html = "<div class='quick-tool'>" + "<ul>"
+						+ "<li class='rename'>Rename</li>"
+						+ "<li class='remove'>Remove</li>"
+						+ "<li class='move-left'>Move left</li>"
+						+ "<li class='move-right'>Move right</li>"
+						+ "<li class='hide'>Hide</li>"
+						+ "<li class='delete-rdf'>Delete RDF</li>"
+						+ "</ul>" + "</div>";
 
-								$(this).append(html);
-								$(this).find(".quick-tool").show();
-								$(this).addClass("qt").addClass("show");
-							}
-						}
-					});
+						$(this).append(html);
+						$(this).find(".quick-tool").show();
+						$(this).addClass("qt").addClass("show");
+					}
+				}
+			});
 
 			/*
 			 * Interaction for the quick tool options
@@ -338,14 +357,14 @@ var LinkedGov = {
 					});
 					break;
 				case "hide":
-					
+
 					ui.dataTableView._collapsedColumnNames[colName] = true;
 					ui.dataTableView.render();		
-					
+
 					Refine.update({
 						modelsChanged : true
 					});
-					
+
 					break;
 				case "delete-rdf":
 					LinkedGov.removeColumnInRDF(colName, function() {
@@ -373,7 +392,7 @@ var LinkedGov = {
 					"<div class='wizardProgressMessage'>" +
 					"<div class='overlay'><!-- --></div>" +
 					"<p>Wizard in progress...<img src='images/large-spinner.gif' /></p>" +
-					"</div>");
+			"</div>");
 		},
 
 		/*
@@ -407,7 +426,7 @@ var LinkedGov = {
 			 */
 			resizeAll();
 		},
-		
+
 		/*
 		 * showUndoButton
 		 */
@@ -465,7 +484,7 @@ var LinkedGov = {
 
 			log("silentProcessCall");
 			log(o);
-			
+
 			o.async = o.async || true;
 			o.type = o.type || "POST";
 			o.dataType = o.dataType || "json";
@@ -510,7 +529,7 @@ var LinkedGov = {
 
 			return false;
 		},
-		
+
 		/*
 		 * Formats and returns a string in camel case.
 		 * 
@@ -521,20 +540,20 @@ var LinkedGov = {
 
 			//log("Camelizing: ")
 			//log(str);
-			
-		    return escape($("<div/>").html(str).text()
-		    .toLowerCase()
-	        .replace(/\s(.)/g, function($1) { return $1.toUpperCase(); })
-	        .replace(/\s/g, '')
-	        .replace(/^(.)/, function($1) { return $1.toLowerCase(); })
-	    	.replace(/\)/g,"-")
-	    	.replace(/\(/g,"-")
-	    	//.replace(/=/g,"-equals-")
-	    	.replace(/&/g,"and")
-	    	//.replace(/:/g,"-")
-	    	//.replace(/</g,"-less than-")
-	    	//.replace(/>/g,"-more than-")
-	    	.replace(/_/g,"-"));
+
+			return escape($("<div/>").html(str).text()
+					.toLowerCase()
+					.replace(/\s(.)/g, function($1) { return $1.toUpperCase(); })
+					.replace(/\s/g, '')
+					.replace(/^(.)/, function($1) { return $1.toLowerCase(); })
+					.replace(/\)/g,"-")
+					.replace(/\(/g,"-")
+					//.replace(/=/g,"-equals-")
+					.replace(/&/g,"and")
+					//.replace(/:/g,"-")
+					//.replace(/</g,"-less than-")
+					//.replace(/>/g,"-more than-")
+					.replace(/_/g,"-"));
 
 		}
 
@@ -614,7 +633,7 @@ function log(str) {
  * Initialise our code once the page has fully loaded.
  */
 $(document).ready(function() {
-	
+
 	LinkedGov.initialise();
-	
+
 });

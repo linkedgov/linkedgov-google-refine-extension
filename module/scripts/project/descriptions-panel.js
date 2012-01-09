@@ -362,7 +362,7 @@ var DescriptionsPanel = {
 					$("div.row-description textarea.row-description").val(labelData.rowDescription);
 				}
 
-				DescriptionsPanel.checkRowDescription($("div.row-description"));
+				//DescriptionsPanel.checkRowDescription($("div.row-description"));
 
 				for(var i=0;i<colData.length;i++){
 					$("div.description-panel div.column-list ul li").each(function(){
@@ -370,7 +370,7 @@ var DescriptionsPanel = {
 						if($(this).find("input.column-label").val() == colData[i].label){
 							//log("Replacing description for "+colData[i].label+": "+colData[i].description);
 							$(this).find("textarea.column-description").val(colData[i].description).html(colData[i].description);
-							DescriptionsPanel.checkColumnDescription($(this));
+							//DescriptionsPanel.checkColumnDescription($(this));
 						}
 
 						$(this).find("input.column-label").data("original-name",$(this).find("input.column-label").val());
