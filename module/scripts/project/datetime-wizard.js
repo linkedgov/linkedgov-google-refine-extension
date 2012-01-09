@@ -36,7 +36,7 @@ var dateTimeWizard = {
 					uri : LinkedGov.vars.lgNameSpace
 				}
 			},
-			unexpectedValueRegex:'grel:if(type(value) == "date","date",if(isError(toDate(value).toString("HH:mm:ss")),"error","date"))'
+			unexpectedValueRegex:'grel:if(isBlank(value),"date",if(type(value) == "date","date",if(isError(toDate(value).toString("HH:mm:ss")),"error","date")))'
 		},
 
 		/*
@@ -45,8 +45,11 @@ var dateTimeWizard = {
 		initialise : function(elmts) {
 
 			var self = this;			
-			self.vars.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
-			self.vars.beingReRun = false;
+			try{
+				self.vars.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
+			}catch(e){
+				self.vars.historyRestoreID = 0;
+			}
 			self.vars.elmts = elmts;
 			self.vars.columns = [];
 			self.vars.colFragments = [];
@@ -434,6 +437,7 @@ var dateTimeWizard = {
 			expr = expr.substring(0, expr.length - 5);
 			newName = newName.substring(0, newName.length - 1);
 
+
 			/*
 			 * Remove the columns used to create the new column
 			 */
@@ -567,7 +571,7 @@ var dateTimeWizard = {
 						break;
 					case "Y-M-D-h-m":
 						// Format and create gregorian data.gov.uk URI
-						self.vars.expectedValue = "date-time";
+						self.vars.expectedValue = "date";
 						self.formatDateInRefine(colObjects[i]);
 						if(typeof colObjects[i].durationValue != 'undefined') {
 							colObjects[i].rdf = self.makeXSDDateTimeIntervalURIFragment(colObjects[i]);
@@ -577,7 +581,7 @@ var dateTimeWizard = {
 						break;
 					case "Y-M-D-h-m-s":
 						// Format and create gregorian data.gov.uk URI
-						self.vars.expectedValue = "date-time";
+						self.vars.expectedValue = "date";
 						self.formatDateInRefine(colObjects[i]);
 						if(typeof colObjects[i].durationValue != 'undefined') {
 							colObjects[i].rdf = self.makeXSDDateTimeIntervalURIFragment(colObjects[i]);

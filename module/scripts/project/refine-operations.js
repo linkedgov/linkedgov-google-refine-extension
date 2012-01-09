@@ -893,7 +893,7 @@ var splitVariablePartColumn = {
 						"type" : "list",
 						"name" : self.vars.colName,
 						"columnName" : self.vars.colName,
-						"expression" : "value.split(\"" + self.vars.separator + "\").length()",
+						"expression" : "if(isBlank(value),\"\",value.split(\"" + self.vars.separator + "\").length())",
 						"omitBlank" : false,
 						"omitError" : false,
 						"selection" : [],

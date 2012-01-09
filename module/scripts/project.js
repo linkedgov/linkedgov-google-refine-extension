@@ -130,7 +130,7 @@ var LinkedGov = {
 					/*
 					 * Save the project's metadata straightaway
 					 */
-					LinkedGov.saveMetadataToRDF(function(){
+					//LinkedGov.saveMetadataToRDF(function(){
 
 						/*
 						 * Load the project's hidden columns from the 
@@ -161,26 +161,7 @@ var LinkedGov = {
 						 */
 						Refine.update({everythingChanged:true});
 
-						/*
-						 * Attach a listener to the first history entry, 
-						 * so that when it's clicked, the page is reloaded.
-						 * 
-						 * We need to reload the page so the project metadata is saved (which 
-						 * is the first history entry for the projects).
-						 */
-
-						var timeout = setTimeout(function(){
-	
-								$("div.history-panel-body a").eq(0).bind("click",function(){
-									alert("The project page must now be reloaded");
-									window.location.href = "/project?project="+theProject.id;
-								});
-
-								clearTimeout(timeout);
-
-						},500);
-
-					});
+					//});
 				});
 
 			});

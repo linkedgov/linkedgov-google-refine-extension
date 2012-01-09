@@ -28,7 +28,7 @@ var geolocationWizard = {
 					uri: LinkedGov.vars.lgNameSpace
 				}
 			},
-			unexpectedValueRegex : 'grel:if(type(value) == "number",(if(value % 1 == 0,"int","float")),if(((type(value.match(/\\b\\d{4}[\\-]\\d{1,2}[\\-]\\d{1,2}\\b/))=="array")),"error","error")))'
+			unexpectedValueRegex : 'grel:if(isBlank(value),"float",if(type(value) == "number",(if(value % 1 == 0,"int","float")),if(((type(value.match(/\\b\\d{4}[\\-]\\d{1,2}[\\-]\\d{1,2}\\b/))=="array")),"error","error"))))'
 		},
 
 		/*
@@ -37,9 +37,12 @@ var geolocationWizard = {
 		initialise : function(elmts) {
 
 			var self = this;
-			self.vars.beingReRun = false;
 
-			self.vars.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
+			try{
+				self.vars.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
+			}catch(e){
+				self.vars.historyRestoreID = 0;
+			}
 
 			LinkedGov.showWizardProgress(true);
 
@@ -62,8 +65,7 @@ var geolocationWizard = {
 				/*
 				 * Convert the lat/long columns to numbers before operating on them
 				 */
-				self.convertColumnsToNumber(function(){
-
+				self.convertColumnsToNumber(0,function(){
 					LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
 						self.saveRDF(rootNode, foundRootNode);
 					});
@@ -80,8 +82,6 @@ var geolocationWizard = {
 		 * Creates an array of fragment/column name objects.
 		 */
 		buildColumnObjects : function() {
-
-			log("buildColumnObjects");
 
 			var self = this;
 			var array = [];
@@ -114,30 +114,38 @@ var geolocationWizard = {
 
 		/*
 		 * convertColumnsToNumber
+		 * 
+		 * Makes sure that the values in the columns selected are parsed 
+		 * as numbers before operating on them.
 		 */
-		convertColumnsToNumber: function(callback){
+		convertColumnsToNumber: function(index, callback){
 
 			var self = this;
 
-			for(var i=0; i<self.vars.colObjects.length;i++){
-				LinkedGov.silentProcessCall({
-					type : "POST",
-					url : "/command/" + "core" + "/" + "text-transform",
-					data : {
-						columnName : self.vars.colObjects[i].name,
-						expression : 'value.toNumber()',
-						onError : 'keep-original',
-						repeat : false,
-						repeatCount : ""
-					},
-					success : function() {
-						Refine.update({cellsChanged : true}, callback);
-					},
-					error : function() {
-						self.onFail("There was a problem when converting the \""+self.vars.colObjects[i].name+"\" column to numbers.");
+			LinkedGov.silentProcessCall({
+				type : "POST",
+				url : "/command/" + "core" + "/" + "text-transform",
+				data : {
+					columnName : self.vars.colObjects[index].name,
+					expression : 'value.toNumber()',
+					onError : 'keep-original',
+					repeat : false,
+					repeatCount : ""
+				},
+				success : function() {
+					
+					if(index==self.vars.colObjects.length-1){
+						Refine.update({cellsChanged : true},callback);
+					} else {
+						index = index+1;
+						self.convertColumnsToNumber(index++, callback);
 					}
-				});	
-			}
+				},
+				error : function() {
+					self.onFail("There was a problem when converting the \""+self.vars.colObjects[i].name+"\" column to numbers.");
+				}
+			});	
+
 
 		},
 
@@ -154,7 +162,6 @@ var geolocationWizard = {
 			var eastingCol = "";
 
 			for(var i=0;i<self.vars.colObjects.length; i++){
-
 				if(self.vars.colObjects[i].type == "northing") {
 					northingCol = self.vars.colObjects[i].name;
 					eastingCol = self.vars.colObjects[i?0:1].name;
@@ -162,32 +169,7 @@ var geolocationWizard = {
 					eastingCol = self.vars.colObjects[i].name;
 					northingCol = self.vars.colObjects[i?0:1].name;					
 				}
-
 			}
-			/*
-			Refine.postCoreProcess("add-column", {
-				baseColumnName : eastingCol,
-				expression : "northingEastingToLatLong(cells[\""+eastingCol+"\"].value,cells[\""+northingCol+"\"].value)",
-				newColumnName : "Latitude,Longitude",
-				columnInsertIndex : Refine.columnNameToColumnIndex(eastingCol) + 1,
-				onError : "keep-original"
-			}, null, {
-				modelsChanged : true
-			}, {
-				onDone : function() {
-
-					//Create the column object for the new column
-
-					self.vars.colObjects.push({
-						type : "lat-long",
-						name : "Latitude,Longitude"
-					});
-
-					callback();
-				}
-			});
-			 */
-
 		},
 
 
@@ -199,8 +181,6 @@ var geolocationWizard = {
 		 * 
 		 */
 		saveRDF : function(rootNode, newRootNode) {
-
-			//log("saveRDF");
 
 			var self = this;
 
@@ -219,9 +199,8 @@ var geolocationWizard = {
 					}
 			};
 
-
 			var colObjects = self.vars.colObjects;
-			
+
 			/*
 			 * If the user specified northing and easting values, then we need to use 
 			 * our northingEastingToLatLong function to convert the values.
@@ -232,7 +211,7 @@ var geolocationWizard = {
 			var northingOrEastingPresent = false;
 			var northingCol = "";
 			var eastingCol = "";
-			
+
 			if(colObjects.length == 2 && colObjects[0].type == "northing" || colObjects[0].type == "easting"){
 
 				northingOrEastingPresent = true;
@@ -247,7 +226,7 @@ var geolocationWizard = {
 					}
 				}
 			}
-			
+
 
 			/*
 			 * Loop through the column objects and check for any existing RDF by
@@ -264,8 +243,7 @@ var geolocationWizard = {
 						/*
 						 * Found existing RDF for the column, so remove it.
 						 */
-						log("Found geolocation RDF data for column: \""
-								+ colObjects[i].name + "\", removing ...");
+						log("Found geolocation RDF data for column: \"" + colObjects[i].name + "\", removing ...");
 						links.splice(j, 1);
 						j--;
 					}
@@ -280,6 +258,9 @@ var geolocationWizard = {
 
 				var uri, curie = "";
 
+				log("SWITCHING");
+				log(colObjects[i].type);
+
 				switch (colObjects[i].type) {
 				case "long":
 					/*
@@ -287,14 +268,7 @@ var geolocationWizard = {
 					 */
 					uri = vocabs.geo.uri + colObjects[i].type;
 					curie = vocabs.geo.curie + ":" + colObjects[i].type;
-					/*
-					 * Attempt to convert a nothing/easting value to produce a longitude value
-					 */
-					//if(northingOrEastingPresent) {
-					//	obj.target.links.push(self.makeConvertedLatLongRDF(northingCol, eastingCol, "longitude", uri, curie));
-					//} else {
-						obj.target.links.push(self.makeLatLongRDF(colObjects[i].name, uri, curie));
-					//}
+					obj.target.links.push(self.makeLatLongRDF(colObjects[i].name, uri, curie));
 					break;
 				case "lat":
 					/*
@@ -302,14 +276,7 @@ var geolocationWizard = {
 					 */
 					uri = vocabs.geo.uri + colObjects[i].type;
 					curie = vocabs.geo.curie + ":" + colObjects[i].type;
-					/*
-					 * Attempt to convert a nothing/easting value to produce a latitude value
-					 */
-					//if(northingOrEastingPresent) {
-					//	obj.target.links.push(self.makeConvertedLatLongRDF(northingCol, eastingCol, "latitude", uri, curie));
-					//} else {
-						obj.target.links.push(self.makeLatLongRDF(colObjects[i].name, uri, curie));
-					//}
+					obj.target.links.push(self.makeLatLongRDF(colObjects[i].name, uri, curie));
 					break;
 				case "northing":
 					/*
@@ -318,7 +285,7 @@ var geolocationWizard = {
 					uri = vocabs.spatialrelations.uri + colObjects[i].type;
 					curie = vocabs.spatialrelations.curie + ":" + colObjects[i].type;
 					obj.target.links.push(self.makeLatLongRDF(colObjects[i].name, uri, curie));
-					
+
 					uri = vocabs.geo.uri + "lat";
 					curie = vocabs.geo.curie + ":" + "lat";
 					obj.target.links.push(self.makeConvertedLatLongRDF(northingCol, eastingCol, "latitude", uri, curie));
@@ -331,7 +298,7 @@ var geolocationWizard = {
 					uri = vocabs.spatialrelations.uri + colObjects[i].type;
 					curie = vocabs.spatialrelations.curie + ":" + colObjects[i].type;
 					obj.target.links.push(self.makeLatLongRDF(colObjects[i].name, uri, curie));
-					
+
 					uri = vocabs.geo.uri + "long";
 					curie = vocabs.geo.curie + ":" + "long";
 					obj.target.links.push(self.makeConvertedLatLongRDF(northingCol, eastingCol, "longitude", uri, curie));
@@ -397,14 +364,14 @@ var geolocationWizard = {
 
 			return o;
 		},
-		
+
 		/*
 		 * makeConvertedLatLongRDF
 		 * 
 		 * Creates a latitude or longitude RDF triple using a pair of northing & easting values.
 		 */
 		makeConvertedLatLongRDF:function(northingCol, eastingCol, latOrLong, uri, curie){
-						
+
 			var o = {
 					"uri" : uri,
 					"curie" : curie,
@@ -418,35 +385,9 @@ var geolocationWizard = {
 			};
 
 			return o;
-			
+
 		},
-/*
-		makeLatLongRDFCombined: function(type, colName, uri, curie) {
 
-			var segmentSplit = 0;
-
-			if(type == "lat"){
-				segmentSplit = 0;
-			} else {
-				segmentSplit = 1;
-			}
-
-			var o = {
-					"uri" : uri,
-					"curie" : curie,
-					"target" : {
-						"nodeType" : "cell-as-literal",
-						"valueType" : "http://www.w3.org/2001/XMLSchema#float",
-						"expression" : "value.split(\",\")["+segmentSplit+"]",
-						"columnName" : colName,
-						"isRowNumberCell" : false
-					}
-			};
-
-			return o;
-		},
-*/
-		
 		/*
 		 * onFail
 		 * 

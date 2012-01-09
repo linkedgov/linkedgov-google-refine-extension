@@ -72,7 +72,7 @@ TypingPanel.prototype._render = function () {
 	 */
 	$('a.collapse-expand').live("click",function() {
 		if(!$(this).data("hasBeenClicked")){
-			$(this).addClass("expand");
+			$(this).html("+");
 			$(this).attr("title","Expand wizards");
 			$("a.wizard-header").each(function(){
 				$(this).fadeOut(250,function(){
@@ -82,7 +82,7 @@ TypingPanel.prototype._render = function () {
 			});
 			$(this).data("hasBeenClicked",true);
 		} else {
-			$(this).removeClass("expand");
+			$(this).html("-");
 			$(this).attr("title","Collapse wizards");
 			$("a.wizard-header").each(function(){
 				$(this).fadeOut(250,function(){

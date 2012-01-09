@@ -438,29 +438,29 @@ body.lg a.wizard-header.collapsed span.wizardIcon {
     padding-right: 0;
 }
 body.lg div#refine-tabs-typing a.collapse-expand {
-    background: url("../images/wizard_layout.png") no-repeat scroll 0 0 #FFFFFF;
     border-radius: 3px 3px 3px 3px;
-    bottom: 3px;
-    color: #1111CC;
-    cursor: pointer;
-    font-family: Lucida Grande;
-    font-size: 13px;
-    height: 25px;
+    bottom: 6px;
+    color: #555555;
+    font-family:Lucida Console;
+    font-size: 17px;
+    font-weight: normal;
+    height: 18px;
+    line-height: 18px;
     padding: 0;
     position: absolute;
-    right: 0;
+    right: 5px;
     text-align: center;
     text-decoration: none;
-    width: 25px;
+    width: 18px;
     z-index: 99;
 }
-body.lg div#refine-tabs-typing a.collapse-expand.expand {
+/*body.lg div#refine-tabs-typing a.collapse-expand.expand {
     background: url("../images/wizard_layout2.png") no-repeat scroll 0 0 #FFFFFF;
 }
 body.lg div#refine-tabs-typing a.collapse-expand:hover {
     background-color: #E7E7E7;
     text-decoration: none;
-}
+}*/
 body.lg div.wizard-body span.wizardIcon {
     display: inline;
     float: right;

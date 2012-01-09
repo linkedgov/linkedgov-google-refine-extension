@@ -206,7 +206,7 @@ LinkedGov.saveMetadataToRDF = function(callback){
 
 			$.each(metadataObject,function(key,val){
 
-				log(key+" : "+val);
+				//log(key+" : "+val);
 
 				switch(key){
 				case "LinkedGov.name" :
@@ -274,26 +274,26 @@ LinkedGov.saveMetadataToRDF = function(callback){
 				case "LinkedGov.organisation" :				
 
 					var targetVar = {
-							lang : "en",
-							nodeType : "literal",
-							value : val
-					};
-					
+						lang : "en",
+						nodeType : "literal",
+						value : val
+				};
+
 					if(val.indexOf("http") > 0){
 						targetVar = {
-							nodeType:"resource",
-							value:val,
-							rdfTypes:[],
-							links:[]
+								nodeType:"resource",
+								value:val,
+								rdfTypes:[],
+								links:[]
 						};
 					}
-					
+
 					rootNode.links.push({
 						curie : "dct:publisher",
 						target : targetVar,
 						uri : "http://purl.org/dc/terms/publisher"
 					});
-					
+
 					break;
 				case "LinkedGov.datePublished" :
 					rootNode.links.push({
@@ -369,7 +369,10 @@ LinkedGov.saveMetadataToRDF = function(callback){
 				schema : JSON.stringify(schema)
 			}, {}, {
 				onDone : function() {
-					Refine.update({everythingChanged : true}, callback);
+					//Refine.update({everythingChanged : true}, callback);
+					if(callback){
+						callback();
+					}
 				}
 			});
 
@@ -377,9 +380,11 @@ LinkedGov.saveMetadataToRDF = function(callback){
 
 	} else {
 		log("Metadata has already been saved.");
-
-		callback();
+		if(callback){
+			callback();
+		}
 	}
+
 
 };
 
@@ -591,19 +596,19 @@ var renameColumnInRDF = {
 			var self = this;
 
 			if (val instanceof Object) {
-				
+
 				if (typeof val.columnName != 'undefined') {			
 					if (val.columnName == self.vars.oldName) {
 						val.columnName = self.vars.newName;
 					}
 				}
-				
+
 				if(typeof val.expression != 'undefined'){
 					if(val.expression.indexOf(self.vars.oldName) > 0){
 						val.expression = val.expression.replace(self.vars.oldName, self.vars.newName);
 					}
 				}
-				
+
 				$.each(val, function(key, value) {
 					self.recursiveFunction(key, value)
 				});
@@ -655,38 +660,42 @@ var finaliseRDFSchema = {
 			/*
 			 * Chain together a series of save operations using callbacks.
 			 * 
-			 * saveRowClass - save the owl:Class description for the row.
+			 * Save the project's metadata
 			 */
-			self.saveRowClass(function() {
+			LinkedGov.saveMetadataToRDF(function(){
 				/*
-				 * saveColumnsAsProperties - save the owl:ObjectProperty descriptions for the columns
+				 * saveRowClass - save the owl:Class description for the row.
 				 */
-				self.saveColumnsAsProperties(function() {
+				self.saveRowClass(function() {
 					/*
-					 * Check for/create a root node for column RDF in the schema.
+					 * saveColumnsAsProperties - save the owl:ObjectProperty descriptions for the columns
 					 */
-					LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
-
-						var camelizedRowLabel = LinkedGov.camelize(self.vars.rowLabel);
-
+					self.saveColumnsAsProperties(function() {
 						/*
-						 * Camelize the row label that's been entered and type the root node (each row) 
-						 * as the label. E.g. "Each row is a lg:utilityReading".
+						 * Check for/create a root node for column RDF in the schema.
 						 */
-						rootNode.rdfTypes = [ {
-							uri : self.vars.vocabs.lg.uri + camelizedRowLabel,
-							curie : self.vars.vocabs.lg.curie + ":"
-							+ camelizedRowLabel
-						} ];
+						LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
 
-						/*
-						 * Save the RDF for the columns that were not involved in any wizard
-						 * operations.
-						 */
-						self.saveGenericColumnRDF(rootNode, foundRootNode);
+							var camelizedRowLabel = LinkedGov.camelize(self.vars.rowLabel);
 
-					});
-				})
+							/*
+							 * Camelize the row label that's been entered and type the root node (each row) 
+							 * as the label. E.g. "Each row is a lg:utilityReading".
+							 */
+							rootNode.rdfTypes = [ {
+								uri : self.vars.vocabs.lg.uri + camelizedRowLabel,
+								curie : self.vars.vocabs.lg.curie + ":" + camelizedRowLabel
+							} ];
+
+							/*
+							 * Save the RDF for the columns that were not involved in any wizard
+							 * operations.
+							 */
+							self.saveGenericColumnRDF(rootNode, foundRootNode);
+
+						});
+					})
+				});
 			});
 
 		},
@@ -799,9 +808,9 @@ var finaliseRDFSchema = {
 				 * Add the owl:ObjectProperty statements for the columns which each exist
 				 * as their own root nodes.
 				 */
-				
+
 				log("LinkedGov.camelize(cols[i].label): "+LinkedGov.camelize(cols[i].label));
-				
+
 				var rootNode = {
 						nodeType : "resource",
 						rdfTypes : [ {
@@ -880,7 +889,7 @@ var finaliseRDFSchema = {
 					/*
 					 * Default description is: <Row> <lg:columnName> "cell value"
 					 */
-					
+
 					var o = {
 							"uri" : self.vars.vocabs.lg.uri + camelizedColumnName,
 							"curie" : self.vars.vocabs.lg.curie + ":" + camelizedColumnName,
@@ -917,7 +926,7 @@ var finaliseRDFSchema = {
 								log("Finding type of generic column...");
 								log("columns[i].name: "+columns[i].name);
 								log("type: "+type);
-								
+
 								if(type == "string"){
 									o.target.lang = "en";
 								} else if(type == "int"){
@@ -991,7 +1000,7 @@ var applyTypeIcons = {
 			var lgUpdate = Refine.update;
 
 			Refine.update = function(options, callback) {
-				
+
 				//log("callback");
 				//log(callback);
 				var theCallback = callback;
@@ -999,14 +1008,15 @@ var applyTypeIcons = {
 				var lgCallback = function() {
 					LinkedGov.keepHiddenColumnsHidden();
 					LinkedGov.applyTypeIcons.apply();
+
 					if(theCallback){
 						theCallback();
 					}
 				}
-				
+
 				lgUpdate(theOptions, lgCallback);
 			}
-			
+
 
 		},
 
