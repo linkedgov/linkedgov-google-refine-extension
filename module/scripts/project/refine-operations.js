@@ -583,16 +583,75 @@ LinkedGov.keepHiddenColumnsHidden = function(){
  * Runs a test to see if there are any unexpected values left in a column after a 
  * wizard has completed.
  * 
+ * Takes an array of objects (colObjects), making use of the "unexpectedValueParams" 
+ * object inside which contains an expression, an expected value and an expected type 
+ * to test the column with.
+ * 
  */
-LinkedGov.checkForUnexpectedValues = function(expression,colName,expectedType,exampleValue,wizardBody){
+LinkedGov.checkForUnexpectedValues = function(colObjects, wizardBody){
 
-	var result = LinkedGov.verifyValueTypes(colName, expression, expectedType, exampleValue);
+	log("checkForUnexpectedValues");
 
-	if(result.type != "success"){
-		ui.typingPanel.displayUnexpectedValuesPanel(result,wizardBody);
-	} else {
-		LinkedGov.restoreWizardBody();
-		LinkedGov.removeFacet(result.colName);
+	log(colObjects);
+
+	/*
+	 * Run the tests on the columns using the colObjects, storing their result back inside
+	 * their "unexpectedValueParams" object.
+	 */
+	for(var i=0; i<colObjects.length; i++){
+
+		/*
+		 * Check the column object has the unexepctedValueParams object which 
+		 * contains the variables to test on.
+		 */
+		if(typeof colObjects[i].unexpectedValueParams != 'undefined'){
+			
+			var unexpectedValuesPresent = false;
+
+			log(colObjects[i]);
+			log("Running tests on column: "+colObjects[i].unexpectedValueParams.colName);
+
+			colObjects[i].unexpectedValueParams.result = LinkedGov.verifyValueTypes(
+					colObjects[i].unexpectedValueParams.colName, 
+					colObjects[i].unexpectedValueParams.expression, 
+					colObjects[i].unexpectedValueParams.expectedType, 
+					colObjects[i].unexpectedValueParams.exampleValue
+			);
+
+			log("Result: ");
+			log(colObjects[i].unexpectedValueParams.result);
+
+			if(colObjects[i].unexpectedValueParams.result.type != "success"){
+				unexpectedValuesPresent = true;
+			}
+
+			/*
+			 * Once we've finished looping through the colObjects
+			 */
+			if(i == colObjects.length-1){
+				/*
+				 * Decide to show the unexpected values UI or not.
+				 * 
+				 * If any of the column tested on have unexpected values, then this 
+				 * panel should be shown.
+				 */
+				if(unexpectedValuesPresent){
+					log("Unexpected values present - displaying the UI panel");
+					ui.typingPanel.displayUnexpectedValuesPanel(colObjects, 0, wizardBody);
+				} else {
+					log("No unexpected values present - not displaying the UI panel");
+
+					LinkedGov.restoreWizardBody();
+
+					/*
+					 * Remove any facets left over from the tests
+					 */
+					for(var j=0; j<colObjects.length; j++){
+						LinkedGov.removeFacet(colObjects[j].name);
+					}
+				}
+			}
+		}
 	}
 
 };

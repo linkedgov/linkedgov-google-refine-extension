@@ -133,7 +133,7 @@ var geolocationWizard = {
 					repeatCount : ""
 				},
 				success : function() {
-					
+
 					if(index==self.vars.colObjects.length-1){
 						Refine.update({cellsChanged : true},callback);
 					} else {
@@ -257,9 +257,6 @@ var geolocationWizard = {
 				 */
 
 				var uri, curie = "";
-
-				log("SWITCHING");
-				log(colObjects[i].type);
 
 				switch (colObjects[i].type) {
 				case "long":
@@ -415,22 +412,54 @@ var geolocationWizard = {
 				// Add typed class to column headers
 				LinkedGov.showWizardProgress(false);
 
-				var expression = self.vars.unexpectedValueRegex;
-				var colName = self.vars.colObjects[0].name;
-				var expectedType = "float";
-				var exampleValue = "51.0032";
-				var wizardBody = self.vars.elmts.geolocationBody;
+				var colObjects = self.prepareColumnObjectsForValueTest();
 
-				if(self.vars.colObjects[0].type == "northing" || self.vars.colObjects[0].type == "easting"){
-					expectedType = "int";
-					exampleValue = "499082";				
-				}
-
-				LinkedGov.checkForUnexpectedValues(expression, colName, expectedType, exampleValue, wizardBody);
+				LinkedGov.checkForUnexpectedValues(colObjects, self.vars.elmts.geolocationBody);
 
 				self.vars.coordinateName = "";
 
 			});
+		},
+
+		/*
+		 * prepareColumnObjectsForValueTest
+		 * 
+		 * Stores the variables needed to run the 'unexpected values' test on the columns
+		 * inside each of the column objects.
+		 * 
+		 * Variables:
+		 * 
+		 * - unexpectedValueRegex
+		 * - expectedType
+		 * - exampleValue
+		 */
+		prepareColumnObjectsForValueTest:function(){
+
+			var self = this;
+
+			var colObjects = self.vars.colObjects;
+
+			for(var i=0;i<colObjects.length;i++){
+
+				colObjects[i].unexpectedValueParams = {
+						expression:self.vars.unexpectedValueRegex,
+						colName:colObjects[i].name
+				};
+
+				if(colObjects[i].type == "lat"){
+					colObjects[i].unexpectedValueParams.expectedType = "float";
+					colObjects[i].unexpectedValueParams.exampleValue = "51.0032";					
+				} else if(colObjects[i].type == "long"){
+					colObjects[i].unexpectedValueParams.expectedType = "float";
+					colObjects[i].unexpectedValueParams.exampleValue = "-0.2862";					
+				} else if(colObjects[i].type == "northing" || colObjects[i].type == "easting"){
+					colObjects[i].unexpectedValueParams.expectedType = "int";
+					colObjects[i].unexpectedValueParams.exampleValue = "499082";
+				}
+			}
+
+			return colObjects;
+
 		},
 
 		/*
@@ -449,13 +478,15 @@ var geolocationWizard = {
 			 */
 			LinkedGov.showWizardProgress(true);
 
-			if(self.vars.colObjects.length == 2 && self.vars.colObjects[0].type == "northing" || self.vars.colObjects[0].type == "easting"){
-				self.convertNorthingEastingToLatLong(function(){
-					self.onComplete();
+			/*
+			 * Convert the lat/long columns to numbers before operating on them
+			 */
+			self.convertColumnsToNumber(0,function(){
+				LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
+					self.saveRDF(rootNode, foundRootNode);
 				});
-			} else {
-				self.onComplete();
-			}
+			});
+
 
 		}
 };

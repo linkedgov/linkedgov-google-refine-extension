@@ -72,7 +72,7 @@ LinkedGov.checkPrefixes = function(vocabs){
  */
 LinkedGov.checkSchema = function(vocabs, callback) {
 
-	log("Checking Schema");
+	//log("Checking Schema");
 
 	var self = this;
 	var schema = LinkedGov.getRDFSchema();
@@ -97,13 +97,13 @@ LinkedGov.checkSchema = function(vocabs, callback) {
 		for ( var i = 0; i < schema.rootNodes.length; i++) {
 
 			if (typeof schema.rootNodes[i].isRowNumberCell != 'undefined' && schema.rootNodes[i].isRowNumberCell === true) {
-				log("found the root node");
+				//log("found the root node");
 				if(callback){
 					callback(schema.rootNodes[i], false);
 				}
 				i = schema.rootNodes.length;
 			} else if (i == schema.rootNodes.length - 1) {
-				log("created a new root node");
+				//log("created a new root node");
 				rootNode = {
 						"nodeType" : "cell-as-resource",
 						"expression" : "value",
@@ -119,7 +119,7 @@ LinkedGov.checkSchema = function(vocabs, callback) {
 		}
 
 	} else {
-		log("created a new root node 2");
+		//log("created a new root node 2");
 		rootNode = {
 				"nodeType" : "cell-as-resource",
 				"expression" : "value",

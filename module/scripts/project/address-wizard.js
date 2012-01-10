@@ -60,15 +60,14 @@ var addressWizard = {
 
 			var self = this;
 
-			log(self.vars.postCodeRegex);
-			log(self.vars.unexpectedValueRegex);
-
 			self.vars.elmts = elmts;
+
 			try{
 				self.vars.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
 			}catch(e){
 				self.vars.historyRestoreID = 0;
 			}			self.vars.hiddenColumns = [];
+
 			self.vars.addressName = "";
 			self.vars.postcodePresent = false;
 			self.vars.unexpectedValueRegex = 'grel:if(isBlank(value),"postcode",if(isError(if(partition(value,'+self.vars.postCodeRegex+')[1].length() > 0,"postcode","error")),"error",if(partition(value,'+self.vars.postCodeRegex+')[1].length() > 0,"postcode","error")))';
@@ -121,7 +120,7 @@ var addressWizard = {
 							LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
 								self.saveRDF(rootNode, foundRootNode);
 							});
-							
+
 						})
 					});
 				});
@@ -165,7 +164,7 @@ var addressWizard = {
 							part : el.find("select").val(),
 							containsPostcode : el.find("input.postcode[type='checkbox']").attr("checked")
 						});
-						
+
 					}
 				});
 
@@ -417,7 +416,7 @@ var addressWizard = {
 		 */
 		createAddressColumn:function(callback){
 
-			log("createAddressColumn");
+			//log("createAddressColumn");
 
 			var self = this;
 			var colObjects = self.vars.colObjects;
@@ -446,10 +445,6 @@ var addressWizard = {
 
 			expression = expression.substring(trimStart, expression.length - 6);
 
-
-
-			log("expression = "+expression);
-
 			Refine.postCoreProcess(
 					"add-column",
 					{
@@ -471,6 +466,10 @@ var addressWizard = {
 								self.vars.hiddenColumns.push(colObjects[i].name);
 							}
 
+							self.vars.colObjects.push({
+								name:self.vars.addressName
+							});
+
 							callback();
 
 						}
@@ -488,7 +487,7 @@ var addressWizard = {
 		 */
 		saveRDF : function(rootNode, newRootNode) {
 
-			log("saveRDF");
+			//log("saveRDF");
 
 			var self = this;
 			var elmts = this.vars.elmts;
@@ -645,23 +644,60 @@ var addressWizard = {
 				LinkedGov.showWizardProgress(false);
 
 				if(self.vars.postcodePresent){
-					var expression = self.vars.unexpectedValueRegex;
-					var colName = self.vars.addressName;
-					var expectedType = "postcode";
-					var exampleValue = "NW52QT";
-					var wizardBody = self.vars.elmts.addressBody;
-
-					if(self.vars.colObjects.length > 1 || self.vars.colObjects.length == 1 && self.vars.colObjects[0].containsPostcode){
-						exampleValue = "27 Boscastle Road, Kentish Town, NW52QT";
-					}
-					if(self.vars.colObjects.length == 1 && self.vars.colObjects[0].part == "postcode"){
-						exampleValue = "NW52QT";
-					}	
-
-					LinkedGov.checkForUnexpectedValues(expression, colName, expectedType, exampleValue, wizardBody);
+					var colObjects = self.prepareColumnObjectsForValueTest();
+					LinkedGov.checkForUnexpectedValues(colObjects, self.vars.elmts.addressBody);
 				}
 
 			});
+		},
+
+		/*
+		 * prepareColumnObjectsForValueTest
+		 * 
+		 * Stores the variables needed to run the 'unexpected values' test on the columns
+		 * inside each of the column objects and returns the colObjects array.
+		 * 
+		 * Variables:
+		 * 
+		 * - unexpectedValueRegex
+		 * - expectedType
+		 * - exampleValue
+		 */
+		prepareColumnObjectsForValueTest:function(){
+
+			var self = this;
+
+			var colObjects = self.vars.colObjects;
+
+			for(var i=0;i<colObjects.length;i++){
+
+				/*
+				 * Test unexpeceted values on the new "address" column that has
+				 * been created.
+				 */
+				if(colObjects[i].name == self.vars.addressName){
+					
+					log("Testing unexpected values on column: "+colObjects[i].name);
+					
+					colObjects[i].unexpectedValueParams = {
+							expression : self.vars.unexpectedValueRegex,
+							colName : colObjects[i].name,
+							expectedType : "postcode",
+							exampleValue : "NW51PL"
+					};
+
+					if(self.vars.colObjects.length > 1 || (self.vars.colObjects.length == 1 && self.vars.colObjects[0].containsPostcode)){
+						colObjects[i].unexpectedValueParams.exampleValue = "27 Boscastle Road, Kentish Town, NW52QT";
+					}
+					
+					if(self.vars.colObjects.length == 1 && self.vars.colObjects[0].part == "postcode"){
+						colObjects[i].unexpectedValueParams.exampleValue = "NW52QT";
+					}	
+				}
+			}
+
+			return colObjects;
+
 		},
 
 		/*
@@ -679,9 +715,7 @@ var addressWizard = {
 
 			LinkedGov.showWizardProgress(true);
 
-			self.fixPostcodes(function(){
-				self.onComplete();		
-			});
+			self.onComplete();
 
 		},
 
@@ -718,7 +752,7 @@ var addressWizard = {
 				}
 			});
 
-		},
+		}
 
 
 };

@@ -542,7 +542,7 @@ body.lg div.wizard-body div.wizardComplete div.warning p.title {
     vertical-align: middle;
     text-transform: capitalize;
     */
-    background: none repeat scroll 0 0 #FFD2D2;
+    background: none repeat scroll 0 0 #FFDEDE;
     border: 1px solid #E3C2C2;
     border-radius:5px;
     font-size: 14px;
@@ -560,21 +560,21 @@ body.lg div.wizard-body div.wizardComplete div.warning p.message {
     margin-top: 10px;
 }
 body.lg div.wizard-body div.wizardComplete div.warning span.colName {
-    background: none repeat scroll 0 0 #FFE4E4;
+    background: none repeat scroll 0 0 #FFDEDE;
     border-radius: 3px 3px 3px 3px;
     font-weight: bold;
     padding: 1px 3px;
     display:inline-block;
 }
 body.lg div.wizard-body div.wizardComplete div.warning span.valueType {
-    background: none repeat scroll 0 0 #FFE4E4;
+    background: none repeat scroll 0 0 #FFDEDE;
     border-radius: 3px 3px 3px 3px;
     font-weight: bold;
     padding: 1px 3px;
     display:inline-block;
 }
 body.lg div.wizard-body div.wizardComplete div.warning span.count {
-    background: none repeat scroll 0 0 #FFE4E4;
+    background: none repeat scroll 0 0 #FFDEDE;
     border-radius: 3px 3px 3px 3px;
     font-weight: bold;
     padding: 1px 6px;
@@ -587,7 +587,7 @@ body.lg div.wizard-body div.wizardComplete div.warning p.details {
     text-align: center;
 }
 body.lg div.wizard-body div.wizardComplete div.warning ul.unexpectedValueList {
-    background: none repeat scroll 0 0 #FFD2D2;
+    background: none repeat scroll 0 0 #FFDEDE;
     border: 1px solid #E3C2C2;
     border-radius: 5px 5px 5px 5px;
     list-style-type: none;
@@ -1100,7 +1100,7 @@ body.lg div.wizard-body div.measurementSearch {
     background-color: #FFFFC9;
     border: 1px solid #E3E3E3;
     border-radius: 5px 5px 5px 5px;
-    padding: 5px;
+    padding: 10px;
 }
 body.lg div.wizard-body div.measurementSearch label {
     display: block;

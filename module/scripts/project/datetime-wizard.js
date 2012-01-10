@@ -601,13 +601,13 @@ var dateTimeWizard = {
 							self.vars.expectedValue = "fragment";
 						}
 
-						if(typeof colObjects[i].durationValue != 'undefined') {
-							colObjects[i].rdf = self.makeIntervalFragment(colObjects[i]);
-						} else {
-							colObjects[i].rdf = self.makeInstantFragment(colObjects[i]);
-						}	
+					if(typeof colObjects[i].durationValue != 'undefined') {
+						colObjects[i].rdf = self.makeIntervalFragment(colObjects[i]);
+					} else {
+						colObjects[i].rdf = self.makeInstantFragment(colObjects[i]);
+					}	
 
-						break;
+					break;
 
 					} // end switch
 
@@ -1195,8 +1195,37 @@ var dateTimeWizard = {
 				LinkedGov.showWizardProgress(false);
 
 				if(self.vars.expectedValue == "date" || self.vars.expectedValue == "time" || self.vars.expectedValue == "date-time"){
+					var colObjects = self.prepareColumnObjectsForValueTest();
+					LinkedGov.checkForUnexpectedValues(colObjects, self.vars.elmts.dateTimeBody;
+				}
+
+			});
+
+		},
+
+		/*
+		 * prepareColumnObjectsForValueTest
+		 * 
+		 * Stores the variables needed to run the 'unexpected values' test on the columns
+		 * inside each of the column objects.
+		 * 
+		 * Variables:
+		 * 
+		 * - unexpectedValueRegex
+		 * - expectedType
+		 * - exampleValue
+		 */
+		prepareColumnObjectsForValueTest:function(){
+
+			var self = this;
+
+			var colObjects = self.vars.colObjects;
+
+			for(var i=0;i<colObjects.length;i++){
+
+				if(colObjects[i].name == self.vars.resultColumn){
 					
-					var expression = self.vars.unexpectedValueRegex;
+					/*
 					var colName = self.vars.resultColumn;
 					var expectedType = self.vars.expectedValue;
 					var exampleValue = (self.vars.expectedValue == "date" ? "29/04/2009" : "13:30:00");
@@ -1205,6 +1234,7 @@ var dateTimeWizard = {
 					if(self.vars.expectedValue == "date-time"){
 						exampleValue = "29/04/2009-13:30:00";
 					}
+					*/
 					
 					/*
 					else if(self.vars.expectedValue == "year"){
@@ -1214,13 +1244,22 @@ var dateTimeWizard = {
 					} else if(self.vars.expectedValue == "day"){
 						exampleValue = "Mon, Monday, 01, 1";
 					}
-					*/
+					 */
 
-					LinkedGov.checkForUnexpectedValues(expression, colName, expectedType, exampleValue, wizardBody);
+					colObjects[i].unexpectedValueParams = {
+							expression:self.vars.unexpectedValueRegex,
+							expectedValue:self.vars.expectedValue,
+							exampleValue:(self.vars.expectedValue == "date" ? "29/04/2009" : "13:30:00"),
+							colName:colObjects[i].name
+					};
 
+					if(self.vars.expectedValue == "date-time"){
+						colObjects[i].unexpectedValueParams.exampleValue = "29/04/2009-13:30:00";
+					}
 				}
+			}
 
-			});
+			return colObjects;
 
 		},
 
