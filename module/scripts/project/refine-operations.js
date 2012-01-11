@@ -280,6 +280,42 @@ LinkedGov.removeColumn = function(colName, callback) {
 };
 
 /*
+ * parseValueTypesInColumn
+ * 
+ * Types a column within Refine.
+ */
+LinkedGov.parseValueTypesInColumn = function(type,columnName){
+
+
+	var expression = 'value';
+
+	if(type == "int" || type == "float"){
+		expression = 'value.replace(",","").toNumber()';
+	} else if(type == "date"){
+		expression = 'value.toDate()';
+	}
+
+	LinkedGov.silentProcessCall({
+		type : "POST",
+		url : "/command/" + "core" + "/" + "text-transform",
+		data : {
+			columnName : columnName,
+			expression : expression,
+			onError : 'keep-original',
+			repeat : false,
+			repeatCount : ""
+		},
+		success : function() {
+			Refine.update({cellsChanged : true});
+		},
+		error : function() {
+			self.onFail("A problem was encountered when fixing postcodes in the column: \""+ self.vars.addressName + "\".");
+		}
+	});
+
+};
+
+/*
  * Split a column
  */
 LinkedGov.splitColumn = function(colName, separator, callback) {
@@ -605,7 +641,7 @@ LinkedGov.checkForUnexpectedValues = function(colObjects, wizardBody){
 		 * contains the variables to test on.
 		 */
 		if(typeof colObjects[i].unexpectedValueParams != 'undefined'){
-			
+
 			var unexpectedValuesPresent = false;
 
 			log(colObjects[i]);

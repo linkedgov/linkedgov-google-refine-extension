@@ -1194,9 +1194,13 @@ var dateTimeWizard = {
 				LinkedGov.showUndoButton(self.vars.elmts.dateTimeBody);
 				LinkedGov.showWizardProgress(false);
 
+				/*
+				 * We can check a column contains either a date, a time or a date-time 
+				 * if the user has specified they do
+				 */
 				if(self.vars.expectedValue == "date" || self.vars.expectedValue == "time" || self.vars.expectedValue == "date-time"){
 					var colObjects = self.prepareColumnObjectsForValueTest();
-					LinkedGov.checkForUnexpectedValues(colObjects, self.vars.elmts.dateTimeBody;
+					LinkedGov.checkForUnexpectedValues(colObjects, self.vars.elmts.dateTimeBody);
 				}
 
 			});
@@ -1225,27 +1229,6 @@ var dateTimeWizard = {
 
 				if(colObjects[i].name == self.vars.resultColumn){
 					
-					/*
-					var colName = self.vars.resultColumn;
-					var expectedType = self.vars.expectedValue;
-					var exampleValue = (self.vars.expectedValue == "date" ? "29/04/2009" : "13:30:00");
-					var wizardBody = self.vars.elmts.dateTimeBody;
-
-					if(self.vars.expectedValue == "date-time"){
-						exampleValue = "29/04/2009-13:30:00";
-					}
-					*/
-					
-					/*
-					else if(self.vars.expectedValue == "year"){
-						exampleValue = "1972";
-					} else if(self.vars.expectedValue == "month"){
-						exampleValue = "Feb, Feburary, 02, 2";
-					} else if(self.vars.expectedValue == "day"){
-						exampleValue = "Mon, Monday, 01, 1";
-					}
-					 */
-
 					colObjects[i].unexpectedValueParams = {
 							expression:self.vars.unexpectedValueRegex,
 							expectedValue:self.vars.expectedValue,

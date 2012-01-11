@@ -869,7 +869,8 @@ var finaliseRDFSchema = {
 		saveGenericColumnRDF : function(rootNode, newRootNode) {
 
 			var self = this;
-
+			LinkedGov.showWizardProgress(true);
+			
 			/*
 			 * Loop through the column header elements of the data table and check for any 
 			 * headers that haven't been given the RDF "typed" class (that indicates RDF exists for them).
@@ -915,26 +916,30 @@ var finaliseRDFSchema = {
 
 							if(theProject.rowModel.rows[0].cells[columns[i].cellIndex] != null){
 
-								var expression = "grel:if(type(value) == 'number',(if(value % 1 == 0,'int','float')),if(((type(value.match(/\\b\\d{4}[\\-]\\d{1,2}[\\-]\\d{1,2}\\b/))=='array')),'date',if(isBlank(value),null,'string')))";
+								var expression = "grel:if(type(value) == 'number',(if(value % 1 == 0,'int','float')),if(((type(value.match(/\\b\\d{4}[\\-]\\d{1,2}[\\-]\\d{1,2}\\b/))=='array')),'date',if(isBlank(value),null,if(type(value.replace(',','').toNumber())=='number',(if(value % 1 == 0,'int','float')),'string'))))";
 
+								
 								/*
 								 * Recursive function to compute a facet for each column to find 
 								 * the most frequently occuring value type (int, float, string...)
 								 */
 								var type = LinkedGov.findHighestFacetValue(columns[i].name,expression);
 
-								log("Finding type of generic column...");
-								log("columns[i].name: "+columns[i].name);
-								log("type: "+type);
+								//log("Finding type of generic column...");
+								//log("columns[i].name: "+columns[i].name);
+								//log("type: "+type);
 
 								if(type == "string"){
 									o.target.lang = "en";
 								} else if(type == "int"){
 									o.target.valueType = "http://www.w3.org/2001/XMLSchema#int";
+									//LinkedGov.parseValueTypesInColumn("int",columns[i].name);
 								} else if(type == "float"){
 									o.target.valueType = "http://www.w3.org/2001/XMLSchema#float";
+									//LinkedGov.parseValueTypesInColumn("float",columns[i].name);
 								} else if(type == "date"){
 									o.target.valueType = "http://www.w3.org/2001/XMLSchema#date";
+									//LinkedGov.parseValueTypesInColumn("date",columns[i].name);
 								}
 
 							}
@@ -944,6 +949,7 @@ var finaliseRDFSchema = {
 
 					}
 
+					
 					rootNode.links.push(o);
 
 				}
@@ -971,6 +977,8 @@ var finaliseRDFSchema = {
 				onDone : function() {
 					Refine.update({
 						everythingChanged : true
+					},function(){
+						LinkedGov.showWizardProgress(false);
 					});
 				}
 			});

@@ -643,6 +643,10 @@ var addressWizard = {
 				LinkedGov.showUndoButton(self.vars.elmts.addressBody);
 				LinkedGov.showWizardProgress(false);
 
+				/*
+				 * We can check that a column contains postcodes if the user 
+				 * has specified it does
+				 */
 				if(self.vars.postcodePresent){
 					var colObjects = self.prepareColumnObjectsForValueTest();
 					LinkedGov.checkForUnexpectedValues(colObjects, self.vars.elmts.addressBody);
@@ -726,14 +730,10 @@ var addressWizard = {
 		 * this function simply performs a text-transform on a column containing postcodes,
 		 * as the RDF fragments have already been set up.
 		 */
-		fixPostcodes: function(callback){
+		/*fixPostcodes: function(callback){
 
 			var self = this;
 
-			/*
-			 * The GREL function toDate() takes a boolean for the 'month before day'
-			 * value, which changes the order of the month-day in the date.
-			 */
 			LinkedGov.silentProcessCall({
 				type : "POST",
 				url : "/command/" + "core" + "/" + "text-transform",
@@ -752,7 +752,7 @@ var addressWizard = {
 				}
 			});
 
-		}
+		}*/
 
 
 };

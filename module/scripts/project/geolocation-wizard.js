@@ -412,8 +412,11 @@ var geolocationWizard = {
 				// Add typed class to column headers
 				LinkedGov.showWizardProgress(false);
 
+				/*
+				 * We can check the columns contain floats or ints depending on 
+				 * what the user has specified.
+				 */
 				var colObjects = self.prepareColumnObjectsForValueTest();
-
 				LinkedGov.checkForUnexpectedValues(colObjects, self.vars.elmts.geolocationBody);
 
 				self.vars.coordinateName = "";
