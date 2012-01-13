@@ -284,7 +284,7 @@ LinkedGov.removeColumn = function(colName, callback) {
  * 
  * Types a column within Refine.
  */
-LinkedGov.parseValueTypesInColumn = function(type,columnName){
+LinkedGov.parseValueTypesInColumn = function(type, columnName){
 
 
 	var expression = 'value';

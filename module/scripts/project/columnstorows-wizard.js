@@ -51,7 +51,7 @@ var columnsToRowsWizard = {
 		initialise : function(elmts) {
 
 			var self = this;
-			self.vars.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
+			//self.vars.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
 			self.vars.elmts = elmts;
 
 			if ($(elmts.columnsToRowsColumns).children("li").length > 0) {

@@ -155,7 +155,7 @@ var measurementsWizard = {
 					}
 				}
 				
-				var expression = "grel:if(type(value) == 'number',(if(value % 1 == 0,'int','float')),if(((type(value.match(/\\b\\d{4}[\\-]\\d{1,2}[\\-]\\d{1,2}\\b/))=='array')),'date',if(isBlank(value),null,'string')))";
+				var expression = "grel:if(type(value) == 'number',(if(value % 1 == 0,'int','float')),if(((type(value.match(/\\b\\d{4}[\\-]\\d{1,2}[\\-]\\d{1,2}\\b/))=='array')),'date',if(isBlank(value),null,if(type(value.replace(',','').toNumber())=='number',(if(value % 1 == 0,'int','float')),'string'))))";
 
 				/*
 				 * Recursive function to compute a facet for each column to find 
@@ -163,9 +163,11 @@ var measurementsWizard = {
 				 */
 				var type = LinkedGov.findHighestFacetValue(colObjects[i].name,expression);
 
-				log("Finding type of measurement column...");
-				log("colObjects[i].name: "+colObjects[i].name);
-				log("type: "+type);
+				//log("Finding type of measurement column...");
+				//log("colObjects[i].name: "+colObjects[i].name);
+				//log("type: "+type);
+				
+				LinkedGov.parseValueTypesInColumn(type, colObjects[i].name);
 				
 				var o =  {
 		            	  "uri" : uri,

@@ -745,7 +745,7 @@ var finaliseRDFSchema = {
 						curie : "owl:Class",
 						uri : self.vars.vocabs.owl.uri+"Class"
 					} ],
-					value : "http://example.linkedgov.org/example-dataset/terms/"
+					value : "http://example.linkedgov.org/example-dataset/terms/class/"
 						+ camelizedRowLabel
 			};
 
@@ -817,7 +817,7 @@ var finaliseRDFSchema = {
 							curie : self.vars.vocabs.owl.curie+":ObjectProperty",
 							uri : self.vars.vocabs.owl.uri+"ObjectProperty"
 						} ],
-						value : "http://example.linkedgov.org/example-dataset/terms/" + LinkedGov.camelize(cols[i].label),
+						value : "http://example.linkedgov.org/example-dataset/terms/property/" + LinkedGov.camelize(cols[i].label),
 						links : [ {
 							curie : self.vars.vocabs.rdfs.curie+":label",
 							target : {
