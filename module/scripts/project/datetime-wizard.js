@@ -45,11 +45,13 @@ var dateTimeWizard = {
 		initialise : function(elmts) {
 
 			var self = this;			
+			
 			try{
 				self.vars.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
 			}catch(e){
 				self.vars.historyRestoreID = 0;
 			}
+			
 			self.vars.elmts = elmts;
 			self.vars.columns = [];
 			self.vars.colFragments = [];
@@ -1200,6 +1202,8 @@ var dateTimeWizard = {
 				 */
 				if(self.vars.expectedValue == "date" || self.vars.expectedValue == "time" || self.vars.expectedValue == "date-time"){
 					var colObjects = self.prepareColumnObjectsForValueTest();
+					log('colObjects');
+					log(colObjects);
 					LinkedGov.checkForUnexpectedValues(colObjects, self.vars.elmts.dateTimeBody);
 				}
 
@@ -1227,7 +1231,7 @@ var dateTimeWizard = {
 
 			for(var i=0;i<colObjects.length;i++){
 
-				if(colObjects[i].name == self.vars.resultColumn){
+				//if(colObjects[i].name == self.vars.resultColumn){
 					
 					colObjects[i].unexpectedValueParams = {
 							expression:self.vars.unexpectedValueRegex,
@@ -1239,7 +1243,7 @@ var dateTimeWizard = {
 					if(self.vars.expectedValue == "date-time"){
 						colObjects[i].unexpectedValueParams.exampleValue = "29/04/2009-13:30:00";
 					}
-				}
+				//}
 			}
 
 			return colObjects;

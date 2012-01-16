@@ -1329,164 +1329,172 @@ TypingPanel.prototype.displayUnexpectedValuesPanel = function(colObjects, index,
 	 * unexpected values panel to the user depending on the 
 	 * results. 
 	 */
+
+	log('displayUnexpectedValuesPanel');
+	log(colObjects);
+	log(index);
+
 	//for(var i=0; i<colObjects.length; i++){
-	if(typeof colObjects[index].unexpectedValueParams != 'undefined' && !colObjects[index].unexpectedValueParams.result.success){
-
-		log("Building unexpected values panel...");
+	if(index < colObjects.length) {
 		
-		var result = colObjects[index].unexpectedValueParams.result;
+		if(typeof colObjects[index].unexpectedValueParams != 'undefined' && !colObjects[index].unexpectedValueParams.result.success){
 
-		var html = '<div class="warning"><p class="title">Unexpected values</p>';
+			log("Building unexpected values panel...");
 
-		/*
-		 * The maximum number of unexpected values we ask the user 
-		 * to attempt to correct.
-		 */
-		var correctionLimit = 15;
+			var result = colObjects[index].unexpectedValueParams.result;
 
-		var unexpectedValues = result.errorCount;
-		var percentage = Math.round(((unexpectedValues/theProject.rowModel.total)*100)*Math.pow(10,2))/Math.pow(10,2);
+			var html = '<div class="warning"><p class="title">Unexpected values</p>';
 
-		if(result.count == theProject.rowModel.total && !result.success){
-			html+= '<p class="message">None of the values in the <span class="colName">'+result.colName+'</span> column could be typed properly!</p>';
-			html+= '<p class="details">Are you sure you picked the right column?</p>';		
-		} else if((theProject.rowModel.total - result.errorCount) <= correctionLimit){
-			html+= '<p class="message"><span class="count">'+result.errorCount+'</span> unexpected value'+(unexpectedValues == 1 ? ' has ' : 's have ')+'been detected in the column <span class="colName">'+result.colName+'</span>.</p>';
-			html+= '<p class="details">Can you fix '+(unexpectedValues == 1 ? 'it' : 'them')+'?</p>';
-		} else {
-			html+= '<p class="message">Around '+percentage+'% of the values ('+unexpectedValues+') in the <span class="colName">'+result.colName+'</span> column have been deteceted as unexpected values.'
-			html+= '<p class="details">Are you sure you have selected the correct column?</p>';
-		}
+			/*
+			 * The maximum number of unexpected values we ask the user 
+			 * to attempt to correct.
+			 */
+			var correctionLimit = 15;
 
-		html+= '<p class="message exampleValue">Example value: <span>'+result.exampleValue+'</span></p>';
+			var unexpectedValues = result.errorCount;
+			var percentage = Math.round(((unexpectedValues/theProject.rowModel.total)*100)*Math.pow(10,2))/Math.pow(10,2);
 
-		html+= '<div class="buttons">';
-		html+= '<a title="Undo" class="button undo" bind="undoButton" href="javascript:{}">Undo</a>';
-		if(!(result.count == theProject.rowModel.total && !result.success)){
-			html+= '<a title="Let me see" class="button fix" bind="fixButton" href="javascript:{}">Let me see</a>';
-		}
-		html+= '<a title="Carry on" class="button carryon" bind="carryOnButton" href="javascript:{}">Carry on</a>';
-		html+= '</div>';
+			if(result.count == theProject.rowModel.total && !result.success){
+				html+= '<p class="message">None of the values in the <span class="colName">'+result.colName+'</span> column could be typed properly!</p>';
+				html+= '<p class="details">Are you sure you picked the right column?</p>';		
+			} else if((theProject.rowModel.total - result.errorCount) <= correctionLimit){
+				html+= '<p class="message"><span class="count">'+result.errorCount+'</span> unexpected value'+(unexpectedValues == 1 ? ' has ' : 's have ')+'been detected in the column <span class="colName">'+result.colName+'</span>.</p>';
+				html+= '<p class="details">Can you fix '+(unexpectedValues == 1 ? 'it' : 'them')+'?</p>';
+			} else {
+				html+= '<p class="message">Around '+percentage+'% of the values ('+unexpectedValues+') in the <span class="colName">'+result.colName+'</span> column have been deteceted as unexpected values.'
+				html+= '<p class="details">Are you sure you have selected the correct column?</p>';
+			}
 
-		html += '</div>';
+			html+= '<p class="message exampleValue">Example value: <span>'+result.exampleValue+'</span></p>';
 
-		$(wizardBody).append('<div class="wizardComplete" />');
-		$(wizardBody).find("div.wizardComplete").html(html);
-		$("div.action-buttons").hide();
-		$("div.wizard-body").children().hide().end().find("h2, div.wizardComplete").show();
-		$("div.wizard-panel").css("bottom","32px");
+			html+= '<div class="buttons">';
+			html+= '<a title="Undo" class="button undo" bind="undoButton" href="javascript:{}">Undo</a>';
+			if(!(result.count == theProject.rowModel.total && !result.success)){
+				html+= '<a title="Let me see" class="button fix" bind="fixButton" href="javascript:{}">Let me see</a>';
+			}
+			html+= '<a title="Carry on" class="button carryon" bind="carryOnButton" href="javascript:{}">Carry on</a>';
+			html+= '</div>';
 
-		/*
-		 * Action buttons for the unexpected values panel
-		 */
-		$("div.wizardComplete").find("a.button").click(function(){
+			html += '</div>';
 
-			if($(this).hasClass("undo")){
-				LinkedGov.vars.hasFixedValue = false;
-				$("div.action-buttons a.undo").click();
-				LinkedGov.restoreWizardBody();
+			$(wizardBody).append('<div class="wizardComplete" />');
+			$(wizardBody).find("div.wizardComplete").html(html);
+			$("div.action-buttons").hide();
+			$("div.wizard-body").children().hide().end().find("h2, div.wizardComplete").show();
+			$("div.wizard-panel").css("bottom","32px");
 
-			} else if($(this).hasClass("fix")){
+			/*
+			 * Action buttons for the unexpected values panel
+			 */
+			$("div.wizardComplete").find("a.button").click(function(){
 
-				ui.typingPanel.showUnexpectedValues(result,function(result){
-					Refine.update({modelsChanged:true},function(){
-						ui.typingPanel.populateUnexpectedValuePanelList(result);
-					});
-				});
+				if($(this).hasClass("undo")){
+					LinkedGov.vars.hasFixedValue = false;
+					$("div.action-buttons a.undo").click();
+					LinkedGov.restoreWizardBody();
 
-				$("div.wizardComplete").find("p.details").hide();
-				$("div.wizardComplete").find("div.buttons").find("a.button").hide();
-				$("div.wizardComplete").find("div.buttons").append("<a class='button rerun' />");
-				$("div.wizardComplete").find("div.buttons").append("<a class='button done' />");
-				$("div.wizardComplete").find("div.buttons").find("a.rerun").html("Re-run wizard").show();
-				$("div.wizardComplete").find("div.buttons").find("a.done").html("Done").show();
-				//$("div.wizardComplete").find("div.buttons").before('<p class="message exampleValue">Example value: <span>'+result.exampleValue+'</span></p>');
+				} else if($(this).hasClass("fix")){
 
-				if(LinkedGov.vars.hasFixedValue){
-					$("div.wizardComplete").find("div.buttons").before('<p class="message rerun-tip">If you have corrected all of the values properly, there should be no more rows left for you to edit.</p>');
-				}
-
-				$("div.wizardComplete").find("div.buttons").find("a.rerun").click(function(){
-					/*
-					 * Edit the cells using the values the user has typed in in the uenxepected values panel
-					 */
-					ui.typingPanel.fixUnexpectedValues(result, function(){
-						LinkedGov.vars.hasFixedValue = true;
-						Refine.update({cellsChanged:true}, function(){
-							/*
-							 * Re-run the current wizard using it's last configuration
-							 * 
-							 * This is the equivalent of saying
-							 * LinkedGov.**wizardName**.rerunWizard(), but uses the current wizard
-							 * HTML panel to extract the name.
-							 */
-							LinkedGov[$("div.wizard-panel").find("div.action-buttons").attr('rel')].rerunWizard();						
+					ui.typingPanel.showUnexpectedValues(result,function(result){
+						Refine.update({modelsChanged:true},function(){
+							ui.typingPanel.populateUnexpectedValuePanelList(result);
 						});
 					});
-				});
 
-				$("div.wizardComplete").find("div.buttons").find("a.done").click(function(){
+					$("div.wizardComplete").find("p.details").hide();
+					$("div.wizardComplete").find("div.buttons").find("a.button").hide();
+					$("div.wizardComplete").find("div.buttons").append("<a class='button rerun' />");
+					$("div.wizardComplete").find("div.buttons").append("<a class='button done' />");
+					$("div.wizardComplete").find("div.buttons").find("a.rerun").html("Re-run wizard").show();
+					$("div.wizardComplete").find("div.buttons").find("a.done").html("Done").show();
+					//$("div.wizardComplete").find("div.buttons").before('<p class="message exampleValue">Example value: <span>'+result.exampleValue+'</span></p>');
 
-					LinkedGov.vars.hasFixedValue = false;
-
-					// Remove the "error" facet
-					var facets = ui.browsingEngine._facets;
-					for(var i=0; i < facets.length; i++){
-						if(facets[i].facet._config.columnName == result.colName){
-							facets[i].facet._remove();
-						}
-					}
-					// Return the wizard to it's original state
-					LinkedGov.restoreWizardBody();
-
-				});
-
-			} else if($(this).hasClass("carryon")){
-
-				if(index == colObjects.length-1){
-					LinkedGov.vars.hasFixedValue = false;
-
-					// Remove the "error" facet
-					var facets = ui.browsingEngine._facets;
-					for(var i=0; i < facets.length; i++){
-						if(facets[i].facet._config.columnName == result.colName){
-							facets[i].facet._remove();
-						}
+					if(LinkedGov.vars.hasFixedValue){
+						$("div.wizardComplete").find("div.buttons").before('<p class="message rerun-tip">If you have corrected all of the values properly, there should be no more rows left for you to edit.</p>');
 					}
 
-					LinkedGov.vars.hasFixedValue = false;
-					LinkedGov.restoreWizardBody();
-				} else {
+					$("div.wizardComplete").find("div.buttons").find("a.rerun").click(function(){
+						/*
+						 * Edit the cells using the values the user has typed in in the uenxepected values panel
+						 */
+						ui.typingPanel.fixUnexpectedValues(result, function(){
+							LinkedGov.vars.hasFixedValue = true;
+							Refine.update({cellsChanged:true}, function(){
+								/*
+								 * Re-run the current wizard using it's last configuration
+								 * 
+								 * This is the equivalent of saying
+								 * LinkedGov.**wizardName**.rerunWizard(), but uses the current wizard
+								 * HTML panel to extract the name.
+								 */
+								LinkedGov[$("div.wizard-panel").find("div.action-buttons").attr('rel')].rerunWizard();						
+							});
+						});
+					});
 
-					LinkedGov.vars.hasFixedValue = false;
+					$("div.wizardComplete").find("div.buttons").find("a.done").click(function(){
 
-					// Remove the "error" facet
-					var facets = ui.browsingEngine._facets;
-					for(var i=0; i < facets.length; i++){
-						if(facets[i].facet._config.columnName == result.colName){
-							facets[i].facet._remove();
+						LinkedGov.vars.hasFixedValue = false;
+
+						// Remove the "error" facet
+						var facets = ui.browsingEngine._facets;
+						for(var i=0; i < facets.length; i++){
+							if(facets[i].facet._config.columnName == result.colName){
+								facets[i].facet._remove();
+							}
 						}
-					}
+						// Return the wizard to it's original state
+						LinkedGov.restoreWizardBody();
 
-					// Carry on to the next column with unexpected values
-					index = index+1;
-					ui.typingPanel.displayUnexpectedValuesPanel(colObjects, index, wizardBody);
+					});
+
+				} else if($(this).hasClass("carryon")){
+
+					if(index == colObjects.length-1){
+						LinkedGov.vars.hasFixedValue = false;
+
+						// Remove the "error" facet
+						var facets = ui.browsingEngine._facets;
+						for(var i=0; i < facets.length; i++){
+							if(facets[i].facet._config.columnName == result.colName){
+								facets[i].facet._remove();
+							}
+						}
+
+						LinkedGov.vars.hasFixedValue = false;
+						LinkedGov.restoreWizardBody();
+					} else {
+
+						LinkedGov.vars.hasFixedValue = false;
+
+						// Remove the "error" facet
+						var facets = ui.browsingEngine._facets;
+						for(var i=0; i < facets.length; i++){
+							if(facets[i].facet._config.columnName == result.colName){
+								facets[i].facet._remove();
+							}
+						}
+
+						// Carry on to the next column with unexpected values
+						index = index+1;
+						ui.typingPanel.displayUnexpectedValuesPanel(colObjects, index, wizardBody);
+					}
+				}
+			});
+
+		} else {
+
+			// Remove the "error" facet
+			var facets = ui.browsingEngine._facets;
+			for(var i=0; i < facets.length; i++){
+				if(facets[i].facet._config.columnName == colObjects[index].name){
+					facets[i].facet._remove();
 				}
 			}
-		});
 
-	} else {
-
-		// Remove the "error" facet
-		var facets = ui.browsingEngine._facets;
-		for(var i=0; i < facets.length; i++){
-			if(facets[i].facet._config.columnName == colObjects[index].name){
-				facets[i].facet._remove();
-			}
+			index = index+1;
+			ui.typingPanel.displayUnexpectedValuesPanel(colObjects, index, wizardBody);
 		}
-
-		index = index+1;
-		ui.typingPanel.displayUnexpectedValuesPanel(colObjects, index, wizardBody);
 	}
 
 	//} // end for loop
@@ -1506,7 +1514,7 @@ TypingPanel.prototype.fixUnexpectedValues = function(result, callback){
 				engine : JSON.stringify(ui.browsingEngine.getJSON())
 		};
 
-		console.log("Data: ", data);
+		//console.log("Data: ", data);
 
 		LinkedGov.silentProcessCall({
 			type : "POST",

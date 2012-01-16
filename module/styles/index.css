@@ -73,6 +73,44 @@ div#feedback-button {
     margin-right: 100px;
     margin-top: 5px;
 }
+div#beta {
+    position: fixed;
+    width: 150px;
+    top: -25px;
+    right: -28px;
+    z-index: 100;
+    text-align: center;
+    padding: 7px 40px 10px 40px;
+    -webkit-transform-origin: top left;
+    -webkit-transform: translateX(85px) translateY(-30px) rotate(42deg);
+    -moz-transform-origin: top left;
+    -moz-transform: translateX(85px) translateY(-30px) rotate(42deg);
+    -webkit-transform-origin-x: 0%;
+    -webkit-transform-origin-y: 0%;
+    background: -moz-linear-gradient(90deg, #718AD3 0%, #99BAFF 100%) repeat scroll 0 0 #FEFEFE;
+    background: -webkit-gradient(linear, left bottom, left top, from(#718AD3), to(#99BAFF)) #FEFEFE;
+    color: white !important;
+    text-decoration: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    border-radius: 6px;
+    -moz-box-shadow: 0 0 1px rgba(0, 0, 0, 0.2) inset, 0 2px 0 rgba(255, 255, 255, 0.2) inset, 0 1px 4px rgba(0, 0, 0, 0.4);
+    -webkit-box-shadow: 0 0 1px rgba(0, 0, 0, 0.2) inset, 0 2px 0 rgba(255, 255, 255, 0.2) inset, 0 1px 4px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 1px rgba(0, 0, 0, 0.2) inset, 0 2px 0 rgba(255, 255, 255, 0.2) inset, 0 1px 4px rgba(0, 0, 0, 0.4);
+    text-transform: none;
+}
+div#beta p {
+    font-family: Tahoma;
+    font-size: 20px;
+    font-weight: inherit;
+    line-height: 1;
+    margin: 0;
+    padding: 0;
+    text-shadow: -1px 1px 0 rgba(38, 48, 85, 0.75);
+    text-transform: uppercase;
+}
+
 body.lg div#left-panel {
     display: none;
 }
@@ -484,43 +522,8 @@ div#feedback-form .ui-state-error {
 .dialog-footer button {
     margin-right:6px;   
 }
-div#beta {
-    position: fixed;
-    width: 150px;
-    top: -25px;
-    right: -28px;
-    z-index: 100;
-    text-align: center;
-    padding: 7px 40px 10px 40px;
-    -webkit-transform-origin: top left;
-    -webkit-transform: translateX(85px) translateY(-30px) rotate(42deg);
-    -moz-transform-origin: top left;
-    -moz-transform: translateX(85px) translateY(-30px) rotate(42deg);
-    -webkit-transform-origin-x: 0%;
-    -webkit-transform-origin-y: 0%;
-    background: -moz-linear-gradient(90deg, #718AD3 0%, #99BAFF 100%) repeat scroll 0 0 #FEFEFE;
-    background: -webkit-gradient(linear, left bottom, left top, from(#718AD3), to(#99BAFF)) #FEFEFE;
-    color: white !important;
-    text-decoration: none;
-    -webkit-font-smoothing: antialiased;
-    -moz-border-radius: 6px;
-    -webkit-border-radius: 6px;
-    border-radius: 6px;
-    -moz-box-shadow: 0 0 1px rgba(0, 0, 0, 0.2) inset, 0 2px 0 rgba(255, 255, 255, 0.2) inset, 0 1px 4px rgba(0, 0, 0, 0.4);
-    -webkit-box-shadow: 0 0 1px rgba(0, 0, 0, 0.2) inset, 0 2px 0 rgba(255, 255, 255, 0.2) inset, 0 1px 4px rgba(0, 0, 0, 0.4);
-    box-shadow: 0 0 1px rgba(0, 0, 0, 0.2) inset, 0 2px 0 rgba(255, 255, 255, 0.2) inset, 0 1px 4px rgba(0, 0, 0, 0.4);
-    text-transform: none;
-}
-div#beta p {
-    font-family: Tahoma;
-    font-size: 20px;
-    font-weight: inherit;
-    line-height: 1;
-    margin: 0;
-    padding: 0;
-    text-shadow: -1px 1px 0 rgba(38, 48, 85, 0.75);
-    text-transform: uppercase;
-}
+
+/*****/
 
 body.lg #create-project-progress-panel {
     background: none repeat scroll 0 0 #F2F6FF;

@@ -804,15 +804,15 @@ LinkedGov.verifyValueTypes = function(columnName, expression, expectedType, exam
 		result.type = "success";
 	} else if(averageTypeCount == theProject.rowModel.total && expectedType !== averageType) {
 		result.message = "None of values in the <span class='colName'>"+result.colName+"</span> column could by typed propery. Is this the correct column for this wizard?";
-		result.success = true;
+		result.success = false;
 		result.type = "fail";		
 	} else if(averageTypeCount >= (theProject.rowModel.total*percentage) && expectedType == averageType){
 		result.message = "At least "+percentage*100+"% of the <span class='colName'>"+result.colName+"</span> column's values are of the expected type <span class='valueType'>"+averageType+"</span>.";
-		result.success = true;
+		result.success = false;
 		result.type = "warning";
 	} else if(expectedType == averageType){
 		result.message = "The <span class='colName'>"+result.colName+"</span> column contains values that were expected, but there are some unexpected values too.";
-		result.success = true;
+		result.success = false;
 		result.type = "warning";
 	} else if(averageTypeCount >= (theProject.rowModel.total*percentage)){
 		result.message = "The <span class='colName'>"+result.colName+"</span> column mostly contains values of the type <span class='valueType'>"+averageType+"</span> - which was not expected.";

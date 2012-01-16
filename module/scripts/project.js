@@ -46,7 +46,9 @@ var LinkedGov = {
 			$("#app-home-button").remove();
 
 			this.restyle();
-			this.injectTypingPanel();
+			this.injectTypingPanel(function(){
+				$("a.wizard-header").eq(0).hide().end().eq(1).hide();
+			});
 			this.injectWizardProgressOverlay();
 			this.injectFeedbackForm();
 			this.addUnhideColumnButton();
@@ -153,7 +155,7 @@ var LinkedGov = {
 							ui.dataTableView.render2();
 							LinkedGov.keepHiddenColumnsHidden();
 							LinkedGov.applyTypeIcons.apply();
-
+							$(window).resize();
 						}
 
 						/*
@@ -191,7 +193,7 @@ var LinkedGov = {
 		 * 
 		 * Injects the Typing panel HTML and JS into the page
 		 */
-		injectTypingPanel : function() {
+		injectTypingPanel : function(callback) {
 
 			// Create the Typing tab
 			$(".refine-tabs ul li").eq(0).after('<li><a href="#refine-tabs-typing">Typing</a></li>');
@@ -205,6 +207,10 @@ var LinkedGov = {
 			 */
 			$(window).unbind("resize");
 			$(window).bind("resize", LinkedGov.resizeAll_LG);
+			
+			if(callback){
+				callback();
+			}
 
 		},
 

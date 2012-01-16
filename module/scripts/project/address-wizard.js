@@ -66,8 +66,9 @@ var addressWizard = {
 				self.vars.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
 			}catch(e){
 				self.vars.historyRestoreID = 0;
-			}			self.vars.hiddenColumns = [];
-
+			}			
+			
+			self.vars.hiddenColumns = [];
 			self.vars.addressName = "";
 			self.vars.postcodePresent = false;
 			self.vars.unexpectedValueRegex = 'grel:if(isBlank(value),"postcode",if(isError(if(partition(value,'+self.vars.postCodeRegex+')[1].length() > 0,"postcode","error")),"error",if(partition(value,'+self.vars.postCodeRegex+')[1].length() > 0,"postcode","error")))';
@@ -601,7 +602,7 @@ var addressWizard = {
 
 						              ],
 						              "links" : [ {
-						            	  "uri" : self.vars.vocabs.rdfs.curie+"label",
+						            	  "uri" : self.vars.vocabs.rdfs.uri+"label",
 						            	  "curie" : self.vars.vocabs.rdfs.curie+":label",
 						            	  "target" : {
 						            		  "nodeType" : "cell-as-literal",
@@ -649,6 +650,8 @@ var addressWizard = {
 				 */
 				if(self.vars.postcodePresent){
 					var colObjects = self.prepareColumnObjectsForValueTest();
+					log('colObjects');
+					log(colObjects);
 					LinkedGov.checkForUnexpectedValues(colObjects, self.vars.elmts.addressBody);
 				}
 
