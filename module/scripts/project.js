@@ -76,7 +76,7 @@ var LinkedGov = {
 			var header = $('<div></div>').addClass("dialog-header").text("Thanks!").appendTo(finishMessage);
 			var body = $('<div></div>').addClass("dialog-body").addClass("finish-message").appendTo(finishMessage);
 			var footer = $('<div></div>').addClass("dialog-footer").appendTo(finishMessage);
-			
+
 			$(body).html("<p>This data is now stored inside LinkedGov's database.</p>" +
 					"<h3>What next?</h3>" +
 					"<p>If there are any errors, unexpected values - or work that still " +
@@ -85,10 +85,10 @@ var LinkedGov = {
 					"<p>For any of the cleaning tasks that were completed, the data is now potentially linkable " +
 					"to other datasets and more accessible to users searching for those particular data " +
 					"types.</p>" +
-					"<p>Well done. This data is now miles better than it was.</p>");
+			"<p>Well done. This data is now miles better than it was.</p>");
 
 			$('<button></button>').addClass('button').html("&nbsp;&nbsp;OK&nbsp;&nbsp;").click(function() {
-					DialogSystem.dismissAll();	
+				DialogSystem.dismissAll();	
 			}).appendTo(footer);
 
 			DialogSystem.showDialog(finishMessage);
@@ -392,6 +392,47 @@ var LinkedGov = {
 				}
 
 			});
+
+		},
+
+		/*
+		 * exposeColumnHeaders
+		 * 
+		 * Applies a mask of opacity to elements that leave the column headers exposed.
+		 * 
+		 * 'expose' is a boolean - true to mask, false to restore the mask.
+		 */
+		exposeColumnHeaders: function(expose){
+
+			var opacity = 1;
+
+			if(expose){
+				opacity = 0.4;
+				$("table.data-table").find("td").addClass("mask");
+			} else {
+				opacity = 1;
+				$("table.data-table").find("td").removeClass("mask");
+			}
+			
+			/*
+			 * Elements to mask/restore
+			 */
+			$(".wizard-body").children().css("opacity",opacity);
+			//$("table.data-table").css("opacity",opacity);
+			
+			$("div.viewpanel-header").css("opacity",opacity);
+			$("div.action-buttons").css("opacity",opacity);
+			$("div.cancel-button").css("opacity",opacity);
+			$("div#tool-panel").css("opacity",opacity);
+			$("div#header").css("opacity",opacity);
+			$("ul.ui-tabs-nav").css("opacity",opacity);
+			$("td.column-header").eq(0).css("opacity",opacity);
+
+			/*
+			 * Elements to expose
+			 */
+			$("div.selector").css("opacity","1");
+
 
 		},
 

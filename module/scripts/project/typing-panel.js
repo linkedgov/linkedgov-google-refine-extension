@@ -522,6 +522,13 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 	if (!$(button).hasClass("selecting")) {
 
 		/*
+		 * Exposes the column headers - 'true' to mask.
+		 */
+		LinkedGov.exposeColumnHeaders(true);
+
+		$(button).after('<span class="column-selecting-icon"><img src="extension/linkedgov/images/column_selecting.gif" /></span>');
+
+		/*
 		 * Remove any existing column selectors on the page
 		 */
 		self.destroyColumnSelector();
@@ -578,7 +585,17 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 							 */
 							$(this).parent("li").remove();
 							$(ui.selected).removeClass("ui-selected");
+							$(ui.selected).removeClass("selected");
 
+							$("table.data-table tbody").children("tr").each(function(){
+								for(var i=0;i<$(this).children("td").length;i++){
+									if(i == Refine.columnNameToColumnIndex($(ui.selected).children().find(".column-header-name").html())+3){
+										log("Adding mask back to cell "+i);
+										$(this).children("td").eq(i).addClass("mask");
+									}
+								}
+							});
+							
 							/*
 							 * Check to see if there are any selected columns still present in the list, 
 							 * which if there aren't, hide the list.
@@ -668,6 +685,10 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 
 						case "text-input" :
 
+							/*
+							 * generateColumnFacet returns a list of the 10 most frequently 
+							 * occurring <li> elements.
+							 */
 							RefineUI.typingPanel.generateColumnFacet($(ui.selected).children().find(".column-header-name").html(),10,function(html){
 								$cols.html(html);
 								$cols.data("colName",$(ui.selected).children().find(".column-header-name").html());
@@ -684,24 +705,27 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 								$cols.show();
 							});
 
-
-							/*
-							$cols.children("li").each(function(){
-								$(this).append(
-										"<span class='col'>" +
-										"<input type='text' class='"+$(this).html()+"' />" +
-										"</span>" +
-										"<span class='remove'>X</span>");
-							});
-							 */
-
-
 							break;
 
 						default:
 							break;
 						}
+
+						$(ui.selected).addClass("selected");
+
+						$("table.data-table tbody").children("tr").each(function(){
+							for(var i=0;i<$(this).children("td").length;i++){
+								if(i == Refine.columnNameToColumnIndex($(ui.selected).children().find(".column-header-name").html())+3){
+									$(this).children("td").eq(i).removeClass("mask");
+								}
+							}
+						});
+
+
+
 					}
+				} else {
+					$(ui.selected).removeClass("ui-selected");
 				}
 			},
 			unselected: function (event, ui) {
@@ -709,9 +733,16 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 				 * Remove the column from the selected column list when it's 
 				 * column header is deselected.
 				 */
+				var hasEntry = false;
 				$cols.children("li").children("span.col").each(function(){
 					if($(this).html() == $(ui.unselected).children().find(".column-header-name").html()){
-						$(this).parent("li").remove();
+						if(hasEntry){
+							$(this).parent("li").remove();
+							$(ui.unselected).removeClass("ui-selected");
+							$(ui.unselected).removeClass("selected");							
+						} else {
+							hasEntry = true;
+						}
 					}
 				});
 			},
@@ -728,6 +759,11 @@ TypingPanel.prototype.buttonSelector = function(button, selectType) {
 		 * If the column-selector button has the class "selecting", end 
 		 * column selection.
 		 */
+		$('span.column-selecting-icon').remove();
+		/*
+		 * Removes the expose for the column headers.
+		 */
+		LinkedGov.exposeColumnHeaders(false);
 		self.destroyColumnSelector();
 	}	
 }
@@ -1000,7 +1036,7 @@ TypingPanel.prototype.destroyColumnSelector = function() {
 	$("div.selector a.selectColumn").removeClass("selecting");
 	$("table.data-header-table").selectable("destroy");
 	$("table.data-header-table .column-header").each(function () {
-		$(this).removeClass("ui-selected").removeClass("skip");
+		$(this).removeClass("ui-selected").removeClass("skip").removeClass("selected");
 	});	
 }
 
@@ -1336,7 +1372,7 @@ TypingPanel.prototype.displayUnexpectedValuesPanel = function(colObjects, index,
 
 	//for(var i=0; i<colObjects.length; i++){
 	if(index < colObjects.length) {
-		
+
 		if(typeof colObjects[index].unexpectedValueParams != 'undefined' && !colObjects[index].unexpectedValueParams.result.success){
 
 			log("Building unexpected values panel...");
