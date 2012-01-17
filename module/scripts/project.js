@@ -69,6 +69,32 @@ var LinkedGov = {
 
 		},
 
+		showFinishMessage:function(){
+
+			var finishMessage = DialogSystem.createDialog();
+			$(finishMessage).width(500);
+			var header = $('<div></div>').addClass("dialog-header").text("Thanks!").appendTo(finishMessage);
+			var body = $('<div></div>').addClass("dialog-body").addClass("finish-message").appendTo(finishMessage);
+			var footer = $('<div></div>').addClass("dialog-footer").appendTo(finishMessage);
+			
+			$(body).html("<p>This data is now stored inside LinkedGov's database.</p>" +
+					"<h3>What next?</h3>" +
+					"<p>If there are any errors, unexpected values - or work that still " +
+					"needs doing within the data - these will be used to create tasks for people " +
+					"to complete using their expertise and judgement.</p>" +
+					"<p>For any of the cleaning tasks that were completed, the data is now potentially linkable " +
+					"to other datasets and more accessible to users searching for those particular data " +
+					"types.</p>" +
+					"<p>Well done. This data is now miles better than it was.</p>");
+
+			$('<button></button>').addClass('button').html("&nbsp;&nbsp;OK&nbsp;&nbsp;").click(function() {
+					DialogSystem.dismissAll();	
+			}).appendTo(footer);
+
+			DialogSystem.showDialog(finishMessage);
+
+		},
+
 		/*
 		 * loadScripts
 		 */
@@ -134,34 +160,34 @@ var LinkedGov = {
 					 */
 					//LinkedGov.saveMetadataToRDF(function(){
 
-						/*
-						 * Load the project's hidden columns from the 
-						 * metadata file - hide any columns if there are 
-						 * some present.
-						 */
-						LinkedGov.getHiddenColumnMetadata(function(){
-							LinkedGov.keepHiddenColumnsHidden();
-						});
+					/*
+					 * Load the project's hidden columns from the 
+					 * metadata file - hide any columns if there are 
+					 * some present.
+					 */
+					LinkedGov.getHiddenColumnMetadata(function(){
+						LinkedGov.keepHiddenColumnsHidden();
+					});
 
-						/*
-						 * Overwrite Refine's data table "render" function, 
-						 * so we can include a couple of our functions that 
-						 * need to be called every time the table is updated.
-						 */
-						ui.dataTableView.render2 = ui.dataTableView.render;
-						ui.dataTableView.render = function(){
+					/*
+					 * Overwrite Refine's data table "render" function, 
+					 * so we can include a couple of our functions that 
+					 * need to be called every time the table is updated.
+					 */
+					ui.dataTableView.render2 = ui.dataTableView.render;
+					ui.dataTableView.render = function(){
 
-							//log("Rendered table");
-							ui.dataTableView.render2();
-							LinkedGov.keepHiddenColumnsHidden();
-							LinkedGov.applyTypeIcons.apply();
-							$(window).resize();
-						}
+						//log("Rendered table");
+						ui.dataTableView.render2();
+						LinkedGov.keepHiddenColumnsHidden();
+						LinkedGov.applyTypeIcons.apply();
+						$(window).resize();
+					}
 
-						/*
-						 * Perform a generic update once everything has loaded
-						 */
-						Refine.update({everythingChanged:true});
+					/*
+					 * Perform a generic update once everything has loaded
+					 */
+					Refine.update({everythingChanged:true});
 
 					//});
 				});
@@ -207,7 +233,7 @@ var LinkedGov = {
 			 */
 			$(window).unbind("resize");
 			$(window).bind("resize", LinkedGov.resizeAll_LG);
-			
+
 			if(callback){
 				callback();
 			}

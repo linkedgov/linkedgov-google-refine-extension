@@ -691,7 +691,9 @@ var finaliseRDFSchema = {
 							 * Save the RDF for the columns that were not involved in any wizard
 							 * operations.
 							 */
-							self.saveGenericColumnRDF(rootNode, foundRootNode);
+							self.saveGenericColumnRDF(rootNode, foundRootNode, function(){
+								LinkedGov.showFinishMessage();
+							});
 
 						});
 					})
@@ -866,7 +868,7 @@ var finaliseRDFSchema = {
 		 * Creates the generic RDF for each column that wasn't involved in 
 		 * any of the wizards using the column name as the property for the rows.
 		 */
-		saveGenericColumnRDF : function(rootNode, newRootNode) {
+		saveGenericColumnRDF : function(rootNode, newRootNode, callback) {
 
 			var self = this;
 			LinkedGov.showWizardProgress(true);
@@ -979,6 +981,9 @@ var finaliseRDFSchema = {
 						everythingChanged : true
 					},function(){
 						LinkedGov.showWizardProgress(false);
+						if(callback){
+							callback();
+						}
 					});
 				}
 			});
