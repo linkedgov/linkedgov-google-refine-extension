@@ -40,7 +40,7 @@
  */
 
 
-var rowsToColumnsWizard = {
+var LinkedGov_rowsToColumnsWizard = {
 
 		vars : {
 			headersColName : "",
@@ -71,7 +71,7 @@ var rowsToColumnsWizard = {
 			
 			self.vars.elmts = elmts;
 
-			// LinkedGov.setFacetCountLimit(1000);
+			// LG.setFacetCountLimit(1000);
 
 			if ($(elmts.rowsToColumnsColumns).children("li").length < 1
 					|| $(elmts.rowsToColumnsColumns2).children("li").length < 1) {
@@ -80,7 +80,7 @@ var rowsToColumnsWizard = {
 						+ "to exclude from the operation is optional.");
 			} else {
 
-				LinkedGov.showWizardProgress(true);
+				LG.showWizardProgress(true);
 
 				// Store the column containing the new column header values
 				self.vars.headersColName = $(elmts.rowsToColumnsColumns).children(
@@ -103,7 +103,7 @@ var rowsToColumnsWizard = {
 				 * Set blank cells to bull before starting the operation, call the
 				 * first wizard operation once complete.
 				 */
-				LinkedGov.setBlanksToNulls(true, theProject.columnModel.columns, 0,
+				LG.ops.setBlanksToNulls(true, theProject.columnModel.columns, 0,
 						function() {
 					self.findSortableColumnHeaders();
 				});
@@ -210,7 +210,7 @@ var rowsToColumnsWizard = {
 						"mode" : "row-based"
 				};
 
-				LinkedGov.silentProcessCall({
+				LG.silentProcessCall({
 					type : "POST",
 					url : "/command/" + "core" + "/" + "compute-facets",
 					data : {
@@ -407,7 +407,7 @@ var rowsToColumnsWizard = {
 			 * Post a silent "reorder-rows" call - remembering to include the
 			 * 'theProject' parameter.
 			 */
-			LinkedGov.silentProcessCall({
+			LG.silentProcessCall({
 				type : "POST",
 				url : "/command/" + "core" + "/" + "reorder-rows",
 				data : {
@@ -461,8 +461,7 @@ var rowsToColumnsWizard = {
 					"mode" : "row-based"
 			};
 
-			LinkedGov
-			.silentProcessCall({
+			LG.silentProcessCall({
 				type : "POST",
 				url : "/command/" + "core" + "/" + "compute-facets",
 				data : {
@@ -512,8 +511,7 @@ var rowsToColumnsWizard = {
 						 * minor UI update as a callback, before proceeding
 						 * the next operation.
 						 */
-						LinkedGov
-						.silentProcessCall({
+						LG.silentProcessCall({
 							type : "POST",
 							url : "/command/" + "core" + "/"
 							+ "transpose-rows-into-columns",
@@ -746,8 +744,7 @@ var rowsToColumnsWizard = {
 				/*
 				 * Post a silent "rename" call
 				 */
-				LinkedGov
-				.silentProcessCall({
+				LG.silentProcessCall({
 					type : "POST",
 					url : "/command/" + "core" + "/" + "rename-column",
 					data : {
@@ -800,8 +797,7 @@ var rowsToColumnsWizard = {
 			/*
 			 * Post a silent "remove-column" call.
 			 */
-			LinkedGov
-			.silentProcessCall({
+			LG.silentProcessCall({
 				type : "POST",
 				url : "/command/" + "core" + "/" + "remove-column",
 				data : {
@@ -825,11 +821,11 @@ var rowsToColumnsWizard = {
 		 */
 		onFail : function(message) {
 			var self = this;
-			LinkedGov.setBlanksToNulls(false, theProject.columnModel.columns, 0,
+			LG.ops.setBlanksToNulls(false, theProject.columnModel.columns, 0,
 					function() {
 				alert("Rows to columns wizard failed. \n\n" + message);
-				LinkedGov.resetWizard(self.vars.elmts.rowsToColumnsBody);
-				LinkedGov.showWizardProgress(false);
+				LG.resetWizard(self.vars.elmts.rowsToColumnsBody);
+				LG.showWizardProgress(false);
 			});
 
 		},
@@ -844,17 +840,16 @@ var rowsToColumnsWizard = {
 
 			var self = this;
 
-			LinkedGov.setBlanksToNulls(false, theProject.columnModel.columns, 0,
+			LG.ops.setBlanksToNulls(false, theProject.columnModel.columns, 0,
 					function() {
 				DialogSystem.dismissAll();
-				// LinkedGov.setFacetCountLimit(100);
+				// LG.setFacetCountLimit(100);
 				Refine.update({
 					everythingChanged : true
 				});
-				LinkedGov.resetWizard(self.vars.elmts.rowsToColumnsBody);
-				LinkedGov.showUndoButton(self.vars.elmts.rowsToColumnsBody);
-				//LinkedGov.summariseWizardHistoryEntry("Multiple values wizard", self.vars.historyRestoreID);
-				LinkedGov.showWizardProgress(false);
+				LG.resetWizard(self.vars.elmts.rowsToColumnsBody);
+				LG.showUndoButton(self.vars.elmts.rowsToColumnsBody);
+				LG.showWizardProgress(false);
 			});
 
 			return false;

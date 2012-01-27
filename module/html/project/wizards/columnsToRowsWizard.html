@@ -1,0 +1,42 @@
+<div class="wizard-body rangeSelect" bind="columnsToRowsBody" rel="columnsToRowsWizard">
+
+    <h2>
+    Columns to rows wizard
+       <span class="wizardIcon">
+        <img src="/extension/linkedgov/images/columns_to_rows_wizard_icon.png" width="32" height="32" />
+       </span>
+    </h2>
+    
+	<div class="description">
+		<p class="description">This wizard aims to move related values of
+			the same type (i.e. times or measurements) in multiple columns into
+			one single column.</p>
+
+		<p>
+			Show an example: <a class="info"> <!-- info -->
+			</a> <span class="note">An example could be a range of time
+				columns containing energy readings for each hour, starting at
+				"00:00" and finishing at "23:00", which could be reorganised into
+				two columns - "Time" (which would contain the times) and "Readings"
+				(which would contain the readings for each time). </span>
+		</p>
+		<p>To begin the wizard, use the two drop-down lists to select a
+			start and end for the range of columns. You can also remove columns
+			from the range if you think they should be skipped before the wizard
+			begins.</p>
+	</div>
+
+	<div class="selector">
+        <a class="button selectColumn">Pick column</a>
+        
+		<div class="range">
+			<span>From:</span> <select class="from"></select> <span>To:</span> <select
+				class="to"></select>
+		</div>
+
+		<ul class="selected-columns range" bind="columnsToRowsColumns">
+		</ul>
+	</div>
+
+</div>
+<!-- end multiple columns wizard -->

@@ -6,7 +6,7 @@
  * 
  * 
  */
-var nullValueWizard = {
+var LinkedGov_nullValueWizard = {
 
 		/*
 		 * elmts: an object that contains the bound HTML elements for the
@@ -30,7 +30,7 @@ var nullValueWizard = {
 				/*
 				 * Display the "working..." sign
 				 */
-				LinkedGov.showWizardProgress(true);
+				LG.showWizardProgress(true);
 
 				/*
 				 * Attempt to nullify all missing values
@@ -55,7 +55,7 @@ var nullValueWizard = {
 
 			if(index < columns.length){
 
-				LinkedGov.silentProcessCall({
+				LG.silentProcessCall({
 					type : "POST",
 					url : "/command/" + "core" + "/" + "mass-edit",
 					data : {
@@ -86,8 +86,8 @@ var nullValueWizard = {
 		onFail : function(message) {
 			var self = this;
 			alert("Null value wizard failed.\n\n" + message);
-			LinkedGov.resetWizard(self.vars.elmts.nullValueBody);
-			LinkedGov.showWizardProgress(false);
+			LG.resetWizard(self.vars.elmts.nullValueBody);
+			LG.showWizardProgress(false);
 		},
 
 		/*
@@ -95,11 +95,10 @@ var nullValueWizard = {
 		 */
 		onComplete : function() {
 			var self = this;
-			LinkedGov.resetWizard(self.vars.elmts.nullValueBody);
-			LinkedGov.showUndoButton(self.vars.elmts.nullValueBody);
-			//LinkedGov.summariseWizardHistoryEntry("Measurements wizard", self.vars.historyRestoreID);
+			LG.resetWizard(self.vars.elmts.nullValueBody);
+			LG.showUndoButton(self.vars.elmts.nullValueBody);
 			Refine.update({modelsChanged:true});
-			LinkedGov.showWizardProgress(false);
+			LG.showWizardProgress(false);
 		}
 
 };

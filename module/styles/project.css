@@ -239,8 +239,7 @@ body.lg table.data-header-table td.column-header.typed {
 	background-repeat: no-repeat;
 }
 
-body.lg table.data-header-table td.column-header,body.lg table.data-table td.column-header
-	{
+body.lg table.data-header-table td.column-header,body.lg table.data-table td.column-header {
 	height: 45px;
 	vertical-align: bottom;
 }
@@ -278,7 +277,7 @@ body.lg div.quick-tool ul li:hover {
 }
 
 body.lg div#left-panel div.refine-tabs {
-	visibility: hidden;
+	/*visibility: hidden;*/
 }
 
 body.lg table.data-header-table tr td.skip {
@@ -287,35 +286,87 @@ body.lg table.data-header-table tr td.skip {
 }
 
 body.lg div.typing-panel-body {
-	bottom: 32px;
-	height: auto !important;
-	overflow-y: auto;
-	padding: 5px 10px 10px;
-	position: absolute;
-	top: 28px;
-	width: 280px;
+    bottom: 35px;
+    height: auto !important;
+    overflow-y: auto;
+    padding: 5px 7px;
+    position: absolute;
+    top: 62px;
+    width: 286px;
+    display:none;
 }
-
-body.lg div.wizard-panel { /*background-color: #E3E9FF;*/
-	bottom: 72px;
-	height: auto !important;
-	overflow-y: auto;
-	padding: 0;
-	position: absolute;
-	top: 28px;
-	width: 300px;
-	left: 300px;
+body.lg div.wizards-panel-body {
+	padding:0;
 }
-
+body.lg div#wizard-panel div.questions {
+    float: left;
+    padding: 0 10px 5px;
+}
+body.lg ul.lg-tabs {
+    background: none repeat scroll 0 0 #FFFFFF;
+    border-bottom: 1px solid #BBCCFF;
+    height: 25px;
+    list-style-type: none;
+    margin: 0 0 0;
+    padding: 8px 5px 0;
+    width: 290px;
+}
+body.lg ul.lg-tabs li {
+    background: none repeat scroll 0 0 #F2F5FF;
+    border: 1px solid #BBCCFF;
+    float: left;
+    height: 24px;
+    line-height: 25px;
+    margin-left: 2px;
+    margin-right: 2px;
+    padding-left: 5px;
+    padding-right: 5px;
+    text-align: center;
+}
+body.lg ul.lg-tabs li a, body.lg ul.lg-tabs li a:hover {
+    font-weight: bold;
+    font-weight: normal;
+    color:#333333;
+    text-decoration:none;
+}
+body.lg ul.lg-tabs li.active {
+    border-bottom:1px solid #FFFFFF;
+    background: none repeat scroll 0 0 #FFFFFF;
+}
+body.lg ul.lg-tabs li.active a {
+	font-weight:bold;
+}
+body.lg div#refine-tabs-typing div#intro-message {
+    background: none repeat scroll 0 0 #F4F7FF;
+    border: 1px solid #BBCCFF;
+    margin: 20px;
+    padding: 10px;
+    position: absolute;
+    top: 60px;
+}
+body.lg div#refine-tabs-typing div#intro-message p {
+    padding:0;
+}
+body.lg div#refine-tabs-typing div#intro-message ul {
+    margin: 15px 0 0;
+    padding: 10px;
+}
+body.lg div#refine-tabs-typing div#intro-message ul li {
+    margin-bottom: 15px;
+}
+body.lg div.wizard-panel {     
+    padding-left: 0;
+    padding-top: 5px;
+}
 body.lg div.description-panel {
-	bottom: 72px;
+/*	bottom: 72px;
 	height: auto !important;
 	overflow-y: auto;
 	padding: 0;
 	position: absolute;
 	top: 28px;
 	width: 300px;
-	left: 300px;
+	left: 300px;*/
 }
 
 body.lg div.description-panel div.action-buttons a.button.undo {
@@ -473,17 +524,15 @@ body.lg div.description-panel div.column-list ul li textarea {
 }
 */
 body.lg a.wizard-header {
-	background: url("../images/arrow.png") no-repeat scroll right center
-		#EBEEF8;
-	border: 1px solid #BBCCFF;
-	border-radius: 5px 5px 5px 5px;
-	color: #444444;
-	cursor: pointer;
-	display: block;
-	float: left;
-	margin: 5px 0;
-	padding: 10px 25px 10px 10px;
-	text-decoration: none;
+    background: none repeat scroll 0 0 #EBEEF8;
+    border: 1px solid #BBCCFF;
+    color: #444444;
+    cursor: pointer;
+    display: block;
+    float: left;
+    margin: 5px 0;
+    padding: 10px;
+    text-decoration: none;
 }
 
 body.lg a.wizard-header.exp {
@@ -524,21 +573,19 @@ body.lg a.wizard-header.collapsed span.wizardIcon {
 }
 
 body.lg div#refine-tabs-typing a.collapse-expand {
-	border-radius: 3px 3px 3px 3px;
-	bottom: 6px;
-	color: #555555;
-	font-family: Lucida Console;
-	font-size: 17px;
-	font-weight: normal;
-	height: 18px;
-	line-height: 18px;
-	padding: 0;
-	position: absolute;
-	right: 5px;
-	text-align: center;
-	text-decoration: none;
-	width: 18px;
-	z-index: 99;
+    bottom: 6px;
+    display:none;
+    font-family: Lucida Console;
+    font-size: 18px;
+    height: 20px;
+    line-height: 20px;
+    padding: 0;
+    position: absolute;
+    right: 5px;
+    text-align: center;
+    text-decoration: none;
+    width: 20px;
+    z-index: 99;
 }
 /*body.lg div#refine-tabs-typing a.collapse-expand.expand {
     background: url("../images/wizard_layout2.png") no-repeat scroll 0 0 #FFFFFF;
@@ -576,15 +623,14 @@ body.lg a.wizard-header span.highlight {
 body.lg a.wizard-header span.help {
 	width: 25px;
 }
-
-body.lg div.wizard-body {
-	background-color: #FFFFFF;
-	margin: 1em;
-	padding: 0;
-	right: 0;
-	width: auto;
+body.lg div.wizard-bodies {
+	display:none;
+	padding:0;
 }
-
+body.lg div.wizard-body {
+	display:none;
+    padding: 10px;
+}
 body.lg div.wizard-body h2 {
 	border-bottom: 1px solid #DDDDDD;
 	line-height: 30px;
@@ -825,20 +871,19 @@ body.lg div.wizard-body div.wizardComplete div.warning a.button.rerun:active
 		to(#40742F) ) #DDDDDD;
 }
 
-body.lg div.wizard-body div.description p {
+body.lg div.wizard-body div.description p, body.lg div.description-body div.description p {
 	line-height: 1.3;
 	padding: 7px 15px;
 }
 
-body.lg div.wizard-body div.description {
-	background: none repeat scroll 0 0 #EBEEF8;
-	border: 1px solid #BBCCFF;
-	border-radius: 5px 5px 5px 5px;
-	color: #444444;
-	margin-bottom: 10px;
-	padding-bottom: 5px;
-	padding-top: 5px;
-	text-align: left;
+body.lg div.wizard-body div.description, body.lg div.description-body div.description {
+    background: none repeat scroll 0 0 #F2F5FF;
+    border: 1px solid #BBCCFF;
+    color: #444444;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    text-align: left;
 }
 
 body.lg div.wizard-body div.description a.ex {
@@ -871,26 +916,25 @@ body.lg div.wizard-body ol.steps li {
 }
 
 body.lg div.next-button {
-	background: none repeat scroll 0 0 #BBCCFF;
-	border-top: 1px solid #CCCCCC;
-	bottom: 0;
-	padding: 4px 0;
-	position: absolute;
-	text-align: center;
-	width: 300px;
+    background: none repeat scroll 0 0 #BBCCFF;
+    border-top: 1px solid #CCCCCC;
+    bottom: 0;
+    padding: 4px 0;
+    position: absolute;
+    text-align: center;
+    width: 300px;
 }
 
-body.lg div.cancel-button {
-	background: none repeat scroll 0 0 #BBCCFF;
-	bottom: 0;
-	padding: 4px 0;
-	position: absolute;
-	text-align: center;
-	width: 300px;
-	left: 300px;
+body.lg div.action-bar div.return-button {
+    bottom: 2px;
+    display: none;
+    left: 5px;
+    padding: 4px 0;
+    position: absolute;
+    text-align: center;
 }
 
-body.lg div.cancel-button a.button,body.lg div.next-button a.button {
+body.lg div.action-bar div.cancel-button a.button,body.lg div.action-bar div.next-button a.button {
 	font-weight: normal;
 	margin-bottom: 0;
 	margin-top: 0;
@@ -898,7 +942,7 @@ body.lg div.cancel-button a.button,body.lg div.next-button a.button {
 }
 
 body.lg div.selector a.selectColumn {
-	width: 70px;
+	width: 80px;
 	text-align: center;
 }
 
@@ -911,10 +955,8 @@ body.lg div.selector span.column-selecting-icon {
 }
 
 body.lg div.selector a.selecting {
-	background: -moz-linear-gradient(center top, #E3E3E3, #F9F9F9) repeat
-		scroll 0 0 transparent;
-	background: -webkit-gradient(linear, left bottom, left top, from(#F9F9F9),
-		to(#E3E3E3) ) #DDDDDD;
+	background: -moz-linear-gradient(center top, #E3E3E3, #F9F9F9) repeat scroll 0 0 transparent;
+	background: -webkit-gradient(linear, left bottom, left top, from(#F9F9F9), to(#E3E3E3) ) #DDDDDD;
 }
 
 body.lg div.next-button a.button {
@@ -994,7 +1036,7 @@ body.lg div.wizard-body span.note {
 
 body.lg a.info {
 	background: url("../images/info.png") no-repeat scroll 0 0 transparent;
-	display: none;
+	display: inline-block;
 	float: right;
 	height: 16px;
 	margin-right: 0;
@@ -1015,7 +1057,6 @@ body.lg a.info:hover {
 body.lg div.wizard-body div.selector {
 	background-color: #DAF4DA;
 	border: 1px solid #A2CFA4;
-	border-radius: 5px 5px 5px 5px;
 	clear: both;
 	margin: 5px 0 10px;
 	padding: 5px;
@@ -1265,27 +1306,34 @@ body.lg div.wizard-body ul.date-checkboxes li span.dateFrags input {
 	margin-left: 5px;
 }
 
-body.lg div.action-buttons {
-	background-color: #E3E9FF;
-	border-top: 1px solid #BBCCFF;
-	bottom: 32px;
-	left: 0;
-	display: none;
-	padding-bottom: 7px;
-	padding-top: 9px;
-	position: fixed;
-	text-align: center;
-	width: 300px;
+body.lg div.action-bar {
+    background-color: #E3E9FF;
+    border-top: 1px solid #BBCCFF;
+    bottom: 0;
+    display: block;
+    height: 24px;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    position: fixed;
+    text-align: center;
+    width: 300px;
 }
-
-body.lg div.wizard-panel div.action-buttons a.button {
+body.lg div.action-bar div.action-buttons {
+    display:none;
+}
+body.lg div.action-bar div.action-buttons a.button {
 	font-size: 14px;
 	font-weight: bold;
 	margin-left: 0;
 	color: #FFFFFF;
 }
-
-body.lg div.wizard-panel div.action-buttons a.button.undo {
+body.lg div.action-bar a.button.finish {
+    font-size: 14px;
+    font-weight: bold;
+    margin-left: 0;
+    color: #FFFFFF;
+}
+body.lg div.action-bar div.action-buttons a.button.undo {
 	background: -moz-linear-gradient(center top, #D68C8C, #742F2F) repeat
 		scroll 0 0 transparent;
 	background: -webkit-gradient(linear, left bottom, left top, from(#742F2F),
@@ -1294,7 +1342,7 @@ body.lg div.wizard-panel div.action-buttons a.button.undo {
 	display: none;
 }
 
-body.lg div.wizard-panel div.action-buttons a.button.preview {
+body.lg div.action-bar div.action-buttons a.button.preview {
 	background: -moz-linear-gradient(center top, #8FD68C, #32742F) repeat
 		scroll 0 0 transparent;
 	background: -webkit-gradient(linear, left bottom, left top, from(#742F2F),
@@ -1302,7 +1350,7 @@ body.lg div.wizard-panel div.action-buttons a.button.preview {
 	text-shadow: 1px 1px #153E19;
 }
 
-body.lg div.wizard-panel div.action-buttons a.button.update {
+body.lg div.action-bar div.action-buttons a.button.update {
 	background: -moz-linear-gradient(center top, #79B1FE, #294F8C) repeat
 		scroll 0 0 transparent;
 	background: -webkit-gradient(linear, left bottom, left top, from(#294F8C),
@@ -1310,7 +1358,15 @@ body.lg div.wizard-panel div.action-buttons a.button.update {
 	text-shadow: 1px 1px #1E2E6A;
 }
 
-body.lg div.wizard-panel div.action-buttons a.button.undo:active {
+body.lg div.action-bar a.button.finish {
+    background: -moz-linear-gradient(center top, #79B1FE, #294F8C) repeat
+        scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#294F8C),
+        to(#79B1FE) ) #DDDDDD;
+    text-shadow: 1px 1px #1E2E6A;
+}
+
+body.lg div.action-bar div.action-buttons a.button.undo:active {
 	background: -moz-linear-gradient(center top, #742F2F, #D68C8C) repeat
 		scroll 0 0 transparent;
 	background: -webkit-gradient(linear, left bottom, left top, from(#D68C8C),
@@ -1318,7 +1374,7 @@ body.lg div.wizard-panel div.action-buttons a.button.undo:active {
 	text-shadow: 1px 1px #5B1B1B;
 }
 
-body.lg div.wizard-panel div.action-buttons a.button.preview:active {
+body.lg div.action-bar div.action-buttons a.button.preview:active {
 	background: -moz-linear-gradient(center top, #32742F, #8FD68C) repeat
 		scroll 0 0 transparent;
 	background: -webkit-gradient(linear, left bottom, left top, from(#8FD68C),
@@ -1326,12 +1382,20 @@ body.lg div.wizard-panel div.action-buttons a.button.preview:active {
 	text-shadow: 1px 1px #153E19;
 }
 
-body.lg div.wizard-panel div.action-buttons a.button.update:active {
+body.lg div.action-bar div.action-buttons a.button.update:active {
 	background: -moz-linear-gradient(center top, #294F8C, #79B1FE) repeat
 		scroll 0 0 transparent;
 	background: -webkit-gradient(linear, left bottom, left top, from(#79B1FE),
 		to(#294F8C) ) #DDDDDD;
 	text-shadow: 1px 1px #153E19;
+}
+
+body.lg div.action-bar a.button.finish:active {
+    background: -moz-linear-gradient(center top, #294F8C, #79B1FE) repeat
+        scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#79B1FE),
+        to(#294F8C) ) #DDDDDD;
+    text-shadow: 1px 1px #153E19;
 }
 
 body.lg div.wizard-body div.updateBG {
@@ -1344,7 +1408,6 @@ body.lg div.wizard-body div.updateBG {
 body.lg div.wizard-body div.measurementSearch {
 	background-color: #FFFFC9;
 	border: 1px solid #E3E3E3;
-	border-radius: 5px 5px 5px 5px;
 	padding: 10px;
 }
 
@@ -1384,12 +1447,11 @@ body.lg .fbs-pane {
 }
 
 body.lg div.rangeSelect div.range {
-	background-color: #FFFFFF;
-	border: 1px solid #DDDDDD;
-	margin-top: 0;
-	padding: 5px;
-	text-align: left;
-	display: none;
+    background-color: #FFFFFF;
+    border: 1px solid #DDDDDD;
+    margin-top: 5px;
+    padding: 5px;
+    text-align: left;
 }
 
 body.lg div.rangeSelect div.range span {
@@ -1459,6 +1521,10 @@ body.lg div.ui-datepicker .ui-state-hover {
 	border: 1px solid #CCCCCC;
 	color: #333333;
 	font-weight: bold;
+}
+
+body.lg div.description-body {
+	padding: 10px;
 }
 
 /* Dark skin */

@@ -6,7 +6,7 @@
  * wizard panel.
  * 
  */
-var enumerationWizard = {
+var LinkedGov_enumerationWizard = {
 
 		/*
 		 * elmts: an object that contains the bound HTML elements for the
@@ -34,7 +34,7 @@ var enumerationWizard = {
 				/*
 				 * Display the "working..." sign
 				 */
-				LinkedGov.showWizardProgress(true);
+				LG.showWizardProgress(true);
 
 				/*
 				 * Attempt to nullify all missing values
@@ -84,7 +84,7 @@ var enumerationWizard = {
 					var symbol = symbolList[i].symbol;
 					var enumeratedValue = symbolList[i].enumVal;
 
-					LinkedGov.silentProcessCall({
+					LG.silentProcessCall({
 						type : "POST",
 						url : "/command/" + "core" + "/" + "mass-edit",
 						data : {
@@ -118,8 +118,8 @@ var enumerationWizard = {
 		onFail : function(message) {
 			var self = this;
 			alert("Enumeration wizard failed.\n\n" + message);
-			LinkedGov.resetWizard(self.vars.elmts.enumerationBody);
-			LinkedGov.showWizardProgress(false);
+			LG.resetWizard(self.vars.elmts.enumerationBody);
+			LG.showWizardProgress(false);
 		},
 
 		/*
@@ -127,10 +127,10 @@ var enumerationWizard = {
 		 */
 		onComplete : function() {
 			var self = this;
-			LinkedGov.resetWizard(self.vars.elmts.enumerationBody);
-			LinkedGov.showUndoButton(self.vars.elmts.enumerationBody);
+			LG.resetWizard(self.vars.elmts.enumerationBody);
+			LG.showUndoButton(self.vars.elmts.enumerationBody);
 			Refine.update({modelsChanged:true});
-			LinkedGov.showWizardProgress(false);
+			LG.showWizardProgress(false);
 		}
 
 };

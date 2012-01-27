@@ -1,0 +1,52 @@
+<div class="description-body" bind="description-panel">
+
+	<!-- h2>Labels and descriptions</h2 -->
+	<div class="description">
+		<p>To make this data searchable and useful for others to use on
+			the web, it's important that the columns have meaningful names and
+			small one-line descriptions. It is not expected that there is an
+			appropriate description for the rows and columns, however please try
+			to provide them with a decent label.</p>
+
+		<p>Key:</p>
+		<ul class="key">
+			<li><img src="/extension/linkedgov/images/error.png" /> - Bad
+				label</li>
+			<li><img src="/extension/linkedgov/images/unknown.png" /> -
+				Needs checking</li>
+			<li><img src="/extension/linkedgov/images/good.png" /> - Good
+				label, but no description</li>
+			<li><img src="/extension/linkedgov/images/great.png" /> -
+				Great!</li>
+		</ul>
+	</div>
+        <h3>Rows</h3>
+	<div class="description">
+
+
+		<p>What is each row of data describing?,
+			e.g. a "civil servant" :</p>
+		<div class="row-description">
+			<input class='row-label' type="text" value='Each row is a...' />
+			<textarea class='row-description' value='Enter a description...'>Enter a description...</textarea>
+		</div>
+	</div>
+        <h3>Columns</h3>
+	<div class="description">
+
+		<p>Please try to make the column names as helpful and as readable
+			as possible. For example, if a column contains postcodes with the
+			name "Column 3", it would be much more useful to name it "Postcodes".</p>
+
+		<div class="column-list">
+			<!-- fs -->
+		</div>
+	</div>
+</div>
+<!-- end description-panel -->
+
+<div class="action-buttons">
+    <a href="javascript:{}" class="button undo" title="Undo">Undo</a>
+	<a href="javascript:{}" id="descriptionButton"
+		class="button update save" title="Save">Save</a>
+</div>

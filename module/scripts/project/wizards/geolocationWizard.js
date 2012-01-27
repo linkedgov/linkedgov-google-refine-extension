@@ -8,7 +8,7 @@
  * the geolocation types.
  * 
  */
-var geolocationWizard = {
+var LinkedGov_geolocationWizard = {
 
 		vars : {
 			elmts : {},
@@ -25,7 +25,7 @@ var geolocationWizard = {
 				},
 				lg : {
 					curie: "lg",
-					uri: LinkedGov.vars.lgNameSpace
+					uri: LG.vars.lgNameSpace
 				}
 			},
 			unexpectedValueRegex : 'grel:if(isBlank(value),"float",if(type(value) == "number",(if(value % 1 == 0,"int","float")),if(((type(value.match(/\\b\\d{4}[\\-]\\d{1,2}[\\-]\\d{1,2}\\b/))=="array")),"error","error"))))'
@@ -44,7 +44,7 @@ var geolocationWizard = {
 				self.vars.historyRestoreID = 0;
 			}
 
-			LinkedGov.showWizardProgress(true);
+			LG.showWizardProgress(true);
 
 			self.vars.elmts = elmts;
 
@@ -66,7 +66,7 @@ var geolocationWizard = {
 				 * Convert the lat/long columns to numbers before operating on them
 				 */
 				self.convertColumnsToNumber(0,function(){
-					LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
+					LG.rdfOps.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
 						self.saveRDF(rootNode, foundRootNode);
 					});
 				});
@@ -122,7 +122,7 @@ var geolocationWizard = {
 
 			var self = this;
 
-			LinkedGov.silentProcessCall({
+			LG.silentProcessCall({
 				type : "POST",
 				url : "/command/" + "core" + "/" + "text-transform",
 				data : {
@@ -185,8 +185,8 @@ var geolocationWizard = {
 			var self = this;
 
 			var obj = {
-					"uri" : self.vars.vocabs.lg.uri+LinkedGov.camelize(self.vars.coordinateName),
-					"curie" : self.vars.vocabs.lg.curie+":"+LinkedGov.camelize(self.vars.coordinateName),
+					"uri" : self.vars.vocabs.lg.uri+LG.camelize(self.vars.coordinateName),
+					"curie" : self.vars.vocabs.lg.curie+":"+LG.camelize(self.vars.coordinateName),
 					"target" : {
 						"nodeType" : "cell-as-resource",
 						"expression" : "value+\"#point\"",
@@ -320,7 +320,7 @@ var geolocationWizard = {
 
 			rootNode.links.push(obj);
 
-			var schema = LinkedGov.getRDFSchema();
+			var schema = LG.rdfOps.getRDFSchema();
 
 			if (!newRootNode) {
 				log("rootNode has already been updated...");
@@ -394,8 +394,8 @@ var geolocationWizard = {
 			var self = this;
 			alert("Geolocation wizard failed.\n\n" + message);
 			self.vars.coordinateName = "";
-			LinkedGov.resetWizard(self.vars.elmts.geolocationBody);
-			LinkedGov.showWizardProgress(false);
+			LG.resetWizard(self.vars.elmts.geolocationBody);
+			LG.showWizardProgress(false);
 		},
 
 		/*
@@ -407,17 +407,17 @@ var geolocationWizard = {
 
 			Refine.update({everythingChanged : true}, function() {
 
-				LinkedGov.resetWizard(self.vars.elmts.geolocationBody);
-				LinkedGov.showUndoButton(self.vars.elmts.geolocationBody);
+				LG.resetWizard(self.vars.elmts.geolocationBody);
+				LG.showUndoButton(self.vars.elmts.geolocationBody);
 				// Add typed class to column headers
-				LinkedGov.showWizardProgress(false);
+				LG.showWizardProgress(false);
 
 				/*
 				 * We can check the columns contain floats or ints depending on 
 				 * what the user has specified.
 				 */
 				var colObjects = self.prepareColumnObjectsForValueTest();
-				LinkedGov.checkForUnexpectedValues(colObjects, self.vars.elmts.geolocationBody);
+				LG.ops.checkForUnexpectedValues(colObjects, self.vars.elmts.geolocationBody);
 
 				self.vars.coordinateName = "";
 
@@ -479,13 +479,13 @@ var geolocationWizard = {
 			/*
 			 * Display the "working..." sign
 			 */
-			LinkedGov.showWizardProgress(true);
+			LG.showWizardProgress(true);
 
 			/*
 			 * Convert the lat/long columns to numbers before operating on them
 			 */
 			self.convertColumnsToNumber(0,function(){
-				LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
+				LG.rdfOps.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
 					self.saveRDF(rootNode, foundRootNode);
 				});
 			});

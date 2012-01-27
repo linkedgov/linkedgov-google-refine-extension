@@ -10,7 +10,7 @@
  * store a URI, label and class for the measurement.
  * 
  */
-var measurementsWizard = {
+var LinkedGov_measurementsWizard = {
 
 		/*
 		 * elmts: an object that contains the bound HTML elements for the
@@ -56,12 +56,12 @@ var measurementsWizard = {
 					/*
 					 * Display the "working..." sign
 					 */
-					LinkedGov.showWizardProgress(true);
+					LG.showWizardProgress(true);
 
 					/*
 					 * Save the RDF.
 					 */
-					LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
+					LG.rdfOps.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
 						self.saveRDF(rootNode, foundRootNode);
 					});
 
@@ -130,7 +130,7 @@ var measurementsWizard = {
 			 * Loop through the column objects, check if there's existing RDF in the schema for 
 			 * any of the columns, add/replace the newly generated RDF object.
 			 */
-			var schema = LinkedGov.getRDFSchema();
+			var schema = LG.rdfOps.getRDFSchema();
 
 			var colObjects = self.vars.colObjects;
 
@@ -141,7 +141,7 @@ var measurementsWizard = {
 				/*
 				 * Camel-case & trim whitespace to use as URI slug
 				 */
-				var camelColName = LinkedGov.camelize(colObjects[i].name);
+				var camelColName = LG.camelize(colObjects[i].name);
 
 				/*
 				 * Check to see if there's an existing mapping for the column name
@@ -161,13 +161,13 @@ var measurementsWizard = {
 				 * Recursive function to compute a facet for each column to find 
 				 * the most frequently occuring value type (int, float, string...)
 				 */
-				var type = LinkedGov.findHighestFacetValue(colObjects[i].name,expression);
+				var type = LG.ops.findHighestFacetValue(colObjects[i].name,expression);
 
 				//log("Finding type of measurement column...");
 				//log("colObjects[i].name: "+colObjects[i].name);
 				//log("type: "+type);
 				
-				LinkedGov.parseValueTypesInColumn(type, colObjects[i].name);
+				LG.ops.parseValueTypesInColumn(type, colObjects[i].name);
 				
 				var o =  {
 		            	  "uri" : uri,
@@ -203,7 +203,7 @@ var measurementsWizard = {
 
 			} // end for
 
-			var schema = LinkedGov.getRDFSchema();
+			var schema = LG.rdfOps.getRDFSchema();
 
 			if (!newRootNode) {
 				log("rootNode has already been updated...");
@@ -233,8 +233,8 @@ var measurementsWizard = {
 		onFail : function(message) {
 			var self = this;
 			alert("Measurments wizard failed.\n\n" + message);
-			LinkedGov.resetWizard(self.vars.elmts.measurementsBody);
-			LinkedGov.showWizardProgress(false);
+			LG.resetWizard(self.vars.elmts.measurementsBody);
+			LG.showWizardProgress(false);
 		},
 
 		/*
@@ -242,10 +242,9 @@ var measurementsWizard = {
 		 */
 		onComplete : function() {
 			var self = this;
-			LinkedGov.resetWizard(self.vars.elmts.measurementsBody);
-			LinkedGov.showUndoButton(self.vars.elmts.measurementsBody);
-			//LinkedGov.summariseWizardHistoryEntry("Measurements wizard", self.vars.historyRestoreID);
-			LinkedGov.showWizardProgress(false);
+			LG.resetWizard(self.vars.elmts.measurementsBody);
+			LG.showUndoButton(self.vars.elmts.measurementsBody);
+			LG.showWizardProgress(false);
 		}
 
 };

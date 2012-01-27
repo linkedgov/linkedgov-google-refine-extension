@@ -1,4 +1,3 @@
-
 /*
  * columnsToRowsWizard
  * 
@@ -31,7 +30,7 @@
  * 5. fillDownColumns() Fills in all the blank cells as a result of the rotate.
  * 
  */
-var columnsToRowsWizard = {
+var LinkedGov_columnsToRowsWizard = {
 
 		vars : {
 			startColName : "",
@@ -64,7 +63,7 @@ var columnsToRowsWizard = {
 
 				log("Starting columnsToRowsWizard");
 
-				LinkedGov.showWizardProgress(true);
+				LG.showWizardProgress(true);
 
 				/*
 				 * Recalculate which columns are going to be transposed, taking into
@@ -78,7 +77,7 @@ var columnsToRowsWizard = {
 				 */
 				$(elmts.columnsToRowsColumns).children("li").find("span.col").each(function(){
 					//log("Removing RDF for: "+$(this).html());
-					LinkedGov.removeColumnInRDF($(this).html());
+					LG.rdfOps.removeColumnInRDF($(this).html());
 				});
 				
 				/*
@@ -89,7 +88,7 @@ var columnsToRowsWizard = {
 				 * Passing self.transpose() as a parameter calls it immediately for
 				 * some reason.
 				 */
-				LinkedGov.setBlanksToNulls(true,theProject.columnModel.columns,0,function() {
+				LG.ops.setBlanksToNulls(true,theProject.columnModel.columns,0,function() {
 							/*
 							 * If a gap has been detected, reorder the
 							 * columns first.
@@ -197,7 +196,7 @@ var columnsToRowsWizard = {
 
 			if (self.vars.colsToSkip.length > 0) {
 
-				LinkedGov.silentProcessCall({
+				LG.silentProcessCall({
 					type : "POST",
 					url : "/command/" + "core" + "/" + "move-column",
 					data : {
@@ -256,7 +255,7 @@ var columnsToRowsWizard = {
 			var valColName = window.prompt("Now enter a name for the new column that will contain it's values:","");
 			log(valColName);
 			
-			LinkedGov.silentProcessCall({
+			LG.silentProcessCall({
 				type : "POST",
 				url : "/command/" + "core" + "/" + "transpose-columns-into-rows",
 				data : {
@@ -297,11 +296,11 @@ var columnsToRowsWizard = {
 			/*
 			 * Reset any null cells to blanks again, using the "false" flag
 			 */
-			LinkedGov.setBlanksToNulls(false, theProject.columnModel.columns, 0,function() {
+			LG.ops.setBlanksToNulls(false, theProject.columnModel.columns, 0,function() {
 				log("Columns to rows wizard failed.\n\n" + message);
 				Refine.update({everythingChanged : true});
-				LinkedGov.resetWizard(self.vars.elmts.columnsToRowsBody);
-				LinkedGov.showWizardProgress(false);
+				LG.resetWizard(self.vars.elmts.columnsToRowsBody);
+				LG.showWizardProgress(false);
 			});
 		},
 
@@ -317,7 +316,7 @@ var columnsToRowsWizard = {
 			/*
 			 * Reset any null cells to blanks again, using the "false" flag
 			 */
-			LinkedGov.setBlanksToNulls(false, theProject.columnModel.columns, 0, function() {
+			LG.ops.setBlanksToNulls(false, theProject.columnModel.columns, 0, function() {
 				
 				log("Columns to rows wizard complete");
 				Refine.update({everythingChanged:true},function(){
@@ -325,10 +324,9 @@ var columnsToRowsWizard = {
 					ui.typingPanel.rangeSelector($(self.vars.elmts.columnsToRowsBody).find("div.range").find("select").eq(0));
 					ui.typingPanel.populateRangeSelector($(self.vars.elmts.columnsToRowsBody).find("div.range"), function(){
 						$(self.vars.elmts.columnsToRowsBody).find("div.range").slideDown();					
-						LinkedGov.resetWizard(self.vars.elmts.columnsToRowsBody);
-						LinkedGov.showUndoButton(self.vars.elmts.columnsToRowsBody);
-						//LinkedGov.summariseWizardHistoryEntry("Multiple columns wizard", self.vars.historyRestoreID);
-						LinkedGov.showWizardProgress(false);
+						LG.resetWizard(self.vars.elmts.columnsToRowsBody);
+						LG.showUndoButton(self.vars.elmts.columnsToRowsBody);
+						LG.showWizardProgress(false);
 					});
 				});
 

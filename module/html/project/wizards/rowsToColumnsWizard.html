@@ -1,4 +1,4 @@
-<div class="wizard-body" bind="rowsToColumnsBody">
+<div class="wizard-body" bind="rowsToColumnsBody" rel="rowsToColumnsWizard">
 
     <h2>
     Rows to columns wizard
@@ -25,22 +25,21 @@
 	</div>
 	<p class="label">Select the column containing multiple types:</p>
 	<div class="selector">
-		<a class="button selectColumn single-column" id="rowsToColumnsSelect">Start Select</a> <a class="info"> <!-- info -->
+		<a class="button selectColumn single-column" id="rowsToColumnsSelect">Pick column</a> <a class="info"> <!-- info -->
 		</a> <span class="note">To select multiple column headings, hold
 			down CTRL (Windows) or Apple (Mac). You can also drag your mouse
 			across multiple column headers while holding down the relevant key.<br />
 			<br />Click anywhere in the table to unselect the columns.
 		</span>
 
-		<ul class="selected-columns single-column"
-			bind="rowsToColumnsColumns">
+		<ul class="selected-columns single-column" bind="rowsToColumnsColumns">
 		</ul>
 	</div>
 
 	<p class="label">Select the column containing their corresponding
 		values:</p>
 	<div class="selector">
-		<a class="button 2 selectColumn" id="rowsToColumnsSelect2">Start Select</a> <a class="info"> <!-- info -->
+		<a class="button 2 selectColumn" id="rowsToColumnsSelect2">Pick column</a> <a class="info"> <!-- info -->
 		</a> <span class="note">To select multiple column headings, hold
 			down CTRL (Windows) or Apple (Mac). You can also drag your mouse
 			across multiple column headers while holding down the relevant key.<br />
@@ -54,7 +53,7 @@
 	<p class="label">Select the columns that contain values that do not
 		correspond to the multiple types (i.e. a "Totals" column):</p>
 	<div class="selector">
-		<a class="button 3 selectColumn" id="rowsToColumnsSelect3">Start Select</a> <a class="info"> <!-- info -->
+		<a class="button 3 selectColumn" id="rowsToColumnsSelect3">Pick column</a> <a class="info"> <!-- info -->
 		</a> <span class="note">To select multiple column headings, hold
 			down CTRL (Windows) or Apple (Mac). You can also drag your mouse
 			across multiple column headers while holding down the relevant key.<br />
@@ -68,9 +67,3 @@
 
 </div>
 <!-- end multiple value wizard -->
-
-<div class="action-buttons" rel="rowsToColumnsWizard">
-    <a href="javascript:{}" class="button undo" title="Undo">Undo</a>
-	<a href="javascript:{}" bind="rowsToColumnsButton"
-		class="button update" title="Update">Update</a>
-</div>

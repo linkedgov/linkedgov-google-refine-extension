@@ -1,4 +1,4 @@
-<div class="wizard-body" bind="addressBody">
+<div class="wizard-body" bind="addressBody" rel="addressWizard">
 
 	<h2>
 	Address wizard
@@ -7,7 +7,7 @@
        </span>
 	</h2>
 	
-<div class="description">
+    <div class="description">
 	<p>
 		The address wizard will attempt to understand and format any address information in the data. 
 		An address may be contained within a single column (with the various parts split by comma for example) 
@@ -20,7 +20,7 @@
 		in their own columns, you may then select those columns and specify what parts of the address 
 		they contain.
 	</p>
-</div>
+    </div>
 
 	<input bind="addressSplit" type="checkbox" class="split"
 		id="address-split"> <label for="address-split">Split
@@ -30,10 +30,10 @@
 		<br />If a column contains multiple address parts in each cell, e.g.
 		"Street, District, City", you can specify what type of character (",")
 		to split the column by.</span>
-	<div class="split">
 	
+	<div class="split">
 		<div class="selector">
-			<a class="button selectColumn splitter">Start Select</a> <a
+			<a class="button selectColumn splitter">Pick column</a> <a
 				class="info"> <!-- info --> </a> <span class="note">To select
 				multiple column headings, hold down CTRL (Windows) or Apple (Mac).
 				You can also drag your mouse across multiple column headers while
@@ -53,7 +53,7 @@
 	</div>
 
 	<div class="selector">
-		<a class="button selectColumn" id="addressSelect">Start Select</a> <a
+		<a class="button selectColumn" id="addressSelect">Pick column</a> <a
 			class="info"> <!-- info --> </a> <span class="note">To select
 			multiple column headings, hold down CTRL (Windows) or Apple (Mac).
 			You can also drag your mouse across multiple column headers while
@@ -65,8 +65,3 @@
 	</div>	
 
 </div><!-- end address wizard -->
-
-<div class="action-buttons" rel="addressWizard">
-    <a href="javascript:{}" class="button undo" title="Undo">Undo</a>
-		<a href="javascript:{}" bind="addressButton" class="button update" title="Update">Update</a>
-	</div>	

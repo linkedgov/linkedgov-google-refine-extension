@@ -18,7 +18,7 @@
  * specified as a duration is described using a "Gregorian Interval" URI set from data.gov.uk.
  * 
  */
-var dateTimeWizard = {
+var LinkedGov_dateTimeWizard = {
 
 		vars : {
 			columns : [],
@@ -33,7 +33,7 @@ var dateTimeWizard = {
 				},
 				lg : {
 					curie: "lg",
-					uri : LinkedGov.vars.lgNameSpace
+					uri : LG.vars.lgNameSpace
 				}
 			},
 			unexpectedValueRegex:'grel:if(isBlank(value),"date",if(type(value) == "date","date",if(isError(toDate(value).toString("HH:mm:ss")),"error","date")))'
@@ -101,7 +101,7 @@ var dateTimeWizard = {
 					/*
 					 * Display the "working..." sign
 					 */
-					LinkedGov.showWizardProgress(true);
+					LG.showWizardProgress(true);
 
 					/*
 					 * Store the column names and their options
@@ -114,7 +114,7 @@ var dateTimeWizard = {
 					self.checkForMultiColumnDateTimes(function() {
 						self.checkCombinations(function() {
 							//log("Checking schema...");
-							LinkedGov.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
+							LG.rdfOps.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
 								//log("About to save RDF...");
 								self.saveRDF(rootNode, foundRootNode);
 							});
@@ -481,7 +481,7 @@ var dateTimeWizard = {
 						});
 
 						for(var i=0;i<cols.length;i++){
-							LinkedGov.removeColumn(cols[i]);
+							LG.ops.removeColumn(cols[i]);
 							if(i == cols.length-1){
 								Refine.update({modelsChanged:true},function(){
 									callback();
@@ -675,7 +675,7 @@ var dateTimeWizard = {
 						}
 					}
 
-					LinkedGov.silentProcessCall({
+					LG.silentProcessCall({
 						type : "POST",
 						url : "/command/" + "core" + "/" + "text-transform",
 						data : {
@@ -700,7 +700,7 @@ var dateTimeWizard = {
 				 * The GREL function toDate() takes a boolean for the 'month before day'
 				 * value, which changes the order of the month-day in the date.
 				 */
-				LinkedGov.silentProcessCall({
+				LG.silentProcessCall({
 					type : "POST",
 					url : "/command/" + "core" + "/" + "text-transform",
 					data : {
@@ -739,7 +739,7 @@ var dateTimeWizard = {
 
 			var colName = colObject.name;
 			var combi = colObject.combi;
-			var camelColName = LinkedGov.camelize(colName);
+			var camelColName = LG.camelize(colName);
 
 			/*
 			 * Create the time:Instant object - using the column name 
@@ -842,7 +842,7 @@ var dateTimeWizard = {
 
 			var colName = colObject.name;
 			var combi = colObject.combi;
-			var camelColName = LinkedGov.camelize(colName);
+			var camelColName = LG.camelize(colName);
 
 			var o = {
 					"uri":self.vars.vocabs.lg.uri+camelColName,
@@ -928,7 +928,7 @@ var dateTimeWizard = {
 
 			var colName = colObject.name;
 			var mb4d = colObject.monthBeforeDay;
-			var camelColName = LinkedGov.camelize(colName);
+			var camelColName = LG.camelize(colName);
 
 			/*
 			 * To make sure we have the date format needed to type it as 
@@ -966,7 +966,7 @@ var dateTimeWizard = {
 
 			var colName = colObject.name;
 			var mb4d = colObject.monthBeforeDay;
-			var camelColName = LinkedGov.camelize(colName);
+			var camelColName = LG.camelize(colName);
 
 			var o = {
 					"uri":self.vars.vocabs.lg.uri+camelColName,
@@ -1001,7 +1001,7 @@ var dateTimeWizard = {
 
 			var colName = colObject.name;
 			var mb4d = colObject.monthBeforeDay;
-			var camelColName = LinkedGov.camelize(colName);
+			var camelColName = LG.camelize(colName);
 
 			var o = {
 					"uri":self.vars.vocabs.lg.uri+camelColName,
@@ -1035,7 +1035,7 @@ var dateTimeWizard = {
 
 			var colName = colObject.name;
 			var mb4d = colObject.monthBeforeDay;
-			var camelColName = LinkedGov.camelize(colName);	
+			var camelColName = LG.camelize(colName);	
 			var unit = colObject.durationUnit;
 			var value = colObject.durationValue;
 
@@ -1145,7 +1145,7 @@ var dateTimeWizard = {
 			/*
 			 * Check to see if the RDF needs to be added to the schema.
 			 */
-			var schema = LinkedGov.getRDFSchema();
+			var schema = LG.rdfOps.getRDFSchema();
 			if (!newRootNode) {
 				/*
 				 * rootNode is a pointer object, so changes have been made to the
@@ -1179,8 +1179,8 @@ var dateTimeWizard = {
 		onFail : function(message) {
 			var self = this;
 			alert("Date and time wizard failed.\n\n" + message);
-			LinkedGov.resetWizard(self.vars.elmts.dateTimeBody);
-			LinkedGov.showWizardProgress(false);
+			LG.resetWizard(self.vars.elmts.dateTimeBody);
+			LG.showWizardProgress(false);
 		},
 
 		/*
@@ -1192,9 +1192,9 @@ var dateTimeWizard = {
 			Refine.update({
 				everythingChanged : true
 			}, function() {
-				LinkedGov.resetWizard(self.vars.elmts.dateTimeBody);
-				LinkedGov.showUndoButton(self.vars.elmts.dateTimeBody);
-				LinkedGov.showWizardProgress(false);
+				LG.resetWizard(self.vars.elmts.dateTimeBody);
+				LG.showUndoButton(self.vars.elmts.dateTimeBody);
+				LG.showWizardProgress(false);
 
 				/*
 				 * We can check a column contains either a date, a time or a date-time 
@@ -1204,7 +1204,7 @@ var dateTimeWizard = {
 					var colObjects = self.prepareColumnObjectsForValueTest();
 					log('colObjects');
 					log(colObjects);
-					LinkedGov.checkForUnexpectedValues(colObjects, self.vars.elmts.dateTimeBody);
+					LG.ops.checkForUnexpectedValues(colObjects, self.vars.elmts.dateTimeBody);
 				}
 
 			});
@@ -1263,7 +1263,7 @@ var dateTimeWizard = {
 			/*
 			 * Display the "working..." sign
 			 */
-			LinkedGov.showWizardProgress(true);
+			LG.showWizardProgress(true);
 
 			self.checkForMultiColumnDateTimes(function() {
 				self.checkCombinations(function() {

@@ -1,0 +1,44 @@
+<ul class="lg-tabs">
+    <li><a href="javascript:{}" rel="wizards-panel">Wizards</a></li>
+    <li><a href="javascript:{}" rel="linking-panel">Linking</a></li>
+    <li><a href="javascript:{}" rel="labelling-panel">Labelling</a></li>
+</ul>
+
+<div id="intro-message">
+    <p>Begin by picking one of the tabs above.</p>
+    <ul>
+        <li>Wizards - step by step tasks to help you clean and enrich your data</li>
+        <li>Linking - let us see if we can link your data to existing data on the web</li>
+        <li>Labelling - make it easier for other people to understand your data</li>
+    </ul>
+</div>
+
+<div id="wizards-panel" class="typing-panel-body" bind="wizardsPanel">
+
+</div> 
+<!-- end wizard panel -->
+
+<div id="linking-panel" class="typing-panel-body" bind="linkingPanel">
+    <p>Linking panel</p>
+</div> 
+<!-- end linking panel -->
+
+<div id="labelling-panel" class="typing-panel-body" bind="labellingPanel">
+    <p>Labelling panel</p>
+</div> 
+<!-- end labelling panel -->
+
+<div class="action-bar" bind="actionBar">
+
+    <div class="return-button"><a class="button" bind="returnButton">Back</a></div>
+    
+    <div class="action-buttons">
+        <a href="javascript:{}" class="button undo" title="Undo" bind="undoButton">Undo</a>
+        <a href="javascript:{}" class="button update" title="Update" bind="updateButton">Update</a>
+    </div>  
+    
+    <div class="finish-button"><a class="button finish" bind="finishButton">Finish</a></div>
+    
+    <a class="collapse-expand button" title="Collapse wizards" bind="collapseExpandButton">-</a>
+
+</div>
