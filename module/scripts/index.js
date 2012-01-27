@@ -390,6 +390,8 @@ var LinkedGov = {
 			var self = this;
 
 			$.each(LinkedGov.vars.metadataObject,function(key,val){
+				$.post("/command/core/set-preference?name="+key+"&value="+encodeURIComponent(val)+"&project="+projectID);
+				/*
 				$.ajax({
 					type: "POST",
 					url: "/command/core/set-preference?" + $.param({ 
@@ -399,6 +401,7 @@ var LinkedGov = {
 					}),
 					dataType: "json"
 				});
+				*/
 			});
 
 			callback(jobID,projectID);

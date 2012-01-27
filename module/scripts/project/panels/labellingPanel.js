@@ -8,9 +8,15 @@
  */
 var LinkedGov_LabellingPanel = {
 
-		vars : {
-			illegalChars : [ "*", "@", "%", ":", "=", "&", "<", ">", "/", "\\", "."],
-			body:$("div#labelling-panel")
+		/*
+		 * Inject the labellingPanel HTML
+		 */
+		loadHTML: function(){
+			/*
+			 * Load the wizard questions
+			 */
+			ui.typingPanel._el.labellingPanel.html(DOM.loadHTML("linkedgov", "html/project/panels/labellingPanel.html"));
+
 		},
 
 		/*
@@ -20,10 +26,12 @@ var LinkedGov_LabellingPanel = {
 		 * the input elements need to built and populated with the column headers - or - 
 		 * any existing labels and descriptions from a previous session.
 		 */
-		intialisePanel : function() {
+		initialise : function() {
 
 			var self = this;
-			//log("buildDescriptionPanel");
+
+			this.illegalChars = [ "*", "@", "%", ":", "=", "&", "<", ">", "/", "\\", "."];
+			this.body = ui.typingPanel._el.labellingPanel;
 
 			var labelData = LG.vars.labelsAndDescriptions; 
 			var colData = labelData.cols;
@@ -31,8 +39,8 @@ var LinkedGov_LabellingPanel = {
 			/*
 			 * Add an on "focus" listener to the row label and description inputs
 			 */
-			$("div.description-panel div.row-description input, " +
-			"div.description-panel div.row-description textarea").live("focus",function(){
+			$("div.row-description input, " +
+			"div.row-description textarea").live("focus",function(){
 				$("table.data-table > tbody > tr.odd > td ").css("background-color",$("div.row-description input").css("background-color"));
 				if($(this).hasClass("row-label") && $(this).val() == "Each row is a..."){
 					$(this).val("");
@@ -44,8 +52,8 @@ var LinkedGov_LabellingPanel = {
 			/*
 			 * Add an on "key up" listener to the row label and description inputs
 			 */
-			$("div.description-panel div.row-description input, " +
-			"div.description-panel div.row-description textarea").live("keyup",function(){
+			$("div.row-description input, " +
+			"div.row-description textarea").live("keyup",function(){
 				self.checkRowDescription($(this).parent());
 				$("table.data-table > tbody > tr.odd > td ").css("background-color",$("div.row-description input").css("background-color"));
 			});
@@ -53,8 +61,8 @@ var LinkedGov_LabellingPanel = {
 			/*
 			 * Add an on "blur" listener to the row label and description inputs
 			 */
-			$("div.description-panel div.row-description input, " +
-			"div.description-panel div.row-description textarea").live("blur",function(){
+			$("div.row-description input, " +
+			"div.row-description textarea").live("blur",function(){
 
 				/*
 				 * Highlight the rows in the table to indicate to the user they 
@@ -81,8 +89,8 @@ var LinkedGov_LabellingPanel = {
 			/*
 			 * Add an on "focus" listener to the column label and description inputs
 			 */
-			$("div.description-panel div.column-list ul li input.column-label, " +
-			"div.description-panel div.column-list ul li textarea.column-description").live("focus",function(){
+			$("div.column-list ul li input.column-label, " +
+			"div.column-list ul li textarea.column-description").live("focus",function(){
 
 				var liElement = $(this).parent();
 				var colName = $(this).parent("li").find("input.column-label").val();
@@ -108,16 +116,16 @@ var LinkedGov_LabellingPanel = {
 			/*
 			 * Interaction when pressing a key in the column label or description input fields
 			 */
-			$("div.description-panel div.column-list ul li input.column-label, " +
-			"div.description-panel div.column-list ul li textarea.column-description").live("keyup",function(){
+			$("div.column-list ul li input.column-label, " +
+			"div.column-list ul li textarea.column-description").live("keyup",function(){
 				self.checkColumnDescription($(this).parent());
 			});
 
 			/*
 			 * Add an on "blur" listener to the column label and description inputs
 			 */
-			$("div.description-panel div.column-list ul li input.column-label, " +
-			"div.description-panel div.column-list ul li textarea.column-description").live("blur",function(){
+			$("div.column-list ul li input.column-label, " +
+			"div.column-list ul li textarea.column-description").live("blur",function(){
 
 				var el = $(this);
 				var colName = $(this).parent("li").find("input.column-label").val();
@@ -147,7 +155,7 @@ var LinkedGov_LabellingPanel = {
 				 * Rename column if the status is 'good'/'great' & has been changed & if the name
 				 * does not exist for a column already.
 				 */
-				if($(this).hasClass("column-label") && LG.isUniqueColumnName(el.val())){
+				if($(this).hasClass("column-label") && LG.ops.isUniqueColumnName(el.val())){
 					if($(this).parent("li").hasClass("maybe") || $(this).parent("li").hasClass("good") || $(this).parent("li").hasClass("great")){
 						/*
 						 * The old labels of the columns are stored using the elements "data" property as  
@@ -167,12 +175,12 @@ var LinkedGov_LabellingPanel = {
 							}
 						}
 
-						LG.renameColumn(oldName,newName,function(){
+						LG.ops.renameColumn(oldName,newName,function(){
 
 							/*
 							 * Rename the column name in the RDF schema too
 							 */
-							LG.renameColumnInRDF.start(oldName,newName,function(){
+							LG.rdfOps.renameColumnInRDF.start(oldName,newName,function(){
 								Refine.update({modelsChanged:true});
 							});
 
@@ -202,10 +210,14 @@ var LinkedGov_LabellingPanel = {
 			});
 
 			/*
-			 * Save button functionality
+			 * Setup interaction for the Finish button
 			 */
-			$("div.description-panel a.save").live("click",function(){
+			ui.typingPanel._el.finishButton.click(function(){
 
+				/*
+				 * TODO: Make checks to see if the user has visited each panel,
+				 * as they might head for the Finish button after just using the wizards/
+				 */
 				/*
 				 * Save the description data as RDF
 				 * 
@@ -232,32 +244,41 @@ var LinkedGov_LabellingPanel = {
 						$(this).removeClass("bad").removeClass("maybe").removeClass("good").removeClass("great");
 					});
 
-					LG.finaliseRDFSchema.init();
+					LG.rdfOps.saveLabelsToRDF.init();
 				}
+				
 			});
 
 		},
 
-
 		/*
-		 * enterDescriptionPanel
-		 * 
-		 * Slide the questions away and the labels & descriptions panel in.
+		 * Make this panel visible
 		 */
-		enterLabellingPanel : function(){
+		displayPanel: function(){
 
-			var self = this;
-			/*
-			 * If panel has already been created, just rebuild the column list, 
-			 * otherwise build both the panel and the column list.
-			 */
+			// Hide the other panels
+			LG.panels.typingPanel.hidePanels();
 
+			// Scroll the panel to the top
 			$("div#labelling-panel").scrollTop(0);
+
+			/*
+			 * Rebuild the label inputs in case any new columns 
+			 * have been created.
+			 */
 			this.buildColumnDescriptionInputs();
+
+			// Show the "save" button
+			LG.panels.typingPanel._el.finishButton.show();
+
+			// Show this panel
+			this.body.show();			
+
 		},
 
 		/*
 		 * Builds a UL list of input and textarea elements for each column
+		 * for the user to enter labels & descriptions
 		 */
 		buildColumnDescriptionInputs : function(){
 
@@ -266,11 +287,11 @@ var LinkedGov_LabellingPanel = {
 			 * Create the input fields for the column labels and descriptions - adding 
 			 * a CSS class to them to highlight their acceptability status.
 			 */
-			$("div.description-panel div.column-list").hide();
+			$("div.column-list").hide();
 			var html = "<ul>";
 			$("div.column-header-title span.column-header-name").each(function(){
 
-				var colName = decodeHTMLEntity($(this).html());
+				var colName = LG.decodeHTMLEntity($(this).html());
 				/*
 				 * Only create a label and description input for a column if it's not the "All" column and 
 				 * not in the hidden columns list (because these columns aren't stored in the data
@@ -296,7 +317,7 @@ var LinkedGov_LabellingPanel = {
 			});
 			html += "</ul>";
 
-			$("div.description-panel div.column-list").html(html);
+			$("div.column-list").html(html);
 
 
 			/*
@@ -330,7 +351,7 @@ var LinkedGov_LabellingPanel = {
 				//DescriptionsPanel.checkRowDescription($("div.row-description"));
 
 				for(var i=0;i<colData.length;i++){
-					$("div.description-panel div.column-list ul li").each(function(){
+					$("div.column-list ul li").each(function(){
 
 						if($(this).find("input.column-label").val() == colData[i].label){
 							//log("Replacing description for "+colData[i].label+": "+colData[i].description);
@@ -342,13 +363,13 @@ var LinkedGov_LabellingPanel = {
 					});
 				}
 
-				$("div.description-panel div.column-list").show();
+				$("div.column-list").show();
 			} else {
 				/*
 				 * If the globals labels object doesn't exist, try to load the labels from the RDF schema.
 				 */
 				self.loadLabelsAndDescriptionFromRDF(function(){
-					$("div.description-panel div.column-list").show(function(){
+					$("div.column-list").show(function(){
 
 						/*
 						 * Store the row label and description
@@ -359,13 +380,13 @@ var LinkedGov_LabellingPanel = {
 						/*
 						 * Validate the row label and description
 						 */
-						self.checkRowDescription($("div.description-panel div.row-description"));
+						self.checkRowDescription($("div.row-description"));
 
 						/*
 						 * Populate a global labels object of column names and description so the user can 
 						 * switch between panels before saving and not lose their input values.
 						 */
-						$("div.description-panel div.column-list ul li").each(function(){
+						$("div.column-list ul li").each(function(){
 							colData.push({
 								label:$(this).find("input.column-label").val(),
 								description:$(this).find("textarea.column-description").val(),
@@ -456,7 +477,7 @@ var LinkedGov_LabellingPanel = {
 													 * table header which is a HTML element
 													 */
 													$("td.column-header span.column-header-name").each(function(){
-														if(decodeHTMLEntity($(this).html()) == $(this).find("input.column-label").val()){
+														if(LG.decodeHTMLEntity($(this).html()) == $(this).find("input.column-label").val()){
 															$(this).removeClass("bad").removeClass("maybe").removeClass("good").addClass("great");
 														}
 													});
@@ -467,7 +488,7 @@ var LinkedGov_LabellingPanel = {
 													 * table header which is a HTML element
 													 */
 													$("td.column-header span.column-header-name").each(function(){
-														if(decodeHTMLEntity($(this).html()) == $(this).find("input.column-label").val()){
+														if(LG.decodeHTMLEntity($(this).html()) == $(this).find("input.column-label").val()){
 															$(this).removeClass("bad").removeClass("maybe").removeClass("great").addClass("good");
 														}
 													});
@@ -500,7 +521,7 @@ var LinkedGov_LabellingPanel = {
 		checkRowDescription : function(divElement){
 
 			var self = this;
-			
+
 			var input = divElement.find("input.row-label");
 			var textarea = divElement.find("textarea.row-description");
 			var labelData = LG.vars.labelsAndDescriptions;
@@ -582,11 +603,11 @@ var LinkedGov_LabellingPanel = {
 			 * table header which is a HTML element
 			 */
 			$("td.column-header span.column-header-name").each(function(){
-				if(decodeHTMLEntity($(this).html()) == input.val()){
+				if(LG.decodeHTMLEntity($(this).html()) == input.val()){
 					var el = $(this).parent().parent();
 					el.removeClass("bad").removeClass("maybe").removeClass("good").removeClass("great").addClass(status);
 				}
 			});
 		}
-		
+
 }

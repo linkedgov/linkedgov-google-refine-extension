@@ -4,7 +4,7 @@
     <li><a href="javascript:{}" rel="labelling-panel">Labelling</a></li>
 </ul>
 
-<div id="intro-message">
+<div id="intro-message" bind="introMessage">
     <p>Begin by picking one of the tabs above.</p>
     <ul>
         <li>Wizards - step by step tasks to help you clean and enrich your data</li>
@@ -14,7 +14,7 @@
 </div>
 
 <div id="wizards-panel" class="typing-panel-body" bind="wizardsPanel">
-
+    <p>Wizards panel</p>
 </div> 
 <!-- end wizard panel -->
 
@@ -30,15 +30,17 @@
 
 <div class="action-bar" bind="actionBar">
 
-    <div class="return-button"><a class="button" bind="returnButton">Back</a></div>
+    <a href="javascript:{}" class="button returnButton" bind="returnButton">Back</a>
     
-    <div class="action-buttons">
+    <div class="action-buttons" bind="actionButtons">
         <a href="javascript:{}" class="button undo" title="Undo" bind="undoButton">Undo</a>
         <a href="javascript:{}" class="button update" title="Update" bind="updateButton">Update</a>
     </div>  
     
-    <div class="finish-button"><a class="button finish" bind="finishButton">Finish</a></div>
+    <!-- <div class="save-button"><a href="javascript:{}" class="button save" title="Save" bind="saveButton">Save</a></div> --> 
     
-    <a class="collapse-expand button" title="Collapse wizards" bind="collapseExpandButton">-</a>
+    <a href="javascript:{}" class="button finish" title="Finish" bind="finishButton">Finish</a>
+    
+    <a href="javascript:{}" class="collapse-expand button" title="Collapse wizards" bind="collapseExpandButton">-</a>
 
-</div>
+</div><!-- end action-bar -->

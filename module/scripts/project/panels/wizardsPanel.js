@@ -7,6 +7,8 @@ var LinkedGov_WizardsPanel = {
 
 		/*
 		 * loadWizardScripts
+		 * 
+		 * Each wizard has it's own script which needs to be loaded.
 		 */
 		loadWizardScripts : function(){
 
@@ -39,18 +41,21 @@ var LinkedGov_WizardsPanel = {
 
 		/*
 		 * loadHTML
+		 * 
+		 * Each wizard also has it's own HTML that needs to be injected 
+		 * into the "wizard-bodies" div.
 		 */
 		loadHTML : function(){
 
 			/*
 			 * Load the wizard questions
 			 */
-			$("div#wizards-panel").html(DOM.loadHTML("linkedgov", "html/project/panels/wizardsPanel.html")+$("div#wizards-panel").html());
+			ui.typingPanel._el.wizardsPanel.html(DOM.loadHTML("linkedgov", "html/project/panels/wizardsPanel.html"));
 
 			/* 
 			 * Load each wizards' HTML into the wizard-bodies element.
 			 */
-			var wizardBodiesEl = $("div#wizards-panel").find("div.wizard-bodies");
+			var wizardBodiesEl = ui.typingPanel._el.wizardsPanel.find("div.wizard-bodies");
 
 			var interval = setInterval(function(){
 				if(typeof LG.wizards != 'undefined'){
@@ -93,7 +98,7 @@ var LinkedGov_WizardsPanel = {
 			 * Interaction for collapsing and expanding the wizard 
 			 * questions.
 			 */
-			self.actionBar.find('a.collapse-expand').live("click",function() {
+			ui.typingPanel._el.collapseExpandButton.click(function() {
 				if(!$(this).data("hasBeenClicked")){
 					$(this).html("+");
 					$(this).attr("title","Expand wizards");
@@ -145,15 +150,15 @@ var LinkedGov_WizardsPanel = {
 			 * allows access to the individual elements through the object
 			 * "elmts".
 			 */
-			self.actionBar.find("div.action-buttons").find("a.update").live("click",function(){
+			ui.typingPanel._el.updateButton.click(function(){
 
 				self.destroyColumnSelector();
 
-				var wizardObject = LG.wizards[$(this).parent().attr("rel")];
+				var wizardObject = LG.wizards[ui.typingPanel._el.actionButtons.attr("rel")];
 				wizardObject.initialise(DOM.bind(self.body));
 			});
 
-			self.actionBar.find("div.action-buttons").find("a.undo").live("click",function(){
+			ui.typingPanel._el.undoButton.click(function(){
 
 				self.destroyColumnSelector();
 				var wizardObject = LG.wizards[$(this).parent().attr("rel")];
@@ -237,7 +242,7 @@ var LinkedGov_WizardsPanel = {
 
 		},
 
-		show: function(){
+		displayPanel: function(){
 
 			/*
 			 * Hide the other panels
@@ -263,21 +268,20 @@ var LinkedGov_WizardsPanel = {
 			this.body.find("div.wizard-bodies").hide();
 			// Show the questions
 			this.body.find("div.questions").show();
-			// Show the collapse-expand button
-			this.actionBar.find("a.collapse-expand").show();
 			// Hide the action buttons
-			this.actionBar.find("div.action-buttons").hide();
+			ui.typingPanel._el.actionButtons.hide();
+			// Show the collapse-expand button
+			ui.typingPanel._el.collapseExpandButton.show();
 			// Hide the "return to wizards" button
-			this.actionBar.find("div.return-button").hide();
+			ui.typingPanel._el.returnButton.hide();
 			// Show the finish button
-			this.actionBar.find("div.finish-button").show();
-
+			ui.typingPanel._el.finishButton.hide();
 		},
 
 		/*
 		 * Displays a specific wizard
 		 */
-		showWizard:function(wizardName){
+		showWizard: function(wizardName){
 			
 			var self = this;
 			
@@ -290,15 +294,16 @@ var LinkedGov_WizardsPanel = {
 			// Show the chosen wizard
 			this.body.find("div.wizard-body[rel='"+wizardName+"']").show();
 			// Hide the question collapse button
-			this.actionBar.find("a.collapse-expand").hide();
+			ui.typingPanel._el.collapseExpandButton.hide();
 			// Show the "return to wizards" button
-			this.actionBar.find("div.return-button").show();
-			// Update the div.action-buttons rel attribute to relate to the specific wizard
-			this.actionBar.find("div.action-buttons").attr("rel",wizardName);
-			// Show the action buttons
-			this.actionBar.find("div.action-buttons").show();			
+			ui.typingPanel._el.returnButton.show();
 			// Hide the finish button
-			this.actionBar.find("div.finish-button").hide();
+			ui.typingPanel._el.finishButton.hide();
+			// Update the div.action-buttons rel attribute to relate to the specific wizard
+			ui.typingPanel._el.actionButtons.attr("rel",wizardName);
+			// Show the action buttons
+			ui.typingPanel._el.actionButtons.show();		
+
 			
 			//LG.panels.typingPanel._el.actionBar.find("div.action-buttons").find("a.update").attr("bind",$("div.wizard-body").find("a.update").attr("bind"));
 
@@ -306,7 +311,6 @@ var LinkedGov_WizardsPanel = {
 
 			case "measurementsWizard" : 
 
-				log($("#unitInputField"));
 				// make the measurements text field auto suggest
 				$("#unitInputField").suggest({
 					"type": "unit"
@@ -342,6 +346,7 @@ var LinkedGov_WizardsPanel = {
 		 */
 		setupWizardInteraction : function() {
 
+			var self = this;
 			/*
 			 * Interaction for the column range select inputs
 			 */

@@ -221,9 +221,9 @@ var LinkedGov_generalOperations = {
 				 * Set a global flag that we have set blanks to null
 				 */
 				if (toNulls) {
-					self.vars.blanksSetToNulls = true;
+					LG.vars.blanksSetToNulls = true;
 				} else {
-					self.vars.blanksSetToNulls = false;
+					LG.vars.blanksSetToNulls = false;
 				}
 
 				Refine.update({
@@ -311,7 +311,7 @@ var LinkedGov_generalOperations = {
 					Refine.update({cellsChanged : true});
 				},
 				error : function() {
-					self.onFail("A problem was encountered when fixing postcodes in the column: \""+ self.vars.addressName + "\".");
+					alert("Error parsing value types in column");
 				}
 			});
 

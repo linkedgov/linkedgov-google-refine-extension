@@ -163,9 +163,9 @@ var LinkedGov_rdfOperations = {
 				}
 			}
 
-			log("metadataAlreadySaved = "+metadataAlreadySaved);
+			//log("metadataAlreadySaved = "+metadataAlreadySaved);
 
-			if(!metadataAlreadySaved){
+			//if(!metadataAlreadySaved){
 
 				/*
 				 * Destroy and hidden column data
@@ -386,12 +386,12 @@ var LinkedGov_rdfOperations = {
 
 				});
 
-			} else {
-				log("Metadata has already been saved.");
-				if(callback){
-					callback();
-				}
-			}
+			//} else {
+			//	log("Metadata has already been saved.");
+			//	if(callback){
+			//		callback();
+			//	}
+			//}
 
 
 		},
@@ -631,6 +631,228 @@ var LinkedGov_rdfOperations = {
 		},
 
 		/*
+		 * saveLabelsToRDF
+		 * 
+		 * Saves the labels and descriptions given to the rows and columns
+		 * on the labelling panel.
+		 */
+		saveLabelsToRDF: {
+
+			vars : {
+				vocabs : {
+					lg : {
+						curie : "lg",
+						uri : "http://example.org/"
+					},
+					rdfs: {
+						curie: "rdfs",
+						uri: "http://www.w3.org/2000/01/rdf-schema#"
+					},
+					owl :{
+						curie: "owl",
+						uri: "http://www.w3.org/2002/07/owl#"					
+					}
+				}
+			},
+
+			/*
+			 * Check which column headers don't have the "typed" class.
+			 */
+			init : function() {
+
+				var self = this;
+
+				self.vars.cols = LG.vars.labelsAndDescriptions.cols;
+				self.vars.rowLabel = LG.vars.labelsAndDescriptions.rowLabel;
+				self.vars.rowDescription = LG.vars.labelsAndDescriptions.rowDescription;
+
+				LG.rdfOps.checkPrefixes(self.vars.vocabs);
+
+				/*
+				 * Chain together a series of save operations using callbacks.
+				 * 
+				 * Save the project's metadata
+				 */
+				LG.rdfOps.saveMetadataToRDF(function(){
+					/*
+					 * saveRowClass - save the owl:Class description for the row.
+					 */
+					self.saveRowClass(function() {
+						/*
+						 * saveColumnsAsProperties - save the owl:ObjectProperty descriptions for the columns
+						 */
+						self.saveColumnsAsProperties(function() {
+							
+							LG.rdfOps.finaliseRDFSchema.init();
+							
+						});
+					});
+				});
+
+			},
+
+
+			/*
+			 * saveRowClass
+			 * 
+			 * Creates the owl:Class description for the rows.
+			 */
+			saveRowClass : function(callback) {
+
+				var self = this;
+
+				var schema = LG.rdfOps.getRDFSchema();
+
+				/*
+				 * Locate and remove any existing owl:Class root nodes
+				 */
+				for(var i=0; i<schema.rootNodes.length; i++){
+					for(var j=0; j<schema.rootNodes[i].rdfTypes.length; j++){
+						if(schema.rootNodes[i].rdfTypes[j].curie == self.vars.vocabs.owl.curie+":Class"){
+							schema.rootNodes.splice(i,1);
+							i--;
+						}
+					}
+				}
+
+				var camelizedRowLabel = LG.camelize(LG.vars.labelsAndDescriptions.rowLabel);
+
+				/*
+				 * Exists in the schema as it's own root node, so we create one here 
+				 * with a label and a comment.
+				 */
+				var rootNode = {
+						links : [ {
+							curie : self.vars.vocabs.rdfs.curie+":label",
+							target : {
+								lang : "en",
+								nodeType : "literal",
+								value : camelizedRowLabel
+							},
+							uri : self.vars.vocabs.rdfs.uri+"label"
+						}],
+						nodeType : "resource",
+						rdfTypes : [ {
+							curie : "owl:Class",
+							uri : self.vars.vocabs.owl.uri+"Class"
+						} ],
+						value : "http://example.org/example-dataset/terms/class/" + camelizedRowLabel
+				};
+
+				/*
+				 * Add the row description separately in case the user hasn't entered a 
+				 * description for it.
+				 */
+				if (LG.vars.labelsAndDescriptions.rowDescription.length > 2 && LG.vars.labelsAndDescriptions.rowDescription != "Enter a description...") {
+					rootNode.links.push({
+						curie : self.vars.vocabs.rdfs.curie+":comment",
+						target : {
+							lang : "en",
+							nodeType : "literal",
+							value : LG.vars.labelsAndDescriptions.rowDescription
+						},
+						uri : self.vars.vocabs.rdfs.uri+"comment"
+					});
+				}
+
+
+				/*
+				 * Add the root node to the schema.
+				 */
+				schema.rootNodes.splice(1,0,rootNode);
+
+				callback();
+
+			},
+
+			/*
+			 * saveColumnsAsProperties 
+			 * 
+			 * Creates the owl:ObjectProperty descriptions for the columns.
+			 */
+			saveColumnsAsProperties : function(callback) {
+
+				var self = this;
+				var cols = LG.vars.labelsAndDescriptions.cols;
+				var schema = LG.rdfOps.getRDFSchema();
+
+				/*
+				 * Locate and remove any existing owl:ObjectProperty root nodes
+				 */
+				for(var i=0; i<schema.rootNodes.length; i++){
+					for(var j=0; j<schema.rootNodes[i].rdfTypes.length; j++){
+						if(schema.rootNodes[i].rdfTypes[j].curie == self.vars.vocabs.owl.curie+":ObjectProperty"){
+							schema.rootNodes.splice(i,1);
+							i--;
+						}
+					}
+				}
+
+				/*
+				 * Loop through the column label objects created by the labels and descriptions panel.
+				 */
+				for (var i = 0; i < cols.length; i++) {
+
+					/*
+					 * Add the owl:ObjectProperty statements for the columns which each exist
+					 * as their own root nodes.
+					 */
+
+					log("camelize(cols[i].label): "+LG.camelize(cols[i].label));
+
+					var rootNode = {
+							nodeType : "resource",
+							rdfTypes : [ {
+								curie : self.vars.vocabs.owl.curie+":ObjectProperty",
+								uri : self.vars.vocabs.owl.uri+"ObjectProperty"
+							} ],
+							value : "http://example.org/example-dataset/terms/property/" + LG.camelize(cols[i].label),
+							links : [ {
+								curie : self.vars.vocabs.rdfs.curie+":label",
+								target : {
+									lang : "en",
+									nodeType : "literal",
+									value : cols[i].label
+								},
+								uri : self.vars.vocabs.rdfs.uri+"label"
+							} ]
+					}
+
+					/*
+					 * Add the column description separately in case the user hasn't entered a 
+					 * description for it.
+					 */
+					if (cols[i].description.length > 2 && cols[i].description != "Enter a description...") {
+						rootNode.links.push({
+							curie : self.vars.vocabs.rdfs.curie+":comment",
+							target : {
+								lang : "en",
+								nodeType : "literal",
+								value : cols[i].description
+							},
+							uri : self.vars.vocabs.rdfs.uri+"comment"
+						})
+					}
+
+					/*
+					 * Add the root node to the schema.
+					 * 
+					 * i+2 to skip inserting the rootnode before the metadata node or the 
+					 * owl:Class node.
+					 */
+					schema.rootNodes.splice(i+2,0,rootNode);
+
+					if (i == cols.length - 1) {
+						if(callback){
+							callback();
+						}
+					}
+				}
+
+			}
+		},
+		
+		/*
 		 * finaliseRDFSchema
 		 * 
 		 * Called once the "Labels and Descriptions" panel is completed.
@@ -639,239 +861,44 @@ var LinkedGov_rdfOperations = {
 		 * their values in RDF using the column name as the property name.
 		 */
 		finaliseRDFSchema : {
-
-				vars : {
-					vocabs : {
-						lg : {
-							curie : "lg",
-							uri : "http://example.org/"
-						},
-						rdfs: {
-							curie: "rdfs",
-							uri: "http://www.w3.org/2000/01/rdf-schema#"
-						},
-						owl :{
-							curie: "owl",
-							uri: "http://www.w3.org/2002/07/owl#"					
+			
+				vars:{
+					vocabs:{
+						lg:{
+							uri:LG.vars.lgNameSpace,
+							curie:"lg"
 						}
 					}
 				},
-
-				/*
-				 * Check which column headers don't have the "typed" class.
-				 */
-				init : function() {
-
+				
+				init: function(){
+					
 					var self = this;
-
-					self.vars.cols = LG.vars.labelsAndDescriptions.cols;
-					self.vars.rowLabel = LG.vars.labelsAndDescriptions.rowLabel;
-					self.vars.rowDescription = LG.vars.labelsAndDescriptions.rowDescription;
-
-					LG.rdfOps.checkPrefixes(self.vars.vocabs);
-
+					
 					/*
-					 * Chain together a series of save operations using callbacks.
-					 * 
-					 * Save the project's metadata
+					 * Check for/create a root node for column RDF in the schema.
 					 */
-					LG.rdfOps.saveMetadataToRDF(function(){
+					LG.rdfOps.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
+
+						var camelizedRowLabel = LG.camelize(LG.vars.labelsAndDescriptions.rowLabel);
+
 						/*
-						 * saveRowClass - save the owl:Class description for the row.
+						 * Camelize the row label that's been entered and type the root node (each row) 
+						 * as the label. E.g. "Each row is a lg:utilityReading".
 						 */
-						self.saveRowClass(function() {
-							/*
-							 * saveColumnsAsProperties - save the owl:ObjectProperty descriptions for the columns
-							 */
-							self.saveColumnsAsProperties(function() {
-								/*
-								 * Check for/create a root node for column RDF in the schema.
-								 */
-								LG.rdfOps.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
+						rootNode.rdfTypes = [ {
+							uri : self.vars.vocabs.lg.uri + camelizedRowLabel,
+							curie : self.vars.vocabs.lg.curie + ":" + camelizedRowLabel
+						} ];
 
-									var camelizedRowLabel = LG.camelize(self.vars.rowLabel);
+						/*
+						 * Save the RDF for the columns that were not involved in any wizard
+						 * operations.
+						 */
+						self.saveGenericColumnRDF(rootNode, foundRootNode);
 
-									/*
-									 * Camelize the row label that's been entered and type the root node (each row) 
-									 * as the label. E.g. "Each row is a lg:utilityReading".
-									 */
-									rootNode.rdfTypes = [ {
-										uri : self.vars.vocabs.uri + camelizedRowLabel,
-										curie : self.vars.vocabs.curie + ":" + camelizedRowLabel
-									} ];
-
-									/*
-									 * Save the RDF for the columns that were not involved in any wizard
-									 * operations.
-									 */
-									self.saveGenericColumnRDF(rootNode, foundRootNode, function(){
-										LG.showFinishMessage();
-									});
-
-								});
-							})
-						});
 					});
-
-				},
-
-
-				/*
-				 * saveRowClass
-				 * 
-				 * Creates the owl:Class description for the rows.
-				 */
-				saveRowClass : function(callback) {
-
-					var self = this;
-
-					var schema = getRDFSchema();
-
-					/*
-					 * Locate and remove any existing owl:Class root nodes
-					 */
-					for(var i=0; i<schema.rootNodes.length; i++){
-						for(var j=0; j<schema.rootNodes[i].rdfTypes.length; j++){
-							if(schema.rootNodes[i].rdfTypes[j].curie == self.vars.vocabs.owl.curie+":Class"){
-								schema.rootNodes.splice(i,1);
-								i--;
-							}
-						}
-					}
-
-					var camelizedRowLabel = LG.camelize(LG.vars.labelsAndDescriptions.rowLabel);
-
-					/*
-					 * Exists in the schema as it's own root node, so we create one here 
-					 * with a label and a comment.
-					 */
-					var rootNode = {
-							links : [ {
-								curie : self.vars.vocabs.rdfs.curie+":label",
-								target : {
-									lang : "en",
-									nodeType : "literal",
-									value : camelizedRowLabel
-								},
-								uri : self.vars.vocabs.rdfs.uri+"label"
-							}],
-							nodeType : "resource",
-							rdfTypes : [ {
-								curie : "owl:Class",
-								uri : self.vars.vocabs.owl.uri+"Class"
-							} ],
-							value : "http://example.org/example-dataset/terms/class/"
-								+ camelizedRowLabel
-					};
-
-					/*
-					 * Add the row description separately in case the user hasn't entered a 
-					 * description for it.
-					 */
-					if (LG.vars.labelsAndDescriptions.rowDescription.length > 2 && LG.vars.labelsAndDescriptions.rowDescription != "Enter a description...") {
-						rootNode.links.push({
-							curie : self.vars.vocabs.rdfs.curie+":comment",
-							target : {
-								lang : "en",
-								nodeType : "literal",
-								value : LG.vars.labelsAndDescriptions.rowDescription
-							},
-							uri : self.vars.vocabs.rdfs.uri+"comment"
-						});
-					}
-
-
-					/*
-					 * Add the root node to the schema.
-					 */
-					schema.rootNodes.splice(1,0,rootNode);
-
-					callback();
-
-				},
-
-				/*
-				 * saveColumnsAsProperties 
-				 * 
-				 * Creates the owl:ObjectProperty descriptions for the columns.
-				 */
-				saveColumnsAsProperties : function(callback) {
-
-					var self = this;
-					var cols = LG.vars.labelsAndDescriptions.cols;
-					var schema = LG.rdfOps.getRDFSchema();
-
-					/*
-					 * Locate and remove any existing owl:ObjectProperty root nodes
-					 */
-					for(var i=0; i<schema.rootNodes.length; i++){
-						for(var j=0; j<schema.rootNodes[i].rdfTypes.length; j++){
-							if(schema.rootNodes[i].rdfTypes[j].curie == self.vars.vocabs.owl.curie+":ObjectProperty"){
-								schema.rootNodes.splice(i,1);
-								i--;
-							}
-						}
-					}
-
-					/*
-					 * Loop through the column label objects created by the labels and descriptions panel.
-					 */
-					for (var i = 0; i < cols.length; i++) {
-
-						/*
-						 * Add the owl:ObjectProperty statements for the columns which each exist
-						 * as their own root nodes.
-						 */
-
-						log("camelize(cols[i].label): "+LG.camelize(cols[i].label));
-
-						var rootNode = {
-								nodeType : "resource",
-								rdfTypes : [ {
-									curie : self.vars.vocabs.owl.curie+":ObjectProperty",
-									uri : self.vars.vocabs.owl.uri+"ObjectProperty"
-								} ],
-								value : "http://example.org/example-dataset/terms/property/" + LG.camelize(cols[i].label),
-								links : [ {
-									curie : self.vars.vocabs.rdfs.curie+":label",
-									target : {
-										lang : "en",
-										nodeType : "literal",
-										value : cols[i].label
-									},
-									uri : self.vars.vocabs.rdfs.uri+"label"
-								} ]
-						}
-
-						/*
-						 * Add the column description separately in case the user hasn't entered a 
-						 * description for it.
-						 */
-						if (cols[i].description.length > 2 && cols[i].description != "Enter a description...") {
-							rootNode.links.push({
-								curie : self.vars.vocabs.rdfs.curie+":comment",
-								target : {
-									lang : "en",
-									nodeType : "literal",
-									value : cols[i].description
-								},
-								uri : self.vars.vocabs.rdfs.uri+"comment"
-							})
-						}
-
-						/*
-						 * Add the root node to the schema.
-						 * 
-						 * i+2 to skip inserting the rootnode before the metadata node or the 
-						 * owl:Class node.
-						 */
-						schema.rootNodes.splice(i+2,0,rootNode);
-
-						if (i == cols.length - 1) {
-							callback();
-						}
-					}
-
+					
 				},
 
 				/*
@@ -905,9 +932,12 @@ var LinkedGov_rdfOperations = {
 							 * Default description is: <Row> <lg:columnName> "cell value"
 							 */
 
+							log('LG.decodeHTMLEntity($(this).find("span.column-header-name").html()):');
+							log(LG.decodeHTMLEntity($(this).find("span.column-header-name").html()));
+							
 							var o = {
-									"uri" : self.vars.vocabs.uri + camelizedColumnName,
-									"curie" : self.vars.vocabs.curie + ":" + camelizedColumnName,
+									"uri" : self.vars.vocabs.lg.uri + camelizedColumnName,
+									"curie" : self.vars.vocabs.lg.curie + ":" + camelizedColumnName,
 									"target" : {
 										"nodeType" : "cell-as-literal",
 										"expression" : "value",

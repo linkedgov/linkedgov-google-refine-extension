@@ -72,27 +72,45 @@ TypingPanel.prototype._render = function () {
 	$('ul.lg-tabs li a').click(function(){
 				
 		$("div#intro-message").hide();
-		
 		$('ul.lg-tabs li').removeClass("active");
 		$(this).parent().addClass("active");
 		$("div.typing-panel-body").hide();
 		
 		$("div#"+$(this).attr("rel")).show(0,function(){
 			
+			$("div#"+$(this).attr("rel")).scrollTop(0);
+			
 			$("td.column-header").each(function(){
 				$(this).removeClass("bad").removeClass("maybe").removeClass("good").removeClass("great");
 			});
 			
 			if($(this).attr("id") == "wizards-panel"){
-				LG.panels.wizardsPanel.show();
+				LG.panels.wizardsPanel.displayPanel();
 			} else if($(this).attr("id") == "linking-panel"){	
-				LG.panels.linkingPanel.show();
+				LG.panels.linkingPanel.displayPanel();
 			} else if($(this).attr("id") == "labelling-panel"){
-				LG.panels.labellingPanel.show();
+				LG.panels.labellingPanel.displayPanel();
 			}
 		});
 	});
 
+	/*
+	 * Add a listener for the "Finish" button
+	 * and show it.
+	 */
+	//elmts.finishButton.click(function(){
+		
+		/*
+		 * TODO: Make checks to see if the user has visited each panel,
+		 * as they might head for the Finish button after just using the wizards/
+		 */
+		
+		/*
+		 * Save all other RDF that needs to be saved
+		 */
+		//LG.rdfOps.finaliseRDFSchema.init();
+	//}).show();
+	
 	/*
 	 * Called similarly to Refine's panels.
 	 */

@@ -1,6 +1,6 @@
 $("a#send-feedback").live("click",function(){
 
-	$.get("/extension/linkedgov/html/feedback-form.html",function(data){
+	$.get("/extension/linkedgov/html/feedbackForm.html",function(data){
 		
 		var feedbackForm = DialogSystem.createDialog();
 		$(feedbackForm).width(400);

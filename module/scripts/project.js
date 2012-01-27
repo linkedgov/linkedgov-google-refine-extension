@@ -100,14 +100,26 @@ LG.loadTypingPanel = function(callback) {
 	$("div#refine-tabs-typing").html(DOM.loadHTML("linkedgov", "html/project/panels/typingPanel.html",function(){
 
 		$.getScript("extension/linkedgov/scripts/project/panels/typingPanel.js",function(){
+			var interval = setInterval(function(){
+				if(typeof ui != 'undefined'){
 
-			ui.typingPanel = new TypingPanel($("div#refine-tabs-typing"));
-			LG.panels.typingPanel = ui.typingPanel;
+					log("here");
+					ui.typingPanel = new TypingPanel($("div#refine-tabs-typing"));
+					log("here2");
+					LG.panels.typingPanel = ui.typingPanel;
+					log("here3");
+					log(ui.typingPanel);
 
-			if(callback){
-				callback();
-			}
+					clearInterval(interval);
 
+					if(callback){
+						callback();
+					}
+					
+				} else {
+					log("ui object is not ready yet");
+				}
+			},100)
 		});	
 	}));
 };
@@ -121,35 +133,37 @@ LG.loadPanelScripts = function() {
 
 	LG.loadTypingPanel(function(){
 
-		/*
-		 * Load the wizards panel script
-		 */
-		$.getScript("extension/linkedgov/scripts/project/panels/wizardsPanel.js",function(){
-			LG.panels.wizardsPanel = LinkedGov_WizardsPanel;
-			LG.panels.wizardsPanel.loadWizardScripts();
-			LG.panels.wizardsPanel.loadHTML();
-			LG.panels.wizardsPanel.initialise();
-		});
-
-		/*
-		 * Load the linking panel script
-		 */
-		$.getScript("extension/linkedgov/scripts/project/panels/linkingPanel.js",function(){
-			LG.panels.linkingPanel = LinkedGov_LinkingPanel;
-			//LG.panels.linkingPanel.loadHTML();
-		});
-
-		/*
-		 * Load the labelling panel script
-		 */
-		$.getScript("extension/linkedgov/scripts/project/panels/labellingPanel.js",function(){
-			LG.panels.labellingPanel = LinkedGov_LabellingPanel;
-			//LG.panels.labellingPanel.loadHTML();
-		});
-
 		var interval = setInterval(function(){
-			
-			if(typeof ui.leftPanelTabs != 'undefined'){
+
+			if(typeof ui.typingPanel != 'undefined' && typeof ui.leftPanelTabs != 'undefined'){
+
+				/*
+				 * Load the wizards panel script
+				 */
+				$.getScript("extension/linkedgov/scripts/project/panels/wizardsPanel.js",function(){
+					LG.panels.wizardsPanel = LinkedGov_WizardsPanel;
+					LG.panels.wizardsPanel.loadWizardScripts();
+					LG.panels.wizardsPanel.loadHTML();
+					LG.panels.wizardsPanel.initialise();
+				});
+
+				/*
+				 * Load the linking panel script
+				 */
+				$.getScript("extension/linkedgov/scripts/project/panels/linkingPanel.js",function(){
+					LG.panels.linkingPanel = LinkedGov_LinkingPanel;
+					//LG.panels.linkingPanel.loadHTML();
+				});
+
+				/*
+				 * Load the labelling panel script
+				 */
+				$.getScript("extension/linkedgov/scripts/project/panels/labellingPanel.js",function(){
+					LG.panels.labellingPanel = LinkedGov_LabellingPanel;
+					LG.panels.labellingPanel.loadHTML();
+					LG.panels.labellingPanel.initialise();
+				});
+
 				/*
 				 * Rebind the tabs resize functions when selecting the tab - 
 				 * adding in our own.
@@ -176,9 +190,9 @@ LG.loadPanelScripts = function() {
 				 */
 				$(window).unbind("resize");
 				$(window).bind("resize", LG.resizeAll_LG);
-				
+
 				clearInterval(interval);
-				
+
 			} else {
 				log("ui.leftPanelTabs ain't ready yet...");
 			}
@@ -667,7 +681,7 @@ LG.loadHTMLCallback = function(htmlPage) {
 	switch (pageName) {
 
 	//case 'typing-panel':
-		// Inject LinkedGov's Typing panel JS into the page
+	// Inject LinkedGov's Typing panel JS into the page
 	//	$.getScript(ModuleWirings["LinkedGov"] + 'scripts/project/typing-panel.js');
 	//	break;
 
