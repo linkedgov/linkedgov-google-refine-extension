@@ -7,6 +7,8 @@
  * Functions and operations that allow the wizards to save RDF to 
  * the RDF schema.
  * 
+ * Accessed as LG.rdfOps.fn
+ * 
  */
 
 var LinkedGov_rdfOperations = {

@@ -613,46 +613,6 @@ LG.resizeAll_LG = function() {
 	resizeAll();
 };
 
-/*
- * showUndoButton
- */
-LG.showUndoButton = function(wizardBody) {
-	$(wizardBody).parent().find("div.action-buttons a.undo").css("display","inline-block");
-};
-
-/*
- * resetWizard
- * 
- * Called once a wizard is complete.
- * 
- * Takes a wizard's body HTML element as a parameter and resets it's options
- * and settings.
- */
-LG.resetWizard = function(wizardBody) {
-
-	// Clear checkboxes
-	$(wizardBody).find(":input").removeAttr('checked').removeAttr('selected');
-	// Clear column selections
-	$(wizardBody).find("ul.selected-columns").html("").hide();
-	// Clear text fields
-	$(wizardBody).find(":text").val("");
-
-	// Make sure the wizard is displayed so the user can repeat the
-	// task if they wish
-	// TODO: Don't need these any more
-	$("a.wizard-header").removeClass("exp");
-	$(wizardBody).prev("a.wizard-header").addClass("exp");
-	$("div.wizard-body").hide();
-	$(wizardBody).show();
-
-	// Display the typing panel
-	ui.leftPanelTabs.tabs({
-		selected : 1
-	});
-
-	return false;
-
-};
 
 /*
  * silentProcessCall
@@ -668,8 +628,8 @@ LG.resetWizard = function(wizardBody) {
  */
 LG.silentProcessCall = function(o) {
 
-	log("silentProcessCall");
-	log(o);
+	//log("silentProcessCall");
+	//log(o);
 
 	o.async = o.async || true;
 	o.type = o.type || "POST";
@@ -689,6 +649,8 @@ LG.silentProcessCall = function(o) {
 };
 
 /*
+ * NOT BEING USED? 
+ * 
  * loadHTMLCallback
  * 
  * Called each time HTML is loaded, either through LG or Refine.
@@ -704,10 +666,10 @@ LG.loadHTMLCallback = function(htmlPage) {
 
 	switch (pageName) {
 
-	case 'typing-panel':
+	//case 'typing-panel':
 		// Inject LinkedGov's Typing panel JS into the page
-		$.getScript(ModuleWirings["LinkedGov"] + 'scripts/project/typing-panel.js');
-		break;
+	//	$.getScript(ModuleWirings["LinkedGov"] + 'scripts/project/typing-panel.js');
+	//	break;
 
 	default:
 		break;

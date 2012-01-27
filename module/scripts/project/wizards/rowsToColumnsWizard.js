@@ -821,10 +821,9 @@ var LinkedGov_rowsToColumnsWizard = {
 		 */
 		onFail : function(message) {
 			var self = this;
-			LG.ops.setBlanksToNulls(false, theProject.columnModel.columns, 0,
-					function() {
+			LG.ops.setBlanksToNulls(false, theProject.columnModel.columns, 0, function() {
 				alert("Rows to columns wizard failed. \n\n" + message);
-				LG.resetWizard(self.vars.elmts.rowsToColumnsBody);
+				LG.panels.wizardsPanel.resetWizard(self.vars.elmts.rowsToColumnsBody);
 				LG.showWizardProgress(false);
 			});
 
@@ -840,15 +839,14 @@ var LinkedGov_rowsToColumnsWizard = {
 
 			var self = this;
 
-			LG.ops.setBlanksToNulls(false, theProject.columnModel.columns, 0,
-					function() {
+			LG.ops.setBlanksToNulls(false, theProject.columnModel.columns, 0, function() {
 				DialogSystem.dismissAll();
 				// LG.setFacetCountLimit(100);
 				Refine.update({
 					everythingChanged : true
 				});
-				LG.resetWizard(self.vars.elmts.rowsToColumnsBody);
-				LG.showUndoButton(self.vars.elmts.rowsToColumnsBody);
+				LG.panels.wizardsPanel.resetWizard(self.vars.elmts.rowsToColumnsBody);
+				LG.panels.wizardsPanel.showUndoButton(self.vars.elmts.rowsToColumnsBody);
 				LG.showWizardProgress(false);
 			});
 

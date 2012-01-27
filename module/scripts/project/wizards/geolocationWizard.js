@@ -394,7 +394,7 @@ var LinkedGov_geolocationWizard = {
 			var self = this;
 			alert("Geolocation wizard failed.\n\n" + message);
 			self.vars.coordinateName = "";
-			LG.resetWizard(self.vars.elmts.geolocationBody);
+			LG.panels.wizardsPanel.resetWizard(self.vars.elmts.geolocationBody);
 			LG.showWizardProgress(false);
 		},
 
@@ -407,8 +407,8 @@ var LinkedGov_geolocationWizard = {
 
 			Refine.update({everythingChanged : true}, function() {
 
-				LG.resetWizard(self.vars.elmts.geolocationBody);
-				LG.showUndoButton(self.vars.elmts.geolocationBody);
+				LG.panels.wizardsPanel.resetWizard(self.vars.elmts.geolocationBody);
+				LG.panels.wizardsPanel.showUndoButton(self.vars.elmts.geolocationBody);
 				// Add typed class to column headers
 				LG.showWizardProgress(false);
 
@@ -417,7 +417,7 @@ var LinkedGov_geolocationWizard = {
 				 * what the user has specified.
 				 */
 				var colObjects = self.prepareColumnObjectsForValueTest();
-				LG.ops.checkForUnexpectedValues(colObjects, self.vars.elmts.geolocationBody);
+				LG.panels.wizardsPanel.checkForUnexpectedValues(colObjects, self.vars.elmts.geolocationBody);
 
 				self.vars.coordinateName = "";
 

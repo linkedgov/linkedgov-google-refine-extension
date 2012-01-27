@@ -233,7 +233,7 @@ var LinkedGov_measurementsWizard = {
 		onFail : function(message) {
 			var self = this;
 			alert("Measurments wizard failed.\n\n" + message);
-			LG.resetWizard(self.vars.elmts.measurementsBody);
+			LG.panels.wizardsPanel.resetWizard(self.vars.elmts.measurementsBody);
 			LG.showWizardProgress(false);
 		},
 
@@ -242,8 +242,8 @@ var LinkedGov_measurementsWizard = {
 		 */
 		onComplete : function() {
 			var self = this;
-			LG.resetWizard(self.vars.elmts.measurementsBody);
-			LG.showUndoButton(self.vars.elmts.measurementsBody);
+			LG.panels.wizardsPanel.resetWizard(self.vars.elmts.measurementsBody);
+			LG.panels.wizardsPanel.showUndoButton(self.vars.elmts.measurementsBody);
 			LG.showWizardProgress(false);
 		}
 

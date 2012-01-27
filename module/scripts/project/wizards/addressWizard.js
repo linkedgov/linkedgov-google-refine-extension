@@ -624,7 +624,7 @@ var LinkedGov_addressWizard = {
 		onFail : function(message) {
 			var self = this;
 			alert("Address wizard failed.\n\n" + message);
-			LG.resetWizard(self.vars.elmts.addressBody);
+			LG.panels.wizardsPanel.resetWizard(self.vars.elmts.addressBody);
 			LG.showWizardProgress(false);
 			self.vars.addressName = "";
 		},
@@ -639,8 +639,8 @@ var LinkedGov_addressWizard = {
 			Refine.update({
 				modelsChanged : true
 			}, function() {
-				LG.resetWizard(self.vars.elmts.addressBody);
-				LG.showUndoButton(self.vars.elmts.addressBody);
+				LG.panels.wizardsPanel.resetWizard(self.vars.elmts.addressBody);
+				LG.panels.wizardsPanel.showUndoButton(self.vars.elmts.addressBody);
 				LG.showWizardProgress(false);
 
 				/*
@@ -649,9 +649,7 @@ var LinkedGov_addressWizard = {
 				 */
 				if(self.vars.postcodePresent){
 					var colObjects = self.prepareColumnObjectsForValueTest();
-					log('colObjects');
-					log(colObjects);
-					LG.ops.checkForUnexpectedValues(colObjects, self.vars.elmts.addressBody);
+					LG.panels.wizardsPanel.checkForUnexpectedValues(colObjects, self.vars.elmts.addressBody);
 				}
 
 			});

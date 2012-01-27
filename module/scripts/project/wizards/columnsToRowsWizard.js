@@ -299,7 +299,7 @@ var LinkedGov_columnsToRowsWizard = {
 			LG.ops.setBlanksToNulls(false, theProject.columnModel.columns, 0,function() {
 				log("Columns to rows wizard failed.\n\n" + message);
 				Refine.update({everythingChanged : true});
-				LG.resetWizard(self.vars.elmts.columnsToRowsBody);
+				LG.panels.wizardsPanel.resetWizard(self.vars.elmts.columnsToRowsBody);
 				LG.showWizardProgress(false);
 			});
 		},
@@ -321,11 +321,11 @@ var LinkedGov_columnsToRowsWizard = {
 				log("Columns to rows wizard complete");
 				Refine.update({everythingChanged:true},function(){
 					// Refresh the content of the select inputs
-					ui.typingPanel.rangeSelector($(self.vars.elmts.columnsToRowsBody).find("div.range").find("select").eq(0));
-					ui.typingPanel.populateRangeSelector($(self.vars.elmts.columnsToRowsBody).find("div.range"), function(){
+					LG.panels.wizardsPanel.rangeSelector($(self.vars.elmts.columnsToRowsBody).find("div.range").find("select").eq(0));
+					LG.panels.wizardsPanel.populateRangeSelector($(self.vars.elmts.columnsToRowsBody).find("div.range"), function(){
 						$(self.vars.elmts.columnsToRowsBody).find("div.range").slideDown();					
-						LG.resetWizard(self.vars.elmts.columnsToRowsBody);
-						LG.showUndoButton(self.vars.elmts.columnsToRowsBody);
+						LG.panels.wizardsPanel.resetWizard(self.vars.elmts.columnsToRowsBody);
+						LG.panels.wizardsPanel.showUndoButton(self.vars.elmts.columnsToRowsBody);
 						LG.showWizardProgress(false);
 					});
 				});

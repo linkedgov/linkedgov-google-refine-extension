@@ -86,7 +86,7 @@ var LinkedGov_nullValueWizard = {
 		onFail : function(message) {
 			var self = this;
 			alert("Null value wizard failed.\n\n" + message);
-			LG.resetWizard(self.vars.elmts.nullValueBody);
+			LG.panels.wizardsPanel.resetWizard(self.vars.elmts.nullValueBody);
 			LG.showWizardProgress(false);
 		},
 
@@ -95,8 +95,8 @@ var LinkedGov_nullValueWizard = {
 		 */
 		onComplete : function() {
 			var self = this;
-			LG.resetWizard(self.vars.elmts.nullValueBody);
-			LG.showUndoButton(self.vars.elmts.nullValueBody);
+			LG.panels.wizardsPanel.resetWizard(self.vars.elmts.nullValueBody);
+			LG.panels.wizardsPanel.showUndoButton(self.vars.elmts.nullValueBody);
 			Refine.update({modelsChanged:true});
 			LG.showWizardProgress(false);
 		}

@@ -1179,7 +1179,7 @@ var LinkedGov_dateTimeWizard = {
 		onFail : function(message) {
 			var self = this;
 			alert("Date and time wizard failed.\n\n" + message);
-			LG.resetWizard(self.vars.elmts.dateTimeBody);
+			LG.panels.wizardsPanel.resetWizard(self.vars.elmts.dateTimeBody);
 			LG.showWizardProgress(false);
 		},
 
@@ -1192,8 +1192,8 @@ var LinkedGov_dateTimeWizard = {
 			Refine.update({
 				everythingChanged : true
 			}, function() {
-				LG.resetWizard(self.vars.elmts.dateTimeBody);
-				LG.showUndoButton(self.vars.elmts.dateTimeBody);
+				LG.panels.wizardsPanel.resetWizard(self.vars.elmts.dateTimeBody);
+				LG.panels.wizardsPanel.showUndoButton(self.vars.elmts.dateTimeBody);
 				LG.showWizardProgress(false);
 
 				/*
@@ -1204,7 +1204,7 @@ var LinkedGov_dateTimeWizard = {
 					var colObjects = self.prepareColumnObjectsForValueTest();
 					log('colObjects');
 					log(colObjects);
-					LG.ops.checkForUnexpectedValues(colObjects, self.vars.elmts.dateTimeBody);
+					LG.panels.wizardsPanel.checkForUnexpectedValues(colObjects, self.vars.elmts.dateTimeBody);
 				}
 
 			});

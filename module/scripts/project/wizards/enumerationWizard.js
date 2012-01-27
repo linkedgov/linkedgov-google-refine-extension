@@ -118,7 +118,7 @@ var LinkedGov_enumerationWizard = {
 		onFail : function(message) {
 			var self = this;
 			alert("Enumeration wizard failed.\n\n" + message);
-			LG.resetWizard(self.vars.elmts.enumerationBody);
+			LG.panels.wizardsPanel.resetWizard(self.vars.elmts.enumerationBody);
 			LG.showWizardProgress(false);
 		},
 
@@ -127,8 +127,8 @@ var LinkedGov_enumerationWizard = {
 		 */
 		onComplete : function() {
 			var self = this;
-			LG.resetWizard(self.vars.elmts.enumerationBody);
-			LG.showUndoButton(self.vars.elmts.enumerationBody);
+			LG.panels.wizardsPanel.resetWizard(self.vars.elmts.enumerationBody);
+			LG.panels.wizardsPanel.showUndoButton(self.vars.elmts.enumerationBody);
 			Refine.update({modelsChanged:true});
 			LG.showWizardProgress(false);
 		}

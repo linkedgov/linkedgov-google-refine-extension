@@ -6,6 +6,8 @@
  * 
  * Generic operations used by the wizards
  * 
+ * Accessed as LG.ops.fn
+ * 
  */
 
 var LinkedGov_generalOperations = {
@@ -192,8 +194,7 @@ var LinkedGov_generalOperations = {
 				 * Post a text-transform process using the isBlank expression,
 				 * replacing any blanks with our separator.
 				 */
-				LG
-				.silentProcessCall({
+				LG.silentProcessCall({
 					type : "POST",
 					url : "/command/" + "core" + "/" + "text-transform",
 					data : {
@@ -237,7 +238,7 @@ var LinkedGov_generalOperations = {
 		 */
 		renameColumn : function(oldName, newName, callback) {
 
-			if(LG.isUniqueColumnName(newName)){
+			if(LG.ops.isUniqueColumnName(newName)){
 				LG.silentProcessCall({
 					type : "POST",
 					url : "/command/" + "core" + "/" + "rename-column",
@@ -384,10 +385,6 @@ var LinkedGov_generalOperations = {
 		 */
 		hideColumnCompletely : function(colName, callback) {
 
-			log("hideColumnCompletely");
-
-			log("hiding - "+colName);
-
 			var alreadyAdded = false;
 
 			/*
@@ -459,10 +456,6 @@ var LinkedGov_generalOperations = {
 		 */
 		unhideHiddenColumn : function(colName, callback) {
 
-			log("unhideHiddenColumn");
-
-			log("unhiding - "+colName);
-
 			/*
 			 * +3 due to the "All" column
 			 */
@@ -518,8 +511,6 @@ var LinkedGov_generalOperations = {
 		},
 
 		eraseHiddenColumnData : function(callback){
-
-			log("eraseHiddenColumnData");
 
 			var obj = {
 					"project" : theProject.id,
@@ -611,292 +602,6 @@ var LinkedGov_generalOperations = {
 			}
 
 			return false;
-		},
-
-		/*
-		 * checkForUnexpectedValues
-		 * 
-		 * Runs a test to see if there are any unexpected values left in a column after a 
-		 * wizard has completed.
-		 * 
-		 * Takes an array of objects (colObjects), making use of the "unexpectedValueParams" 
-		 * object inside which contains an expression, an expected value and an expected type 
-		 * to test the column with.
-		 * 
-		 */
-		checkForUnexpectedValues : function(colObjects, wizardBody){
-
-			log("checkForUnexpectedValues");
-
-			log(colObjects);
-
-			/*
-			 * Run the tests on the columns using the colObjects, storing their result back inside
-			 * their "unexpectedValueParams" object.
-			 */
-			for(var i=0; i<colObjects.length; i++){
-
-				/*
-				 * Check the column object has the unexepctedValueParams object which 
-				 * contains the variables to test on.
-				 */
-				if(typeof colObjects[i].unexpectedValueParams != 'undefined'){
-
-					var unexpectedValuesPresent = false;
-
-					log(colObjects[i]);
-					log("Running tests on column: "+colObjects[i].unexpectedValueParams.colName);
-
-					colObjects[i].unexpectedValueParams.result = LG.verifyValueTypes(
-							colObjects[i].unexpectedValueParams.colName, 
-							colObjects[i].unexpectedValueParams.expression, 
-							colObjects[i].unexpectedValueParams.expectedType, 
-							colObjects[i].unexpectedValueParams.exampleValue
-					);
-
-					log("Result: ");
-					log(colObjects[i].unexpectedValueParams.result);
-
-					if(colObjects[i].unexpectedValueParams.result.type != "success"){
-						unexpectedValuesPresent = true;
-					}
-
-					/*
-					 * Once we've finished looping through the colObjects
-					 */
-					if(i == colObjects.length-1){
-						/*
-						 * Decide to show the unexpected values UI or not.
-						 * 
-						 * If any of the column tested on have unexpected values, then this 
-						 * panel should be shown.
-						 */
-						if(unexpectedValuesPresent){
-							log("Unexpected values present - displaying the UI panel");
-							ui.typingPanel.displayUnexpectedValuesPanel(colObjects, 0, wizardBody);
-						} else {
-							log("No unexpected values present - not displaying the UI panel");
-
-							LG.restoreWizardBody();
-
-							/*
-							 * Remove any facets left over from the tests
-							 */
-							for(var j=0; j<colObjects.length; j++){
-								LG.removeFacet(colObjects[j].name);
-							}
-						}
-					}
-				}
-			}
-
-		},
-
-		/*
-		 * verifyValueTypes
-		 * 
-		 * Uses a facet to calculate whether at least 90%
-		 * of the columns values are what they are expected to be.
-		 * 
-		 * Returns a result object containing...
-		 * 
-		 * averageType
-		 * count
-		 * message
-		 * success
-		 */
-		verifyValueTypes : function(columnName, expression, expectedType, exampleValue){
-
-			var percentage = 0.9;
-			var averageType = "";
-			var averageTypeCount = 0;
-			var errorCount = 0;
-
-			/*
-			 * Build a parameter object using the first of the column names.
-			 */
-			var facetParams = {
-					"facets" : [ {
-						"type" : "list",
-						"name" : columnName,
-						"columnName" : columnName,
-						"expression" : expression,
-						"omitBlank" : false,
-						"omitError" : false,
-						"selection" : [],
-						"selectBlank" : false,
-						"selectError" : false,
-						"invert" : false
-					} ],
-					"mode" : "row-based"
-			};
-
-			$.ajax({
-				async : false,
-				type : "POST",
-				url : "/command/" + "core" + "/" + "compute-facets",
-				data : {
-					engine : JSON.stringify(facetParams),
-					project : theProject.id
-				},
-				success : function(data) {
-					/*
-					 * Loop through the UI facets
-					 */
-					for ( var i = 0; i < data.facets.length; i++) {
-
-						/*
-						 * If the facet matches the column name and has
-						 * choices returned
-						 */
-						if (data.facets[i].columnName == columnName && typeof data.facets[i].choices != 'undefined') {
-							/*
-							 * Loop through the returned facet choices (count) number of times
-							 * and append them to the unordered list.
-							 */
-							var length = data.facets[i].choices.length;
-
-							for(var j=0; j<length; j++){
-
-								if(data.facets[i].choices[j].c >= averageTypeCount){
-									averageType = data.facets[i].choices[j].v.l;
-									averageTypeCount = data.facets[i].choices[j].c;							
-								}
-
-								if(data.facets[i].choices[j].v.l == "error"){
-									errorCount = data.facets[i].choices[j].c;
-								}
-							}
-
-							i=data.facets.length;
-
-						}
-					}
-
-				},
-				error : function() {
-					alert("A problem was encountered when computing facets.");
-				}
-			});	
-
-			var result = {
-					colName:columnName,
-					exampleValue:exampleValue,
-					averageType:averageType,
-					count:averageTypeCount,
-					expression:expression,
-					errorCount:errorCount
-			};
-
-			/*
-			 * If the averageType resembles 90% or more of the total 
-			 * number of types, then the column has been typed successfully
-			 */
-
-			//log("averageTypeCount = "+averageTypeCount);
-			//log("(theProject.rowModel.total*"+percentage+") = "+(theProject.rowModel.total*percentage));
-			//log("expectedType = "+expectedType);
-			//log("averageType = "+averageType);
-
-			if(averageTypeCount == theProject.rowModel.total && expectedType == averageType){
-				result.message = "All values in the <span class='colName'>"+result.colName+"</span> column successfully typed as <span class='valueType'>"+averageType+"</span>.";
-				result.success = true;
-				result.type = "success";
-			} else if(errorCount == 0){
-				result.message = "All values in the <span class='colName'>"+result.colName+"</span> column successfully typed as <span class='valueType'>"+averageType+"</span>.";
-				result.success = true;
-				result.type = "success";		
-			} else if(averageTypeCount == theProject.rowModel.total && expectedType !== averageType) {
-				result.message = "None of values in the <span class='colName'>"+result.colName+"</span> column could by typed propery. Is this the correct column for this wizard?";
-				result.success = false;
-				result.type = "fail";		
-			} else if(averageTypeCount >= (theProject.rowModel.total*percentage) && expectedType == averageType){
-				result.message = "At least "+percentage*100+"% of the <span class='colName'>"+result.colName+"</span> column's values are of the expected type <span class='valueType'>"+averageType+"</span>.";
-				result.success = false;
-				result.type = "warning";
-			} else if(expectedType == averageType){
-				result.message = "The <span class='colName'>"+result.colName+"</span> column contains values that were expected, but there are some unexpected values too.";
-				result.success = false;
-				result.type = "warning";
-			} else if(averageTypeCount >= (theProject.rowModel.total*percentage)){
-				result.message = "The <span class='colName'>"+result.colName+"</span> column mostly contains values of the type <span class='valueType'>"+averageType+"</span> - which was not expected.";
-				result.success = false;	
-				result.type = "warning";
-			} else {
-				result.message = "There's no clear value type in the <span class='colName'>"+result.colName+"</span> column - but the most frequently occurring is <span class='valueType'>"+averageType+"</span>.";
-				result.success = false;	
-				result.type = "notclear";
-			}
-
-			log("verifyValueTypes, result: ");
-			log(result);
-
-			return result;
-
-		},
-
-		/*
-		 * restoreWizardBody
-		 * 
-		 * Restores a wizards hidden elements after they have been hidden
-		 * during the display of the "results" panel after typing a column 
-		 * incorrectly.
-		 */
-		restoreWizardBody : function(){
-
-			$("div.wizardComplete").remove();
-			$("div.wizard-panel").css("bottom","72px");
-			$("div.wizard-body").children().show();
-			$("div.wizard-body").find("span.note").hide();
-			$("div.wizard-body").find("div.split").hide();
-			$("div.action-buttons").show();
-			return false;
-		},
-
-		/*
-		 * undoWizardOperations
-		 */
-		undoWizardOperations : function(historyID){
-
-			Refine.postCoreProcess(
-					"undo-redo",
-					{ lastDoneID: historyID },
-					null,
-					{ everythingChanged: true }
-			);
-		},
-
-
-		/*
-		 * THIS ISN'T BEING USED DUE TO COMPLICATIONS WITH 
-		 * EDITING THE UNDO-REDO HISTORY IN THE FRONT END.
-		 * 
-		 * summariseWizardHistoryEntry
-		 */
-		summariseWizardHistoryEntry : function(wizardName, wizardHistoryRestoreID){
-
-			/*
-			 * Find the history entries between the restore point and 
-			 * the "now" entry, remove them all but the first entry and 
-			 * rename it to the name of the wizard.
-			 */
-			var removeEntry = false;
-			for(var i=0; i<ui.historyPanel._data.past.length;i++){
-				if(removeEntry){
-					log("Removing --- "+ui.historyPanel._data.past[i].description);
-					ui.historyPanel._data.past.splice(i,1);
-					i--;
-				}
-				if(ui.historyPanel._data.past[i].id == wizardHistoryRestoreID){
-					removeEntry = true;
-					i++;
-					ui.historyPanel._data.past[i].description = wizardName;
-				}
-
-			}
-
-			ui.historyPanel._render();
-
 		},
 
 		/*
