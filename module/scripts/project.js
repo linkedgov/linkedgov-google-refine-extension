@@ -32,7 +32,13 @@ LG.vars = {
 			cols : []
 		},
 		lgNameSpace: "http://example.linkedgov.org/",
-		hiddenColumns: ""
+		hiddenColumns: "",
+		reconServices : [{
+			name:"UK Government departments",
+			keywords:["department","organisation"],
+			endpoint:"http://services.data.gov.uk/reference/sparql",
+			labelProperty:"http://www.w3.org/2000/01/rdf-schema#label"
+		}]
 };
 
 
@@ -115,7 +121,7 @@ LG.loadTypingPanel = function(callback) {
 					if(callback){
 						callback();
 					}
-					
+
 				} else {
 					log("ui object is not ready yet");
 				}
@@ -152,7 +158,8 @@ LG.loadPanelScripts = function() {
 				 */
 				$.getScript("extension/linkedgov/scripts/project/panels/linkingPanel.js",function(){
 					LG.panels.linkingPanel = LinkedGov_LinkingPanel;
-					//LG.panels.linkingPanel.loadHTML();
+					LG.panels.linkingPanel.loadHTML();
+					LG.panels.linkingPanel.initialise();
 				});
 
 				/*
@@ -194,7 +201,11 @@ LG.loadPanelScripts = function() {
 				clearInterval(interval);
 
 			} else {
-				log("ui.leftPanelTabs ain't ready yet...");
+				log("ui.typingPanel || ui.leftPanelTabs ain't ready yet...");
+				if(typeof ui.typingPanel == 'undefined'){
+					ui.typingPanel = new TypingPanel($("div#refine-tabs-typing"));
+					LG.panels.typingPanel = ui.typingPanel;
+				}
 			}
 
 		},100);
@@ -627,6 +638,66 @@ LG.resizeAll_LG = function() {
 	resizeAll();
 };
 
+/*
+ * addReconciliationServices
+ */
+LG.addReconciliationServices = function(index, serviceNameSuffix, callback){
+
+	/*
+		datasource	sparql
+		graph	
+		name	UK Government Departments
+		properties	
+		type	plain
+		url	http://services.data.gov.uk/reference/sparql
+	 */
+
+	ReconciliationManager.standardServices.length = 0;
+	ReconciliationManager.save(function(){
+
+		$.post("/command/rdf-extension/addService",{
+			"datasource":"sparql",
+			"name":LG.vars.reconServices[index].name+(serviceNameSuffix == 1 ? "" : "-"+serviceNameSuffix),
+			"url":LG.vars.reconServices[index].endpoint,
+			"type":"plain",
+			"graph":"",
+			"properties":LG.vars.reconServices[index].labelProperty
+		},
+		function(data){
+			if(typeof data.code != 'undefined' && data.code != 'error'){
+				log("Successfully added service");
+				/*
+				 * Store the ID given to the service by the RDF extension 
+				 * back into our service object
+				 */
+				LG.vars.reconServices[index].id = data.service.id;
+				RdfReconciliationManager.registerService(data);
+				if(index == LG.vars.reconServices.length-1){
+					/*
+					 * We've added all the services
+					 */
+					if(callback){
+						callback();
+					}
+				} else {
+					/*
+					 * Proceed to add the next service
+					 */
+					LG.addReconciliationServices(index, serviceNameSuffix, callback);
+				}
+			} else {
+				log("Error adding service");
+				serviceNameSuffix = serviceNameSuffix+1;
+				/*
+				 * Add the same service again, but this time, adding an integer suffix to the end
+				 * of it's name (to avoid a clash).
+				 */
+				LG.addReconciliationServices(index, serviceNameSuffix, callback);
+
+			}
+		},"json");
+	});
+};
 
 /*
  * silentProcessCall

@@ -83,9 +83,10 @@ var LinkedGov_WizardsPanel = {
 		initialise:function(){
 
 			var self = this;
-
-			self.body = ui.typingPanel._el.wizardsPanel;
-			self.actionBar = ui.typingPanel._el.actionBar;
+			
+			self.els = ui.typingPanel._el;
+			self.body = self.els.wizardsPanel;
+			self.actionBar = self.els.actionBar;
 
 			/*
 			 * Interaction when clicking on a wizard header
@@ -98,7 +99,7 @@ var LinkedGov_WizardsPanel = {
 			 * Interaction for collapsing and expanding the wizard 
 			 * questions.
 			 */
-			ui.typingPanel._el.collapseExpandButton.click(function() {
+			self.els.collapseExpandButton.click(function() {
 				if(!$(this).data("hasBeenClicked")){
 					$(this).html("+");
 					$(this).attr("title","Expand wizards");
@@ -126,7 +127,7 @@ var LinkedGov_WizardsPanel = {
 			/*
 			 * Interaction for "Back" button.
 			 */
-			ui.typingPanel._el.returnButton.click(function(){
+			self.els.returnButton.click(function(){
 				self.destroyColumnSelector();
 				self.showQuestions();
 			});
@@ -150,15 +151,15 @@ var LinkedGov_WizardsPanel = {
 			 * allows access to the individual elements through the object
 			 * "elmts".
 			 */
-			ui.typingPanel._el.updateButton.click(function(){
+			self.els.updateButton.click(function(){
 
 				self.destroyColumnSelector();
 
-				var wizardObject = LG.wizards[ui.typingPanel._el.actionButtons.attr("rel")];
+				var wizardObject = LG.wizards[self.els.actionButtons.attr("rel")];
 				wizardObject.initialise(DOM.bind(self.body));
 			});
 
-			ui.typingPanel._el.undoButton.click(function(){
+			self.els.undoButton.click(function(){
 
 				self.destroyColumnSelector();
 				var wizardObject = LG.wizards[$(this).parent().attr("rel")];
@@ -213,9 +214,9 @@ var LinkedGov_WizardsPanel = {
 			});
 
 			/*
-			 * 'Remove column' interaction for column lists
+			 * 'Remove column' interaction for column lists in wizards
 			 */
-			$("ul.selected-columns li span.remove").live("click",function(){
+			$("div.wizard-body ul.selected-columns li span.remove").live("click",function(){
 				self.removeColumn($(this));
 			});
 
@@ -269,13 +270,13 @@ var LinkedGov_WizardsPanel = {
 			// Show the questions
 			this.body.find("div.questions").show();
 			// Hide the action buttons
-			ui.typingPanel._el.actionButtons.hide();
+			this.els.actionButtons.hide();
 			// Show the collapse-expand button
-			ui.typingPanel._el.collapseExpandButton.show();
+			this.els.collapseExpandButton.show();
 			// Hide the "return to wizards" button
-			ui.typingPanel._el.returnButton.hide();
+			this.els.returnButton.hide();
 			// Show the finish button
-			ui.typingPanel._el.finishButton.hide();
+			this.els.finishButton.hide();
 		},
 
 		/*
@@ -294,15 +295,17 @@ var LinkedGov_WizardsPanel = {
 			// Show the chosen wizard
 			this.body.find("div.wizard-body[rel='"+wizardName+"']").show();
 			// Hide the question collapse button
-			ui.typingPanel._el.collapseExpandButton.hide();
-			// Show the "return to wizards" button
-			ui.typingPanel._el.returnButton.show();
+			self.els.collapseExpandButton.hide();
+			// Show the "back" button
+			self.els.returnButton.show();
+			// Show the "Update" button
+			self.els.updateButton.show();
 			// Hide the finish button
-			ui.typingPanel._el.finishButton.hide();
+			self.els.finishButton.hide();
 			// Update the div.action-buttons rel attribute to relate to the specific wizard
-			ui.typingPanel._el.actionButtons.attr("rel",wizardName);
+			self.els.actionButtons.attr("rel",wizardName);
 			// Show the action buttons
-			ui.typingPanel._el.actionButtons.show();		
+			self.els.actionButtons.show();		
 
 			
 			//LG.panels.typingPanel._el.actionBar.find("div.action-buttons").find("a.update").attr("bind",$("div.wizard-body").find("a.update").attr("bind"));

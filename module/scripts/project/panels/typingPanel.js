@@ -48,6 +48,8 @@ TypingPanel.prototype.update = function (onDone) {
 
 TypingPanel.prototype.hidePanels = function(){
 	$("div.typing-panel-body").hide();
+	$("div.action-bar div.action-buttons").hide();
+	$("div.action-bar a.button").hide();
 };
 
 /*
@@ -65,33 +67,37 @@ TypingPanel.prototype._render = function () {
 	var elmts = DOM.bind(self._div);
 
 	//ui.typingPanel.loadWizards();
-	
+
 	/*
 	 * Typing panel tabs
 	 */
 	$('ul.lg-tabs li a').click(function(){
-				
-		$("div#intro-message").hide();
-		$('ul.lg-tabs li').removeClass("active");
-		$(this).parent().addClass("active");
-		$("div.typing-panel-body").hide();
-		
-		$("div#"+$(this).attr("rel")).show(0,function(){
-			
-			$("div#"+$(this).attr("rel")).scrollTop(0);
-			
-			$("td.column-header").each(function(){
-				$(this).removeClass("bad").removeClass("maybe").removeClass("good").removeClass("great");
+		if(!$(this).parent("li").hasClass("active")){		
+			$("div#intro-message").hide();
+			$('ul.lg-tabs li').removeClass("active");
+			$(this).parent().addClass("active");
+			$("div.typing-panel-body").hide();
+
+			$("div#"+$(this).attr("rel")).show(0,function(){
+
+				$("td.column-header").each(function(){
+					$(this).removeClass("bad").removeClass("maybe").removeClass("good").removeClass("great");
+				});
+
+				if($(this).attr("id") == "wizards-panel"){
+					LG.panels.wizardsPanel.displayPanel();
+				} else if($(this).attr("id") == "linking-panel"){	
+					LG.panels.linkingPanel.displayPanel();
+				} else if($(this).attr("id") == "labelling-panel"){
+					LG.panels.labellingPanel.displayPanel();
+				}
+
+				$(".typing-panel-body").scrollTop(0)
+
 			});
-			
-			if($(this).attr("id") == "wizards-panel"){
-				LG.panels.wizardsPanel.displayPanel();
-			} else if($(this).attr("id") == "linking-panel"){	
-				LG.panels.linkingPanel.displayPanel();
-			} else if($(this).attr("id") == "labelling-panel"){
-				LG.panels.labellingPanel.displayPanel();
-			}
-		});
+		} else {
+			// already on the tab
+		}
 	});
 
 	/*
@@ -99,29 +105,32 @@ TypingPanel.prototype._render = function () {
 	 * and show it.
 	 */
 	//elmts.finishButton.click(function(){
-		
-		/*
-		 * TODO: Make checks to see if the user has visited each panel,
-		 * as they might head for the Finish button after just using the wizards/
-		 */
-		
-		/*
-		 * Save all other RDF that needs to be saved
-		 */
-		//LG.rdfOps.finaliseRDFSchema.init();
+
+	/*
+	 * TODO: Make checks to see if the user has visited each panel,
+	 * as they might head for the Finish button after just using the wizards/
+	 */
+
+	/*
+	 * Save all other RDF that needs to be saved
+	 */
+	//LG.rdfOps.finaliseRDFSchema.init();
 	//}).show();
-	
+
 	/*
 	 * Called similarly to Refine's panels.
 	 */
 	this.resize();
+
+	$("div.action-bar a.button.save, div.action-bar a.button.link").hide();
 };
 
 TypingPanel.prototype.showStartMessage = function(){
-	
+
 	$('ul.lg-tabs li').removeClass("active");
 	$("div.typing-panel-body").hide();
 	$("div#intro-message").show();
 	$("div.action-bar").hide();
-	
+	$("div.action-bar a.save","div.action-bar a.link").hide();
+
 };

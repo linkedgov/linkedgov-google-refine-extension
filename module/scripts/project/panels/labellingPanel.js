@@ -21,10 +21,6 @@ var LinkedGov_LabellingPanel = {
 
 		/*
 		 * initialisePanel
-		 * 
-		 * If it's the first time the user has entered the labels and descriptions panel, 
-		 * the input elements need to built and populated with the column headers - or - 
-		 * any existing labels and descriptions from a previous session.
 		 */
 		initialise : function() {
 

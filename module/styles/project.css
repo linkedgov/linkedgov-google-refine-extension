@@ -866,12 +866,12 @@ body.lg div.wizard-body div.wizardComplete div.warning a.button.rerun:active
 		to(#40742F) ) #DDDDDD;
 }
 
-body.lg div.wizard-body div.description p, body.lg div.labelling-panel div.description p {
+body.lg div#refine-tabs-typing div.description p {
 	line-height: 1.3;
 	padding: 7px 15px;
 }
 
-body.lg div.wizard-body div.description, body.lg div.labelling-panel div.description {
+body.lg div#refine-tabs-typing div.description {
     background: none repeat scroll 0 0 #F2F5FF;
     border: 1px solid #BBCCFF;
     color: #444444;
@@ -881,20 +881,20 @@ body.lg div.wizard-body div.description, body.lg div.labelling-panel div.descrip
     text-align: left;
 }
 
-body.lg div.wizard-body div.description a.ex {
+body.lg div#refine-tabs-typing div.description a.ex {
 	cursor: pointer;
 	display: block;
 	padding-bottom: 5px;
 }
 
-body.lg div.wizard-body div.description span.ex-text {
+body.lg div#refine-tabs-typing div.description span.ex-text {
 	display: none;
 	background: none repeat scroll 0 0 #FFFFCD;
 	border: 1px solid yellow;
 	padding: 5px;
 }
 
-body.lg div.wizard-body p.label {
+body.lg div#refine-tabs-typing p.label {
 	padding: 5px;
 }
 
@@ -930,7 +930,13 @@ body.lg div.selector a.selectColumn {
 	width: 80px;
 	text-align: center;
 }
+body.lg div.selector a.suggestButton {
 
+}
+body.lg div.selector a.clearButton {
+	margin-left:2px;
+	display:none;
+}
 body.lg div.selector span.column-selecting-icon {
 	display: inline;
 	margin-left: 5px;
@@ -996,11 +1002,11 @@ body.lg ul.date-checkboxes li span {
 	
 }
 
-body.lg div.wizard-body label {
+body.lg div#refine-tabs-typing label {
 	padding-left: 5px;
 }
 
-body.lg div.wizard-body span.note {
+body.lg div#refine-tabs-typing span.note {
 	background: none repeat scroll 0 0 #FFFFE7;
 	border: 1px solid #FFFE00;
 	border-radius: 5px 5px 5px 5px;
@@ -1019,7 +1025,7 @@ body.lg div.wizard-body span.note {
 	z-index: 9999;
 }
 
-body.lg a.info {
+body.lg div#refine-tabs-typing a.info {
 	background: url("../images/info.png") no-repeat scroll 0 0 transparent;
 	display: inline-block;
 	float: right;
@@ -1035,11 +1041,11 @@ body.lg div.split a.info {
 	
 }
 
-body.lg a.info:hover {
+body.lg div#refine-tabs-typing a.info:hover {
 	cursor: pointer;
 }
 
-body.lg div.wizard-body div.selector {
+body.lg div#refine-tabs-typing div.selector {
 	background-color: #DAF4DA;
 	border: 1px solid #A2CFA4;
 	clear: both;
@@ -1047,7 +1053,7 @@ body.lg div.wizard-body div.selector {
 	padding: 5px;
 }
 
-body.lg div.wizard-body div.selector p {
+body.lg div#refine-tabs-typing div.selector p {
 	padding-bottom: 10px;
 	text-align: left;
 }
@@ -1108,11 +1114,11 @@ body.lg div.wizard-body div.preview ul.cell-previews ul.values li {
 	text-align: left;
 }
 
-body.lg div.wizard-body ul.selected-columns {
+body.lg div#refine-tabs-typing ul.selected-columns {
 	background: none repeat scroll 0 0 #FFFFFF;
 	border: 1px solid #DDDDDD;
 	color: #333333;
-	display: none;
+    display: none;
 	line-height: 17px;
 	list-style-type: none;
 	margin-bottom: 2px;
@@ -1121,8 +1127,18 @@ body.lg div.wizard-body ul.selected-columns {
 	padding-left: 1px;
 	padding-right: 1px;
 }
-
-body.lg div.wizard-body ul.selected-columns li {
+body.lg div#refine-tabs-typing ul.confirmed-columns {
+    background: none repeat scroll 0 0 #FFFFFF;
+    color: #333333;
+    line-height: 17px;
+    list-style-type: none;
+    margin-bottom: 2px;
+    margin-top: 0px;
+    overflow: hidden;
+    padding-left: 1px;
+    padding-right: 1px;
+}   
+body.lg div#refine-tabs-typing ul.selected-columns li {
 	background: none repeat scroll 0 0 #FFFFFF;
 	border: 1px solid #DDDDDD;
 	color: #333333;
@@ -1133,8 +1149,21 @@ body.lg div.wizard-body ul.selected-columns li {
 	overflow: hidden;
 	padding-left: 0;
 }
-
-body.lg div.wizard-body ul.selected-columns li span.col {
+body.lg div#refine-tabs-typing ul.confirmed-columns li {
+    background-origin: padding-box, padding-box;
+    background-position: left center;
+    background-repeat: no-repeat;
+    background-size: auto auto, auto auto;
+    border: 1px solid #DDDDDD;
+    color: #333333;
+    line-height: 17px;
+    list-style-type: none;
+    margin-bottom: 1px;
+    margin-top: 1px;
+    overflow: hidden;
+    padding: 0 5px 0 0;
+}
+body.lg div#refine-tabs-typing ul.selected-columns li span.col {
 	background: none repeat scroll 0 0 #FFFFFF;
 	display: block;
 	float: left;
@@ -1142,8 +1171,78 @@ body.lg div.wizard-body ul.selected-columns li span.col {
 	padding: 2px 22px 2px 6px;
 	width: 89%;
 }
-
-body.lg div.wizard-body ul.selected-columns li span.remove {
+body.lg div#refine-tabs-typing ul.confirmed-columns li span.col {
+    display: block;
+    float: left;
+    font-weight: bold;
+    padding: 2px 5px;
+    text-shadow: 1px 1px #FFFFFF;
+    width: 98%;
+}
+body.lg div#refine-tabs-typing div.possible-links h3.confirmed {
+	display:none;
+}
+body.lg div#refine-tabs-typing div.suggest-links.confirmed {
+	background-color:#F2F5FF !important;
+	border:1px solid #BBCCFF !important;
+	display:none;
+}
+body.lg div#refine-tabs-typing div.suggest-links ul {
+    border: medium none;
+    margin-bottom: 0 !important;
+}
+body.lg div#refine-tabs-typing div.suggest-links ul.selected-columns li span.col {
+    border-right: 1px solid #DDDDDD;
+    padding: 1% 3% 1% 2%;
+    width: 85%;
+}
+body.lg div#refine-tabs-typing div.suggest-links ul.selected-columns li span.link {
+    background-attachment: scroll, scroll;
+    background-clip: border-box, border-box;
+    background-color: transparent;
+    background-image: url("../images/link.png"), -moz-linear-gradient(center top , #FFFFFF, #DDDDDD);
+    background-origin: padding-box, padding-box;
+    background-position: 0 0%, 0 0;
+    background-repeat: no-repeat;
+    background-size: auto auto, auto auto;
+    border-right: 1px solid #DDDDDD;
+    border-top: 1px solid #DDDDDD;
+    float: left;
+    font-weight: normal;
+    padding: 1% 1% 1% 10%;
+    text-shadow: 1px 1px #FFFFFF;
+    width: 79%;
+}
+body.lg div#refine-tabs-typing div.suggest-links ul.confirmed-columns li {
+	display:none;
+}
+body.lg div#refine-tabs-typing div.suggest-links ul.confirmed-columns li span.link {
+    background-attachment: scroll, scroll;
+    background-clip: border-box, border-box;
+    background-color: transparent;
+    background-image: url("../images/link.png"), -moz-linear-gradient(center top , #FFFFFF, #DDDDDD);
+    background-origin: padding-box, padding-box;
+    background-position: 0 0%, 0 0;
+    background-repeat: no-repeat;
+    background-size: auto auto, auto auto;
+    border-top: 1px solid #DDDDDD;
+    float: left;
+    font-weight: normal;
+    line-height: 20px;
+    padding: 1px 5px 1px 25px;
+    text-shadow: 1px 1px #FFFFFF;
+    width: 90%;
+}
+body.lg div#refine-tabs-typing div.suggest-links ul li.none {
+    background: none repeat scroll 0 0 white;
+    border: 1px solid #DDDDDD;
+    list-style: none outside none;
+    margin: 5px 0;
+    padding-bottom: 3px;
+    padding-left: 5px;
+    padding-top: 3px;
+}  
+body.lg div#refine-tabs-typing ul.selected-columns li span.remove, body.lg div#refine-tabs-typing ul.confirmed-columns li span.remove {
 	background-image: url("../images/delete-hover.png");
 	background-position: -16px 0;
 	background-repeat: no-repeat;
@@ -1164,14 +1263,40 @@ body.lg div.wizard-body ul.selected-columns li span.remove {
 	text-indent: 9999px;
 	width: 16px;
 }
-
-body.lg div.wizard-body ul.selected-columns li span.remove:hover {
+body.lg div#refine-tabs-typing div.suggest-links ul.selected-columns li span.remove {
+    margin-left: -5px;
+    margin-top: 5px;
+}
+body.lg div#refine-tabs-typing div.reconcile-panel div.results {
+	display:none;
+}
+body.lg div#refine-tabs-typing ul.selected-columns li span.confirm {
+    background-image: url("../images/confirm-hover.png");
+    background-position: -16px 0;
+    background-repeat: no-repeat;
+    border-radius: 3px 3px 3px 3px;
+    color: #773030;
+    cursor: pointer;
+    float: right;
+    font-family: Arial;
+    font-size: 9px;
+    height: 16px;
+    line-height: 13px;
+    margin-right: 3px;
+    margin-top: 6px;
+    padding: 0;
+    position: relative;
+    text-align: center;
+    text-indent: 9999px;
+    width: 16px;
+}
+body.lg div#refine-tabs-typing ul.selected-columns li span.remove:hover {
 	background-position: 0 0;
 }
-
-body.lg div.wizard-body ul.selected-columns li.skip { /*opacity:0.5;
-	background-color:#EEEEEE;
-	border:1px solid #CCCCCC;*/
+body.lg div#refine-tabs-typing ul.selected-columns li span.confirm:hover {
+    background-position: 0 0;
+}
+body.lg div.wizard-body ul.selected-columns li.skip {
 	display: none;
 }
 
@@ -1323,7 +1448,12 @@ body.lg div.action-bar a.button.save {
     font-weight: bold;
     margin-left: 0;
     color: #FFFFFF;
-    display:none;
+}
+body.lg div.action-bar a.button.link {
+    font-size: 14px;
+    font-weight: bold;
+    margin-left: 0;
+    color: #FFFFFF;
 }
 body.lg div.action-bar div.action-buttons a.button.undo {
 	background: -moz-linear-gradient(center top, #D68C8C, #742F2F) repeat
@@ -1344,7 +1474,8 @@ body.lg div.action-bar div.action-buttons a.button.preview {
 
 body.lg div.action-bar div.action-buttons a.button.update, 
 body.lg div.action-bar a.button.finish, 
-body.lg div.action-bar a.button.save {
+body.lg div.action-bar a.button.save,
+body.lg div.action-bar a.button.link {
     background: -moz-linear-gradient(center top, #79B1FE, #294F8C) repeat
         scroll 0 0 transparent;
     background: -webkit-gradient(linear, left bottom, left top, from(#294F8C),
@@ -1370,7 +1501,8 @@ body.lg div.action-bar div.action-buttons a.button.preview:active {
 
 body.lg div.action-bar div.action-buttons a.button.update:active, 
 body.lg div.action-bar a.button.finish:active, 
-body.lg div.action-bar a.button.save:active {
+body.lg div.action-bar a.button.save:active,
+body.lg div.action-bar a.button.link:active {
     background: -moz-linear-gradient(center top, #294F8C, #79B1FE) repeat
         scroll 0 0 transparent;
     background: -webkit-gradient(linear, left bottom, left top, from(#79B1FE),
@@ -1423,7 +1555,7 @@ body.lg table.data-table tr td.blankValueHighlight {
 }
 
 body.lg .fbs-pane {
-	width: 250px;
+	width: 239px;
 }
 
 body.lg div.rangeSelect div.range {
@@ -1503,7 +1635,7 @@ body.lg div.ui-datepicker .ui-state-hover {
 	font-weight: bold;
 }
 
-body.lg div.labelling-panel {
+body.lg div.labelling-panel, body.lg div.linking-panel {
 	padding: 10px;
 }
 
