@@ -1267,9 +1267,6 @@ body.lg div#refine-tabs-typing div.suggest-links ul.selected-columns li span.rem
     margin-left: -5px;
     margin-top: 5px;
 }
-body.lg div#refine-tabs-typing div.reconcile-panel div.results {
-	display:none;
-}
 body.lg div#refine-tabs-typing ul.selected-columns li span.confirm {
     background-image: url("../images/confirm-hover.png");
     background-position: -16px 0;
@@ -1341,7 +1338,22 @@ body.lg div.wizard-body ul.selected-columns li span.colOptions input.textbox
 	font-size: 14px;
 	background-color: #FFFFCC;
 }
-
+/* Recon Results */
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results {
+    display:none;
+}
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results h3 {
+    padding:0;
+}
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.description {
+    padding:0;
+}
+body.lg p.suggestinput {
+	visibility:hidden;
+}
+body.lg p.suggestinput input.suggestbox {
+	width:96%;
+}
 body.lg div.wizard-body ul.date-checkboxes li span.colOptions.mb4d,body.lg div.wizard-body ul.date-checkboxes li span.colOptions.day,body.lg div.wizard-body ul.date-checkboxes li span.colOptions.year,body.lg div.wizard-body ul.date-checkboxes li span.colOptions.unseparated
 	{ /*background-color: #FFFFCC;*/
 	display: none;
@@ -1645,4 +1657,12 @@ body.lg div.labelling-panel, body.lg div.linking-panel {
 	height: 40px;
 	left: 0;
 	padding: 0 0 0;
+}
+
+/* Recon css */
+body.lg div.column-header-recon-stats-bar {
+	display:none;
+}
+body.lg a.data-table-recon-action {
+	display:none;
 }

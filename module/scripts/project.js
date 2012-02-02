@@ -36,6 +36,13 @@ LG.vars = {
 		reconServices : [{
 			name:"UK Government departments",
 			keywords:["department","organisation"],
+			possibleTypes:["http://reference.data.gov.uk/def/central-government/Department"],
+			endpoint:"http://services.data.gov.uk/reference/sparql",
+			labelProperty:"http://www.w3.org/2000/01/rdf-schema#label"
+		},{
+			name:"Public bodies",
+			keywords:["body", "bodies"],
+			possibleTypes:["http://reference.data.gov.uk/def/central-government/PublicBody"],
 			endpoint:"http://services.data.gov.uk/reference/sparql",
 			labelProperty:"http://www.w3.org/2000/01/rdf-schema#label"
 		}]
@@ -683,6 +690,7 @@ LG.addReconciliationServices = function(index, serviceNameSuffix, callback){
 					/*
 					 * Proceed to add the next service
 					 */
+					index++;
 					LG.addReconciliationServices(index, serviceNameSuffix, callback);
 				}
 			} else {
