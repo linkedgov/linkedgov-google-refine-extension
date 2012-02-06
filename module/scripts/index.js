@@ -388,14 +388,20 @@ var LG = {
 		saveMetadata:function(jobID, projectID, callback){
 
 			var self = this;
-
+			var length = 0, iterator = 0;
+			
+			// Count how many keys we have
+			$.each(metadataObject,function(key,val){length++;});
+			
 			$.each(LG.vars.metadataObject,function(key,val){
 				
-				log("key = "+key);
-				log("val = "+val);
+				//log("key = "+key);
+				//log("val = "+val);
+				//log("encodeURIComponent(val) = "+encodeURIComponent(val));
 				
-				$.post("/command/core/set-preference?name="+key+"&value="+encodeURIComponent(val)+"&project="+projectID);
-				/*
+				
+				//$.post("/command/core/set-preference?name="+key+"&value="+encodeURIComponent(val)+"&project="+projectID);
+				
 				$.ajax({
 					type: "POST",
 					url: "/command/core/set-preference?" + $.param({ 
@@ -403,12 +409,19 @@ var LG = {
 						value : encodeURIComponent(val),
 						project : projectID
 					}),
-					dataType: "json"
+					dataType: "json",
+					success:function(){
+						if(iterator == length-1){
+							callback(jobID,projectID);
+						} else {
+							iterator++;
+						}
+					}
 				});
-				*/
+				
 			});
 
-			callback(jobID,projectID);
+			
 
 		},
 
@@ -650,7 +663,7 @@ Refine.CreateProjectUI.prototype.pollImportJob = function(start, jobID, timerID,
 				
 				log("projectID = "+projectID);
 				
-				Refine.CreateProjectUI.cancelImportinJob(jobID);
+				Refine.CreateProjectUI.cancelImportingJob(jobID);
 				document.location = "project?project=" + projectID;
 			});
 		} else {

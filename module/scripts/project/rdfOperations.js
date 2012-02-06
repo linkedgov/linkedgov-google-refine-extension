@@ -214,10 +214,10 @@ var LinkedGov_rdfOperations = {
 
 					$.each(metadataObject,function(key,val){
 
-						//log(key+" : "+val);
+						log(key+" : "+val);
 
 						switch(key){
-						case "name" :
+						case "LG.name" :
 							rootNode.links.push({
 								curie : "dct:title",
 								target : {
@@ -241,7 +241,7 @@ var LinkedGov_rdfOperations = {
 							});
 
 							break;
-						case "source" :
+						case "LG.source" :
 							rootNode.links.push({
 								uri:"http://purl.org/dc/terms/source",
 								curie:"dct:source",
@@ -253,7 +253,7 @@ var LinkedGov_rdfOperations = {
 								}
 							});
 							break;
-						case "license" :
+						case "LG.license" :
 							rootNode.links.push({
 								curie : "dct:license",
 								target:{
@@ -265,7 +265,7 @@ var LinkedGov_rdfOperations = {
 								uri : "http://purl.org/dc/terms/license"
 							});
 							break;
-						case "licenseLocation" :
+						case "LG.licenseLocation" :
 							if(val != 'null' && val != null && val.length > 4){
 								rootNode.links.push({
 									curie : "cc:attributionURL",
@@ -279,7 +279,7 @@ var LinkedGov_rdfOperations = {
 								});
 							}
 							break;
-						case "organisation" :				
+						case "LG.organisation" :				
 
 							var targetVar = {
 								lang : "en",
@@ -303,7 +303,7 @@ var LinkedGov_rdfOperations = {
 							});
 
 							break;
-						case "datePublished" :
+						case "LG.datePublished" :
 							rootNode.links.push({
 								curie : "dct:created",
 								target : {
@@ -314,7 +314,7 @@ var LinkedGov_rdfOperations = {
 								uri : "http://purl.org/dc/terms/created"
 							});
 							break;
-						case "webLocation" :
+						case "LG.webLocation" :
 							rootNode.links.push({
 								curie : "foaf:page",
 								target:{
@@ -326,10 +326,10 @@ var LinkedGov_rdfOperations = {
 								uri : "http://xmlns.com/foaf/0.1/page"
 							});
 							break;
-						case "descriptionLocation" :
+						case "LG.descriptionLocation" :
 							break;
 
-						case "frequency" :
+						case "LG.frequency" :
 							rootNode.links.push({
 								curie : "dct:accrualPeriodicity",
 								target : {
@@ -340,7 +340,7 @@ var LinkedGov_rdfOperations = {
 								uri : "http://purl.org/dc/terms/accrualPeriodicity"
 							});
 							break;
-						case "keywords" :
+						case "LG.keywords" :
 							var keywords = val.split(",");
 							for(var i=0;i<keywords.length;i++){
 
@@ -409,16 +409,16 @@ var LinkedGov_rdfOperations = {
 
 			// Create the object to store the metadata in
 			var metadataObject = {
-					"name":"",
-					"license":"",
-					"licenseLocation":"",
-					"frequency":"",
-					"organisation":"",
-					"datePublished":"",
-					"source":"",
-					"webLocation":"",
-					"descriptionLocation":"",
-					"keywords":""
+					"LG.name":"",
+					"LG.license":"",
+					"LG.licenseLocation":"",
+					"LG.frequency":"",
+					"LG.organisation":"",
+					"LG.datePublished":"",
+					"LG.source":"",
+					"LG.webLocation":"",
+					"LG.descriptionLocation":"",
+					"LG.keywords":""
 			};
 
 			var length = 0;
