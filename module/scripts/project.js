@@ -647,6 +647,9 @@ LG.resizeAll_LG = function() {
 
 /*
  * addReconciliationServices
+ * 
+ * Recursive function that iterates through the LG.vars.reconServices list 
+ * and makes sure they are added into Refine's list of reconciliation services.
  */
 LG.addReconciliationServices = function(index, serviceNameSuffix, callback){
 

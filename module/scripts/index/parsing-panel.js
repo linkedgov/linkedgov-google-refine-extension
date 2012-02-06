@@ -1,4 +1,4 @@
-LinkedGov.resizeParsingPanel();
+LG.resizeParsingPanel();
 
 $("button[bind='startOverButton']").live("click",function(){
 	$("div#create-project-ui-source-selection").scrollTop(0);

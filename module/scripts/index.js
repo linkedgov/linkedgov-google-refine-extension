@@ -21,7 +21,7 @@
  * functionally it's what's needed.
  * 
  */
-var LinkedGov = {
+var LG = {
 
 		vars : {
 			debug:true,
@@ -215,7 +215,7 @@ var LinkedGov = {
 			var error = false;
 			var errorMessages = "";
 
-			metadataObject = LinkedGov.vars.metadataObject;
+			metadataObject = LG.vars.metadataObject;
 
 			/*
 			 * Validate the entire form as long as the "other" license 
@@ -240,7 +240,7 @@ var LinkedGov = {
 					$("#data-name-input").addClass("error");
 				} else {
 					$("#data-name-input").removeClass("error");
-					metadataObject["LinkedGov.name"] = $("input#data-name-input").val();
+					metadataObject["LG.name"] = $("input#data-name-input").val();
 				}
 
 				if (typeof $("input[@name=project-license]:checked").val() == 'undefined') {
@@ -256,7 +256,7 @@ var LinkedGov = {
 				} else {
 					$("div.metadata tr.license td").removeClass("error");
 					$("input#data-license-other-input").removeClass("error");
-					metadataObject["LinkedGov.license"] = $("input[@name=project-license]:checked").val();
+					metadataObject["LG.license"] = $("input[@name=project-license]:checked").val();
 				}
 
 				if ($("input#data-webpage-input").val() == "http://" || $("input#data-webpage-input").val() == "") {
@@ -265,8 +265,8 @@ var LinkedGov = {
 					$("input#data-webpage-input").addClass("error");
 				} else {
 					$("input#data-webpage-input").removeClass("error");
-					metadataObject["LinkedGov.webLocation"] = $("input#data-webpage-input").val();
-					metadataObject["LinkedGov.source"] = $("input#data-webpage-input").val();
+					metadataObject["LG.webLocation"] = $("input#data-webpage-input").val();
+					metadataObject["LG.source"] = $("input#data-webpage-input").val();
 				}
 
 				if ($("input#data-organisation-input").val().length === 0) {
@@ -275,7 +275,7 @@ var LinkedGov = {
 					$("input#data-organisation-input").addClass("error");
 				} else {
 					$("input#data-organisation-input").removeClass("error");
-					metadataObject["LinkedGov.organisation"] = $("input#data-organisation-input").val();
+					metadataObject["LG.organisation"] = $("input#data-organisation-input").val();
 				}
 
 				if ($("input#data-description-webpage-input").val() == "http://" || $("input#data-description-webpage-input").val() == "") {
@@ -284,7 +284,7 @@ var LinkedGov = {
 					$("input#data-description-webpage-input").addClass("error");
 				} else {
 					$("input#data-description-webpage-input").removeClass("error");
-					metadataObject["LinkedGov.descriptionLocation"] = $("input#data-description-webpage-input").val();
+					metadataObject["LG.descriptionLocation"] = $("input#data-description-webpage-input").val();
 				}
 
 				if ($("textarea#data-keywords-input").val().length === 0) {
@@ -293,7 +293,7 @@ var LinkedGov = {
 					$("textarea#data-keywords-input").addClass("error");
 				} else {
 					$("textarea#data-keywords-input").removeClass("error");
-					metadataObject["LinkedGov.keywords"] = $("textarea#data-keywords-input").val();
+					metadataObject["LG.keywords"] = $("textarea#data-keywords-input").val();
 				}	
 
 			} else {
@@ -304,7 +304,7 @@ var LinkedGov = {
 					$("#data-name-input").addClass("error");
 				} else {
 					$("#data-name-input").removeClass("error");
-					metadataObject["LinkedGov.name"] = $("input#data-name-input").val();
+					metadataObject["LG.name"] = $("input#data-name-input").val();
 				}
 
 				if ($("input#data-license-other-input").val().length < 1) {
@@ -349,14 +349,14 @@ var LinkedGov = {
 							}
 						}
 					}
-					metadataObject["LinkedGov.datePublished"] = formattedDate;
+					metadataObject["LG.datePublished"] = formattedDate;
 				} else {
-					metadataObject["LinkedGov.datePublished"] = $("input#data-date-input").val();
+					metadataObject["LG.datePublished"] = $("input#data-date-input").val();
 				}
 			}
 
 			if($("select#data-update-freq-input").val() != "Please select..."){
-				metadataObject["LinkedGov.frequency"] = $("select#data-update-freq-input").val();
+				metadataObject["LG.frequency"] = $("select#data-update-freq-input").val();
 			}
 
 			/*
@@ -375,7 +375,7 @@ var LinkedGov = {
 			 * Store the other form fields that are not required
 			 */
 			if($("input#data-license-webpage-input").val().length > 0 && $("input#data-license-webpage-input").val() != "http://"){
-				metadataObject["LinkedGov.licenseLocation"] = $("input#data-license-webpage-input").val();
+				metadataObject["LG.licenseLocation"] = $("input#data-license-webpage-input").val();
 			}
 		},
 
@@ -389,7 +389,11 @@ var LinkedGov = {
 
 			var self = this;
 
-			$.each(LinkedGov.vars.metadataObject,function(key,val){
+			$.each(LG.vars.metadataObject,function(key,val){
+				
+				log("key = "+key);
+				log("val = "+val);
+				
 				$.post("/command/core/set-preference?name="+key+"&value="+encodeURIComponent(val)+"&project="+projectID);
 				/*
 				$.ajax({
@@ -573,7 +577,7 @@ DOM.loadHTML = function(module, path) {
 			dataType: "html",
 			success: function(html) {
 				DOM._loadedHTML[fullPath] = html;
-				LinkedGov.loadHTMLCallback(fullPath);
+				LG.loadHTMLCallback(fullPath);
 			}
 		})
 	}
@@ -593,7 +597,7 @@ Refine.DefaultImportingController.prototype._onImportJobReady = function() {
 		this._showParsingPanel(false);
 	}
 
-	LinkedGov.resizeParsingPanel();
+	LG.resizeParsingPanel();
 
 	$(window).unbind("resize");
 	$(window).bind("resize",Refine.DefaultImportingController.sources[0].ui._controller._parsingPanelResizer);
@@ -607,14 +611,14 @@ Refine.DefaultImportingController.prototype._onImportJobReady = function() {
  * This is necessesary so that we can capture the project's ID (not the import job ID), 
  * which must be used to access and write to the metadata.json file.
  * 
- * We place our own "LinkedGov.saveMetadata()" function inside the block of 
+ * We place our own "LG.saveMetadata()" function inside the block of 
  * code that is able to see the project ID, just before sending the user to the 
  * "project" page.
  */
 /*
  * Store the original 'pollImportJob' before we overwrite Refine's version.
  */
-LinkedGov.pollImportJob = Refine.CreateProjectUI.prototype.pollImportJob;
+LG.pollImportJob = Refine.CreateProjectUI.prototype.pollImportJob;
 
 Refine.CreateProjectUI.prototype.pollImportJob = function(start, jobID, timerID, checkDone, callback, onError) {
 
@@ -633,7 +637,19 @@ Refine.CreateProjectUI.prototype.pollImportJob = function(start, jobID, timerID,
 		 * intercept it to make a call to save our custom metadata.
 		 */
 		if(typeof job.config.projectID != 'undefined'){
-			LinkedGov.saveMetadata(jobID, job.config.projectID, function(jobID, projectID){
+			
+			log("jobID = "+jobID);
+			
+			log("job.config.projectID = "+job.config.projectID);
+			
+			
+			
+			LG.saveMetadata(jobID, job.config.projectID, function(jobID, projectID){
+				
+				log("jobID 2 = "+jobID);
+				
+				log("projectID = "+projectID);
+				
 				Refine.CreateProjectUI.cancelImportinJob(jobID);
 				document.location = "project?project=" + projectID;
 			});
@@ -646,7 +662,7 @@ Refine.CreateProjectUI.prototype.pollImportJob = function(start, jobID, timerID,
 	 * Call the original 'pollImportJob' function that was stored at the end of our new 
 	 * 'pollImportJob' function.
 	 */
-	LinkedGov.pollImportJob(start, jobID, timerID, checkDone, lgCallback, onError);
+	LG.pollImportJob(start, jobID, timerID, checkDone, lgCallback, onError);
 }
 
 /*
@@ -675,7 +691,7 @@ $.extend({
 });
 
 function log(str) {
-	window.console && console.log && LinkedGov.vars.debug && console.log(str);
+	window.console && console.log && LG.vars.debug && console.log(str);
 }
 
 /*
@@ -684,5 +700,5 @@ function log(str) {
  * Call the main initialisation function once the script & page has loaded
  */
 $(document).ready(function(){
-	LinkedGov.initialise();
+	LG.initialise();
 });

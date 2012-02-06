@@ -1,5 +1,5 @@
 $(document).ready(function(){
-	LinkedGov.disableFeaturesForImport();
+	LG.disableFeaturesForImport();
 });
 
 
@@ -93,7 +93,7 @@ $("button#dummy").toggle(function(){
  */
 $("button.proceed").click(function(){
 	
-	LinkedGov.validateForm();
+	LG.validateForm();
 
 });
 
