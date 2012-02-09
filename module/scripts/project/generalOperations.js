@@ -159,6 +159,52 @@ var LinkedGov_generalOperations = {
 
 
 		/*
+		 * computeColumnFacet
+		 * 
+		 * Retrieves facet data on a column using an expression
+		 */
+		computeColumnFacet : function(colName, expression, callback){
+
+			log("computeColumnFacet");
+			
+			/*
+			 * Build a parameter object using the first of the column names.
+			 */
+			var facetParams = {
+					"facets" : [ {
+						"type" : "list",
+						"name" : colName + " (LG)",
+						"columnName" : colName,
+						"expression" : expression,
+						"omitBlank" : false,
+						"omitError" : false,
+						"selection" : [],
+						"selectBlank" : false,
+						"selectError" : false,
+						"invert" : false
+					} ],
+					"mode" : "row-based"
+			};
+
+			$.ajax({
+				async : false,
+				type : "POST",
+				url : "/command/" + "core" + "/" + "compute-facets",
+				data : {
+					engine : JSON.stringify(facetParams),
+					project : theProject.id
+				},
+				success : function(data){
+					callback(data);
+				},
+				error : function() {
+					alert("A problem was encountered when computing facets.");
+				}
+			});	
+
+		},
+		
+		/*
 		 * setBlanksToNulls
 		 * 
 		 * Recursive function that applies a text-transform expression to each

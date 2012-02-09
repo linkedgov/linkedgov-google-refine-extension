@@ -27,8 +27,8 @@ var LinkedGov_LinkingPanel = {
 
 			var self = this;
 
-			this.els = ui.typingPanel._el;
-			this.body = this.els.linkingPanel;
+			self.els = ui.typingPanel._el;
+			self.body = self.els.linkingPanel;
 
 			/*
 			 * Add our services to the ReconcilitionManager
@@ -47,6 +47,7 @@ var LinkedGov_LinkingPanel = {
 			 * Interaction for the "Suggest links" button
 			 */
 			$("div.suggest-links a.suggestButton").live("click",function(){
+				self.els.linkButton.show();
 				$(this).html("Suggesting...").addClass("selecting");
 				$(this).after('<span class="column-selecting-icon"><img src="extension/linkedgov/images/column_selecting.gif" /></span>');
 				self.suggestLinks();
@@ -87,6 +88,21 @@ var LinkedGov_LinkingPanel = {
 			});
 
 			/*
+			 * Interaction for result headers
+			 */
+			$("div.result a.col-name").live("click",function(){
+				$("div.result div.result-body").slideUp();
+				if($(this).parent("div").find("div.result-body").css("display") == "none"){
+					$(this).parent("div").find("div.result-body").slideDown();
+				}
+
+				/*
+				 * Update the matches-bar
+				 */
+				self.updateMatches($(this).parent());
+			});
+
+			/*
 			 * Interaction for the "Link" button
 			 */
 			this.els.linkButton.click(function(){
@@ -101,6 +117,18 @@ var LinkedGov_LinkingPanel = {
 				}
 
 			});
+
+
+			/*
+			 * Interaction for the "Save" button
+			 */
+			this.els.saveButton.click(function(){
+				/*
+				 * Remove all of the facets containing "judgment" and "candidate" in the title
+				 */
+
+			});
+
 		},
 
 		displayPanel: function(){
@@ -122,7 +150,7 @@ var LinkedGov_LinkingPanel = {
 			 * Show this panel
 			 */
 			this.body.show();
-			this.showSuggestPanel();
+			//this.showSuggestPanel();
 
 		},
 
@@ -289,82 +317,130 @@ var LinkedGov_LinkingPanel = {
 				},
 				success : function(data) {
 
+					/*
+					 * We're looking for a single match for the column,
+					 * if the reconciliation service returns a type with the same id 
+					 * as we have in our reconService.possibleTypes list, we store that 
+					 * guessed type as the result and move on.
+					 */
 					if(data.types.length > 0){
+
+						var columnResult;
+						columnResult = undefined;
+
+						log("Results returned from recon");
+
 						/*
 						 * We are returned a sorted list of "types" that could possibly
 						 * be the correct value type
 						 */
+
 						for(var i=0;i<data.types.length;i++){
-							for(var j=0; j<links[index].possibleTypes.length; j++){
-								//log(data.types[i].id+"=="+links[index].possibleTypes[j]);
-								if(data.types[i].id == links[index].possibleTypes[j]){
-									/*
-									 * Recon has found a possible match
-									 * 
-									 * TODO: This is the time to introduce our own cut-off points 
-									 * and logic as to whether to proceed with reconciliation or not.
-									 */
-									self.results.push({
+
+							//for(var j=0; j<links[index].possibleTypes.length; j++){
+
+							//log(data.types[i].id+"=="+links[index].possibleTypes[j]);
+							if($.inArray(data.types[i].id, links[index].possibleTypes) >= 0){
+
+								log("Recon has found a match - storing result");
+
+								/*
+								 * Recon has found a possible match
+								 * 
+								 * TODO: This is the time to introduce our own cut-off points 
+								 * and logic as to whether to proceed with reconciliation or not.
+								 */
+								columnResult = {
 										columnName:links[index].columnName,
 										serviceURL:links[index].serviceURL,
-										uri:data.types[i].id,
+										thing:links[index].serviceName,
+										uri:data.types[0].id,
+										types:links[index].possibleTypes,
 										score:data.types[i].score,
 										count:data.types[i].count,
 										matched:true
-									});
+								};
 
-									i = data.types.length-1;
+								/*
+								 * Break out of the loop
+								 */
+								i = data.types.length-1;
 
-								} else {
+							} else if(i == data.types.length-1){
 
-								}
-							}
+								// Have iterated through all of the returned types
+								if(typeof columnResults == 'undefined'){
 
-							if(i == data.types.length - 1){
-								if(self.results.length < 1){
+									// We have no results for this column
+									log("Finished iterating through types - no matches, but have some guesses");
 									/*
-									 * Recon has not been able to find a successful match
+									 * Recon has not been able to find a successful match,
+									 * but has still managed to guess some types
+									 * 
+									 * We store a "No results" result - but offering the user 
+									 * the choice to manually match the values.
 									 */
-									self.results.push({
-										columnName:links[index].columnName,
-										serviceURL:links[index].serviceURL,
-										uri:data.types[i].id,
-										score:data.types[i].score,
-										count:data.types[i].count,
-										matched:false
-									});
+									columnResult = {
+											columnName:links[index].columnName,
+											serviceURL:links[index].serviceURL,
+											thing:links[index].serviceName,
+											uri:data.types[0].id,
+											types:links[index].possibleTypes,
+											score:data.types[0].score,
+											count:data.types[0].count,
+											matched:true
+									};
+
 								} else {
-									self.startReconcile(0);
+									log("Finished iterating through types - result present");
 								}
 							} else {
-
+								log("Have not finished iterating through types");
 							}
-						}
+						} // end for
+
+						self.results.push(columnResult);
 
 						if(index < links.length-1){
 							index = index+1;
+							log("Querying another service...");
 							self.queryService(links, index);
 						} else {
-							//alert("Have finished guessing value types");
+							log("Have finished guessing value types");
+							// alert("Have finished guessing value types");
 							// Nothing
 						}
 
 					} else {
 
+						log("No results returned from recon");
+
+						/*
+						 * Store a "No results" result for the column
+						 */
 						self.results.push({
 							columnName:links[index].columnName,
 							serviceURL:links[index].serviceURL,
+							thing:links[index].serviceName,
 							uri:"None",
+							types:links[index].possibleTypes,
 							score:0,
-							count:0
+							count:0,
+							matched:false
 						});
+					}
 
-						self.startReconcile(0);
+					/*
+					 * Start reconciling once we have all results for the 
+					 * columns the user confirmed
+					 */
+					if(self.results.length == self.confirmedLinks.length){
+						self.startReconcile();
 					}
 				},
 				error : function() {
-					self.onFail("There was a problem linking data using the service: \""+links[index].serviceURL+"\"");
-					return {};
+					//self.onFail("There was a problem linking data using the service: \""+links[index].serviceURL+"\"");
+					//return {};
 				}
 			});	
 
@@ -373,48 +449,51 @@ var LinkedGov_LinkingPanel = {
 		/*
 		 * startReconciliation
 		 */
-		startReconcile:function(index){
+		startReconcile:function(){
 
 			var self = this;
+			//self.results.push(result);
 
-			if(index < self.results.length){
-				//if(self.results[index].uri != "None"){
+			log("startReconcile");
+			//log("index = "+index);
+			log("self.results.length = "+self.results.length);
+
+
+			for(var i=0; i<self.results.length; i++){
 				Refine.postCoreProcess(
 						"reconcile",
 						{},
 						{
-							columnName: self.results[index].columnName,
+							columnName: self.results[i].columnName,
 							config: JSON.stringify({
 								mode: "standard-service",
-								service: self.results[index].serviceURL,
+								service: self.results[i].serviceURL,
 								identifierSpace: "http://www.ietf.org/rfc/rfc3986",
 								schemaSpace: "http://www.ietf.org/rfc/rfc3986",
-								type: { id: self.results[index].uri, name: self.results[index].uri },
+								type: { id: self.results[i].uri, name: self.results[i].uri },
 								autoMatch: true,
 								columnDetails: []
 							})
 						},
 						{ cellsChanged: true, columnStatsChanged: true },
-						{
-						}
+						{}
 				);
 
-				//} else {
-				// Do not reconcile
-				//}
-
-				index++;
-				self.startReconcile(index);
-			} else {
-				self.displayReconciliationResult();
+				if(i == self.results.length-1){
+					self.displayReconciliationResult();
+				}
 			}
 
 		},
 
 		/*
+		 * displayReconciliationResult
+		 * 
 		 * Displays the results in the panel
 		 */
 		displayReconciliationResult: function(){
+
+			log("displayReconciliationResult");
 
 			var self = this;
 			$("div#refine-tabs-facets").children().hide();
@@ -429,42 +508,52 @@ var LinkedGov_LinkingPanel = {
 			 */
 			var interval = setInterval(function(){
 
-				if(ui.browsingEngine._facets.length > 1){
-					log("Recon finished");
+				//log("ui.browsingEngine._facets.length = "+ui.browsingEngine._facets.length);
+				//log("(self.confirmedLinks.length*2)-1 = "+((self.confirmedLinks.length*2)-1));
 
-					self.checkFacetCounts(function(numUnmatched, numMatched){
+				/*
+				 * Reconciling produces two facets per column once it's complete.
+				 * 
+				 * Our test for checking whether reconciliation has finished across all 
+				 * columns is once all the facets have been created.
+				 */
+				if(ui.browsingEngine._facets.length > (self.confirmedLinks.length*2)-1){
 
+					log("here");
+					log(ui.browsingEngine._facets.length);
+					log(self.confirmedLinks.length*2);
 
+					/*
+					 * Checks that the facets have been created once reconciliation 
+					 * has finished, so we can access the scores to display on the panel.
+					 * 
+					 * TODO: We are calling a function to return one pair of scores instead of 
+					 * for all of the columns
+					 */
+					self.checkFacetMatchCounts(function(){
 
-						/*
-						 * Display the results 
-						 * 
-						 * 	 columnName:links[index].columnName,
-						 serviceURL:links[index].serviceURL,
-						 uri:"None",
-						 score:0,
-						 count:0	
-
-						 */
 						if(self.results.length > 0){
-							var html = "";
+
 							for(var i=0; i<self.results.length; i++){
 
-								if(self.results[i].uri != "None" && self.results[i].matched){
-									html += "<div class='description result "+i+"'>";
-									html += "<p class='colName'>"+self.results[i].columnName+"</p>";
-									html += "<p>"+self.results[i].serviceURL+"</p>";
-									html += "<p>"+self.results[i].uri+"</p>";
-									html += "<p>"+self.results[i].score+"</p>";
-									html += "<p>"+self.results[i].count+"</p>";
-									log(numUnmatched+" - "+numMatched);
-									if(numUnmatched > 0 || numMatched < theProject.rowModel.total){
-										html += "<p>There are some values that have not been matched due to possible differences in punctuation or spellings. Would you like to try to match these values yourself?</p>";
-										html += "<a class='yes button'>Yes</a><a class='ignore button'>Ignore</a>";
-										html += "<p class='suggestinput'><input type='text' class='suggestbox result-"+i+"' data-serviceurl='"+self.results[i].serviceURL+"' data-colname='"+self.results[i].columnName+"' /></p>";
-									}
-									html += "</div>";
+								log("Creating result panel - "+i);
 
+								var html = "";
+
+								if(self.results[i].uri != "None" && self.results[i].matched){
+									html += "<div class='description result'>";
+									html += "<a class='col-name' data-serviceurl='"+self.results[i].serviceURL+"'>"+self.results[i].columnName+"</a>";
+									html += "<div class='result-body'>";
+									html += "<p class='value-type'><span>Type</span><a href='"+self.results[i].uri+"' target='_blank'>"+self.results[i].thing+"</a></p>";
+									html += "<p class='matches'><span>Matches</span><span class='matched'>"+(theProject.rowModel.total-self.results[i].numUnmatched)+"</span> / <span class='total'>"+theProject.rowModel.total+"</span> (<span class='percentage'>"+Math.round((((theProject.rowModel.total-self.results[i].numUnmatched)/theProject.rowModel.total)*100))+"</span>%)</p>";
+									html += '<div class="matches-bar ui-progressbar"><div class="ui-progressbar-value"></div></div>';
+									if(self.results[i].numUnmatched > 0 || self.results[i].numMatched < theProject.rowModel.total){
+										html += "<p class='notification'>There are some values that have not been matched due to possible differences in punctuation or spellings. Would you like to try to match these values yourself?</p>";
+										html += "<p class='notification'><a class='yes button'>Yes</a><a class='ignore button'>Ignore</a></p>";
+
+									}
+									html += "</div><!-- end result-body -->";
+									html += "</div><!-- end result -->";
 
 									/*
 									 * Even for a matched column there will be unmatched values.
@@ -480,40 +569,59 @@ var LinkedGov_LinkingPanel = {
 									 * No match, so offer the user a search box to search 
 									 * for the entity
 									 */
-									html += "<div class='description result "+i+"'>";
-									html += "<p class='colName'>"+self.results[i].columnName+"</p>";
-									log(numUnmatched+" - "+numUnmatched);
-									if(numUnmatched > 0 || numMatched < theProject.rowModel.total){
-										html += "<p>There are some values that have not been matched due to possible differences in punctuation or spellings. Would you like to try to match these values yourself?</p>";
-										html += "<a class='yes button'>Yes</a><a class='ignore button'>Ignore</a>";
-										html += "<p class='suggestinput'><input type='text' class='suggestbox result-"+i+"' data-serviceurl='"+self.results[i].serviceURL+"' data-colname='"+self.results[i].columnName+"' /></p>";
-									}
-									html += "</div>";
+									html += "<div class='description result'>";
+									html += "<a class='col-name' data-serviceurl='"+self.results[i].serviceURL+"'>"+self.results[i].columnName+"</a>";
+									html += "<div class='result-body'>";									
+									//if(self.results[i].numUnmatched > 0|| self.results[i].numMatched < theProject.rowModel.total){
+									//	html += "<p>There are some values that have not been matched due to possible differences in punctuation or spellings. Would you like to try to match these values yourself?</p>";
+									//	html += "<a class='yes button'>Yes</a><a class='ignore button'>Ignore</a>";
+									//}
+									html += "<p>There were no results for this column.</p>";
+									html += "</div><!-- end result-body -->";
+									html += "</div><!-- end result -->";
 								}
+
+								$("div.linking-results").html($("div.linking-results").html()+html);
+
+								//var resultDiv = $("div.linking-results").find("div.result").eq($("div.linking-results").find("div.result").length-1);
+								//self.updateMatches(resultDiv);
 							}
 
-							$("div.linking-results").html($("div.linking-results").html()+html);
+
 						} else {
 							log("displayReconciliationResult - shouldn't ever get here...");
-							html += "<div class='description'>";
+							var html = "<div class='description'>";
 							html += "<p>No results!</p>";
 							html += "</div>";	
 							$("div.linking-results").html($("div.linking-results").html()+html);
 						}
 
-						$("div.linking-results div.result a.button.yes").click(function(){
-							$(this).hide();
-							$(this).parent().find("a.ignore").hide();
-							$(this).parent().find("p.suggestinput").css("visibility","visible");
-							self.setUpSearchBox($(this).parent().find("input.suggestbox"), theProject.rowModel.rows[0].cells[theProject.columnModel.columns[Refine.columnNameToColumnIndex($(this).parent().find("p.colName").html())].cellIndex].v);
+						/*
+						 * Interaction for the "yes" button when a result contains 
+						 * unmatched values
+						 */
+						$("div.result div.result-body p a.yes").click(function(){
+							var resultDiv = $(this).parent("p").parent("div").parent('div');
+							resultDiv.find("p.notification").hide();
+							resultDiv.find("p.suggestinput").css("visibility","visible");
+
+							self.makeListOfUnmatchedValues(resultDiv,function(){
+								// Show the list
+								$("div.linking-results div.result ul.selected-columns").show();
+								$("div.linking-results div.result").show();
+							});
+
 						});
 
 						/*
-						 * Set up any search boxes for unreconciled values
+						 * Inteaction for the "ignore" button when a result contains 
+						 * unmatched values.
 						 */
-						//$("div.linking-results").find("input.suggestbox").each(function(){
-						//	self.setUpSearchBox($(this).parent().find("input.suggestbox"), theProject.rowModel.rows[0].cells[theProject.columnModel.columns[Refine.columnNameToColumnIndex($(this).parent().find("p.colName").html())].cellIndex].v);
-						//});
+						$("div.result div.result-body p a.ignore").click(function(){
+							var resultDiv = $(this).parent("p").parent("div").parent('div');
+							resultDiv.find("p.notification").hide();
+						});
+
 
 						/*
 						 * Hide the "linking" loading message
@@ -524,6 +632,7 @@ var LinkedGov_LinkingPanel = {
 
 						$("div.linking-loading").hide();
 						$("div.linking-results").show();
+						$("div.linking-results div.result a.col-name").eq(0).click();
 						$("div#left-panel div.refine-tabs").tabs('select', 1);
 
 					});
@@ -531,98 +640,279 @@ var LinkedGov_LinkingPanel = {
 					clearInterval(interval);
 
 				} else {
+					/*
+					 * Make sure the Typing panel is showing as Refine will try to 
+					 * display facets after reconciliation
+					 */
+					$("div#left-panel div.refine-tabs").tabs('select', 1);
 
 				}
 
-			},10);
+			},500);
 
 
 		},
 
-		checkFacetCounts: function(callback){
+		/*
+		 * updateMatches
+		 * 
+		 * Updates the progress bar and the stats about the recon matches for each 
+		 * column panel
+		 */
+		updateMatches:function(resultDiv){
+
+			log("updateMatches");
+			log(resultDiv);
+
+			var total = parseInt($(resultDiv).find("p.matches").find("span.total").html());
+
+			var matched = 0;
+
+			var colName = $(resultDiv).find("a.col-name").html();
+			var expression = 'forNonBlank(cell.recon.judgment, v, v, if(isNonBlank(value), "(unreconciled)", "(blank)"))';
+
+			var facetParams = {
+					"facets" : [ {
+						"type" : "list",
+						"name" : colName,
+						"columnName" : colName,
+						"expression" : expression,
+						"omitBlank" : false,
+						"omitError" : false,
+						"selection" : [],
+						"selectBlank" : false,
+						"selectError" : false,
+						"invert" : false
+					} ],
+					"mode" : "row-based"
+			};
+
+			$.ajax({
+				async : false,
+				type : "POST",
+				url : "/command/" + "core" + "/" + "compute-facets",
+				data : {
+					engine : JSON.stringify(facetParams),
+					project : theProject.id
+				},
+				success : function(data){
+					for ( var i = 0; i < data.facets.length; i++) {
+
+						/*
+						 * If the facet matches the column name and has
+						 * choices returned
+						 */
+						if (data.facets[i].columnName == colName  
+								&& typeof data.facets[i].choices != 'undefined') {
+
+							for(var j=0; j<data.facets[i].choices.length; j++){
+
+								if(data.facets[i].choices[j].v.v == "matched"){
+
+									log("data.facets[i].choices[j]");
+									log(data.facets[i].choices[j]);
+									log(data.facets[i].choices[j].c);
+
+									matched = data.facets[i].choices[j].c;
+
+									var percentage = Math.round(((matched/total)*100));
+
+									$(resultDiv).find("p.matches").find("span.matched").html(matched);
+									$(resultDiv).find("p.matches").find("span.percentage").html(percentage);
+
+									log('$(resultDiv).find("div.matches-bar")');
+									log($(resultDiv).find("div.matches-bar"));
+									$(resultDiv).find("div.matches-bar").find("div.ui-progressbar-value").css("width",percentage+"%");
+									$(resultDiv).find("div.matches-bar").find("div.ui-progressbar-value").removeClass("green").removeClass("yellow").removeClass("red");
+
+									if(percentage > 66){
+										$(resultDiv).find("div.matches-bar").find("div.ui-progressbar-value").addClass("green");
+									}else if(percentage > 33){
+										$(resultDiv).find("div.matches-bar").find("div.ui-progressbar-value").addClass("yellow");
+									}else {
+										$(resultDiv).find("div.matches-bar").find("div.ui-progressbar-value").addClass("red");
+									}
+
+								}
+							}
+						}
+					}
+				},
+				error : function() {
+					alert("A problem was encountered when computing facets.");
+				}
+			});	
+
+		},
+
+		/*
+		 * makeListOfUnmatchedValues
+		 * 
+		 * Builds a <ul> list of values and inputs for the user to manually search for their 
+		 * correct representations against the service endpoint.
+		 */
+		makeListOfUnmatchedValues: function(resultDiv, callback){
+
+			log("makeListOfUnmatchedValues");
 
 			var self = this;
+			var unmatchedValues = "";
+			var expression = "if(cell.recon.matched,blank,value)";
+			var colName = $(resultDiv).find("a.col-name").html();
+			var serviceURL = $(resultDiv).find("a.col-name").attr("data-serviceurl");
 
-			// Number of "matched" values
-			var numMatched = 0;
-			// Number of "unmatched" values
-			var numUnmatched = 0;
+			LG.ops.computeColumnFacet(colName, expression, function(data){
+				/*
+				 * Loop through the UI facets
+				 */
+				log("data.facets.length = " + data.facets.length);
+				for ( var i = 0; i < data.facets.length; i++) {
 
-
-			var facetDataInterval = setInterval(function(){
-
-				for(var i=0; i<ui.browsingEngine._facets.length; i++){
-
-
-					//log("ui.browsingEngine._facets");
-					//log(ui.browsingEngine._facets);
-					//log("ui.browsingEngine._facets[i].facet");
-					//log(ui.browsingEngine._facets[i].facet);
-					//log("ui.browsingEngine._facets[i].facet._data");
-					//log(ui.browsingEngine._facets[i].facet._data);
-
-					if(ui.browsingEngine._facets[i].facet._config.name.indexOf("judgment") >= 0 && ui.browsingEngine._facets[i].facet._data != null){
+					/*
+					 * If the facet matches the column name and has
+					 * choices returned
+					 */
+					if (data.facets[i].columnName == colName 
+							&& data.facets[i].name.indexOf("judgment") < 0 
+							&& data.facets[i].name.indexOf("candidate") < 0 
+							&& typeof data.facets[i].choices != 'undefined') {
 						/*
-						 * Do something using judgment facet
+						 * Loop through the returned facet choices (count) number of times
+						 * and append them to the unordered list.
 						 */
-						//ui.browsingEngine.removeFacet(ui.browsingEngine._facets[i].facet);
-						//i=i-1;
+						var highest = 0;
+						var choices = data.facets[i].choices;
+						var choicesArray = [];
+						for(var j=0; j<choices.length; j++){
 
-						log("facet data accessible");
-						for(var j=0; j<ui.browsingEngine._facets[i].facet._data.choices.length; j++){
-							//log("ui.browsingEngine._facets[i].facet._data.choices[j].v.v");
-							//log(ui.browsingEngine._facets[i].facet._data.choices[j].v.v);
-							//log("ui.browsingEngine._facets[i].facet._data.choices[j].c");
-							//log(ui.browsingEngine._facets[i].facet._data.choices[j].c);
-							if(ui.browsingEngine._facets[i].facet._data.choices[j].v.v == "none"){
-								if(ui.browsingEngine._facets[i].facet._data.choices[j].c == theProject.rowModel.total){
-									/*
-									 * 100% UN-matched
-									 */
-									log("No values matched at all");
-									numUnmatched = ui.browsingEngine._facets[i].facet._data.choices[j].c;
-									log(numUnmatched);
-								} else {
-									/*
-									 * 0-99% un-matched
-									 */
-									log("Some values matched / un-matched");
-									numUnmatched = ui.browsingEngine._facets[i].facet._data.choices[j].c;
-									log(numUnmatched);
-								}
-							} else if(ui.browsingEngine._facets[i].facet._data.choices[j].v.v == "matched"){
-								if(ui.browsingEngine._facets[i].facet._data.choices[j].c == theProject.rowModel.total){
-									/*
-									 * 100% MATCHED
-									 */
-									log("All values matched!");
-									numMatched = ui.browsingEngine._facets[i].facet._data.choices[j].c;
-									log(numMatched);
-								} else {
-									/*
-									 * 0-99% matched
-									 */
-									log("Some values matched / un-matched");
-									numMatched = ui.browsingEngine._facets[i].facet._data.choices[j].c;
-									log(numMatched);
-								}									
+							log("data.facets[i].choices[j].c = "+choices[j].c);
+
+							if(choices[j].c >= highest){
+								choicesArray.splice(0,0,choices[j].v.l);
+								highest = choices[j].c;
+							} else {
+								choicesArray.push(choices[j].v.l);
 							}
 						}
 
-						callback(numUnmatched, numMatched);
+						//log(choicesArray);
+						var arrayOfUnmatchedValues = choicesArray;
+						//log("arrayOfUnmatchedValues=");
+						//log(arrayOfUnmatchedValues);
 
-						clearInterval(facetDataInterval);
-
-					} else if(ui.browsingEngine._facets[i].facet._config.name.indexOf("best candidate") >= 0){
 						/*
-						 * Do something using best candidate facet
+						 * Build and inject the HTML list
 						 */
+						html = "<ul class='selected-columns text-input'>";
+
+						for(var i=0; i<arrayOfUnmatchedValues.length; i++){
+							html += "<li>" +
+							"<span class='col'>"+arrayOfUnmatchedValues[i]+"</span>" +
+							"<span class='colOptions'><input type='text' class='suggestbox textbox' data-colname='"+colName+"' data-serviceurl='"+serviceURL+"'/></span>" +
+							"</li>";
+						}
+
+						html += "</ul>";
+
+						$(resultDiv).find("div.result-body").append(html);
+
+						/*
+						 * Iterate through the list of values and set the inputs up 
+						 * with the autosuggest plugin
+						 */
+						$(resultDiv).find("div.result-body").find("ul.selected-columns").children("li").each(function(){
+							self.setUpSearchBox($(this).find("input.suggestbox"), $(this).find("span.col").html(), serviceURL);
+						});
+
+						callback();
+
+					}
+				}
+			});
+
+
+		},
+
+		/*
+		 * checkFacetMatchCounts
+		 * 
+		 * Stores the number of matched values returned by reconciliation
+		 */
+		checkFacetMatchCounts: function(callback){
+
+			log("checkFacetMatchCounts");
+
+			var self = this;
+
+			for(var k=0; k<self.results.length; k++){
+				LG.ops.computeColumnFacet(self.results[k].columnName, 'forNonBlank(cell.recon.judgment, v, v, if(isNonBlank(value), "(unreconciled)", "(blank)"))', function(data){
+					for ( var i = 0; i < data.facets.length; i++) {
+
+						/*
+						 * If the facet matches the column name and has
+						 * choices returned
+						 */
+						if (data.facets[i].columnName == self.results[k].columnName 
+								&& data.facets[i].name.indexOf("judgment") < 0 
+								&& data.facets[i].name.indexOf("candidate") < 0 
+								&& typeof data.facets[i].choices != 'undefined') {
+
+							var choices = data.facets[i].choices;
+							for(var j=0; j<choices.length; j++){
+
+								if(choices[j].v.v == "none"){
+									self.results[k].numUnmatched = choices[j].c;
+								} else if(choices[j].v.v == "matched"){
+									self.results[k].numMatched = choices[j].c;								
+								}
+							}
+
+						}
 					}
 
+					if(k == self.results.length-1) {
+						callback();
+					}
+
+				}); // end ops
 
 
-				} // end for
-			},10);
+			} // end for 
+			/*
+			var facetDataInterval = setInterval(function(){
+
+				//log("ui.browsingEngine._facets.length = "+ui.browsingEngine._facets.length);
+
+				if(ui.browsingEngine._facets.length > ((self.results.length*2)-1)){
+					for(var i=0; i<ui.browsingEngine._facets.length; i++){
+
+						var facet = ui.browsingEngine._facets[i].facet;
+						for(var k=0; k<self.results.length; k++){
+
+							if(facet._config.name.indexOf(self.results[k].columnName) >= 0 
+									&& facet._config.name.indexOf("judgment") >= 0
+									&& facet._data != null){
+								//log("facet data accessible for column "+self.results[k].columnName);
+								for(var j=0; j<facet._data.choices.length; j++){
+									if(facet._data.choices[j].v.v == "none"){
+										self.results[k].numUnmatched = facet._data.choices[j].c;
+									} else if(facet._data.choices[j].v.v == "matched"){
+										self.results[k].numMatched = facet._data.choices[j].c;								
+									}
+								} // end for
+							} // end if
+						} // end for	
+
+					} // end for
+
+					callback();
+
+					clearInterval(facetDataInterval);
+				}
+
+
+			},100);
+			 */
 		},
 
 
@@ -632,19 +922,24 @@ var LinkedGov_LinkingPanel = {
 		 * Returns an input element that's been setup 
 		 * to suggest entities from the given service
 		 */
-		setUpSearchBox:function(inputElement, localVal){
+		setUpSearchBox:function(inputElement, localVal, serviceURL){
 
 			var self = this;
 
+			inputElement.parent("span").parent("li").parent("ul").show();
+			inputElement.show();
+
 			log("setUpSearchBox");
-			log(inputElement.attr("data-serviceurl"));
+			log(inputElement);
+			log("localVal = "+localVal);
+			log(serviceURL);
 
 			/*
 			 * Find the service's suggest options using it's URL
 			 */
 			var suggestOptions;
 			for(var i=0; i<ReconciliationManager.standardServices.length;i++){
-				if(ReconciliationManager.standardServices[i].url == inputElement.attr("data-serviceurl")){
+				if(ReconciliationManager.standardServices[i].url == serviceURL){
 					suggestOptions = ReconciliationManager.standardServices[i].suggest.entity;
 				}
 			}
@@ -654,14 +949,29 @@ var LinkedGov_LinkingPanel = {
 			inputElement
 			.attr("value", localVal)
 			.suggest(suggestOptions2)
+			.unbind("fb-select")
 			.bind("fb-select", function(e, data) {
+				//console.log(e);
+				//console.log(data);
+				//console.log("------------------------");
 				match = data;
 				self.matchCellsFromSearch(match, inputElement.attr("data-colname"), localVal);
+				$(this).removeClass("edited").addClass("matched");
 				/*
 				 * Column has been matched - ask user to confirm the match was correct
 				 */
+
+				/*
+				 * Update matched percentage stat on panel
+				 */
+				var resultDiv = inputElement.parent("span").parent("li").parent("ul").parent("div").parent("div");
+
+				self.updateMatches(resultDiv);
+
 			})
-			.data("suggest").textchange();
+			.bind("keyup",function(){
+				$(this).removeClass("matched").addClass("edited");
+			});
 
 			return false;
 		},
@@ -689,9 +999,90 @@ var LinkedGov_LinkingPanel = {
 						"recon-judge-similar-cells", 
 						{} || {}, 
 						params,
-						{ cellsChanged: true, columnStatsChanged: true }
+						{ cellsChanged: true, columnStatsChanged: true}
 				);
 			}
+
+		},
+
+
+		/*
+		 * generateColumnFacet
+		 * 
+		 * Given a column name and a number (count), this will create and return 
+		 * an array of values from the column given the expression passed to it.
+		 */
+		generateColumnFacet : function(colName, expression, callback){
+
+			//var html = "";
+
+			//log("generateColumnFacet");
+
+			LG.ops.computeColumnFacet(colName, expression, function(data){
+				/*
+				 * Loop through the UI facets
+				 */
+				//log("data.facets.length = " + data.facets.length);
+				for ( var i = 0; i < data.facets.length; i++) {
+
+					/*
+					 * If the facet matches the column name and has
+					 * choices returned
+					 */
+					if (data.facets[i].columnName == colName 
+							&& data.facets[i].name.indexOf("judgment") < 0 
+							&& data.facets[i].name.indexOf("candidate") < 0 
+							&& typeof data.facets[i].choices != 'undefined') {
+						/*
+						 * Loop through the returned facet choices (count) number of times
+						 * and append them to the unordered list.
+						 */
+						var highest = 0;
+						var choices = data.facets[i].choices;
+						var choicesArray = [];
+						for(var j=0; j<choices.length; j++){
+
+							//log("data.facets[i].choices[j].c = "+choices[j].c);
+
+							if(choices[j].c >= highest){
+								choicesArray.splice(0,0,choices[j].v.l);
+								highest = choices[j].c;
+							} else {
+								choicesArray.push(choices[j].v.l);
+							}
+						}
+
+						log(choicesArray);
+
+						callback(choicesArray);
+
+					}
+				}
+			});
+
+		},
+
+		/*
+		 * saveRDF
+		 * 
+		 * Saves the newly linked URIs in RDF.
+		 * 
+		 * Erases any other RDF stored for this particular column
+		 */
+		saveRDF:function(){
+
+			var self = this;
+
+			var schema = LG.rdfOps.getSchema();
+
+			var vocabs = {
+					gov : {
+						curie : "gov",
+						uri : "http://http://reference.data.gov.uk/def/central-government/"
+					}
+			};
+
+
 
 		}
 

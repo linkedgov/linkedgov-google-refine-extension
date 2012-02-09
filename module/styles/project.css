@@ -1330,29 +1330,161 @@ body.lg div.wizard-body ul.selected-columns li span.colOptions span {
 	padding-left: 3px;
 }
 
-body.lg div.wizard-body ul.selected-columns li span.colOptions input.textbox
-	{
-	margin-bottom: 5px;
+body.lg ul.selected-columns li span.colOptions input.textbox {
+	margin-bottom: 0px;
 	margin-top: 5px;
 	width: 92%;
 	font-size: 14px;
 	background-color: #FFFFCC;
 }
 /* Recon Results */
+div.selector.suggest-links {
+    display: block;
+}
+
+div.selector.suggestedLinks {
+    display: none;
+}
+body.lg div#refine-tabs-typing div.reconcile-panel {
+	display:none;
+}
+body.lg div#refine-tabs-typing div.reconcile-panel p.loading {
+	margin-top: 50%;
+    text-align: center;
+}
 body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results {
     display:none;
 }
 body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results h3 {
+	margin-bottom: 5px;
     padding:0;
 }
 body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.description {
-    padding:0;
+    background: none repeat scroll 0 0 white;
+    border: 1px solid #BBCCFF;
+    color: #444444;
+    margin-bottom: 10px;
+    padding: 0;
+    text-align: left;
+}
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.description p {
+    line-height: 1.3;
+    padding: 7px 15px;
+}
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.description p span {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    padding-bottom: 1%;
+    padding-left: 0;
+    padding-top: 1%;
+    width: 98%;
+}
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.description p span.matched, 
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.description p span.total, 
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.description p span.percentage {
+    display:inline;	
+    width:auto;
+}
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.description a.col-name {
+    background: none repeat scroll 0 0 #E3E9FF;
+    color: #000000;
+    cursor: pointer;
+    display: block;
+    font-weight: bold;
+    padding: 2% 3%;
+    text-decoration: none;
+    width: 94%;
+}
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.description a.col-name:hover {
+	background: none repeat scroll 0 0 #CCDDFF;
+}
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.description p.notification {
+    background: none repeat scroll 0 0 #FFFFDC;
+}
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.description p.notification a {
+    display:inline-block;
+    margin-right:5px;
+}
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.description p.notification-buttons a.button {
+    margin-left: 15px;
+    margin-right: 5px;
+    margin-top: 10px;
+}
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result div.result-body, 
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result div.result-body.collapsed {
+	display:none;
+}
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result div.result-body.expanded {
+    display:block;
+}
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result div.result-body ul.selected-columns {
+    border: medium none;
+    padding: 10px;
+}
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result div.result-body ul.selected-columns li {
+    background: none repeat scroll 0 0 #FFFFFF;
+    border:none;
+    color: #333333;
+    line-height: 17px;
+    list-style-type: none;
+    margin-bottom: 10px;
+    margin-top: 1px;
+    overflow: hidden;
+    padding-left: 0;
+}   
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result span.col {
+    background: none repeat scroll 0 0 #FFFFFF;
+    display: block;
+    float: left;
+    font-weight: bold;
+    padding: 2px 0 3px;
+    width: 90%;
+}
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result span.colOptions input {
+    background-color: #FFFFCC;
+    background-image:none;
+    font-size: 14px;
+    width: 96%;
+}
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result span.colOptions input.matched {
+    background-color: #D6FFC9;
+    background-image: url("../images/confirm-hover.png");
+    background-position: 107% 50%;
+    background-repeat: no-repeat;
+}
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result span.colOptions input.edited {
+    background-color: #FFFFFF;	
+    background-image:none;
+}
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result div.result-body div.ui-progressbar {
+    border: 1px solid #DDDDDD;
+    height: 10px;
+    margin-bottom: 10px;
+    margin-left: 15px;
+    margin-right: 15px;
+    padding: 1px;
+}
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result div.ui-progressbar div.ui-progressbar-value {
+    margin:0;
+}
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result div.ui-progressbar div.ui-progressbar-value.green {
+    background: -moz-linear-gradient(center top , #73C262, #1F3709) repeat scroll 0 0 transparent;
+}
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result div.ui-progressbar div.ui-progressbar-value.yellow {
+    background: -moz-linear-gradient(center top , #EDF570, #BBB630) repeat scroll 0 0 transparent;
+}
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result div.ui-progressbar div.ui-progressbar-value.red {
+    background:-moz-linear-gradient(center top , #C26262, #370909) repeat scroll 0 0 transparent;
 }
 body.lg p.suggestinput {
 	visibility:hidden;
+	display:none;
 }
 body.lg p.suggestinput input.suggestbox {
-	width:96%;
+    background: none repeat scroll 0 0 #FBFAC9;
+    border: 1px inset #898989;
+    width: 96%;
 }
 body.lg div.wizard-body ul.date-checkboxes li span.colOptions.mb4d,body.lg div.wizard-body ul.date-checkboxes li span.colOptions.day,body.lg div.wizard-body ul.date-checkboxes li span.colOptions.year,body.lg div.wizard-body ul.date-checkboxes li span.colOptions.unseparated
 	{ /*background-color: #FFFFCC;*/
@@ -1665,4 +1797,38 @@ body.lg div.column-header-recon-stats-bar {
 }
 body.lg a.data-table-recon-action {
 	display:none;
+}
+body.lg div.data-table-recon-candidates {
+	display:none;
+}
+body.lg div.data-table-recon-extra {
+	display:none;
+}
+
+
+/* Flyout pane */
+body.lg .fbs-pane, .fbs-flyout-pane {
+    padding: 0px;
+}
+body.lg .fbs-flyout-pane .rdf-flyout-content div.resource_preview_description {
+    font-family: Arial;
+    font-size: 12px;
+    height: 100px;
+    overflow-y: auto;
+    padding: 5px;
+}
+body.lg .fbs-flyout-pane .rdf-flyout-content div.rdf-header {
+    background: none repeat scroll 0 0 #BBCCFF;
+    font-family: Arial;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 5px;
+    margin:0px;
+}
+body.lg .fbs-flyout-pane .rdf-flyout-content h2 {
+    background: none repeat scroll 0 0 #DDDDDD;
+    font-family: Arial;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 5px;
 }

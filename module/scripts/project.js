@@ -35,20 +35,64 @@ LG.vars = {
 		hiddenColumns: "",
 		reconServices : [{
 			name:"UK Government departments",
+			type:"sparql",
 			keywords:["department","organisation"],
 			possibleTypes:["http://reference.data.gov.uk/def/central-government/Department"],
 			endpoint:"http://services.data.gov.uk/reference/sparql",
 			labelProperty:"http://www.w3.org/2000/01/rdf-schema#label"
 		},{
-			name:"Public bodies",
+			name:"UK Public bodies",
+			type:"sparql",
 			keywords:["body", "bodies"],
 			possibleTypes:["http://reference.data.gov.uk/def/central-government/PublicBody"],
 			endpoint:"http://services.data.gov.uk/reference/sparql",
 			labelProperty:"http://www.w3.org/2000/01/rdf-schema#label"
+		},{
+			name:"UK Schools",
+			type:"sparql",
+			keywords:["school"],
+			possibleTypes:["http://education.data.gov.uk/def/school/School"],
+			endpoint:"http://services.data.gov.uk/education/sparql",
+			labelProperty:"http://www.w3.org/2000/01/rdf-schema#label"
+		},{
+			name:"UK Train Stations",
+			type:"sparql",
+			keywords:["train","station"],
+			possibleTypes:["http://transport.data.gov.uk/def/naptan/Station"],
+			endpoint:"http://services.data.gov.uk/transport/sparql",
+			labelProperty:"http://www.w3.org/2004/02/skos/core#prefLabel"
+		},{
+			name:"UK Bus Stops",
+			type:"sparql",
+			keywords:["stop","bus"],
+			possibleTypes:["http://transport.data.gov.uk/def/naptan/BusStopPoint"],
+			endpoint:"http://services.data.gov.uk/transport/sparql",
+			labelProperty:"http://www.w3.org/2004/02/skos/core#prefLabel"
+		},{
+			name:"UK Airports",
+			type:"sparql",
+			keywords:["airport"],
+			possibleTypes:["http://transport.data.gov.uk/def/naptan/Airport"],
+			endpoint:"http://services.data.gov.uk/transport/sparql",
+			labelProperty:"http://www.w3.org/2004/02/skos/core#prefLabel"
+		},{
+			name:"Wildlife",
+			keywords:["animal","mammal","species"],
+			possibleTypes:["http://www.bbc.co.uk/nature/Species"],
+			endpoint:"http://api.talis.com/stores/bbc-wildlife/services/sparql",
+			labelProperty:"http://www.w3.org/2000/01/rdf-schema#label"
+		},{
+			name:"Wildlife",
+			keywords:["animal","mammal","species"],
+			possibleTypes:["http://transport.data.gov.uk/def/naptan/Airport"],
+			endpoint:"http://api.talis.com/stores/bbc-wildlife/services/sparql",
+			labelProperty:"http://www.w3.org/2004/02/skos/core#prefLabel"
 		}]
 };
 
 
+
+	
 /*
  * initialise
  * 
