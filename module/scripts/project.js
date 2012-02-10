@@ -76,23 +76,44 @@ LG.vars = {
 			endpoint:"http://services.data.gov.uk/transport/sparql",
 			labelProperty:"http://www.w3.org/2004/02/skos/core#prefLabel"
 		},{
-			name:"Wildlife",
-			keywords:["animal","mammal","species"],
-			possibleTypes:["http://www.bbc.co.uk/nature/Species"],
-			endpoint:"http://api.talis.com/stores/bbc-wildlife/services/sparql",
+			name:"Country names",
+			type:"sparql",
+			keywords:["country"],
+			possibleTypes:["http://data.ordnancesurvey.co.uk/ontology/place/Country"],
+			endpoint:"http://api.talis.com/stores/ordnance-survey/services/sparql",
 			labelProperty:"http://www.w3.org/2000/01/rdf-schema#label"
 		},{
-			name:"Wildlife",
-			keywords:["animal","mammal","species"],
-			possibleTypes:["http://transport.data.gov.uk/def/naptan/Airport"],
-			endpoint:"http://api.talis.com/stores/bbc-wildlife/services/sparql",
-			labelProperty:"http://www.w3.org/2004/02/skos/core#prefLabel"
+			name:"Parish names",
+			type:"sparql",
+			keywords:["parish"],
+			possibleTypes:["http://data.ordnancesurvey.co.uk/ontology/admingeo/CivilParish"],
+			endpoint:"http://api.talis.com/stores/ordnance-survey/services/sparql",
+			labelProperty:"http://www.w3.org/2000/01/rdf-schema#label"
+		},{
+			name:"County names",
+			type:"sparql",
+			keywords:["county","authority"],
+			possibleTypes:["http://data.ordnancesurvey.co.uk/ontology/admingeo/County"],
+			endpoint:"http://api.talis.com/stores/ordnance-survey/services/sparql",
+			labelProperty:"http://www.w3.org/2000/01/rdf-schema#label"
+		},{
+			name:"UK Ward & Borough names",
+			type:"sparql",
+			keywords:["ward","borough"],
+			possibleTypes:["http://data.ordnancesurvey.co.uk/ontology/admingeo/LondonBoroughWard"],
+			endpoint:"http://api.talis.com/stores/ordnance-survey/services/sparql",
+			labelProperty:"http://www.w3.org/2000/01/rdf-schema#label"
+		},{
+			name:"Company name",
+			type:"standard",
+			keywords:["supplier","company","payee","payer"],
+			possibleTypes:["/organization/organization"],
+			endpoint:"http://opencorporates.com/reconcile"
 		}]
+
 };
 
 
-
-	
 /*
  * initialise
  * 
@@ -690,6 +711,96 @@ LG.resizeAll_LG = function() {
 };
 
 /*
+ * addReconciliationService
+ * 
+ * Adds a single service.
+ */
+LG.addReconciliationService = function(serviceName, serviceNameSuffix, callback){
+
+	var self = this;
+	
+	log("addReconciliationService");
+	
+	/*
+	 * Loop through the services config object.
+	 * 
+	 * Find the service with the matching URL
+	 * 
+	 * Check it's type
+	 * 
+	 * Add it appropriately
+	 */
+	var services = LG.vars.reconServices;
+	
+	for(var i=0; i<services.length; i++){
+		
+		if(serviceName == services[i].name){
+			
+			var service = services[i];
+			
+			//log("services "+i);
+			
+			i = services.length-1;
+			
+			//log("found service config for "+service.name);
+			//log("service type = "+service.type);
+			
+			if(service.type == "standard"){
+
+				ReconciliationManager.registerStandardService(service.endpoint);
+				log("Successfully added service - "+service.name);
+
+				if(callback){
+					callback();
+				}
+
+			} else if(service.type == "sparql"){
+
+				ReconciliationManager.save(function(){
+
+					$.post("/command/rdf-extension/addService",{
+						"datasource":"sparql",
+						"name":service.name+(serviceNameSuffix == 1 ? "" : "-"+serviceNameSuffix),
+						"url":service.endpoint,
+						"type":"plain",
+						"graph":"",
+						"properties":service.labelProperty
+					},
+					function(data){
+						if(typeof data.code != 'undefined' && data.code != 'error'){
+							log("Successfully added service");
+							/*
+							 * Store the ID given to the service by the RDF extension 
+							 * back into our service object
+							 */
+							service.id = data.service.id;
+							RdfReconciliationManager.registerService(data);
+
+							if(callback){
+								callback(service);
+							}
+
+						} else {
+							log("Error adding service");
+							serviceNameSuffix = serviceNameSuffix+1;
+							/*
+							 * Add the same service again, but this time, adding an integer suffix to the end
+							 * of it's name (to avoid a clash).
+							 */
+							LG.addReconciliationService(serviceName, serviceNameSuffix, callback);
+						}
+					},"json");
+				});
+			}
+			
+			
+		}
+	}
+
+
+};
+
+/*
  * addReconciliationServices
  * 
  * Recursive function that iterates through the LG.vars.reconServices list 
@@ -707,51 +818,75 @@ LG.addReconciliationServices = function(index, serviceNameSuffix, callback){
 	 */
 
 	ReconciliationManager.standardServices.length = 0;
-	ReconciliationManager.save(function(){
 
-		$.post("/command/rdf-extension/addService",{
-			"datasource":"sparql",
-			"name":LG.vars.reconServices[index].name+(serviceNameSuffix == 1 ? "" : "-"+serviceNameSuffix),
-			"url":LG.vars.reconServices[index].endpoint,
-			"type":"plain",
-			"graph":"",
-			"properties":LG.vars.reconServices[index].labelProperty
-		},
-		function(data){
-			if(typeof data.code != 'undefined' && data.code != 'error'){
-				log("Successfully added service");
-				/*
-				 * Store the ID given to the service by the RDF extension 
-				 * back into our service object
-				 */
-				LG.vars.reconServices[index].id = data.service.id;
-				RdfReconciliationManager.registerService(data);
-				if(index == LG.vars.reconServices.length-1){
+	if(LG.vars.reconServices[index].type == "standard"){
+
+		ReconciliationManager.registerStandardService(LG.vars.reconServices[index].endpoint);
+		log("Successfully added service - "+LG.vars.reconServices[index].name);
+
+		if(index == LG.vars.reconServices.length-1){
+			/*
+			 * We've added all the services
+			 */
+			if(callback){
+				callback();
+			}
+		} else {
+			/*
+			 * Proceed to add the next service
+			 */
+			index++;
+			LG.addReconciliationServices(index, serviceNameSuffix, callback);
+		}
+
+	} else if(LG.vars.reconServices[index].type == "sparql"){
+
+		ReconciliationManager.save(function(){
+
+			$.post("/command/rdf-extension/addService",{
+				"datasource":"sparql",
+				"name":LG.vars.reconServices[index].name+(serviceNameSuffix == 1 ? "" : "-"+serviceNameSuffix),
+				"url":LG.vars.reconServices[index].endpoint,
+				"type":"plain",
+				"graph":"",
+				"properties":LG.vars.reconServices[index].labelProperty
+			},
+			function(data){
+				if(typeof data.code != 'undefined' && data.code != 'error'){
+					log("Successfully added service");
 					/*
-					 * We've added all the services
+					 * Store the ID given to the service by the RDF extension 
+					 * back into our service object
 					 */
-					if(callback){
-						callback();
+					LG.vars.reconServices[index].id = data.service.id;
+					RdfReconciliationManager.registerService(data);
+					if(index == LG.vars.reconServices.length-1){
+						/*
+						 * We've added all the services
+						 */
+						if(callback){
+							callback();
+						}
+					} else {
+						/*
+						 * Proceed to add the next service
+						 */
+						index++;
+						LG.addReconciliationServices(index, serviceNameSuffix, callback);
 					}
 				} else {
+					log("Error adding service");
+					serviceNameSuffix = serviceNameSuffix+1;
 					/*
-					 * Proceed to add the next service
+					 * Add the same service again, but this time, adding an integer suffix to the end
+					 * of it's name (to avoid a clash).
 					 */
-					index++;
 					LG.addReconciliationServices(index, serviceNameSuffix, callback);
-				}
-			} else {
-				log("Error adding service");
-				serviceNameSuffix = serviceNameSuffix+1;
-				/*
-				 * Add the same service again, but this time, adding an integer suffix to the end
-				 * of it's name (to avoid a clash).
-				 */
-				LG.addReconciliationServices(index, serviceNameSuffix, callback);
 
-			}
-		},"json");
-	});
+				}
+			},"json");
+		});
+	}
 };
 
 /*

@@ -38,9 +38,9 @@ var LinkedGov_LinkingPanel = {
 			 * from using the LinkedGov extension?
 			 */
 
-			LG.addReconciliationServices(0, 1, function(){
-				log("Added recon services");
-			});
+			//LG.addReconciliationServices(0, 1, function(){
+			//	log("Added recon services");
+			//});
 
 
 			/*
@@ -154,8 +154,42 @@ var LinkedGov_LinkingPanel = {
 
 		},
 
+
+		showSuggestPanel:function(){
+			var self = this;
+			// Hide the save button
+			this.els.saveButton.hide();
+			// Show the link button
+			this.els.linkButton.show();
+			// Show the suggest panel
+			this.els.linkingPanel.find("div.suggest-panel").show();
+			// Hide the reconcile panel
+			this.els.linkingPanel.find("div.reconcile-panel").hide();
+		},
+
+		showReconcilePanel:function(){
+			var self = this;
+			// Show the save button
+			this.els.saveButton.show();
+			// Hide the link button
+			this.els.linkButton.hide();
+			// Hide the suggest panel
+			this.els.linkingPanel.find("div.suggest-panel").hide();
+			// Show the reconcile panel
+			this.els.linkingPanel.find("div.reconcile-panel").show(0, function(){
+				// Begin reconciliation on the confirmed columns
+				self.reconcileColumns();					
+			});
+		},
+
 		/*
 		 * suggestLinks
+		 * 
+		 * Builds a list of "link" objects that contain the:
+		 * - column name
+		 * - service name
+		 * - endpoint url
+		 * - linked type
 		 * 
 		 * Automatically suggests columns to link to the user
 		 */
@@ -183,14 +217,24 @@ var LinkedGov_LinkingPanel = {
 							/*
 							 * Column name contains something we're looking for
 							 */
+							//var suggestedLink = {
+							//	columnName:cols[i].name,
+							//	serviceName:services[j].name
+								//endpoint:services[j].endpoint,
+								//possibleTypes:services[j].possibleTypes
+							//};
+							
 							self.suggestedLinks.push({
 								columnName:cols[i].name,
 								serviceName:services[j].name,
 								endpoint:services[j].endpoint,
-								serviceURL:"http://127.0.0.1:3333/extension/rdf-extension/services/"+services[j].id,
 								possibleTypes:services[j].possibleTypes
 							});
 
+							/*
+							 * Break out of the loop so we only suggest one link per service 
+							 * per guess.
+							 */
 							j=services.length-1;
 						}						
 					}
@@ -243,36 +287,13 @@ var LinkedGov_LinkingPanel = {
 			});
 		},
 
-		showSuggestPanel:function(){
-			var self = this;
-			// Hide the save button
-			this.els.saveButton.hide();
-			// Show the link button
-			this.els.linkButton.show();
-			// Show the suggest panel
-			this.els.linkingPanel.find("div.suggest-panel").show();
-			// Hide the reconcile panel
-			this.els.linkingPanel.find("div.reconcile-panel").hide();
-		},
-
-		showReconcilePanel:function(){
-			var self = this;
-			// Show the save button
-			this.els.saveButton.show();
-			// Hide the link button
-			this.els.linkButton.hide();
-			// Hide the suggest panel
-			this.els.linkingPanel.find("div.suggest-panel").hide();
-			// Show the reconcile panel
-			this.els.linkingPanel.find("div.reconcile-panel").show(0, function(){
-				// Begin reconciliation on the confirmed columns
-				self.reconcileColumns();					
-			});
-		},
-
 
 		/*
-		 * Runs reconciliation on the confirmed columns
+		 * reconcileColumns
+		 * 
+		 * Uses the array of confirmed links to guess the types in the columns.
+		 * 
+		 * Runs reconciliation on the confirmed columns.
 		 */
 		reconcileColumns:function(){
 
@@ -283,37 +304,110 @@ var LinkedGov_LinkingPanel = {
 			 */
 			var links = self.confirmedLinks;
 			self.results = [];
+			
 			/*
+			 * Add the confirmed link's service to Refine / RDF extension 
+			 * (depending on whether it's a SPARQL or standard service)
+			 *
 			 * Iterate through the confirmed columns and produce the results for reconciliation 
 			 * in a new panel to the user.
 			 */
-			self.queryService(links,0);
+			for(var i=0;i<self.confirmedLinks.length;i++){
+				LG.addReconciliationService(self.confirmedLinks[i].serviceName, 0, function(service){
+					log("service");
+					log(service);
+					
+					for(var j=0;j<self.confirmedLinks.length;j++){
+						if(service.name == self.confirmedLinks[j].serviceName){
+							log("before query service");
+							log(self.confirmedLinks[j]);
+							//self.queryService(self.confirmedLinks[j]);
+							
+							//$.each(LG.vars.reconServices,function(k,o){
+							//	if(o.name == service.name){
+							//		
+							//	}
+							//});
+							
+							
+							self.results.push({
+								columnName:self.confirmedLinks[j].columnName,
+								serviceURL:"http://127.0.0.1:3333/extension/rdf-extension/services/"+service.id,
+								thing:self.confirmedLinks[j].serviceName,
+								uri:self.confirmedLinks[j].possibleTypes[0],
+								types:self.confirmedLinks[j].possibleTypes,
+								score:0,
+								count:0,
+								matched:true
+							});
+														
+						}
+						
+						if(j == self.confirmedLinks.length-1){
+							self.startReconcile();
+						}
+					}
+				});
+				
+				
+			}
 
 		},
 
 		/*
+		 * queryService
+		 * 
+		 * Adds additional configuration options to the 
+		 * confirmed links.
+		 * 
 		 * Calls the service URL to guess the value types
 		 * 
-		 * Note: service URL is this -
-		 * http://127.0.0.1:3333/extension/rdf-extension/services/***SERVICE_ID**
-		 * 
-		 * Not the actual endpoint URL
 		 */
-		queryService: function(links, index){
+		queryService: function(link){
 
 			log("queryService");
 
 			var self = this;
-
-			log(links[index].columnName);
-			log(links[index].serviceURL);
+			
+			var services = LG.vars.reconServices;
+			
+			log(link);
+			
+			/*
+			 * We need to add additional configuration parameters 
+			 * to the confirmed links depending on whether the link 
+			 * is to a SPARQL service or a standard service.
+			 */
+			for(var i=0;i<services.length;i++){
+				if(link.serviceName == services[i].name){
+					if(services[i].type == "standard"){
+						/*
+						 * Add: 
+						 * - possible types
+						 * - service url
+						 */
+						link.serviceURL = services[i].endpoint;
+						link.possibleTypes = services[i].possibleTypes;
+					} else if(services[i].type == "sparql"){
+						/*
+						 * Add: 
+						 * - endpoint
+						 * - possible types
+						 * - service url
+						 */
+						link.endpoint = services[i].endpoint;
+						link.possibleTypes = services[i].possibleTypes;
+						link.serviceURL = "http://127.0.0.1:3333/extension/rdf-extension/services/"+services[i].id;
+					}
+				}
+			}
 
 			LG.silentProcessCall({
 				type : "POST",
 				url : "/command/" + "core" + "/" + "guess-types-of-column",
 				data : {
-					columnName : links[index].columnName,
-					service: links[index].serviceURL
+					columnName : link.columnName,
+					service: link.serviceURL
 				},
 				success : function(data) {
 
@@ -329,6 +423,8 @@ var LinkedGov_LinkingPanel = {
 						columnResult = undefined;
 
 						log("Results returned from recon");
+						log(data);
+						log(link);
 
 						/*
 						 * We are returned a sorted list of "types" that could possibly
@@ -340,7 +436,7 @@ var LinkedGov_LinkingPanel = {
 							//for(var j=0; j<links[index].possibleTypes.length; j++){
 
 							//log(data.types[i].id+"=="+links[index].possibleTypes[j]);
-							if($.inArray(data.types[i].id, links[index].possibleTypes) >= 0){
+							if($.inArray(data.types[i].id, link.possibleTypes) >= 0){
 
 								log("Recon has found a match - storing result");
 
@@ -351,11 +447,11 @@ var LinkedGov_LinkingPanel = {
 								 * and logic as to whether to proceed with reconciliation or not.
 								 */
 								columnResult = {
-										columnName:links[index].columnName,
-										serviceURL:links[index].serviceURL,
-										thing:links[index].serviceName,
+										columnName:link.columnName,
+										serviceURL:link.serviceURL,
+										thing:link.serviceName,
 										uri:data.types[0].id,
-										types:links[index].possibleTypes,
+										types:link.possibleTypes,
 										score:data.types[i].score,
 										count:data.types[i].count,
 										matched:true
@@ -381,11 +477,11 @@ var LinkedGov_LinkingPanel = {
 									 * the choice to manually match the values.
 									 */
 									columnResult = {
-											columnName:links[index].columnName,
-											serviceURL:links[index].serviceURL,
-											thing:links[index].serviceName,
+											columnName:link.columnName,
+											serviceURL:link.serviceURL,
+											thing:link.serviceName,
 											uri:data.types[0].id,
-											types:links[index].possibleTypes,
+											types:link.possibleTypes,
 											score:data.types[0].score,
 											count:data.types[0].count,
 											matched:true
@@ -400,7 +496,7 @@ var LinkedGov_LinkingPanel = {
 						} // end for
 
 						self.results.push(columnResult);
-
+/*
 						if(index < links.length-1){
 							index = index+1;
 							log("Querying another service...");
@@ -410,7 +506,7 @@ var LinkedGov_LinkingPanel = {
 							// alert("Have finished guessing value types");
 							// Nothing
 						}
-
+*/
 					} else {
 
 						log("No results returned from recon");
@@ -419,11 +515,11 @@ var LinkedGov_LinkingPanel = {
 						 * Store a "No results" result for the column
 						 */
 						self.results.push({
-							columnName:links[index].columnName,
-							serviceURL:links[index].serviceURL,
-							thing:links[index].serviceName,
+							columnName:link.columnName,
+							serviceURL:link.serviceURL,
+							thing:link.serviceName,
 							uri:"None",
-							types:links[index].possibleTypes,
+							types:link.possibleTypes,
 							score:0,
 							count:0,
 							matched:false
@@ -448,6 +544,7 @@ var LinkedGov_LinkingPanel = {
 
 		/*
 		 * startReconciliation
+		 * 
 		 */
 		startReconcile:function(){
 

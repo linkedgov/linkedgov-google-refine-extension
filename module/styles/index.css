@@ -530,12 +530,13 @@ body.lg #create-project-progress-panel {
     border: 1px solid #DDDDDD;
     border-radius: 5px 5px 5px 5px;
     font-size: 1.3em;
-    left: 35%;
+    left: 36%;
     margin: 0 auto;
     padding: 20px 30px;
     position: fixed;
     text-align: center;
     top: 40%;
+    width: 24%;
 }
 body.lg #create-project-progress-message {
 	font-weight:bold;
