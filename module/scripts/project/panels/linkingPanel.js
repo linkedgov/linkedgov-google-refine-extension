@@ -5,6 +5,7 @@
  * 
  * Forces the user to check and label the columns as well as give each of them a 
  * short description - which is optional.
+ * 
  */
 var LinkedGov_LinkingPanel = {
 
@@ -31,17 +32,28 @@ var LinkedGov_LinkingPanel = {
 			self.body = self.els.linkingPanel;
 
 			/*
-			 * Add our services to the ReconcilitionManager
-			 */
-			/*
-			 * If the RDF Extension isn't installed then prevent the user 
-			 * from using the LinkedGov extension?
-			 */
+			 * Load the reconciliation service configurations.
+			 * 
+			 * Example service config:
+			 * 
+				serviceName:"UK Ward & Borough names",
+				serviceType:"sparql",
+				hints:["ward","borough"],
+				endpoint:"http://api.talis.com/stores/ordnance-survey/services/sparql",
+				labelProperty:"http://www.w3.org/2000/01/rdf-schema#label",
+				resourceInfo:{
+					resourceURI:"http://data.ordnancesurvey.co.uk/ontology/admingeo/LondonBoroughWard",
+					resourceCURIE:"LondonBoroughWard"
+					predicateURI:"http://data.ordnancesurvey.co.uk/ontology/admingeo/ward",
+					predicateCURIE:"ward",
+					vocabURI:"http://data.ordnancesurvey.co.uk/ontology/admingeo/",
+					vocabCURIE:"admingeo"
+				}
 
-			//LG.addReconciliationServices(0, 1, function(){
-			//	log("Added recon services");
-			//});
-
+			 */
+			$.getScript("extension/linkedgov/scripts/project/reconciliationServices.js", function(data){
+				LG.vars.reconServices = eval('(' + data + ')');
+			});
 
 			/*
 			 * Interaction for the "Suggest links" button
@@ -67,7 +79,7 @@ var LinkedGov_LinkingPanel = {
 				$("div.suggest-links.confirmed").hide();
 				$("div.suggest-links ul").html("");
 				$("div.suggest-links a.suggestButton").css("display","inline-block");
-				$("div.suggest-links ul").html("");
+				$("div.suggest-links ul.selected-columns").hide();
 				self.suggestedLinks = [];
 				self.confirmedLinks = [];
 			});
@@ -111,7 +123,7 @@ var LinkedGov_LinkingPanel = {
 					 * Show the reconcile panel
 					 */
 					LG.showWizardProgress(true);
-					self.showReconcilePanel();
+					self.showResultPanel();
 				} else {
 					alert("You need columns to link! Either click the 'Suggest links' button or select the columns manually ");
 				}
@@ -123,42 +135,42 @@ var LinkedGov_LinkingPanel = {
 			 * Interaction for the "Save" button
 			 */
 			this.els.saveButton.click(function(){
+
 				/*
 				 * Remove all of the facets containing "judgment" and "candidate" in the title
 				 */
-
+				LG.rdfOps.checkSchema({}, function(rootNode, foundRootNode) {
+					self.saveRDF(rootNode, foundRootNode);
+				});
 			});
 
 		},
 
 		displayPanel: function(){
 
-			/*
-			 * Hide the other panels
-			 */
+			// Hide the other panels
 			LG.panels.typingPanel.hidePanels();
-
 			// Hide the action buttons
 			this.els.actionButtons.hide();
 			// Show the collapse-expand button
 			this.els.collapseExpandButton.hide();
 			// Hide the "return to wizards" button
 			this.els.returnButton.hide();
+			// Show the action bar
+			this.els.actionBar.show();
 			// Show the finish button
 			this.els.finishButton.hide();
-			/*
-			 * Show this panel
-			 */
+			// Show this panel
 			this.body.show();
-			//this.showSuggestPanel();
 
 		},
-
 
 		showSuggestPanel:function(){
 			var self = this;
 			// Hide the save button
 			this.els.saveButton.hide();
+			// Show the cancel button
+			this.els.cancelButton.hide();			
 			// Show the link button
 			this.els.linkButton.show();
 			// Show the suggest panel
@@ -167,10 +179,41 @@ var LinkedGov_LinkingPanel = {
 			this.els.linkingPanel.find("div.reconcile-panel").hide();
 		},
 
-		showReconcilePanel:function(){
+		showResultPanel:function(){
 			var self = this;
 			// Show the save button
 			this.els.saveButton.show();
+			// Show & set up the cancel button
+			this.els.cancelButton
+			.unbind("click")
+			.bind("click",function(){
+				/*
+				 * Alert the user they will lose their reconciliation results if they 
+				 * press "back".
+				 */
+				var ans = window.confirm("Are you sure? You will lose any un-saved reconciliation data.");
+				if(ans){
+					self.cancelReconciliation(function(){
+						LG.restoreHistory(self.historyRestoreID);	
+						var interval = setInterval(function(){
+							if(ui.browsingEngine._facets.length < (self.confirmedLinks.length*2)){
+								
+							} else {
+								ui.browsingEngine.remove();
+								$("div#refine-tabs-facets").children().show();
+								$("div#left-panel div.refine-tabs").tabs('select', 1);
+								self.showSuggestPanel();
+								LG.showWizardProgress(false);
+								clearInterval(interval);
+							}
+						},100);
+
+					});
+				} else {
+					// Do nothing
+				}
+			})
+			.css("display","inline-block");
 			// Hide the link button
 			this.els.linkButton.hide();
 			// Hide the suggest panel
@@ -180,6 +223,46 @@ var LinkedGov_LinkingPanel = {
 				// Begin reconciliation on the confirmed columns
 				self.reconcileColumns();					
 			});
+		},
+
+		/*
+		 * cancelReconciliation
+		 * 
+		 * Cancels the reconciliation processes
+		 */
+		cancelReconciliation:function(callback){
+
+			var self = this;
+
+			$.post(
+					"/command/core/cancel-processes?" + $.param({ project: theProject.id }), 
+					null,
+					function(o) {
+						self.results = [];
+						self.confirmedLinks = [];
+						self.suggestedLinks = [];
+						$("div.linking-results").html('<h3>Results</h3>');
+						$("div.suggest-links a.clearButton").click();
+						$("div.suggest-links ul.selected-columns").hide();
+						callback();
+					},
+					"json"
+			);
+
+		},
+
+		/*
+		 * Clears the reconciliation data for any results left in the 
+		 * self.results array.
+		 */
+		clearRecentReconciliationData: function(callback){
+
+			var self = this;
+
+			for(var i=0;i<self.results.length;i++){
+
+			}
+
 		},
 
 		/*
@@ -212,23 +295,15 @@ var LinkedGov_LinkingPanel = {
 			var cols = theProject.columnModel.columns;
 			for(var i=0; i<cols.length; i++){
 				for(var j=0;j<services.length;j++){
-					for(var k=0;k<services[j].keywords.length;k++){
-						if(cols[i].name.toLowerCase().indexOf(services[j].keywords[k]) >= 0){
+					for(var k=0;k<services[j].hints.length;k++){
+						if(cols[i].name.toLowerCase().indexOf(services[j].hints[k]) >= 0){
+
 							/*
 							 * Column name contains something we're looking for
 							 */
-							//var suggestedLink = {
-							//	columnName:cols[i].name,
-							//	serviceName:services[j].name
-								//endpoint:services[j].endpoint,
-								//possibleTypes:services[j].possibleTypes
-							//};
-							
 							self.suggestedLinks.push({
 								columnName:cols[i].name,
-								serviceName:services[j].name,
-								endpoint:services[j].endpoint,
-								possibleTypes:services[j].possibleTypes
+								service:services[j]
 							});
 
 							/*
@@ -247,7 +322,7 @@ var LinkedGov_LinkingPanel = {
 			if(self.suggestedLinks.length > 0){
 				var html="";
 				for(var i=0;i<self.suggestedLinks.length;i++){
-					html+="<li data-index='"+i+"'><span class='col'>"+self.suggestedLinks[i].columnName+"</span><span class='remove'>X</span><span class='confirm'>C</span><span class='link'>"+self.suggestedLinks[i].serviceName+"</span></li>";
+					html+="<li data-index='"+i+"'><span class='col'>"+self.suggestedLinks[i].columnName+"</span><span class='remove'>X</span><span class='confirm'>C</span><span class='link'>"+self.suggestedLinks[i].service.serviceName+"</span></li>";
 				}
 				$("div.suggest-links ul.selected-columns").html(html).css("display","block");
 				$("div.suggest-links ul.selected-columns").css("display","block");
@@ -262,11 +337,10 @@ var LinkedGov_LinkingPanel = {
 			$("div.suggest-links span.column-selecting-icon").remove();
 
 			$("div.suggest-links span.confirm").click(function(){
-				//log($(this).parent().attr("data-index"));
-				//log(self.suggestedLinks);
-				//log(self.suggestedLinks[parseInt($(this).parent().attr("data-index"))]);
+
 				// Add the confirmed suggestion to a new object containing only confirmations
 				self.confirmedLinks.push(self.suggestedLinks[parseInt($(this).parent().attr("data-index"))]);
+
 				// Add column to confirmed list
 				$("ul.confirmed-columns").append('<li><span class="col">'+$(this).parent().find("span.col").html()+'</span><span class="link">'+$(this).parent().find("span.link").html()+'</span></li>');
 				// Show list
@@ -298,13 +372,23 @@ var LinkedGov_LinkingPanel = {
 		reconcileColumns:function(){
 
 			var self = this;
+
+			/*
+			 * Save the restore point so the user can cancel at any point
+			 */
+			try{
+				self.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
+			}catch(e){
+				self.historyRestoreID = 0;
+			}	
+
 			/*
 			 * Display a new panel that shows the results / scores of 
 			 * attempting reconciliation on the confirmed columns.
 			 */
 			var links = self.confirmedLinks;
 			self.results = [];
-			
+
 			/*
 			 * Add the confirmed link's service to Refine / RDF extension 
 			 * (depending on whether it's a SPARQL or standard service)
@@ -313,232 +397,51 @@ var LinkedGov_LinkingPanel = {
 			 * in a new panel to the user.
 			 */
 			for(var i=0;i<self.confirmedLinks.length;i++){
-				LG.addReconciliationService(self.confirmedLinks[i].serviceName, 0, function(service){
+				LG.addReconciliationService(self.confirmedLinks[i].service.serviceName, 0, function(service){
 					log("service");
 					log(service);
-					
+
 					for(var j=0;j<self.confirmedLinks.length;j++){
-						if(service.name == self.confirmedLinks[j].serviceName){
-							log("before query service");
-							log(self.confirmedLinks[j]);
+						if(service.serviceName == self.confirmedLinks[j].service.serviceName){
+							//log("before query service");
+							//log(self.confirmedLinks[j]);
 							//self.queryService(self.confirmedLinks[j]);
-							
+
 							//$.each(LG.vars.reconServices,function(k,o){
 							//	if(o.name == service.name){
 							//		
 							//	}
 							//});
-							
-							
-							self.results.push({
-								columnName:self.confirmedLinks[j].columnName,
-								serviceURL:"http://127.0.0.1:3333/extension/rdf-extension/services/"+service.id,
-								thing:self.confirmedLinks[j].serviceName,
-								uri:self.confirmedLinks[j].possibleTypes[0],
-								types:self.confirmedLinks[j].possibleTypes,
-								score:0,
-								count:0,
-								matched:true
-							});
-														
-						}
-						
-						if(j == self.confirmedLinks.length-1){
-							self.startReconcile();
+
+							//self.confirmedLinks[j].service.serviceURL = "http://127.0.0.1:3333/extension/rdf-extension/services/"+service.id;
+
+							/*
+							 * Create a result - including the column name and it's 
+							 * matched service.
+							 */
+							log("Adding a result");
+							var result = {
+									columnName:self.confirmedLinks[j].columnName,
+									service:service,
+									score:0,
+									count:0,
+									matched:true
+							};
+
+							self.confirmedLinks.splice(j,1);
+
+							self.results.push(result);
+
+							j = self.confirmedLinks.length-1;
+
+							if(self.confirmedLinks.length == 0){
+								self.startReconcile();
+							}
 						}
 					}
 				});
-				
-				
+
 			}
-
-		},
-
-		/*
-		 * queryService
-		 * 
-		 * Adds additional configuration options to the 
-		 * confirmed links.
-		 * 
-		 * Calls the service URL to guess the value types
-		 * 
-		 */
-		queryService: function(link){
-
-			log("queryService");
-
-			var self = this;
-			
-			var services = LG.vars.reconServices;
-			
-			log(link);
-			
-			/*
-			 * We need to add additional configuration parameters 
-			 * to the confirmed links depending on whether the link 
-			 * is to a SPARQL service or a standard service.
-			 */
-			for(var i=0;i<services.length;i++){
-				if(link.serviceName == services[i].name){
-					if(services[i].type == "standard"){
-						/*
-						 * Add: 
-						 * - possible types
-						 * - service url
-						 */
-						link.serviceURL = services[i].endpoint;
-						link.possibleTypes = services[i].possibleTypes;
-					} else if(services[i].type == "sparql"){
-						/*
-						 * Add: 
-						 * - endpoint
-						 * - possible types
-						 * - service url
-						 */
-						link.endpoint = services[i].endpoint;
-						link.possibleTypes = services[i].possibleTypes;
-						link.serviceURL = "http://127.0.0.1:3333/extension/rdf-extension/services/"+services[i].id;
-					}
-				}
-			}
-
-			LG.silentProcessCall({
-				type : "POST",
-				url : "/command/" + "core" + "/" + "guess-types-of-column",
-				data : {
-					columnName : link.columnName,
-					service: link.serviceURL
-				},
-				success : function(data) {
-
-					/*
-					 * We're looking for a single match for the column,
-					 * if the reconciliation service returns a type with the same id 
-					 * as we have in our reconService.possibleTypes list, we store that 
-					 * guessed type as the result and move on.
-					 */
-					if(data.types.length > 0){
-
-						var columnResult;
-						columnResult = undefined;
-
-						log("Results returned from recon");
-						log(data);
-						log(link);
-
-						/*
-						 * We are returned a sorted list of "types" that could possibly
-						 * be the correct value type
-						 */
-
-						for(var i=0;i<data.types.length;i++){
-
-							//for(var j=0; j<links[index].possibleTypes.length; j++){
-
-							//log(data.types[i].id+"=="+links[index].possibleTypes[j]);
-							if($.inArray(data.types[i].id, link.possibleTypes) >= 0){
-
-								log("Recon has found a match - storing result");
-
-								/*
-								 * Recon has found a possible match
-								 * 
-								 * TODO: This is the time to introduce our own cut-off points 
-								 * and logic as to whether to proceed with reconciliation or not.
-								 */
-								columnResult = {
-										columnName:link.columnName,
-										serviceURL:link.serviceURL,
-										thing:link.serviceName,
-										uri:data.types[0].id,
-										types:link.possibleTypes,
-										score:data.types[i].score,
-										count:data.types[i].count,
-										matched:true
-								};
-
-								/*
-								 * Break out of the loop
-								 */
-								i = data.types.length-1;
-
-							} else if(i == data.types.length-1){
-
-								// Have iterated through all of the returned types
-								if(typeof columnResults == 'undefined'){
-
-									// We have no results for this column
-									log("Finished iterating through types - no matches, but have some guesses");
-									/*
-									 * Recon has not been able to find a successful match,
-									 * but has still managed to guess some types
-									 * 
-									 * We store a "No results" result - but offering the user 
-									 * the choice to manually match the values.
-									 */
-									columnResult = {
-											columnName:link.columnName,
-											serviceURL:link.serviceURL,
-											thing:link.serviceName,
-											uri:data.types[0].id,
-											types:link.possibleTypes,
-											score:data.types[0].score,
-											count:data.types[0].count,
-											matched:true
-									};
-
-								} else {
-									log("Finished iterating through types - result present");
-								}
-							} else {
-								log("Have not finished iterating through types");
-							}
-						} // end for
-
-						self.results.push(columnResult);
-/*
-						if(index < links.length-1){
-							index = index+1;
-							log("Querying another service...");
-							self.queryService(links, index);
-						} else {
-							log("Have finished guessing value types");
-							// alert("Have finished guessing value types");
-							// Nothing
-						}
-*/
-					} else {
-
-						log("No results returned from recon");
-
-						/*
-						 * Store a "No results" result for the column
-						 */
-						self.results.push({
-							columnName:link.columnName,
-							serviceURL:link.serviceURL,
-							thing:link.serviceName,
-							uri:"None",
-							types:link.possibleTypes,
-							score:0,
-							count:0,
-							matched:false
-						});
-					}
-
-					/*
-					 * Start reconciling once we have all results for the 
-					 * columns the user confirmed
-					 */
-					if(self.results.length == self.confirmedLinks.length){
-						self.startReconcile();
-					}
-				},
-				error : function() {
-					//self.onFail("There was a problem linking data using the service: \""+links[index].serviceURL+"\"");
-					//return {};
-				}
-			});	
 
 		},
 
@@ -564,10 +467,10 @@ var LinkedGov_LinkingPanel = {
 							columnName: self.results[i].columnName,
 							config: JSON.stringify({
 								mode: "standard-service",
-								service: self.results[i].serviceURL,
+								service: self.results[i].service.serviceURL,
 								identifierSpace: "http://www.ietf.org/rfc/rfc3986",
 								schemaSpace: "http://www.ietf.org/rfc/rfc3986",
-								type: { id: self.results[i].uri, name: self.results[i].uri },
+								type: { id: self.results[i].service.resourceInfo.resourceURI, name: self.results[i].service.resourceInfo.resourceURI },
 								autoMatch: true,
 								columnDetails: []
 							})
@@ -614,11 +517,11 @@ var LinkedGov_LinkingPanel = {
 				 * Our test for checking whether reconciliation has finished across all 
 				 * columns is once all the facets have been created.
 				 */
-				if(ui.browsingEngine._facets.length > (self.confirmedLinks.length*2)-1){
+				if(ui.browsingEngine._facets.length > (self.results.length*2)-1){
 
 					log("here");
 					log(ui.browsingEngine._facets.length);
-					log(self.confirmedLinks.length*2);
+					log(self.results.length*2);
 
 					/*
 					 * Checks that the facets have been created once reconciliation 
@@ -637,12 +540,19 @@ var LinkedGov_LinkingPanel = {
 
 								var html = "";
 
-								if(self.results[i].uri != "None" && self.results[i].matched){
+								if(self.results[i].matched){
 									html += "<div class='description result'>";
-									html += "<a class='col-name' data-serviceurl='"+self.results[i].serviceURL+"'>"+self.results[i].columnName+"</a>";
+									html += "<a class='col-name' data-serviceurl='"+self.results[i].service.serviceURL+"'>"+self.results[i].columnName+"</a>";
 									html += "<div class='result-body'>";
-									html += "<p class='value-type'><span>Type</span><a href='"+self.results[i].uri+"' target='_blank'>"+self.results[i].thing+"</a></p>";
-									html += "<p class='matches'><span>Matches</span><span class='matched'>"+(theProject.rowModel.total-self.results[i].numUnmatched)+"</span> / <span class='total'>"+theProject.rowModel.total+"</span> (<span class='percentage'>"+Math.round((((theProject.rowModel.total-self.results[i].numUnmatched)/theProject.rowModel.total)*100))+"</span>%)</p>";
+									html += "<p class='value-type'>" +
+									"<span>Type</span>" +
+									"<a href='"+self.results[i].service.resourceInfo.resourceURI+"' target='_blank'>"+self.results[i].service.serviceName+"</a>" +
+									"</p>";
+									html += "<p class='matches'>" +
+									"<span>Matches</span>" +
+									"<span class='matched'>"+(theProject.rowModel.total-self.results[i].numUnmatched)+"</span> / " +
+									"<span class='total'>"+theProject.rowModel.total+"</span> (<span class='percentage'>"+
+									Math.round((((theProject.rowModel.total-self.results[i].numUnmatched)/theProject.rowModel.total)*100))+"</span>%)</p>";
 									html += '<div class="matches-bar ui-progressbar"><div class="ui-progressbar-value"></div></div>';
 									if(self.results[i].numUnmatched > 0 || self.results[i].numMatched < theProject.rowModel.total){
 										html += "<p class='notification'>There are some values that have not been matched due to possible differences in punctuation or spellings. Would you like to try to match these values yourself?</p>";
@@ -667,7 +577,7 @@ var LinkedGov_LinkingPanel = {
 									 * for the entity
 									 */
 									html += "<div class='description result'>";
-									html += "<a class='col-name' data-serviceurl='"+self.results[i].serviceURL+"'>"+self.results[i].columnName+"</a>";
+									html += "<a class='col-name' data-serviceurl='"+self.results[i].service.serviceURL+"'>"+self.results[i].columnName+"</a>";
 									html += "<div class='result-body'>";									
 									//if(self.results[i].numUnmatched > 0|| self.results[i].numMatched < theProject.rowModel.total){
 									//	html += "<p>There are some values that have not been matched due to possible differences in punctuation or spellings. Would you like to try to match these values yourself?</p>";
@@ -806,9 +716,9 @@ var LinkedGov_LinkingPanel = {
 
 								if(data.facets[i].choices[j].v.v == "matched"){
 
-									log("data.facets[i].choices[j]");
-									log(data.facets[i].choices[j]);
-									log(data.facets[i].choices[j].c);
+									//log("data.facets[i].choices[j]");
+									//log(data.facets[i].choices[j]);
+									//log(data.facets[i].choices[j].c);
 
 									matched = data.facets[i].choices[j].c;
 
@@ -817,8 +727,8 @@ var LinkedGov_LinkingPanel = {
 									$(resultDiv).find("p.matches").find("span.matched").html(matched);
 									$(resultDiv).find("p.matches").find("span.percentage").html(percentage);
 
-									log('$(resultDiv).find("div.matches-bar")');
-									log($(resultDiv).find("div.matches-bar"));
+									//log('$(resultDiv).find("div.matches-bar")');
+									//log($(resultDiv).find("div.matches-bar"));
 									$(resultDiv).find("div.matches-bar").find("div.ui-progressbar-value").css("width",percentage+"%");
 									$(resultDiv).find("div.matches-bar").find("div.ui-progressbar-value").removeClass("green").removeClass("yellow").removeClass("red");
 
@@ -882,7 +792,7 @@ var LinkedGov_LinkingPanel = {
 						var choicesArray = [];
 						for(var j=0; j<choices.length; j++){
 
-							log("data.facets[i].choices[j].c = "+choices[j].c);
+							//log("data.facets[i].choices[j].c = "+choices[j].c);
 
 							if(choices[j].c >= highest){
 								choicesArray.splice(0,0,choices[j].v.l);
@@ -967,49 +877,14 @@ var LinkedGov_LinkingPanel = {
 						}
 					}
 
-					if(k == self.results.length-1) {
-						callback();
-					}
-
 				}); // end ops
 
-
-			} // end for 
-			/*
-			var facetDataInterval = setInterval(function(){
-
-				//log("ui.browsingEngine._facets.length = "+ui.browsingEngine._facets.length);
-
-				if(ui.browsingEngine._facets.length > ((self.results.length*2)-1)){
-					for(var i=0; i<ui.browsingEngine._facets.length; i++){
-
-						var facet = ui.browsingEngine._facets[i].facet;
-						for(var k=0; k<self.results.length; k++){
-
-							if(facet._config.name.indexOf(self.results[k].columnName) >= 0 
-									&& facet._config.name.indexOf("judgment") >= 0
-									&& facet._data != null){
-								//log("facet data accessible for column "+self.results[k].columnName);
-								for(var j=0; j<facet._data.choices.length; j++){
-									if(facet._data.choices[j].v.v == "none"){
-										self.results[k].numUnmatched = facet._data.choices[j].c;
-									} else if(facet._data.choices[j].v.v == "matched"){
-										self.results[k].numMatched = facet._data.choices[j].c;								
-									}
-								} // end for
-							} // end if
-						} // end for	
-
-					} // end for
-
+				if(k == self.results.length-1) {
 					callback();
-
-					clearInterval(facetDataInterval);
 				}
 
+			} // end for 
 
-			},100);
-			 */
 		},
 
 
@@ -1050,7 +925,7 @@ var LinkedGov_LinkingPanel = {
 			.bind("fb-select", function(e, data) {
 				//console.log(e);
 				//console.log(data);
-				//console.log("------------------------");
+				console.log("------------------------");
 				match = data;
 				self.matchCellsFromSearch(match, inputElement.attr("data-colname"), localVal);
 				$(this).removeClass("edited").addClass("matched");
@@ -1062,7 +937,7 @@ var LinkedGov_LinkingPanel = {
 				 * Update matched percentage stat on panel
 				 */
 				var resultDiv = inputElement.parent("span").parent("li").parent("ul").parent("div").parent("div");
-
+				log(resultDiv);
 				self.updateMatches(resultDiv);
 
 			})
@@ -1166,21 +1041,101 @@ var LinkedGov_LinkingPanel = {
 		 * 
 		 * Erases any other RDF stored for this particular column
 		 */
-		saveRDF:function(){
+		saveRDF:function(rootNode, newRootNode){
 
 			var self = this;
 
-			var schema = LG.rdfOps.getSchema();
+			/*
+			 * Iterate through the results
+			 */
+			for(var i=0;i<self.results.length;i++){
 
-			var vocabs = {
-					gov : {
-						curie : "gov",
-						uri : "http://http://reference.data.gov.uk/def/central-government/"
+				//var result = self.results[i];
+				//var columnName = self.results[i].columnName;
+				//var service = self.results[i].service;
+
+				self.results[i].rdf = self.buildColumnReconciliationRDF(self.results[i]);
+
+				log("Saved result's rdf...");
+				log(self.results[i]);
+
+				rootNode.links.push(self.results[i].rdf);
+
+			}
+
+
+			var schema = LG.rdfOps.getRDFSchema();
+			if (!newRootNode) {
+				log("rootNode has already been updated...");
+			} else {
+				log("Adding first rootNode for address data...");
+				schema.rootNodes.push(rootNode);
+			}
+
+			/*
+			 * Save the RDF.
+			 */
+			Refine.postProcess("rdf-extension", "save-rdf-schema", {}, {
+				schema : JSON.stringify(schema)
+			}, {}, {
+				onDone : function() {
+					// DialogSystem.dismissUntil(self._level - 1);
+					// theProject.overlayModels.rdfSchema = schema;
+					self.onComplete();
+				}
+			});
+		},
+
+		/*
+		 * buildColumnReconciliationRDF
+		 */
+		buildColumnReconciliationRDF:function(result){
+
+
+			/*
+			 * Add the results vocabulary to the schema
+			 */
+
+			var resourceInfo = result.service.resourceInfo;
+
+			var rdf = {
+					"uri" : resourceInfo.predicateURI ,
+					"curie" : resourceInfo.vocabCURIE+":"+resourceInfo.predicateCURIE,
+					"target" : {
+						"nodeType" : "cell-as-resource",
+						"expression":"if(isError(cell.recon.match.id),value,cell.recon.match.id)",
+						"columnName":result.columnName,
+						"isRowNumberCell" : false,
+						"rdfTypes":[
+						            {
+						            	"uri":resourceInfo.resourceURI,
+						            	"curie":resourceInfo.vocabCURIE+":"+resourceInfo.resourceCURIE
+						            }
+						            ],
+						            "links":[
+						                     {
+						                    	 "uri":"http://www.w3.org/2000/01/rdf-schema#label",
+						                    	 "curie":"rdfs:label",
+						                    	 "target":{
+						                    		 "nodeType":"cell-as-literal",
+						                    		 "expression":"value",
+						                    		 "columnName":result.columnName,
+						                    		 "isRowNumberCell":false
+						                    	 }
+						                     }
+						                     ]
 					}
 			};
 
+			return rdf;
+		},
 
-
+		onComplete:function(){
+			LG.panels.typingPanel.showStartMessage();
 		}
 
 }
+
+
+
+

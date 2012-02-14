@@ -25,9 +25,10 @@ var LinkedGov_LabellingPanel = {
 		initialise : function() {
 
 			var self = this;
-
-			this.illegalChars = [ "*", "@", "%", ":", "=", "&", "<", ">", "/", "\\", "."];
-			this.body = ui.typingPanel._el.labellingPanel;
+			self.els = ui.typingPanel._el;
+			
+			self.illegalChars = [ "*", "@", "%", ":", "=", "&", "<", ">", "/", "\\", "."];
+			self.body = ui.typingPanel._el.labellingPanel;
 
 			var labelData = LG.vars.labelsAndDescriptions; 
 			var colData = labelData.cols;
@@ -208,7 +209,7 @@ var LinkedGov_LabellingPanel = {
 			/*
 			 * Setup interaction for the Finish button
 			 */
-			ui.typingPanel._el.finishButton.click(function(){
+			this.els.finishButton.click(function(){
 
 				/*
 				 * TODO: Make checks to see if the user has visited each panel,
@@ -254,21 +255,19 @@ var LinkedGov_LabellingPanel = {
 
 			// Hide the other panels
 			LG.panels.typingPanel.hidePanels();
-
-			// Scroll the panel to the top
-			$("div#labelling-panel").scrollTop(0);
-
 			/*
 			 * Rebuild the label inputs in case any new columns 
 			 * have been created.
 			 */
 			this.buildColumnDescriptionInputs();
-
+			// Show the action bar
+			this.els.actionBar.show();
 			// Show the "save" button
-			LG.panels.typingPanel._el.finishButton.show();
-
+			this.els.finishButton.show();
 			// Show this panel
-			this.body.show();			
+			this.body.show();	
+			// Scroll the panel to the top
+			$("div#labelling-panel").scrollTop(0);
 
 		},
 

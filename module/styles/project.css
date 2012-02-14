@@ -1461,8 +1461,8 @@ body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.resul
     border: 1px solid #DDDDDD;
     height: 10px;
     margin-bottom: 10px;
-    margin-left: 15px;
-    margin-right: 15px;
+    margin-left: 10px;
+    margin-right: 10px;
     padding: 1px;
 }
 body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result div.ui-progressbar div.ui-progressbar-value {
@@ -1587,6 +1587,12 @@ body.lg div.action-bar a.button.finish {
     margin-left: 0;
     color: #FFFFFF;
 }
+body.lg div.action-bar a.button.cancel {
+    font-size: 14px;
+    font-weight: bold;
+    margin-left: 0;
+    color: #FFFFFF;
+}
 body.lg div.action-bar a.button.save {
     font-size: 14px;
     font-weight: bold;
@@ -1615,7 +1621,6 @@ body.lg div.action-bar div.action-buttons a.button.preview {
 		to(#D68C8C) ) #DDDDDD;
 	text-shadow: 1px 1px #153E19;
 }
-
 body.lg div.action-bar div.action-buttons a.button.update, 
 body.lg div.action-bar a.button.finish, 
 body.lg div.action-bar a.button.save,
@@ -1626,7 +1631,14 @@ body.lg div.action-bar a.button.link {
         to(#79B1FE) ) #DDDDDD;
     text-shadow: 1px 1px #1E2E6A;
 }
-
+body.lg div.action-bar a.button.cancel {
+    background: -moz-linear-gradient(center top, #D68C8C, #742F2F) repeat
+        scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#742F2F),
+        to(#D68C8C) ) #DDDDDD;
+    text-shadow: 1px 1px #5B1B1B;
+    display: none;
+}
 body.lg div.action-bar div.action-buttons a.button.undo:active {
 	background: -moz-linear-gradient(center top, #742F2F, #D68C8C) repeat
 		scroll 0 0 transparent;
@@ -1634,7 +1646,6 @@ body.lg div.action-bar div.action-buttons a.button.undo:active {
 		to(#742F2F) ) #DDDDDD;
 	text-shadow: 1px 1px #5B1B1B;
 }
-
 body.lg div.action-bar div.action-buttons a.button.preview:active {
 	background: -moz-linear-gradient(center top, #32742F, #8FD68C) repeat
 		scroll 0 0 transparent;
@@ -1653,7 +1664,13 @@ body.lg div.action-bar a.button.link:active {
         to(#294F8C) ) #DDDDDD;
     text-shadow: 1px 1px #153E19;
 }
-
+body.lg div.action-bar a.button.cancel:active {
+    background: -moz-linear-gradient(center top, #742F2F, #D68C8C) repeat
+        scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#D68C8C),
+        to(#742F2F) ) #DDDDDD;
+    text-shadow: 1px 1px #5B1B1B;
+}
 body.lg div.wizard-body div.updateBG {
 	background: none repeat scroll 0 0 #BBCCFF;
 	margin: 0 -10px -10px;

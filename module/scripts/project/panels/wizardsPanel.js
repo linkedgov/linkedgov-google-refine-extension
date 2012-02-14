@@ -244,20 +244,14 @@ var LinkedGov_WizardsPanel = {
 		},
 
 		displayPanel: function(){
-
-			/*
-			 * Hide the other panels
-			 */
+			var self = this;
+			// Hide the other panels
 			LG.panels.typingPanel.hidePanels();
-
-			/*
-			 * Show this panel
-			 */
+			// Show this panel
 			this.body.show();
-
-			/*
-			 * Make sure the panel's showing the right thing
-			 */
+			// Show the action bar
+			this.els.actionBar.show();
+			// Make sure the panel's showing the right thing
 			this.showQuestions();
 		},
 

@@ -1,0 +1,29 @@
+[{
+	serviceName:"UK Government departments",
+	serviceType:"sparql",
+	endpoint:"http://services.data.gov.uk/reference/sparql",
+	hints:["department","organisation"],
+	labelURI:"http://www.w3.org/2000/01/rdf-schema#label",
+	resourceInfo:{
+		resourceURI:"http://reference.data.gov.uk/def/central-government/Department",
+		resourceCURIE:"Department",
+		predicateURI:"http://reference.data.gov.uk/def/central-government/hasDepartment",
+		predicateCURIE:"hasDepartment",
+		vocabURI:"http://reference.data.gov.uk/def/central-government/",
+		vocabCURIE:"gov"
+	}
+},{
+	serviceName:"UK Ward & Borough names",
+	serviceType:"sparql",
+	endpoint:"http://api.talis.com/stores/ordnance-survey/services/sparql",
+	hints:["ward","borough"],
+	labelURI:"http://www.w3.org/2000/01/rdf-schema#label",
+	resourceInfo:{
+		resourceURI:"http://data.ordnancesurvey.co.uk/ontology/admingeo/LondonBoroughWard",
+		resourceCURIE:"LondonBoroughWard",
+		predicateURI:"http://data.ordnancesurvey.co.uk/ontology/admingeo/ward",
+		predicateCURIE:"ward",
+		vocabURI:"http://data.ordnancesurvey.co.uk/ontology/admingeo/",
+		vocabCURIE:"admingeo"
+	}
+}]

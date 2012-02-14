@@ -23,7 +23,7 @@ LG.vars = {
 		blanksSetToNulls : false,
 		rdfSchema : {
 			prefixes : [],
-			baseUri : "http://127.0.0.1:3333/",
+			baseUri : "http://data.linkedgov.org/",
 			rootNodes : []
 		},
 		labelsAndDescriptions : {
@@ -31,15 +31,32 @@ LG.vars = {
 			rowDescription : "",
 			cols : []
 		},
-		lgNameSpace: "http://example.linkedgov.org/",
+		lgNameSpace: "http://data.linkedgov.org/",
 		hiddenColumns: "",
 		reconServices : [{
-			name:"UK Government departments",
-			type:"sparql",
-			keywords:["department","organisation"],
-			possibleTypes:["http://reference.data.gov.uk/def/central-government/Department"],
+			serviceName:"UK Government departments",
+			serviceType:"sparql",
+			hints:["department","organisation"],
+			resourceType:"http://reference.data.gov.uk/def/central-government/Department",
 			endpoint:"http://services.data.gov.uk/reference/sparql",
-			labelProperty:"http://www.w3.org/2000/01/rdf-schema#label"
+			labelProperty:"http://www.w3.org/2000/01/rdf-schema#label",
+			descriptionProperty:"http://reference.data.gov.uk/def/central-government/Department",
+			vocabURI:"http://reference.data.gov.uk/def/central-government/",
+			vocabCURIE:"gov",
+			propertyCURIE:"gov",
+			resourceCURIE:"Department"
+		},{
+			serviceName:"UK Ward & Borough names",
+			serviceType:"sparql",
+			hints:["ward","borough"],
+			resourceType:"http://data.ordnancesurvey.co.uk/ontology/admingeo/LondonBoroughWard",
+			endpoint:"http://api.talis.com/stores/ordnance-survey/services/sparql",
+			labelProperty:"http://www.w3.org/2000/01/rdf-schema#label",
+			descriptionProperty:"http://data.ordnancesurvey.co.uk/ontology/admingeo/ward",
+			vocabURI:"http://data.ordnancesurvey.co.uk/ontology/admingeo/",
+			vocabCURIE:"admingeo",
+			propertyCURIE:"ward",
+			resourceCURIE:"LondonBoroughWard"
 		},{
 			name:"UK Public bodies",
 			type:"sparql",
@@ -94,13 +111,6 @@ LG.vars = {
 			type:"sparql",
 			keywords:["county","authority"],
 			possibleTypes:["http://data.ordnancesurvey.co.uk/ontology/admingeo/County"],
-			endpoint:"http://api.talis.com/stores/ordnance-survey/services/sparql",
-			labelProperty:"http://www.w3.org/2000/01/rdf-schema#label"
-		},{
-			name:"UK Ward & Borough names",
-			type:"sparql",
-			keywords:["ward","borough"],
-			possibleTypes:["http://data.ordnancesurvey.co.uk/ontology/admingeo/LondonBoroughWard"],
 			endpoint:"http://api.talis.com/stores/ordnance-survey/services/sparql",
 			labelProperty:"http://www.w3.org/2000/01/rdf-schema#label"
 		},{
@@ -718,9 +728,9 @@ LG.resizeAll_LG = function() {
 LG.addReconciliationService = function(serviceName, serviceNameSuffix, callback){
 
 	var self = this;
-	
+
 	log("addReconciliationService");
-	
+
 	/*
 	 * Loop through the services config object.
 	 * 
@@ -731,40 +741,38 @@ LG.addReconciliationService = function(serviceName, serviceNameSuffix, callback)
 	 * Add it appropriately
 	 */
 	var services = LG.vars.reconServices;
-	
+
 	for(var i=0; i<services.length; i++){
-		
-		if(serviceName == services[i].name){
-			
+
+		if(serviceName == services[i].serviceName){
+
 			var service = services[i];
-			
+
 			//log("services "+i);
-			
+
 			i = services.length-1;
-			
+
 			//log("found service config for "+service.name);
 			//log("service type = "+service.type);
-			
-			if(service.type == "standard"){
+
+			if(service.serviceType == "standard"){
 
 				ReconciliationManager.registerStandardService(service.endpoint);
-				log("Successfully added service - "+service.name);
+				log("Successfully added service - "+service.serviceName);
 
-				if(callback){
-					callback();
-				}
+				callback(service);
 
-			} else if(service.type == "sparql"){
+			} else if(service.serviceType == "sparql"){
 
 				ReconciliationManager.save(function(){
 
 					$.post("/command/rdf-extension/addService",{
 						"datasource":"sparql",
-						"name":service.name+(serviceNameSuffix == 1 ? "" : "-"+serviceNameSuffix),
+						"name":service.serviceName+(serviceNameSuffix == 1 ? "" : "-"+serviceNameSuffix),
 						"url":service.endpoint,
 						"type":"plain",
 						"graph":"",
-						"properties":service.labelProperty
+						"properties":service.labelURI
 					},
 					function(data){
 						if(typeof data.code != 'undefined' && data.code != 'error'){
@@ -774,11 +782,10 @@ LG.addReconciliationService = function(serviceName, serviceNameSuffix, callback)
 							 * back into our service object
 							 */
 							service.id = data.service.id;
+							service.serviceURL = "http://127.0.0.1:3333/extension/rdf-extension/services/"+service.id;
 							RdfReconciliationManager.registerService(data);
 
-							if(callback){
-								callback(service);
-							}
+							callback(service);
 
 						} else {
 							log("Error adding service");
@@ -792,8 +799,8 @@ LG.addReconciliationService = function(serviceName, serviceNameSuffix, callback)
 					},"json");
 				});
 			}
-			
-			
+
+
 		}
 	}
 
@@ -806,7 +813,7 @@ LG.addReconciliationService = function(serviceName, serviceNameSuffix, callback)
  * Recursive function that iterates through the LG.vars.reconServices list 
  * and makes sure they are added into Refine's list of reconciliation services.
  */
-LG.addReconciliationServices = function(index, serviceNameSuffix, callback){
+LG.DEAD_addReconciliationServices = function(index, serviceNameSuffix, callback){
 
 	/*
 		datasource	sparql
@@ -990,6 +997,20 @@ LG.decodeHTMLEntity = function(str){
 	return $("<div/>").html(str).text();
 };
 
+/*
+ * restoreHistory
+ * 
+ * Rolls back the undo history to the specified history ID.
+ */
+LG.restoreHistory = function(historyID){
+
+	Refine.postCoreProcess(
+			"undo-redo",
+			{ lastDoneID: historyID },
+			null,
+			{ everythingChanged: true }
+	);
+};
 
 /*
  * DOM.loadHTML
