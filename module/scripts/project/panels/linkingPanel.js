@@ -30,6 +30,12 @@ var LinkedGov_LinkingPanel = {
 
 			self.els = ui.typingPanel._el;
 			self.body = self.els.linkingPanel;
+			self.suggestCache = {
+					"a":"b"
+			};
+			self.previewCache = {
+					"a":"b"					
+			};
 
 			/*
 			 * Load the reconciliation service configurations.
@@ -51,9 +57,19 @@ var LinkedGov_LinkingPanel = {
 				}
 
 			 */
-			$.getScript("extension/linkedgov/scripts/project/reconciliationServices.js", function(data){
-				LG.vars.reconServices = eval('(' + data + ')');
+
+			/*
+			 * Unregister any reconciliation services
+			 * TODO: Might not want to do this
+			 */
+			ReconciliationManager.standardServices.length = 0;
+			ReconciliationManager.customServices.length = 0;
+			ReconciliationManager.save(function(){
+				$.getScript("extension/linkedgov/scripts/project/reconciliationServices.js", function(data){
+					LG.vars.reconServices = eval('(' + data + ')');
+				});
 			});
+
 
 			/*
 			 * Interaction for the "Suggest links" button
@@ -118,14 +134,17 @@ var LinkedGov_LinkingPanel = {
 			 * Interaction for the "Link" button
 			 */
 			this.els.linkButton.click(function(){
-				if(self.confirmedLinks.length > 0){
+				if(typeof self.confirmedLinks != 'undefined' && self.confirmedLinks.length > 0){
 					/*
 					 * Show the reconcile panel
 					 */
-					LG.showWizardProgress(true);
-					self.showResultPanel();
+					//LG.showWizardProgress(true);
+					self.buildProgressBars(function(){
+						self.showResultPanel();
+					});
+
 				} else {
-					alert("You need columns to link! Either click the 'Suggest links' button or select the columns manually ");
+					alert("You need to confirm which columns you want to link. Click the 'Suggest links' button to see which columns might be linkable.");
 				}
 
 			});
@@ -162,6 +181,25 @@ var LinkedGov_LinkingPanel = {
 			this.els.finishButton.hide();
 			// Show this panel
 			this.body.show();
+			/*
+			 * Show buttons depending on what panel is 
+			 * being shown
+			 */
+			if($("div.reconcile-panel").css("display") != "none"){
+				// Show the save button
+				this.els.saveButton.show();
+				// Show the cancel button
+				this.els.cancelButton.css("display","inline-block");	
+				// Hide the link button
+				this.els.linkButton.hide();
+			} else {
+				// Hide the save button
+				this.els.saveButton.hide();
+				// Hide the cancel button
+				this.els.cancelButton.hide();	
+				// Show the link button
+				this.els.linkButton.show();
+			}
 
 		},
 
@@ -169,7 +207,7 @@ var LinkedGov_LinkingPanel = {
 			var self = this;
 			// Hide the save button
 			this.els.saveButton.hide();
-			// Show the cancel button
+			// Hide the cancel button
 			this.els.cancelButton.hide();			
 			// Show the link button
 			this.els.linkButton.show();
@@ -180,9 +218,15 @@ var LinkedGov_LinkingPanel = {
 		},
 
 		showResultPanel:function(){
+
 			var self = this;
-			// Show the save button
-			this.els.saveButton.show();
+
+			// Hide the link button
+			this.els.linkButton.hide();
+
+			// Hide the suggest panel
+			this.els.linkingPanel.find("div.suggest-panel").hide();
+
 			// Show & set up the cancel button
 			this.els.cancelButton
 			.unbind("click")
@@ -197,9 +241,9 @@ var LinkedGov_LinkingPanel = {
 						LG.restoreHistory(self.historyRestoreID);	
 						var interval = setInterval(function(){
 							if(ui.browsingEngine._facets.length < (self.confirmedLinks.length*2)){
-								
+
 							} else {
-								ui.browsingEngine.remove();
+								//ui.browsingEngine.remove();
 								$("div#refine-tabs-facets").children().show();
 								$("div#left-panel div.refine-tabs").tabs('select', 1);
 								self.showSuggestPanel();
@@ -214,10 +258,7 @@ var LinkedGov_LinkingPanel = {
 				}
 			})
 			.css("display","inline-block");
-			// Hide the link button
-			this.els.linkButton.hide();
-			// Hide the suggest panel
-			this.els.linkingPanel.find("div.suggest-panel").hide();
+
 			// Show the reconcile panel
 			this.els.linkingPanel.find("div.reconcile-panel").show(0, function(){
 				// Begin reconciliation on the confirmed columns
@@ -226,11 +267,81 @@ var LinkedGov_LinkingPanel = {
 		},
 
 		/*
+		 * buildProgressBars
+		 */
+		buildProgressBars:function(callback){
+
+			log("buildProgressBars");
+
+			var self = this;
+
+			var html = "";
+			for(var i=0;i<self.confirmedLinks.length;i++){
+
+				html+= "<div class='progressDiv'>";
+				html+= "<p class='columnName'>"+self.confirmedLinks[i].columnName+"</p>";
+				html+= "<p class='service'>"+self.confirmedLinks[i].service.serviceName+"</p>";
+				html+= "<div class='recon-bar ui-progressbar'><div class='ui-progressbar-value'></div></div>";
+				html+= "</div>";
+
+			}
+
+			$("div.linking-loading").html($("div.linking-loading").html()+html);
+
+			callback();
+
+		},
+
+
+		/*
+		 * pollReconciliationJobs
+		 * 
+		 */
+		pollReconciliationJobs:function(){
+
+			var self = this;
+
+			//log("---------------------------")
+			$.get(
+					"/command/core/get-processes?" + $.param({ project: theProject.id }), null,
+					function(data) {
+						//log(data);
+						for(var i=0;i<data.processes.length;i++){
+							//log(data.processes[i].description);
+							if(data.processes[i].description.indexOf("Reconcile") >= 0){
+								//log(data.processes[i].description);
+								var columnName = data.processes[i].description.split("Reconcile cells in column ")[1].split(" to type")[0];
+								//log(columnName);
+								self.updateProgressBar(columnName, data.processes[i].progress);
+							}
+						}
+
+					}
+			);
+
+		},
+
+		/*
+		 * updateProgressBar
+		 */
+		updateProgressBar:function(columnName, percentage){
+
+			$(".linking-loading").find("div.progressDiv").each(function(){
+				if($(this).find("p.columnName").html() == columnName){
+					$(this).find("div.ui-progressbar-value").css("width",percentage+"%");
+				}
+			});
+
+		},
+
+		/*
 		 * cancelReconciliation
 		 * 
 		 * Cancels the reconciliation processes
 		 */
 		cancelReconciliation:function(callback){
+
+			log("cancelReconciliation");
 
 			var self = this;
 
@@ -403,18 +514,6 @@ var LinkedGov_LinkingPanel = {
 
 					for(var j=0;j<self.confirmedLinks.length;j++){
 						if(service.serviceName == self.confirmedLinks[j].service.serviceName){
-							//log("before query service");
-							//log(self.confirmedLinks[j]);
-							//self.queryService(self.confirmedLinks[j]);
-
-							//$.each(LG.vars.reconServices,function(k,o){
-							//	if(o.name == service.name){
-							//		
-							//	}
-							//});
-
-							//self.confirmedLinks[j].service.serviceURL = "http://127.0.0.1:3333/extension/rdf-extension/services/"+service.id;
-
 							/*
 							 * Create a result - including the column name and it's 
 							 * matched service.
@@ -512,11 +611,16 @@ var LinkedGov_LinkingPanel = {
 				//log("(self.confirmedLinks.length*2)-1 = "+((self.confirmedLinks.length*2)-1));
 
 				/*
+				 * Update the progress bars while we wait for the reconciliation to finish
+				 */
+				self.pollReconciliationJobs();
+
+				/*
 				 * Reconciling produces two facets per column once it's complete.
 				 * 
 				 * Our test for checking whether reconciliation has finished across all 
 				 * columns is once all the facets have been created.
-				 */
+				 */			
 				if(ui.browsingEngine._facets.length > (self.results.length*2)-1){
 
 					log("here");
@@ -608,6 +712,7 @@ var LinkedGov_LinkingPanel = {
 						 * unmatched values
 						 */
 						$("div.result div.result-body p a.yes").click(function(){
+
 							var resultDiv = $(this).parent("p").parent("div").parent('div');
 							resultDiv.find("p.notification").hide();
 							resultDiv.find("p.suggestinput").css("visibility","visible");
@@ -641,6 +746,8 @@ var LinkedGov_LinkingPanel = {
 						$("div.linking-results").show();
 						$("div.linking-results div.result a.col-name").eq(0).click();
 						$("div#left-panel div.refine-tabs").tabs('select', 1);
+						// Show the save button
+						self.els.saveButton.show();
 
 					});
 
@@ -823,6 +930,11 @@ var LinkedGov_LinkingPanel = {
 
 						$(resultDiv).find("div.result-body").append(html);
 
+						self.flyoutPane = $("<div>").attr("id","flyout-pane");
+						self.entityPane = $("<div>").attr("id","entity-pane");
+						$("body").append(self.flyoutPane);
+						$("body").append(self.entityPane);
+
 						/*
 						 * Iterate through the list of values and set the inputs up 
 						 * with the autosuggest plugin
@@ -916,8 +1028,14 @@ var LinkedGov_LinkingPanel = {
 				}
 			}
 
-			var suggestOptions2 = $.extend({ align: "left" }, suggestOptions || { all_types: true });
+			var suggestOptions2 = $.extend({ align: "left" }, suggestOptions || { all_types: false });
 
+			log("suggestOptions2");
+			log(suggestOptions2);
+
+			/*
+			 * OLD SUGGEST PLUGIN CODE
+			 * 
 			inputElement
 			.attr("value", localVal)
 			.suggest(suggestOptions2)
@@ -929,23 +1047,266 @@ var LinkedGov_LinkingPanel = {
 				match = data;
 				self.matchCellsFromSearch(match, inputElement.attr("data-colname"), localVal);
 				$(this).removeClass("edited").addClass("matched");
-				/*
-				 * Column has been matched - ask user to confirm the match was correct
-				 */
 
-				/*
-				 * Update matched percentage stat on panel
-				 */
+				// Update matched percentage stat on panel
+
 				var resultDiv = inputElement.parent("span").parent("li").parent("ul").parent("div").parent("div");
 				log(resultDiv);
 				self.updateMatches(resultDiv);
 
 			})
 			.bind("keyup",function(){
+
+			});
+			 */
+
+			var xhr = {
+					abort:function(){}
+			};
+
+			/*
+			 * TODO: Use event delegation for all of this interaction
+			 */
+			inputElement
+			.attr("value", localVal)
+			.focus(function(){
+				//log("Flyout ready...");
+				//$(this).keyup();
+				//$("#body").click(function(){
+				//	self.flyoutPane.hide();
+					
+				//})
+			})
+			.blur(function(){
+				//log("Hide panes");
+				//self.flyoutPane.hide();
+				//self.entityPane.hide();
+			})
+			.bind("keyup",function(){
+
+				// Change the look of the input to edit-mode
 				$(this).removeClass("matched").addClass("edited");
+
+				if(inputElement.val().length > 0){
+
+					// Show the flyout pane with "Searching..." with an indicator 
+					self.flyoutPane.css("left",inputElement.offset().left+"px");
+					self.flyoutPane.css("top",(inputElement.offset().top+25)+"px");
+					self.flyoutPane.html('<div class="searching">Searching...</div><div class="options"><span class="text">Only select a match if you are 100% sure it is correct.</span><a class="button">I&apos;m not sure</a></div>');
+					self.flyoutPane.find("div.searching").show();
+					self.flyoutPane.find("div.options").hide();
+
+					self.flyoutPane.show();
+
+					$("#body").bind("click",function(){
+						self.flyoutPane.hide();
+						$("#body").unbind("click");
+					});
+
+					// Cancel the current AJAX request
+					xhr.abort();
+
+					// TODO: Check cache for request
+					if(typeof self.suggestCache[inputElement.val()] == 'undefined'){
+
+						xhr = $.ajax({
+							type : "GET",
+							url : suggestOptions.service_url+suggestOptions.service_path+"?callback=?",
+							data : {
+								all_types:false,
+								prefix: inputElement.val(),
+								type:"",
+								type_strict:"all"
+							},
+							dataType:"json",
+							async:true,
+							success : function(data) {
+								if(typeof data.result != 'undefined' && data.result.length > 0){
+									var ul = $("<ul>").addClass("fbs-list");
+									for(var i=0;i<data.result.length;i++){
+
+										var li = $("<li>").addClass("fbs-item");
+
+										var name = data.result[i].name;
+
+										if(name.indexOf(inputElement.val()) > -1){
+											name = data.result[i].name.replace(inputElement.val(),"<strong>"+inputElement.val()+"</strong>");
+										} else if(name.indexOf(inputElement.val().toLowerCase()) > -1){
+											name = data.result[i].name.replace(inputElement.val().toLowerCase(),"<strong>"+inputElement.val().toLowerCase()+"</strong>");
+										}
+
+										li.html('<div class="fbs-item-name"><label>'+name+'</label></div>');
+										li.data("suggest",data.result[i]);
+										li.unbind("click").bind("click",function(){
+											self.flyoutPane.hide();
+											self.entityPane.hide();
+											self.matchCellsFromSearch($(this).data("suggest"), inputElement.attr("data-colname"), localVal);
+											inputElement.val($(this).data("suggest").name).removeClass("edited").addClass("matched");
+											var resultDiv = inputElement.parent("span").parent("li").parent("ul").parent("div").parent("div");
+											self.updateMatches(resultDiv);
+
+										}).hover(function(){
+											self.showEntityPreview($(this), $(this).data("suggest"), suggestOptions);
+										},function(){
+											self.entityPane.hide();
+										});
+
+										ul.append(li);
+									}
+
+
+									self.flyoutPane.find("div.searching").hide();
+									self.flyoutPane.find("div.options").show();
+									self.flyoutPane.append(ul);
+									self.suggestCache[inputElement.val()] = data;
+									self.trimSuggestCache();
+
+								}
+							},
+							error : function() {
+								log("Error fetching suggest entity");
+							}
+						});
+					} else {
+						var data = self.suggestCache[inputElement.val()];
+
+						var ul = $("<ul>").addClass("fbs-list");
+						for(var i=0;i<data.result.length;i++){
+
+							var li = $("<li>").addClass("fbs-item");
+
+							var name = data.result[i].name;
+
+							if(name.indexOf(inputElement.val()) > -1){
+								name = data.result[i].name.replace(inputElement.val(),"<strong>"+inputElement.val()+"</strong>");
+							} else if(name.indexOf(inputElement.val().toLowerCase()) > -1){
+								name = data.result[i].name.replace(inputElement.val().toLowerCase(),"<strong>"+inputElement.val().toLowerCase()+"</strong>");
+							}
+
+							li.html('<div class="fbs-item-name"><label>'+name+'</label></div>');
+							li.data("suggest",data.result[i]);
+							li.unbind("click").bind("click",function(){
+								self.flyoutPane.hide();
+								self.entityPane.hide();
+								self.matchCellsFromSearch($(this).data("suggest"), inputElement.attr("data-colname"), localVal);
+								inputElement.val($(this).data("suggest").name).removeClass("edited").addClass("matched");
+								var resultDiv = inputElement.parent("span").parent("li").parent("ul").parent("div").parent("div");
+								self.updateMatches(resultDiv);
+
+							}).hover(function(){
+								self.showEntityPreview($(this), $(this).data("suggest"), suggestOptions);
+							},function(){
+								self.entityPane.hide();
+							});
+
+							ul.append(li);
+						}
+
+						self.flyoutPane.find("div.searching").hide();
+						self.flyoutPane.find("div.options").show();
+						self.flyoutPane.append(ul);
+					}
+				} // end if val.length > 0
 			});
 
+
+
 			return false;
+		},
+
+		/*
+		 * Makes an AJAX request and displays a pane showing information 
+		 * about an entity
+		 */
+		showEntityPreview:function(li, suggest, suggestOptions){
+
+			var self = this;
+
+			self.entityPane.html("<p class='name'>Loading...</p>");
+			self.entityPane.css("top",(li.offset().top)+"px");
+
+			// TODO: Check cache for request
+			if(typeof self.previewCache[suggest.id] == 'undefined'){
+				var xhr = $.ajax({
+					type : "GET",
+					url : suggestOptions.flyout_service_url+suggestOptions.flyout_service_path+"?callback=?",
+					data : {
+						id:suggest.id
+					},
+					dataType:"json",
+					async:true,
+					success : function(data) {
+						if(typeof data.html != 'undefined'){
+							var html = "<p class='name'>"+suggest.name+"</p>";
+							//html += "<p class='id'>"+suggest.id+"</p>";
+							
+							var desc = $("<div />").html(data.html);
+							
+							if(typeof suggest.description != 'undefined'){
+								html += "<p class='desc'>"+suggest.description+"</p>";
+							} else if(desc.find("div.resource_preview_description").length > 0){
+								html += "<p class='desc'>"+desc.find("div.resource_preview_description").html()+"</p>";
+							} else {
+								html += "<p class='desc'>No information available.</p>";
+							}
+							self.entityPane.html(html);
+							self.entityPane.show();
+							self.previewCache[suggest.id] = data;
+							self.trimPreviewCache();
+						}
+					},
+					error : function() {
+						log("Error fetching preview entity");
+					}
+				});
+			} else {
+				var data = self.previewCache[suggest.id];
+				var html = "<p class='name'>"+suggest.name+"</p>";
+				//html += "<p class='id'>"+suggest.id+"</p>";
+				
+				var desc = $("<div />").html(data.html);
+				
+				if(typeof suggest.description != 'undefined'){
+					html += "<p class='desc'>"+suggest.description+"</p>";
+				} else if(desc.find("div.resource_preview_description").length > 0){
+					html += "<p class='desc'>"+desc.find("div.resource_preview_description").html()+"</p>";
+				} else {
+					html += "<p class='desc'>No information available.</p>";
+				}
+				self.entityPane.html(html);
+				self.entityPane.show();
+				self.previewCache[suggest.id] = data;
+				self.trimPreviewCache();
+			}
+
+		},
+
+		/*
+		 * Keeps the suggest cache at a length of 100
+		 */
+		trimSuggestCache:function(){
+			var i=0;
+			$.each(self.suggestCache,function(k,v){
+				if(i<100){
+					i++;
+				} else {
+					delete obj[k];
+				}
+			});
+		},
+
+		/*
+		 * Keeps the preview cache at a length of 100
+		 */
+		trimPreviewCache:function(){
+			var i=0;
+			$.each(self.previewCache,function(k,v){
+				if(i<100){
+					i++;
+				} else {
+					delete obj[k];
+				}
+			});
 		},
 
 		/*
@@ -1098,9 +1459,21 @@ var LinkedGov_LinkingPanel = {
 
 			var resourceInfo = result.service.resourceInfo;
 
+			var predicateURI = resourceInfo.predicateURI;
+			var predicateCURIE = resourceInfo.predicateCURIE;
+			var vocabCURIE = resourceInfo.vocabCURIE;
+
+			if(predicateURI.length < 1){
+				predicateURI = LG.vars.lgNameSpace+"/recon/"+resourceCURIE;
+				predicateCURIE = resourceCURIE;
+				vocabCURIE = "lgRecon";
+			}
+
+			var predicateCURIE
+
 			var rdf = {
-					"uri" : resourceInfo.predicateURI ,
-					"curie" : resourceInfo.vocabCURIE+":"+resourceInfo.predicateCURIE,
+					"uri" : predicateURI,
+					"curie" : vocabCURIE+":"+predicateCURIE,
 					"target" : {
 						"nodeType" : "cell-as-resource",
 						"expression":"if(isError(cell.recon.match.id),value,cell.recon.match.id)",
@@ -1109,7 +1482,7 @@ var LinkedGov_LinkingPanel = {
 						"rdfTypes":[
 						            {
 						            	"uri":resourceInfo.resourceURI,
-						            	"curie":resourceInfo.vocabCURIE+":"+resourceInfo.resourceCURIE
+						            	"curie":vocabCURIE+":"+resourceInfo.resourceCURIE
 						            }
 						            ],
 						            "links":[

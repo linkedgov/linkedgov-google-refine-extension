@@ -252,7 +252,32 @@ var LinkedGov_WizardsPanel = {
 			// Show the action bar
 			this.els.actionBar.show();
 			// Make sure the panel's showing the right thing
-			this.showQuestions();
+			// this.showQuestions();
+			/*
+			 * Show buttons depending on what panel is 
+			 * being shown
+			 */
+			if($("div.questions").css("display") != "none"){
+				// Hide the action buttons
+				this.els.actionButtons.hide();
+				// Show the collapse-expand button
+				this.els.collapseExpandButton.show();
+				// Hide the "return to wizards" button
+				this.els.returnButton.hide();
+				// Show the finish button
+				this.els.finishButton.hide();
+			} else {
+				// Hide the question collapse button
+				self.els.collapseExpandButton.hide();
+				// Show the "back" button
+				self.els.returnButton.show();
+				// Show the "Update" button
+				self.els.updateButton.show();
+				// Hide the finish button
+				self.els.finishButton.hide();
+				// Show the action buttons
+				self.els.actionButtons.show();	
+			}
 		},
 
 		/*
