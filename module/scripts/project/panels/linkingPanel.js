@@ -36,6 +36,8 @@ var LinkedGov_LinkingPanel = {
 			self.previewCache = {
 					"a":"b"					
 			};
+			self.flyoutPane = "";
+			self.entityPane = "";
 
 			/*
 			 * Load the reconciliation service configurations.
@@ -243,7 +245,9 @@ var LinkedGov_LinkingPanel = {
 							if(ui.browsingEngine._facets.length < (self.confirmedLinks.length*2)){
 
 							} else {
-								//ui.browsingEngine.remove();
+								$("div.linking-loading div.progressDiv").each(function(){
+									$(this).remove();
+								});
 								$("div#refine-tabs-facets").children().show();
 								$("div#left-panel div.refine-tabs").tabs('select', 1);
 								self.showSuggestPanel();
@@ -492,6 +496,12 @@ var LinkedGov_LinkingPanel = {
 			}catch(e){
 				self.historyRestoreID = 0;
 			}	
+
+			/*
+			 * Remove all facets as we use the number of facets to calculate
+			 * what stage we're at when reconciling.
+			 */
+			ui.browsingEngine.remove();
 
 			/*
 			 * Display a new panel that shows the results / scores of 
@@ -1069,23 +1079,15 @@ var LinkedGov_LinkingPanel = {
 			 */
 			inputElement
 			.attr("value", localVal)
-			.focus(function(){
-				//log("Flyout ready...");
-				//$(this).keyup();
-				//$("#body").click(function(){
-				//	self.flyoutPane.hide();
-					
-				//})
-			})
-			.blur(function(){
-				//log("Hide panes");
-				//self.flyoutPane.hide();
-				//self.entityPane.hide();
-			})
 			.bind("keyup",function(){
 
 				// Change the look of the input to edit-mode
-				$(this).removeClass("matched").addClass("edited");
+				$(this).removeClass("matched").removeClass("dontknow").addClass("edited");
+
+				//log("suggestEntities");
+				//log(inputElement);
+				//log(suggestOptions);
+				//log(xhr);
 
 				if(inputElement.val().length > 0){
 
@@ -1100,13 +1102,14 @@ var LinkedGov_LinkingPanel = {
 
 					$("#body").bind("click",function(){
 						self.flyoutPane.hide();
+						self.entityPane.hide();
 						$("#body").unbind("click");
 					});
 
 					// Cancel the current AJAX request
 					xhr.abort();
 
-					// TODO: Check cache for request
+					// Check cache for request
 					if(typeof self.suggestCache[inputElement.val()] == 'undefined'){
 
 						xhr = $.ajax({
@@ -1125,46 +1128,80 @@ var LinkedGov_LinkingPanel = {
 									var ul = $("<ul>").addClass("fbs-list");
 									for(var i=0;i<data.result.length;i++){
 
-										var li = $("<li>").addClass("fbs-item");
+										//log("result "+i)
 
-										var name = data.result[i].name;
+										/*
+										 * Filter the suggestions by their 
+										 * URI patterns
+										 */
+										if(self.checkSuggestion(data.result[i].id, serviceURL)){
 
-										if(name.indexOf(inputElement.val()) > -1){
-											name = data.result[i].name.replace(inputElement.val(),"<strong>"+inputElement.val()+"</strong>");
-										} else if(name.indexOf(inputElement.val().toLowerCase()) > -1){
-											name = data.result[i].name.replace(inputElement.val().toLowerCase(),"<strong>"+inputElement.val().toLowerCase()+"</strong>");
+											//log("Creating result");
+
+											var li = $("<li>").addClass("fbs-item");
+
+											var name = data.result[i].name;
+
+											if(name.indexOf(inputElement.val()) > -1){
+												name = data.result[i].name.replace(inputElement.val(),"<strong>"+inputElement.val()+"</strong>");
+											} else if(name.indexOf(inputElement.val().toLowerCase()) > -1){
+												name = data.result[i].name.replace(inputElement.val().toLowerCase(),"<strong>"+inputElement.val().toLowerCase()+"</strong>");
+											}
+
+											li.html('<div class="fbs-item-name"><label>'+name+'</label></div>');
+											li.data("suggest",data.result[i]);
+											li.unbind("click").bind("click",function(){
+												self.flyoutPane.hide();
+												self.entityPane.hide();
+												self.matchCellsFromSearch($(this).data("suggest"), inputElement.attr("data-colname"), localVal);
+												inputElement.val($(this).data("suggest").name).removeClass("edited").removeClass("dontknow").addClass("matched");
+												var resultDiv = inputElement.parent("span").parent("li").parent("ul").parent("div").parent("div");
+												self.updateMatches(resultDiv);
+
+											}).hover(function(){
+												self.showEntityPreview($(this), $(this).data("suggest"), suggestOptions);
+											},function(){
+												self.entityPane.hide();
+											});
+
+											ul.append(li);
+
+										} else {
+											/*
+											 * Suggested URI does not match what we're looking for
+											 */
 										}
 
-										li.html('<div class="fbs-item-name"><label>'+name+'</label></div>');
-										li.data("suggest",data.result[i]);
-										li.unbind("click").bind("click",function(){
-											self.flyoutPane.hide();
-											self.entityPane.hide();
-											self.matchCellsFromSearch($(this).data("suggest"), inputElement.attr("data-colname"), localVal);
-											inputElement.val($(this).data("suggest").name).removeClass("edited").addClass("matched");
-											var resultDiv = inputElement.parent("span").parent("li").parent("ul").parent("div").parent("div");
-											self.updateMatches(resultDiv);
 
-										}).hover(function(){
-											self.showEntityPreview($(this), $(this).data("suggest"), suggestOptions);
-										},function(){
-											self.entityPane.hide();
-										});
-
-										ul.append(li);
 									}
 
-
 									self.flyoutPane.find("div.searching").hide();
-									self.flyoutPane.find("div.options").show();
-									self.flyoutPane.append(ul);
-									self.suggestCache[inputElement.val()] = data;
-									self.trimSuggestCache();
+									
+									if(ul.find("li").length < 1){
+										self.flyoutPane.find("div.options").html("<p>No results...</p>").show();
+									} else {
+										self.flyoutPane.find("div.options").show();
+										self.flyoutPane.find("div.options a").click(function(){
+											inputElement.val(inputElement.parent().parent().find("span.col").html());
+											inputElement.addClass("dontknow");
+											self.flyoutPane.hide();
+											self.entityPane.hide();
+										});
+										self.flyoutPane.append(ul);
+									}
 
+								} else {
+									self.flyoutPane.find("div.options").html("<p>No results...</p>").show();
 								}
+								
+								self.suggestCache[inputElement.val()] = data;
+								self.trimSuggestCache();
+							
 							},
 							error : function() {
 								log("Error fetching suggest entity");
+								self.flyoutPane.find("div.searching").hide();
+								self.flyoutPane.find("div.options").html("<p>No results...</p>").show();
 							}
 						});
 					} else {
@@ -1173,45 +1210,109 @@ var LinkedGov_LinkingPanel = {
 						var ul = $("<ul>").addClass("fbs-list");
 						for(var i=0;i<data.result.length;i++){
 
-							var li = $("<li>").addClass("fbs-item");
+							if(self.checkSuggestion(data.result[i].id, serviceURL)){
+								
+								//log("Creating result");
+								
+								var li = $("<li>").addClass("fbs-item");
 
-							var name = data.result[i].name;
+								var name = data.result[i].name;
 
-							if(name.indexOf(inputElement.val()) > -1){
-								name = data.result[i].name.replace(inputElement.val(),"<strong>"+inputElement.val()+"</strong>");
-							} else if(name.indexOf(inputElement.val().toLowerCase()) > -1){
-								name = data.result[i].name.replace(inputElement.val().toLowerCase(),"<strong>"+inputElement.val().toLowerCase()+"</strong>");
+								if(name.indexOf(inputElement.val()) > -1){
+									name = data.result[i].name.replace(inputElement.val(),"<strong>"+inputElement.val()+"</strong>");
+								} else if(name.indexOf(inputElement.val().toLowerCase()) > -1){
+									name = data.result[i].name.replace(inputElement.val().toLowerCase(),"<strong>"+inputElement.val().toLowerCase()+"</strong>");
+								}
+
+								li.html('<div class="fbs-item-name"><label>'+name+'</label></div>');
+								li.data("suggest",data.result[i]);
+								li.unbind("click").bind("click",function(){
+									self.flyoutPane.hide();
+									self.entityPane.hide();
+									self.matchCellsFromSearch($(this).data("suggest"), inputElement.attr("data-colname"), localVal);
+									inputElement.val($(this).data("suggest").name).removeClass("edited").removeClass("dontknow").addClass("matched");
+									var resultDiv = inputElement.parent("span").parent("li").parent("ul").parent("div").parent("div");
+									self.updateMatches(resultDiv);
+
+								}).hover(function(){
+									self.showEntityPreview($(this), $(this).data("suggest"), suggestOptions);
+								},function(){
+									self.entityPane.hide();
+								});
+
+								ul.append(li);
+							} else {
+								/*
+								 * Suggested URI does not match what we're looking for
+								 */						
 							}
-
-							li.html('<div class="fbs-item-name"><label>'+name+'</label></div>');
-							li.data("suggest",data.result[i]);
-							li.unbind("click").bind("click",function(){
-								self.flyoutPane.hide();
-								self.entityPane.hide();
-								self.matchCellsFromSearch($(this).data("suggest"), inputElement.attr("data-colname"), localVal);
-								inputElement.val($(this).data("suggest").name).removeClass("edited").addClass("matched");
-								var resultDiv = inputElement.parent("span").parent("li").parent("ul").parent("div").parent("div");
-								self.updateMatches(resultDiv);
-
-							}).hover(function(){
-								self.showEntityPreview($(this), $(this).data("suggest"), suggestOptions);
-							},function(){
-								self.entityPane.hide();
-							});
-
-							ul.append(li);
 						}
 
 						self.flyoutPane.find("div.searching").hide();
-						self.flyoutPane.find("div.options").show();
-						self.flyoutPane.append(ul);
+
+						if(ul.find("li").length < 1){
+							self.flyoutPane.find("div.options").html("<p>No results...</p>").show();
+						} else {
+							self.flyoutPane.find("div.options").show();
+							self.flyoutPane.find("div.options a").click(function(){
+								inputElement.val(inputElement.parent().parent().find("span.col").html());
+								inputElement.addClass("dontknow");
+								self.flyoutPane.hide();
+								self.entityPane.hide();
+							});
+							self.flyoutPane.append(ul);
+						}
 					}
-				} // end if val.length > 0
+				} else {
+					self.flyoutPane.hide();
+				}
 			});
 
-
-
 			return false;
+		},
+
+		/*
+		 * checkSuggestion
+		 * 
+		 * TODO: Ideally, the cache would infact be the 
+		 * validated & constructed HTML instead of the raw response
+		 * returned from the endpoint. This would save a lot of 
+		 * validating/iterating etc.
+		 * 
+		 * Checks to see if a suggestion's URI is 
+		 * something we're looking for
+		 */
+		checkSuggestion:function(id, serviceURL){
+
+			//log("checkSuggestion");
+
+			var self = this;
+
+			/*
+			 * Find service
+			 */
+			var services = LG.vars.reconServices;
+
+			for(var j=0;j<services.length; j++){
+				if(services[j].serviceURL === serviceURL){
+					// We want to chop the slug off the URI
+					id = id.substring(0,id.lastIndexOf("/")+1);
+					/*
+					 * If the resources URI path matches or there is no
+					 * path to match against, then include it in the list
+					 * by returning true
+					 */ 
+					//log(id);
+					//log(services[j].resourceInfo.uriPath);
+					
+					if(id == services[j].resourceInfo.uriPath || typeof services[j].resourceInfo.uriPath == 'undefined'){
+						return true;
+					} else {
+						return false;
+					}
+					j = services.length-1;
+				}
+			}
 		},
 
 		/*
@@ -1239,9 +1340,9 @@ var LinkedGov_LinkingPanel = {
 						if(typeof data.html != 'undefined'){
 							var html = "<p class='name'>"+suggest.name+"</p>";
 							//html += "<p class='id'>"+suggest.id+"</p>";
-							
+
 							var desc = $("<div />").html(data.html);
-							
+
 							if(typeof suggest.description != 'undefined'){
 								html += "<p class='desc'>"+suggest.description+"</p>";
 							} else if(desc.find("div.resource_preview_description").length > 0){
@@ -1263,9 +1364,9 @@ var LinkedGov_LinkingPanel = {
 				var data = self.previewCache[suggest.id];
 				var html = "<p class='name'>"+suggest.name+"</p>";
 				//html += "<p class='id'>"+suggest.id+"</p>";
-				
+
 				var desc = $("<div />").html(data.html);
-				
+
 				if(typeof suggest.description != 'undefined'){
 					html += "<p class='desc'>"+suggest.description+"</p>";
 				} else if(desc.find("div.resource_preview_description").length > 0){
@@ -1459,17 +1560,18 @@ var LinkedGov_LinkingPanel = {
 
 			var resourceInfo = result.service.resourceInfo;
 
+			var resourceURI = resourceInfo.resourceURI;
+			var resourceCURIE = resourceInfo.resourceCURIE;
 			var predicateURI = resourceInfo.predicateURI;
 			var predicateCURIE = resourceInfo.predicateCURIE;
 			var vocabCURIE = resourceInfo.vocabCURIE;
+
 
 			if(predicateURI.length < 1){
 				predicateURI = LG.vars.lgNameSpace+"/recon/"+resourceCURIE;
 				predicateCURIE = resourceCURIE;
 				vocabCURIE = "lgRecon";
 			}
-
-			var predicateCURIE
 
 			var rdf = {
 					"uri" : predicateURI,
@@ -1481,8 +1583,8 @@ var LinkedGov_LinkingPanel = {
 						"isRowNumberCell" : false,
 						"rdfTypes":[
 						            {
-						            	"uri":resourceInfo.resourceURI,
-						            	"curie":vocabCURIE+":"+resourceInfo.resourceCURIE
+						            	"uri":resourceURI,
+						            	"curie":vocabCURIE+":"+resourceCURIE
 						            }
 						            ],
 						            "links":[

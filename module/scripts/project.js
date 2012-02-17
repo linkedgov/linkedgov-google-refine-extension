@@ -778,7 +778,7 @@ LG.addReconciliationService = function(serviceName, serviceNameSuffix, callback)
 						if(typeof data.code != 'undefined' && data.code != 'error'){
 							log("Successfully added service");
 							/*
-							 * Store the ID given to the service by the RDF extension 
+							 * Store the ID & URL given to the service by the RDF extension 
 							 * back into our service object
 							 */
 							service.id = data.service.id;

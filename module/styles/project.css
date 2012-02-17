@@ -1197,14 +1197,9 @@ body.lg div#refine-tabs-typing div.suggest-links ul.selected-columns li span.col
     width: 85%;
 }
 body.lg div#refine-tabs-typing div.suggest-links ul.selected-columns li span.link {
-    background-attachment: scroll, scroll;
-    background-clip: border-box, border-box;
-    background-color: transparent;
     background-image: url("../images/link.png"), -moz-linear-gradient(center top , #FFFFFF, #DDDDDD);
-    background-origin: padding-box, padding-box;
-    background-position: 0 0%, 0 0;
+    background: url("../images/link.png"), -webkit-gradient(linear, left bottom, left top, from(#DDDDDD), to(#FFFFFF) ) #DDDDDD;
     background-repeat: no-repeat;
-    background-size: auto auto, auto auto;
     border-right: 1px solid #DDDDDD;
     border-top: 1px solid #DDDDDD;
     float: left;
@@ -1217,14 +1212,9 @@ body.lg div#refine-tabs-typing div.suggest-links ul.confirmed-columns li {
 	display:none;
 }
 body.lg div#refine-tabs-typing div.suggest-links ul.confirmed-columns li span.link {
-    background-attachment: scroll, scroll;
-    background-clip: border-box, border-box;
-    background-color: transparent;
     background-image: url("../images/link.png"), -moz-linear-gradient(center top , #FFFFFF, #DDDDDD);
-    background-origin: padding-box, padding-box;
-    background-position: 0 0%, 0 0;
+    background: url("../images/link.png"), -webkit-gradient(linear, left bottom, left top, from(#DDDDDD), to(#FFFFFF) ) #DDDDDD;
     background-repeat: no-repeat;
-    background-size: auto auto, auto auto;
     border-top: 1px solid #DDDDDD;
     float: left;
     font-weight: normal;
@@ -1373,6 +1363,7 @@ body.lg div#refine-tabs-typing div.reconcile-panel div.linking-loading div.progr
 }
 body.lg div#refine-tabs-typing div.reconcile-panel div.linking-loading div.progressDiv p.service {
     background-image: url("../images/link.png"), -moz-linear-gradient(center top , #FFFFFF, #DDDDDD);
+    background: url("../images/link.png"), -webkit-gradient(linear, left bottom, left top, from(#DDDDDD), to(#FFFFFF) ) #DDDDDD;
     background-repeat: no-repeat;
     border: 1px solid #DDDDDD;
     font-weight: normal;
@@ -1390,6 +1381,7 @@ body.lg div#refine-tabs-typing div.reconcile-panel div.linking-loading div.progr
 body.lg div#refine-tabs-typing div.reconcile-panel div.linking-loading div.progressDiv div.recon-bar div.ui-progressbar-value {
     margin:0;
     background: -moz-linear-gradient(center top , #79B1FE, #294F8C) repeat scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#294F8C), to(#79B1FE) ) #DDDDDD;
     width:0%;
 }
 body.lg #flyout-pane {
@@ -1412,14 +1404,12 @@ body.lg #flyout-pane div.searching {
 }
 body.lg #flyout-pane div.options {
     background: none repeat scroll 0 0 #E7EEFF;
-    border: 1px solid #777777;
+    border-bottom: 1px solid #CCCCCC;
     float: left;
-    margin-left: -1px;
-    margin-top: -1px;
     padding-bottom: 1px;
     padding-top: 0;
     text-align: center;
-    width: 100%;
+    width: 240px;
 }
 body.lg #flyout-pane div.options span.text {
     display: block;
@@ -1428,6 +1418,12 @@ body.lg #flyout-pane div.options span.text {
     font-weight: normal;
     padding: 5px;
     width: 140px;
+}
+body.lg #flyout-pane div.options p {
+	background: none repeat scroll 0 0 #FFFFFF;
+    font-weight: bold;
+    padding: 5px;
+    text-align: left;
 }
 body.lg #flyout-pane div.options a {
     margin: 8px 3px;
@@ -1460,13 +1456,14 @@ body.lg #entity-pane p.desc {
     
 body.lg #flyout-pane ul.fbs-list {
     background: none repeat scroll 0 0 #FFFFFF;
+    border: medium none;
     font-family: Arial;
     font-size: 12px;
     max-height: 220px;
     overflow-x: hidden;
     overflow-y: auto;
-    padding-top: 5px;
-    width: 238px;  
+    padding-top: 0;
+    width: 240px;
 }
 body.lg #flyout-pane ul.fbs-list li.fbs-item {
 	border:none;
@@ -1533,7 +1530,6 @@ body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.descr
     font-weight: bold;
     padding: 2% 3%;
     text-decoration: none;
-    width: 94%;
 }
 body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.description a.col-name:hover {
 	background: none repeat scroll 0 0 #CCDDFF;
@@ -1588,13 +1584,19 @@ body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.resul
 }
 body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result span.colOptions input.matched {
     background-color: #E7F8E2;
-    background-image: url("../images/confirm-hover.png");
-    background-position: 107% 50%;
+    background-image: url("../images/matched.png");
+    background-position: 98% 50%;
     background-repeat: no-repeat;
 }
 body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result span.colOptions input.edited {
     background-color: #FFFFFF;	
     background-image:none;
+}
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result span.colOptions input.dontknow {
+    background-color: #F5F5F5; 
+    background-image: url("../images/idontknow.png");
+    background-position: 98% 50%;
+    background-repeat: no-repeat;
 }
 body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result div.result-body div.ui-progressbar {
     border: 1px solid #DDDDDD;
@@ -1609,12 +1611,15 @@ body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.resul
 }
 body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result div.ui-progressbar div.ui-progressbar-value.green {
     background: -moz-linear-gradient(center top , #73C262, #1F3709) repeat scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#1F3709), to(#73C262) ) #DDDDDD;
 }
 body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result div.ui-progressbar div.ui-progressbar-value.yellow {
     background: -moz-linear-gradient(center top , #EDF570, #BBB630) repeat scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#BBB630), to(#EDF570) ) #DDDDDD;
 }
 body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result div.ui-progressbar div.ui-progressbar-value.red {
     background:-moz-linear-gradient(center top , #C26262, #370909) repeat scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#370909), to(#C26262) ) #DDDDDD;
 }
 body.lg p.suggestinput {
 	visibility:hidden;

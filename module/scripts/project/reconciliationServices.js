@@ -1,10 +1,11 @@
 [{
-	serviceName:"UK government departments",
+	serviceName:"UK government department names",
 	serviceType:"sparql",
 	endpoint:"http://services.data.gov.uk/reference/sparql",
 	hints:["department","organisation"],
 	labelURI:"http://www.w3.org/2000/01/rdf-schema#label",
 	resourceInfo:{
+		uriPath:"http://reference.data.gov.uk/id/department/",
 		resourceURI:"http://reference.data.gov.uk/def/central-government/Department",
 		resourceCURIE:"Department",
 		predicateURI:"",
@@ -13,13 +14,14 @@
 		vocabCURIE:"gov"
 	}
 },{
-	serviceName:"UK wards & boroughs",
+	serviceName:"UK ward & borough names",
 	serviceType:"sparql",
 	endpoint:"http://api.talis.com/stores/ordnance-survey/services/sparql",
 	hints:["ward","borough"],
 	labelURI:"http://www.w3.org/2000/01/rdf-schema#label",
 	decriptionURI:"",
 	resourceInfo:{
+		uriPath:"http://data.ordnancesurvey.co.uk/id/",
 		resourceURI:"http://data.ordnancesurvey.co.uk/ontology/admingeo/LondonBoroughWard",
 		resourceCURIE:"LondonBoroughWard",
 		predicateURI:"http://data.ordnancesurvey.co.uk/ontology/admingeo/ward",
@@ -28,13 +30,14 @@
 		vocabCURIE:"admingeo"
 	}
 },{
-	serviceName:"UK parishes",
+	serviceName:"UK parish names",
 	serviceType:"sparql",
 	endpoint:"http://api.talis.com/stores/ordnance-survey/services/sparql",
 	hints:["parish"],
 	labelURI:"http://www.w3.org/2000/01/rdf-schema#label",
 	descriptionURI:"",
 	resourceInfo:{
+		uriPath:"http://data.ordnancesurvey.co.uk/id/",
 		resourceURI:"http://data.ordnancesurvey.co.uk/ontology/admingeo/CivilParish",
 		resourceCURIE:"CivilParish",
 		predicateURI:"http://data.ordnancesurvey.co.uk/ontology/admingeo/parish",
@@ -43,12 +46,13 @@
 		vocabCURIE:"admingeo"
 	}	
 },{
-	serviceName:"UK counties",
+	serviceName:"UK county names",
 	serviceType:"sparql",
 	endpoint:"http://api.talis.com/stores/ordnance-survey/services/sparql",
 	hints:["county", "counties"],
 	labelURI:"http://www.w3.org/2004/02/skos/core#altLabel",
 	resourceInfo:{
+		uriPath:"http://data.ordnancesurvey.co.uk/id/",
 		resourceURI:"http://data.ordnancesurvey.co.uk/ontology/admingeo/County",
 		resourceCURIE:"County",
 		predicateURI:"http://data.ordnancesurvey.co.uk/ontology/admingeo/county",
@@ -57,13 +61,14 @@
 		vocabCURIE:"admingeo"
 	}	
 },{
-	serviceName:"UK primary & secondary schools",
+	serviceName:"UK primary & secondary school names",
 	serviceType:"sparql",
 	endpoint:"http://services.data.gov.uk/education/sparql",
 	hints:["school"],
 	labelURI:"http://www.w3.org/2000/01/rdf-schema#label",
 	descriptionURI:"http://education.data.gov.uk/def/school/address",
 	resourceInfo:{
+		baseUri:"http://education.data.gov.uk/id/school/100866",
 		resourceURI:"http://education.data.gov.uk/def/school/School",
 		resourceCURIE:"School",
 		predicateURI:"",
@@ -72,7 +77,7 @@
 		vocabCURIE:"school"
 	}	
 },{
-	serviceName:"UK train stations",
+	serviceName:"UK train station names",
 	serviceType:"sparql",
 	endpoint:"http://services.data.gov.uk/transport/sparql",
 	hints:["train","station"],
@@ -86,7 +91,7 @@
 		vocabCURIE:"naptan"
 	}	
 },{
-	serviceName:"UK bus stop",
+	serviceName:"UK bus stop names",
 	serviceType:"sparql",
 	endpoint:"http://services.data.gov.uk/transport/sparql",
 	hints:["stop","bus"],
@@ -100,7 +105,7 @@
 		vocabCURIE:"naptan"
 	}	
 },{
-	serviceName:"UK airports",
+	serviceName:"UK airport names",
 	serviceType:"sparql",
 	endpoint:"http://services.data.gov.uk/transport/sparql",
 	hints:["airport"],
