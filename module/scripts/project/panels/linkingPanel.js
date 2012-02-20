@@ -1606,7 +1606,8 @@ var LinkedGov_LinkingPanel = {
 		},
 
 		onComplete:function(){
-			LG.panels.typingPanel.showStartMessage();
+			//LG.panels.typingPanel.showStartMessage();
+			LG.showFinishMessage();
 		}
 
 }

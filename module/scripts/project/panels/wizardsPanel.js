@@ -5,36 +5,67 @@
  */
 var LinkedGov_WizardsPanel = {
 
+		wizardScriptConfigs:{
+			addressWizard:""
+		},
+		
+		wizardNames:[
+		         "addressWizard",
+		         "dateTimeWizard",
+		         "geolocationWizard",
+		         "measurementsWizard",
+		         "columnsToRowsWizard",
+		         "rowsToColumnsWizard",
+		         "nullValueWizard",
+		         "enumerationWizard"
+		],
+		
 		/*
 		 * loadWizardScripts
 		 * 
-		 * Each wizard has it's own script which needs to be loaded.
+		 * Each wizard has it's own script which needs to be loaded recursively.
+		 * 
+		 * Once the scripts have loaded, load each wizards HTML.
+		 * 
 		 */
-		loadWizardScripts : function(){
+		loadWizardScripts : function(index){
 
-			$.getScript("extension/linkedgov/scripts/project/wizards/addressWizard.js",function(){
-				LG.wizards.addressWizard = LinkedGov_addressWizard;
-			});
-			$.getScript("extension/linkedgov/scripts/project/wizards/dateTimeWizard.js",function(){
-				LG.wizards.dateTimeWizard = LinkedGov_dateTimeWizard;
-			});
-			$.getScript("extension/linkedgov/scripts/project/wizards/geolocationWizard.js",function(){
-				LG.wizards.geolocationWizard = LinkedGov_geolocationWizard;
-			});
-			$.getScript("extension/linkedgov/scripts/project/wizards/measurementsWizard.js",function(){
-				LG.wizards.measurementsWizard = LinkedGov_measurementsWizard;
-			});
-			$.getScript("extension/linkedgov/scripts/project/wizards/columnsToRowsWizard.js",function(){
-				LG.wizards.columnsToRowsWizard = LinkedGov_columnsToRowsWizard;
-			});
-			$.getScript("extension/linkedgov/scripts/project/wizards/rowsToColumnsWizard.js",function(){
-				LG.wizards.rowsToColumnsWizard = LinkedGov_rowsToColumnsWizard;
-			});
-			$.getScript("extension/linkedgov/scripts/project/wizards/nullValueWizard.js",function(){
-				LG.wizards.nullValueWizard = LinkedGov_nullValueWizard;
-			});
-			$.getScript("extension/linkedgov/scripts/project/wizards/enumerationWizard.js",function(){
-				LG.wizards.enumerationWizard = LinkedGov_enumerationWizard;
+			var self = this;
+			
+			$.getScript("extension/linkedgov/scripts/project/wizards/"+self.wizardNames[index]+".js",function(){
+				switch(self.wizardNames[index]){
+				case  "addressWizard" :
+					LG.wizards[self.wizardNames[index]] = LinkedGov_addressWizard;
+					break;
+				case  "dateTimeWizard" :
+					LG.wizards[self.wizardNames[index]] = LinkedGov_dateTimeWizard;
+					break;
+				case  "geolocationWizard" :
+					LG.wizards[self.wizardNames[index]] = LinkedGov_geolocationWizard;
+					break;
+				case  "measurementsWizard" :
+					LG.wizards[self.wizardNames[index]] = LinkedGov_measurementsWizard;
+					break;
+				case  "columnsToRowsWizard" :
+					LG.wizards[self.wizardNames[index]] = LinkedGov_columnsToRowsWizard;
+					break;
+				case  "rowsToColumnsWizard" :
+					LG.wizards[self.wizardNames[index]] = LinkedGov_rowsToColumnsWizard;
+					break;
+				case  "nullValueWizard" :
+					LG.wizards[self.wizardNames[index]] = LinkedGov_nullValueWizard;
+					break;
+				case  "enumerationWizard" :
+					LG.wizards[self.wizardNames[index]] = LinkedGov_enumerationWizard;
+					break;
+				}
+				
+				if(index < self.wizardNames.length-1){
+					index = index+1;
+					self.loadWizardScripts(index);
+				} else {
+					self.loadHTML();
+				}
 			});
 
 		},
@@ -47,47 +78,85 @@ var LinkedGov_WizardsPanel = {
 		 */
 		loadHTML : function(){
 
+			//log("loadHTML");
+			
+			var self = this;
 			/*
 			 * Load the wizard questions
 			 */
-			ui.typingPanel._el.wizardsPanel.html(DOM.loadHTML("linkedgov", "html/project/panels/wizardsPanel.html"));
+			ui.typingPanel._el.wizardsPanel.html(DOM.loadHTML("linkedgov", "html/project/panels/wizardsPanel.html", function(){
 
-			/* 
-			 * Load each wizards' HTML into the wizard-bodies element.
-			 */
-			var wizardBodiesEl = ui.typingPanel._el.wizardsPanel.find("div.wizard-bodies");
+				/* 
+				 * Load each wizards' HTML into the wizard-bodies element.
+				 */				
+				var interval = setInterval(function(){
+					//log("interval");
+					if(typeof LG.wizards != 'undefined'){
+						
+						self.loadWizardHTML(0);
 
-			var interval = setInterval(function(){
-				if(typeof LG.wizards != 'undefined'){
-					$.each(LG.wizards,function(key,value){	
+						clearInterval(interval);
+					} else {
+						log("LG.wizards hasn't been created yet");
+					}
+				},100);				
+			}));
 
-						var html = DOM.loadHTML("linkedgov", "html/project/wizards/"+key+".html");
-						/*
-						 * Store the HTML element inside the actual wizard object as it's body
-						 */
-						LG.wizards[key].vars.body = $("div.wizard-body[rel='"+key+"']");
-						wizardBodiesEl.html(wizardBodiesEl.html()+html);
-
-					});
-					clearInterval(interval);
-				} else {
-					log("LG.wizards hasn't been created yet");
-				}
-			},100);
 
 		},
 
+		/*
+		 * loadWizardHTML
+		 * 
+		 * Recursive function to load each wizard's HTML 
+		 */
+		loadWizardHTML:function(index){
+			
+			//log("loadWizardHTML");
+			
+			var self = this;
+			
+			DOM.loadHTML("linkedgov", "html/project/wizards/"+self.wizardNames[index]+".html", function(response){
+
+				var wizardBodiesEl = ui.typingPanel._el.wizardsPanel.find("div.wizard-bodies");
+				wizardBodiesEl.html(wizardBodiesEl.html()+response);	
+			
+				/*
+				 * Store the HTML element inside the actual wizard object as it's body
+				 */
+				wizardBodiesEl.find("div.wizard-body").each(function(){
+					 if($(this).attr("rel") == self.wizardNames[index]){
+						 LG.wizards[$(this).attr("rel")].vars.body = $(this);
+					 }
+				});
+				
+				/* 
+				 * Load each wizards' HTML into the wizard-bodies element.
+				 */
+				if(index < self.wizardNames.length-1){
+					index = index+1;
+					self.loadWizardHTML(index);
+				}
+			});
+
+		},
 		/*
 		 * Sets up the initial interaction for the wizardsPanel
 		 */
 		initialise:function(){
 
 			var self = this;
-			
+						
 			self.els = ui.typingPanel._el;
 			self.body = self.els.wizardsPanel;
 			self.actionBar = self.els.actionBar;
 
+			/*
+			 * Begin loading wizard scripts starting with the first
+			 */
+			self.loadWizardScripts(0);
+
+			
 			/*
 			 * Interaction when clicking on a wizard header
 			 */
@@ -312,7 +381,14 @@ var LinkedGov_WizardsPanel = {
 			// Make sure the wizard panel can be seen
 			this.body.find("div.wizard-bodies").show();
 			// Show the chosen wizard
-			this.body.find("div.wizard-body[rel='"+wizardName+"']").show();
+			//this.body.find("div.wizard-body[rel='"+wizardName+"']").show();
+			this.body.find("div.wizard-body").each(function(){
+				if($(this).attr("rel") == wizardName){
+					$(this).show();
+					$(this).scrollTop(0);
+				}
+			});
+			//this.body.find("div.wizard-bodies").find("div.wizard-body").show()
 			// Hide the question collapse button
 			self.els.collapseExpandButton.hide();
 			// Show the "back" button

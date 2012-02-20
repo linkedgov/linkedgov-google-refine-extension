@@ -72,10 +72,15 @@ TypingPanel.prototype._render = function () {
 	 * Typing panel tabs
 	 */
 	$('ul.lg-tabs li a').click(function(){
-		if(!$(this).parent("li").hasClass("active")){		
-			$("div#intro-message").hide();
+		if(!$(this).parent("li").hasClass("active")){
+			
+			$('ul.lg-tabs li').removeClass("inactive");
 			$('ul.lg-tabs li').removeClass("active");
 			$(this).parent().addClass("active");
+			$(this).parent().next().addClass("inactive");
+			
+			//$("div#intro-message").hide();
+
 			$("div.typing-panel-body").hide();
 
 			$("div#"+$(this).attr("rel")).show(0,function(){
@@ -123,6 +128,10 @@ TypingPanel.prototype._render = function () {
 	this.resize();
 
 	$("div.action-bar a.button.save, div.action-bar a.button.link").hide();
+	
+	$("#refine-tabs-typing ul.lg-tabs li").eq(0).addClass("active");
+	$("#refine-tabs-typing ul.lg-tabs li").eq(1).addClass("inactive");
+	$("div#wizards-panel").show();
 };
 
 TypingPanel.prototype.showStartMessage = function(){

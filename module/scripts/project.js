@@ -230,9 +230,9 @@ LG.loadPanelScripts = function() {
 				 */
 				$.getScript("extension/linkedgov/scripts/project/panels/wizardsPanel.js",function(){
 					LG.panels.wizardsPanel = LinkedGov_WizardsPanel;
-					LG.panels.wizardsPanel.loadWizardScripts();
-					LG.panels.wizardsPanel.loadHTML();
 					LG.panels.wizardsPanel.initialise();
+					//LG.panels.wizardsPanel.loadHTML();
+					
 				});
 
 				/*
@@ -1039,7 +1039,7 @@ DOM.loadHTML = function(module, path, callback) {
 			success : function(html) {
 				DOM._loadedHTML[fullPath] = html;
 				LG.loadHTMLCallback(fullPath);
-				callback();
+				callback(DOM._loadedHTML[fullPath]);
 			}
 		});
 	} else {

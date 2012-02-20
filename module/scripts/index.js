@@ -131,7 +131,7 @@ var LG = {
 					case "clipboard" :
 						sources[j]._divBody.remove();
 						sources[j]._divHeader.remove();
-						break;				
+						break;
 					default:
 						break;
 					}

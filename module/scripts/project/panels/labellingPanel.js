@@ -38,9 +38,18 @@ var LinkedGov_LabellingPanel = {
 			 */
 			$("div.row-description input, " +
 			"div.row-description textarea").live("focus",function(){
+				
 				$("table.data-table > tbody > tr.odd > td ").css("background-color",$("div.row-description input").css("background-color"));
-				if($(this).hasClass("row-label") && $(this).val() == "Each row is a..."){
-					$(this).val("");
+				
+				if($(this).hasClass("row-label")){
+					
+					$('div.column-list ul li textarea').slideUp();
+					$(this).next("textarea").data("olddisplay","block").slideDown();
+					
+					if($(this).val() == "Each row is a..."){
+						$(this).val("");
+					}
+			
 				} else if($(this).hasClass("row-description") && $(this).val() == "Enter a description..."){
 					$(this).val("");
 				}
@@ -61,6 +70,14 @@ var LinkedGov_LabellingPanel = {
 			$("div.row-description input, " +
 			"div.row-description textarea").live("blur",function(){
 
+				/*
+				if($(this).parent().hasClass("row-label")){
+					$(this).next("textarea").slideUp();
+				} else {
+					$(this).slideUp();					
+				}
+				*/
+				
 				/*
 				 * Highlight the rows in the table to indicate to the user they 
 				 * are labeling rows.
@@ -91,7 +108,13 @@ var LinkedGov_LabellingPanel = {
 
 				var liElement = $(this).parent();
 				var colName = $(this).parent("li").find("input.column-label").val();
-
+								
+				if($(this).hasClass("column-label")){
+					$('div.row-description textarea').slideUp();
+					$('div.column-list ul li textarea').slideUp();
+					$(this).next("textarea").data("olddisplay","block").slideDown();
+				}
+				
 				/*
 				 * Highlight the column in the data table when the user focuses on their 
 				 * label or description input using the input's current status
@@ -127,6 +150,13 @@ var LinkedGov_LabellingPanel = {
 				var el = $(this);
 				var colName = $(this).parent("li").find("input.column-label").val();
 
+/*				if($(this).hasClass("column-label")){
+					$(this).next("textarea").slideUp();
+				} else {
+					$(this).slideUp();					
+				}
+*/
+				
 				/*
 				 * Remove the highlight from the column in the data table.
 				 */
