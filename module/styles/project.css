@@ -612,7 +612,6 @@ body.lg a.wizard-header.collapsed span.wizardIcon {
 
 body.lg div#refine-tabs-typing a.collapse-expand {
     bottom: 6px;
-    display:none;
     font-family: Lucida Console;
     font-size: 18px;
     height: 20px;
@@ -963,11 +962,18 @@ body.lg div.next-button {
     width: 300px;
 }
 body.lg div.action-bar a.button.returnButton {
-	font-weight: normal;
-    display: none;
-    left: 5px;
+    background: -moz-linear-gradient(center top , #FFFFFF, #E7E7E7) repeat scroll 0 0 transparent;
+    color: #333333;
+    display:none;
+    font-size: 14px;
+    font-weight: normal;
     position: absolute;
+    right: 5px;
     text-align: center;
+    text-shadow: 1px 1px #CCCCCC;
+}
+body.lg div.action-bar a.button.returnButton:active {
+    background: -moz-linear-gradient(center top , #E7E7E7, #FFFFFF) repeat scroll 0 0 transparent;
 }
 body.lg div.selector a.selectColumn {
 	width: 80px;
@@ -1617,7 +1623,7 @@ body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.resul
     float: left;
     font-weight: bold;
     padding: 2px 0 3px;
-    width: 90%;
+    width: 100%;
 }
 body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result span.colOptions input {
     background-color: #FFFFE8;
@@ -1628,8 +1634,9 @@ body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.resul
 body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result span.colOptions input.matched {
     background-color: #E7F8E2;
     background-image: url("../images/matched.png");
-    background-position: 98% 50%;
+    background-position: 5px 3px;
     background-repeat: no-repeat;
+    padding-left: 25px;
 }
 body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result span.colOptions input.edited {
     background-color: #FFFFFF;	
@@ -1638,8 +1645,9 @@ body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.resul
 body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result span.colOptions input.dontknow {
     background-color: #F5F5F5; 
     background-image: url("../images/idontknow.png");
-    background-position: 98% 50%;
+    background-position: 5px 3px;
     background-repeat: no-repeat;
+    padding-left: 25px;
 }
 body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result div.result-body div.ui-progressbar {
     border: 1px solid #DDDDDD;
@@ -1773,6 +1781,7 @@ body.lg div.action-bar a.button.finish {
     font-weight: bold;
     margin-left: 0;
     color: #FFFFFF;
+    display:none;
 }
 body.lg div.action-bar a.button.cancel {
     font-size: 14px;

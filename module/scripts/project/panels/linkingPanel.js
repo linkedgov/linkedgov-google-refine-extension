@@ -633,10 +633,6 @@ var LinkedGov_LinkingPanel = {
 				 */			
 				if(ui.browsingEngine._facets.length > (self.results.length*2)-1){
 
-					log("here");
-					log(ui.browsingEngine._facets.length);
-					log(self.results.length*2);
-
 					/*
 					 * Checks that the facets have been created once reconciliation 
 					 * has finished, so we can access the scores to display on the panel.
@@ -833,19 +829,12 @@ var LinkedGov_LinkingPanel = {
 
 								if(data.facets[i].choices[j].v.v == "matched"){
 
-									//log("data.facets[i].choices[j]");
-									//log(data.facets[i].choices[j]);
-									//log(data.facets[i].choices[j].c);
-
 									matched = data.facets[i].choices[j].c;
-
+									
 									var percentage = Math.round(((matched/total)*100));
-
+									
 									$(resultDiv).find("p.matches").find("span.matched").html(matched);
 									$(resultDiv).find("p.matches").find("span.percentage").html(percentage);
-
-									//log('$(resultDiv).find("div.matches-bar")');
-									//log($(resultDiv).find("div.matches-bar"));
 									$(resultDiv).find("div.matches-bar").find("div.ui-progressbar-value").css("width",percentage+"%");
 									$(resultDiv).find("div.matches-bar").find("div.ui-progressbar-value").removeClass("green").removeClass("yellow").removeClass("red");
 
@@ -889,7 +878,6 @@ var LinkedGov_LinkingPanel = {
 				/*
 				 * Loop through the UI facets
 				 */
-				log("data.facets.length = " + data.facets.length);
 				for ( var i = 0; i < data.facets.length; i++) {
 
 					/*
@@ -1110,6 +1098,9 @@ var LinkedGov_LinkingPanel = {
 					xhr.abort();
 
 					// Check cache for request
+					/*
+					 * TODO: Unify code for a query that's cached/not cached
+					 */
 					if(typeof self.suggestCache[inputElement.val()] == 'undefined'){
 
 						xhr = $.ajax({
@@ -1149,15 +1140,20 @@ var LinkedGov_LinkingPanel = {
 											}
 
 											li.html('<div class="fbs-item-name"><label>'+name+'</label></div>');
+											log("data.result[i]");
+											log(data.result[i]);
 											li.data("suggest",data.result[i]);
+											log('li.data("suggest")');
+											log(li.data("suggest"));
+											
 											li.unbind("click").bind("click",function(){
 												self.flyoutPane.hide();
 												self.entityPane.hide();
-												self.matchCellsFromSearch($(this).data("suggest"), inputElement.attr("data-colname"), localVal);
-												inputElement.val($(this).data("suggest").name).removeClass("edited").removeClass("dontknow").addClass("matched");
-												var resultDiv = inputElement.parent("span").parent("li").parent("ul").parent("div").parent("div");
-												self.updateMatches(resultDiv);
-
+												self.matchCellsFromSearch(li, inputElement, localVal, function(li, inputElement){
+													inputElement.val(li.data("suggest").name).removeClass("edited").removeClass("dontknow").addClass("matched");
+													var resultDiv = inputElement.parent("span").parent("li").parent("ul").parent("div").parent("div");
+													self.updateMatches(resultDiv);
+												});
 											}).hover(function(){
 												self.showEntityPreview($(this), $(this).data("suggest"), suggestOptions);
 											},function(){
@@ -1176,9 +1172,9 @@ var LinkedGov_LinkingPanel = {
 									}
 
 									self.flyoutPane.find("div.searching").hide();
-									
+
 									if(ul.find("li").length < 1){
-										self.flyoutPane.find("div.options").html("<p>No results...</p>").show();
+										self.flyoutPane.html("<div class='options'><p>No results...</p></div>").show();
 									} else {
 										self.flyoutPane.find("div.options").show();
 										self.flyoutPane.find("div.options a").click(function(){
@@ -1191,17 +1187,17 @@ var LinkedGov_LinkingPanel = {
 									}
 
 								} else {
-									self.flyoutPane.find("div.options").html("<p>No results...</p>").show();
+									self.flyoutPane.html("<div class='options'><p>No results...</p></div>").show();
 								}
-								
+
 								self.suggestCache[inputElement.val()] = data;
 								self.trimSuggestCache();
-							
+
 							},
 							error : function() {
 								log("Error fetching suggest entity");
 								self.flyoutPane.find("div.searching").hide();
-								self.flyoutPane.find("div.options").html("<p>No results...</p>").show();
+								self.flyoutPane.html("<div class='options'><p>No results...</p></div>").show();
 							}
 						});
 					} else {
@@ -1211,9 +1207,9 @@ var LinkedGov_LinkingPanel = {
 						for(var i=0;i<data.result.length;i++){
 
 							if(self.checkSuggestion(data.result[i].id, serviceURL)){
-								
+
 								//log("Creating result");
-								
+
 								var li = $("<li>").addClass("fbs-item");
 
 								var name = data.result[i].name;
@@ -1229,11 +1225,11 @@ var LinkedGov_LinkingPanel = {
 								li.unbind("click").bind("click",function(){
 									self.flyoutPane.hide();
 									self.entityPane.hide();
-									self.matchCellsFromSearch($(this).data("suggest"), inputElement.attr("data-colname"), localVal);
-									inputElement.val($(this).data("suggest").name).removeClass("edited").removeClass("dontknow").addClass("matched");
-									var resultDiv = inputElement.parent("span").parent("li").parent("ul").parent("div").parent("div");
-									self.updateMatches(resultDiv);
-
+									self.matchCellsFromSearch(li, inputElement, localVal, function(li, inputElement){
+										inputElement.val($(this).data("suggest").name).removeClass("edited").removeClass("dontknow").addClass("matched");
+										var resultDiv = inputElement.parent("span").parent("li").parent("ul").parent("div").parent("div");
+										self.updateMatches(resultDiv);
+									});
 								}).hover(function(){
 									self.showEntityPreview($(this), $(this).data("suggest"), suggestOptions);
 								},function(){
@@ -1251,7 +1247,7 @@ var LinkedGov_LinkingPanel = {
 						self.flyoutPane.find("div.searching").hide();
 
 						if(ul.find("li").length < 1){
-							self.flyoutPane.find("div.options").html("<p>No results...</p>").show();
+							self.flyoutPane.html("<div class='options'><p>No results...</p></div>").show();
 						} else {
 							self.flyoutPane.find("div.options").show();
 							self.flyoutPane.find("div.options a").click(function(){
@@ -1304,7 +1300,7 @@ var LinkedGov_LinkingPanel = {
 					 */ 
 					//log(id);
 					//log(services[j].resourceInfo.uriPath);
-					
+
 					if(id == services[j].resourceInfo.uriPath || typeof services[j].resourceInfo.uriPath == 'undefined'){
 						return true;
 					} else {
@@ -1387,13 +1383,17 @@ var LinkedGov_LinkingPanel = {
 		 */
 		trimSuggestCache:function(){
 			var i=0;
-			$.each(self.suggestCache,function(k,v){
-				if(i<100){
-					i++;
-				} else {
-					delete obj[k];
-				}
-			});
+			try{
+				$.each(self.suggestCache,function(k,v){
+					if(i<100){
+						i++;
+					} else {
+						delete obj[k];
+					}
+				});
+			}catch(e){
+				log(e);
+			}
 		},
 
 		/*
@@ -1401,22 +1401,30 @@ var LinkedGov_LinkingPanel = {
 		 */
 		trimPreviewCache:function(){
 			var i=0;
-			$.each(self.previewCache,function(k,v){
-				if(i<100){
-					i++;
-				} else {
-					delete obj[k];
-				}
-			});
+			try{
+				$.each(self.previewCache,function(k,v){
+					if(i<100){
+						i++;
+					} else {
+						delete obj[k];
+					}
+				});
+			}catch(e){
+				log(e);
+			}
 		},
 
 		/*
 		 * matchCellsFromSearch
 		 */
-		matchCellsFromSearch:function(match, colName, localValue){
+		matchCellsFromSearch:function(li, inputElement, localValue, callback){
 
 			log('matchCellsFromSearch');
 
+			var match = li.data("suggest");
+			log("match");
+			log(match);
+			
 			var self = this;
 			if (match !== null) {
 				var params = {
@@ -1427,13 +1435,18 @@ var LinkedGov_LinkingPanel = {
 				};
 
 				params.similarValue = localValue;
-				params.columnName = colName;
+				params.columnName = inputElement.attr("data-colname");
 
 				Refine.postCoreProcess(
 						"recon-judge-similar-cells", 
 						{} || {}, 
 						params,
-						{ cellsChanged: true, columnStatsChanged: true}
+						{ cellsChanged: true, columnStatsChanged: true},
+						{
+							onDone:function(){
+								callback(li, inputElement);
+							}
+						}
 				);
 			}
 
