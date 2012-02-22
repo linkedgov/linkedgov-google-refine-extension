@@ -388,36 +388,36 @@ var LinkedGov_LabellingPanel = {
 			 */
 			var labelData = LG.vars.labelsAndDescriptions; 
 			var colData = labelData.cols;
-			
-			if(labelData.cols.length < 0){
-				
+
+			if(labelData.cols.length < 1){
+
 				// Load the row and column labels and descriptions from the 
 				// RDF into the according inputs and textareas.
 				// Once loaded, execute the callback.
 				self.loadLabelsAndDescriptionFromRDF(function(){
-					
+
 					//$("div.column-list").show(function(){
 
-						// Store the row label and description
-						labelData.rowLabel = $("div.row-description input.row-label").val();
-						labelData.rowDescription = $("div.row-description textarea.row-description").val();
-						
-						// Validate the row label and description
-						self.checkRowDescription($("div.row-description"));
+					// Store the row label and description
+					labelData.rowLabel = $("div.row-description input.row-label").val();
+					labelData.rowDescription = $("div.row-description textarea.row-description").val();
 
-						// Populate the local labelsAndDescriptions object so the user can 
-						// switch between panels before saving and not lose their entered values.
-						$("div.column-list ul li").each(function(){
-							colData.push({
-								label:$(this).find("input.column-label").val(),
-								description:$(this).find("textarea.column-description").val(),
-								status:"maybe"
-							});
-							$(this).find("input.column-label").data("original-name", $(this).find("input.column-label").val());
+					// Validate the row label and description
+					self.checkRowDescription($("div.row-description"));
+
+					// Populate the local labelsAndDescriptions object so the user can 
+					// switch between panels before saving and not lose their entered values.
+					$("div.column-list ul li").each(function(){
+						colData.push({
+							label:$(this).find("input.column-label").val(),
+							description:$(this).find("textarea.column-description").val(),
+							status:"maybe"
 						});
-						
-						$("div.column-list").show();
-						
+						$(this).find("input.column-label").data("original-name", $(this).find("input.column-label").val());
+					});
+
+					$("div.column-list").show();
+
 					//});
 				});
 			} else {
@@ -442,94 +442,108 @@ var LinkedGov_LabellingPanel = {
 		loadLabelsAndDescriptionFromRDF : function(callback) {
 
 			log("loadLabelsAndDescriptionFromRDF");
-			
+
 			var self = this;
-			/*
-			 * Make sure the RDF schema exists
-			 */
+
+			// Make sure the RDF schema exists
 			if (typeof theProject.overlayModels != 'undefined' && typeof theProject.overlayModels.rdfSchema != 'undefined') {
 
 				var schema = theProject.overlayModels.rdfSchema;
 
-				/*
-				 * Loop throught the RDF root nodes and test the RDF type.
-				 */
+				// Loop throught the RDF root nodes and test the RDF type.
 				for(var i=0; i<schema.rootNodes.length; i++){
 					if(typeof schema.rootNodes[i].rdfTypes != 'undefined' && schema.rootNodes[i].rdfTypes.length > 0) {
 
-						/*
-						 * If the RDF type is owl:Class then we've found the row label & description
-						 */
+						// If the RDF type is owl:Class then we've found the row label & description
 						if(schema.rootNodes[i].rdfTypes[0].curie == "owl:Class"){
 
+							var rowLabel = "", rowDescription = "", rowStatus = "";
+							
 							for(var j=0; j<schema.rootNodes[i].links.length; j++){
-								/*
-								 * Locate the label and comment and populate the input fields
-								 */
+
+								// Locate the label and comment and populate the input fields
+								// and the local object
 								if(schema.rootNodes[i].links[j].curie == "rdfs:label"){
-									$("div.row-description input.row-label").val(schema.rootNodes[i].links[j].target.value)
+									log("Found owl:Class - "+schema.rootNodes[i].links[j].target.value);
+									rowLabel = schema.rootNodes[i].links[j].target.value;
+									rowStatus = "good";
+									$("div.row-description input.row-label").val(schema.rootNodes[i].links[j].target.value);
 									$("div.row-description input.row-label").parent().removeClass("maybe");
 									$("div.row-description input.row-label").parent().addClass("good");
 								} else if(schema.rootNodes[i].links[j].curie == "rdfs:comment"){
+									rowDescription = schema.rootNodes[i].links[j].target.value;
+									rowStatus = "great";
 									$("div.row-description textarea.row-description").val(schema.rootNodes[i].links[j].target.value)
-									$("div.row-description textarea.row-description").parent().addClass("great");
+									$("div.row-description textarea.row-description").parent().removeClass("good").addClass("great");
 								}
 							}
-
+							
+							LG.vars.labelsAndDescriptions.rowLabel = rowLabel;
+							LG.vars.labelsAndDescriptions.rowDescription = rowDescription;
+							LG.vars.labelsAndDescriptions.rowStatus = rowStatus;
+							
+							// If the type is owl:ObjectProperty
 						} else if(schema.rootNodes[i].rdfTypes[0].curie == "owl:ObjectProperty") {
-							/*
-							 * If the type is owl:ObjectProperty, we've found a column label & description
-							 */
-							if(schema.rootNodes[i].links.length == 2 && schema.rootNodes[i].links[0].curie.indexOf("rdfs") >= 0){
-								for(var j=0; j<schema.rootNodes[i].links.length; j++){
-									if(schema.rootNodes[i].links[j].curie == "rdfs:label"){		
-										/*
-										 * Loop through the panel inputs and locate the input with the matching 
-										 * column label
-										 */
-										$("div.column-list ul li").each(function(){
-											if($(this).find("input.column-label").val() == schema.rootNodes[i].links[j].target.value){
+							
+							var colLabel = "", colDescription = "Enter a description...", colStatus = "";
 
-												$(this).removeClass("maybe").addClass("good");
+							// Make sure there are twowe've found a label & description
+							// if(schema.rootNodes[i].links.length == 2){
+							for(var j=0; j<schema.rootNodes[i].links.length; j++){
+								if(schema.rootNodes[i].links[j].curie == "rdfs:label"){
+									
+									// Loop through the label inputs and locate the input with the matching 
+									// column label
+									$("div.column-list ul li").each(function(){
+										if($(this).find("input.column-label").val() == schema.rootNodes[i].links[j].target.value){
+											
+											// Labels and descriptions can only be saved if they were validated, 
+											// so it's safe to add the "good" status
+											$(this).removeClass("maybe").addClass("good");																						
+											$(LG.getColumnHeaderElement(schema.rootNodes[i].links[j].target.value)).addClass("good");
+											status = "good";
+											
+											// We don't need to populate the label input as it's the same, 
+											// but do it anyway
+											$(this).find("input.column-label").val(schema.rootNodes[i].links[j].target.value);
+											colLabel = schema.rootNodes[i].links[j].target.value;
 
-												/*
-												 * For the "link" object found to contain the label, use the other link object (the comment) 
-												 * to populate the column's description input.
-												 */
-												$(this).find("textarea.column-description")
-												.val(schema.rootNodes[i].links[(j?0:1)].target.value)
-												.html(schema.rootNodes[i].links[(j?0:1)].target.value);
-
-												if($(this).find("textarea.column-description").val().length > 2){
-
-													/*
-													 * We use decodeHTMLEntity here because we are grabbing the name from the  
-													 * table header which is a HTML element
-													 */
-													$("td.column-header span.column-header-name").each(function(){
-														if(LG.decodeHTMLEntity($(this).html()) == $(this).find("input.column-label").val()){
-															$(this).removeClass("bad").removeClass("maybe").removeClass("good").addClass("great");
-														}
-													});
-
-												} else {
-													/*
-													 * We use decodeHTMLEntity here because we are grabbing the name from the  
-													 * table header which is a HTML element
-													 */
-													$("td.column-header span.column-header-name").each(function(){
-														if(LG.decodeHTMLEntity($(this).html()) == $(this).find("input.column-label").val()){
-															$(this).removeClass("bad").removeClass("maybe").removeClass("great").addClass("good");
-														}
-													});
-
+											
+											// If there is a rdfs:comment for the owl:objectProperty, 
+											// there will be 2 links
+											if(schema.rootNodes[i].links.length == 2){
+																								
+												// For the "link" object found to contain the label, use the other link object (the comment) 
+												// to populate the column's description input.
+												// (j?0:1) means use the opposite of j
+												$(this).find("textarea.column-description").val(schema.rootNodes[i].links[(j?0:1)].target.value);
+												colDescription = schema.rootNodes[i].links[(j?0:1)].target.value;
+												
+												// Check to see if there's a valid description, 
+												// in which case, give the column a "great" status
+												if(schema.rootNodes[i].links[(j?0:1)].target.value.length > 2){
+									
+													// Highlight the input & column header
+													$(this).removeClass("good").addClass("great");											
+													$(LG.getColumnHeaderElement(schema.rootNodes[i].links[j].target.value)).addClass("great");
+													status = "great";
 												}
-
+											} else {
+												// Column only has a label and no description
 											}
-										});
-									}
+										}
+									});
+									
+									j = schema.rootNodes[i].links.length-1;
 								}
 							}
+							//}
+							
+							LG.vars.labelsAndDescriptions.cols.push({
+								label:colLabel,
+								description:colDescription,
+								status:colStatus
+							});
 						}
 					}
 				}
