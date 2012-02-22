@@ -27,8 +27,9 @@ LG.vars = {
 			rootNodes : []
 		},
 		labelsAndDescriptions : {
-			rowLabel : "",
-			rowDescription : "",
+			rowLabel : "Each row is a...",
+			rowDescription : "Enter a description...",
+			rowStatus: "bad",
 			cols : []
 		},
 		lgNameSpace: "http://data.linkedgov.org/",

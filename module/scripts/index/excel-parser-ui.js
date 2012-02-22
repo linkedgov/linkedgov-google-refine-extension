@@ -11,6 +11,10 @@ $('a.question').live("click", function(){
 	  }
 }); 
 
+/*
+ * Simulate a click on our own button when the user 
+ * clicks "Create project".
+ */
 $("button.create-project").live("click",function(){
 		$("button.yes-success").click();
 });

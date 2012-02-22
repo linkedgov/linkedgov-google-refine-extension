@@ -153,12 +153,15 @@ var LinkedGov_rdfOperations = {
 
 			var self = this;
 			var schema = self.getRDFSchema();
-			var metadataAlreadySaved = false;
+			//var metadataAlreadySaved = false;
 
+			// Locate the current metadata rootnode 
+			// and remove it before resaving.
 			for(var i=0; i<schema.rootNodes.length; i++){
 				for(var j=0; j<schema.rootNodes[i].links.length; j++){
 					if(schema.rootNodes[i].links[j].curie == "dct:title"){
-						metadataAlreadySaved = true;
+						//metadataAlreadySaved = true;
+						schema.rootNodes.splice(i,1);
 					}
 				}
 			}
@@ -672,17 +675,23 @@ var LinkedGov_rdfOperations = {
 				 * Chain together a series of save operations using callbacks.
 				 * 
 				 * Save the project's metadata
+				 * 
+				 * TODO: Don't chain the metadata save with the labelling panel save.
+				 * These should be separate.
 				 */
 				LG.rdfOps.saveMetadataToRDF(function(){
 					/*
 					 * saveRowClass - save the owl:Class description for the row.
 					 */
-					self.saveRowClass(function() {
+					self.saveRowAsClass(function() {
 						/*
 						 * saveColumnsAsProperties - save the owl:ObjectProperty descriptions for the columns
 						 */
 						self.saveColumnsAsProperties(function() {
-							
+							/*
+							 * TODO: Do not chain the finaliseRDFSchema save 
+							 * to the labelling panel save. Should be separate.
+							 */
 							LG.rdfOps.finaliseRDFSchema.init();
 							
 						});
@@ -693,12 +702,14 @@ var LinkedGov_rdfOperations = {
 
 
 			/*
-			 * saveRowClass
+			 * saveRowAsClass
 			 * 
 			 * Creates the owl:Class description for the rows.
 			 */
-			saveRowClass : function(callback) {
+			saveRowAsClass : function(callback) {
 
+				//log("saveRowClass");
+				
 				var self = this;
 
 				var schema = LG.rdfOps.getRDFSchema();
@@ -772,6 +783,8 @@ var LinkedGov_rdfOperations = {
 			 */
 			saveColumnsAsProperties : function(callback) {
 
+				//log("saveColumnsAsProperties");
+				
 				var self = this;
 				var cols = LG.vars.labelsAndDescriptions.cols;
 				var schema = LG.rdfOps.getRDFSchema();
@@ -798,7 +811,7 @@ var LinkedGov_rdfOperations = {
 					 * as their own root nodes.
 					 */
 
-					log("camelize(cols[i].label): "+LG.camelize(cols[i].label));
+					//log("camelize(cols[i].label): "+LG.camelize(cols[i].label));
 
 					var rootNode = {
 							nodeType : "resource",
@@ -875,6 +888,8 @@ var LinkedGov_rdfOperations = {
 					
 					var self = this;
 					
+					//log("finaliseRDFSchema.init()");
+					
 					/*
 					 * Check for/create a root node for column RDF in the schema.
 					 */
@@ -932,8 +947,8 @@ var LinkedGov_rdfOperations = {
 							 * Default description is: <Row> <lg:columnName> "cell value"
 							 */
 
-							log('LG.decodeHTMLEntity($(this).find("span.column-header-name").html()):');
-							log(LG.decodeHTMLEntity($(this).find("span.column-header-name").html()));
+							//log('LG.decodeHTMLEntity($(this).find("span.column-header-name").html()):');
+							//log(LG.decodeHTMLEntity($(this).find("span.column-header-name").html()));
 							
 							var o = {
 									"uri" : self.vars.vocabs.lg.uri + camelizedColumnName,
@@ -1052,7 +1067,7 @@ var LinkedGov_rdfOperations = {
 					var self = this;
 
 					/*
-					 * Overwrite the Refine update function with our callback.
+					 * Overwrite the Refine update function to include our own callback.
 					 */			
 					var lgUpdate = Refine.update;
 					Refine.update = function(options, callback) {

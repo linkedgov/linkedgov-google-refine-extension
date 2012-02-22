@@ -1,3 +1,8 @@
+/*
+ * Once the metadata-form.js script has loaded, 
+ * disable some of Refine's default features on the import 
+ * page.
+ */
 $(document).ready(function(){
 	LG.disableFeaturesForImport();
 });
@@ -89,11 +94,8 @@ $("button#dummy").toggle(function(){
 
 /*
  * Add our own handler to the "proceed" button.
- * 
  */
 $("button.proceed").click(function(){
-	
 	LG.validateForm();
-
 });
 

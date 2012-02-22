@@ -413,8 +413,7 @@ body.lg div.labelling-panel {
 	left: 300px;*/
 }
 body.lg div.labelling-panel h3 {
-	border-bottom: 1px solid #DDDDDD;
-	margin-bottom: 10px;
+	margin-bottom: 0px;
 	margin-left: 0;
 	padding-bottom: 5px;
 }
@@ -666,7 +665,7 @@ body.lg div.wizard-bodies {
 }
 body.lg div.wizard-body {
 	display:none;
-    padding: 10px;
+    padding: 5px;
 }
 body.lg div.wizard-body h2 {
 	border-bottom: 1px solid #DDDDDD;
@@ -970,7 +969,7 @@ body.lg div.action-bar a.button.returnButton {
     position: absolute;
     right: 5px;
     text-align: center;
-    text-shadow: 1px 1px #CCCCCC;
+    text-shadow: 1px 1px #FFFFFF;
 }
 body.lg div.action-bar a.button.returnButton:active {
     background: -moz-linear-gradient(center top , #E7E7E7, #FFFFFF) repeat scroll 0 0 transparent;
@@ -1006,7 +1005,6 @@ body.lg div.next-button a.button {
 body.lg div.wizard-body div.split {
 	background: none repeat scroll 0 0 #F9F9F9;
 	border: 1px solid #DDDDDD;
-	border-radius: 5px 5px 5px 5px;
 	margin-bottom: 10px;
 	margin-top: 5px;
 	padding: 5px 10px 10px;
@@ -1056,8 +1054,8 @@ body.lg div#refine-tabs-typing label {
 }
 
 body.lg div#refine-tabs-typing span.note {
-	background: none repeat scroll 0 0 #FFFFE7;
-	border: 1px solid #FFFE00;
+    background: none repeat scroll 0 0 #FFFFD2;
+    border: 1px solid #CFCE7D;
 	border-radius: 5px 5px 5px 5px;
 	box-shadow: 0 0 10px #7D7D7D;
 	color: #000000;
@@ -1993,7 +1991,7 @@ body.lg div.ui-datepicker .ui-state-hover {
 }
 
 body.lg div.labelling-panel, body.lg div.linking-panel {
-	padding: 10px;
+	padding: 5px;
 }
 
 /* Dark skin */
