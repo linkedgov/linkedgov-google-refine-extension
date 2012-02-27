@@ -45,13 +45,13 @@ var LinkedGov_dateTimeWizard = {
 		initialise : function(elmts) {
 
 			var self = this;			
-			
+
 			try{
 				self.vars.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
 			}catch(e){
 				self.vars.historyRestoreID = 0;
 			}
-			
+
 			self.vars.elmts = elmts;
 			self.vars.columns = [];
 			self.vars.colFragments = [];
@@ -1179,7 +1179,11 @@ var LinkedGov_dateTimeWizard = {
 		},
 
 		/*
-		 * Returns the wizard to its original state
+		 * onComplete
+		 * 
+		 * - Performs a default update
+		 * - Returns the wizard to its original state
+		 * - Checks for unexpected values
 		 */
 		onComplete : function() {
 			var self = this;
@@ -1187,18 +1191,22 @@ var LinkedGov_dateTimeWizard = {
 			Refine.update({
 				everythingChanged : true
 			}, function() {
+				// Reset the wizard
 				LG.panels.wizardsPanel.resetWizard(self.vars.elmts.dateTimeBody);
+				// Present an Undo button
 				LG.panels.wizardsPanel.showUndoButton(self.vars.elmts.dateTimeBody);
+				// Hide the "wizard in progress" message
 				LG.showWizardProgress(false);
 
 				/*
-				 * We can check a column contains either a date, a time or a date-time 
-				 * if the user has specified they do
+				 * We are able to test that the columns involved in the wizards operations have 
+				 * resulted in being typed as a date or not.
 				 */
 				if(self.vars.expectedValue == "date" || self.vars.expectedValue == "time" || self.vars.expectedValue == "date-time"){
+					// We populate the colObjects with the variables needed to perform these 
+					// tests
 					var colObjects = self.prepareColumnObjectsForValueTest();
-					log('colObjects');
-					log(colObjects);
+					// Then initiate the test, passing the colObjects and the wizard's body
 					LG.panels.wizardsPanel.checkForUnexpectedValues(colObjects, self.vars.elmts.dateTimeBody);
 				}
 
@@ -1214,9 +1222,15 @@ var LinkedGov_dateTimeWizard = {
 		 * 
 		 * Variables:
 		 * 
-		 * - unexpectedValueRegex
-		 * - expectedType
-		 * - exampleValue
+		 * - the expression (an expression needed to produce the values to check for - e.g. 
+		 * "date" and "error" for dates, or "postcode" and "address" for postcodes).
+		 * - expectedType (the expected type of value - e.g. "date" for dates and "postcode" for 
+		 * postcodes).
+		 * - exampleValue (to provide as a hint to the user while they are correcting the values - 
+		 * e.g. "2012-03-15" for dates or "NW31PL" for postcodes.
+		 * - the column name 
+		 * 
+		 * These are stored inside the colObject.unexpectedValueParams object.
 		 */
 		prepareColumnObjectsForValueTest:function(){
 
@@ -1224,21 +1238,19 @@ var LinkedGov_dateTimeWizard = {
 
 			var colObjects = self.vars.colObjects;
 
+			// Loop through the colObjects and populate their variables accordingly
 			for(var i=0;i<colObjects.length;i++){
 
-				//if(colObjects[i].name == self.vars.resultColumn){
-					
-					colObjects[i].unexpectedValueParams = {
-							expression:self.vars.unexpectedValueRegex,
-							expectedValue:self.vars.expectedValue,
-							exampleValue:(self.vars.expectedValue == "date" ? "29/04/2009" : "13:30:00"),
-							colName:colObjects[i].name
-					};
+				colObjects[i].unexpectedValueParams = {
+						expression:self.vars.unexpectedValueRegex,
+						expectedValue:self.vars.expectedValue,
+						exampleValue:(self.vars.expectedValue == "date" ? "29/04/2009" : "13:30:00"),
+						colName:colObjects[i].name
+				};
 
-					if(self.vars.expectedValue == "date-time"){
-						colObjects[i].unexpectedValueParams.exampleValue = "29/04/2009-13:30:00";
-					}
-				//}
+				if(self.vars.expectedValue == "date-time"){
+					colObjects[i].unexpectedValueParams.exampleValue = "29/04/2009-13:30:00";
+				}
 			}
 
 			return colObjects;
@@ -1255,11 +1267,12 @@ var LinkedGov_dateTimeWizard = {
 		rerunWizard: function(){
 
 			var self = this;
-			/*
-			 * Display the "working..." sign
-			 */
+			
+			// Display the "working..." sign
 			LG.showWizardProgress(true);
 
+			// Restart the wizard again with the manually fixed values, so 
+			// we skip any user input.
 			self.checkForMultiColumnDateTimes(function() {
 				self.checkCombinations(function() {
 					self.onComplete();
@@ -1267,5 +1280,4 @@ var LinkedGov_dateTimeWizard = {
 			});
 
 		}
-
 };

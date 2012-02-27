@@ -1469,6 +1469,9 @@ var LinkedGov_WizardsPanel = {
 
 		/*
 		 * showUndoButton
+		 * 
+		 * After a wizard has finish operating, we offer an "Undo" button for the user 
+		 * to rollback their actions.
 		 */
 		showUndoButton : function(wizardBody) {
 			$(wizardBody).parent().find("div.action-buttons a.undo").css("display","inline-block");
@@ -1484,8 +1487,9 @@ var LinkedGov_WizardsPanel = {
 		 */
 		restoreWizardBody : function(){
 			
-			log("restoreWizardBody");
-			$("div.wizardComplete").remove();
+			//log("restoreWizardBody");
+			
+			$("div.unexpectedValues").remove();
 			$("div.wizard-panel").css("bottom","72px");
 			$("div.wizard-body").children().show();
 			$("div.wizard-body").find("span.note").hide();
@@ -1501,6 +1505,8 @@ var LinkedGov_WizardsPanel = {
 		 */
 		undoWizardOperations : function(historyID){
 
+			//log("undoWizardOperations");
+			
 			Refine.postCoreProcess(
 					"undo-redo",
 					{ lastDoneID: historyID },
@@ -1552,6 +1558,8 @@ var LinkedGov_WizardsPanel = {
 		 */
 		resetWizard : function(wizardBody) {
 
+			//log("resetWizard");
+			
 			// Clear checkboxes
 			$(wizardBody).find(":input").removeAttr('checked').removeAttr('selected');
 			// Clear column selections
@@ -1579,13 +1587,13 @@ var LinkedGov_WizardsPanel = {
 		/*
 		 * checkForUnexpectedValues
 		 * 
-		 * Runs a test to see if there are any unexpected values left in a column after a 
-		 * wizard has completed.
+		 * Called at the end of a wizard's operations - it takes an array of "colObjects" 
+		 * (which have just been populated with the variables needed to check for any 
+		 * unexpected values.
 		 * 
-		 * Takes an array of objects (colObjects), making use of the "unexpectedValueParams" 
-		 * object inside which contains an expression, an expected value and an expected type 
+		 * Takes an array of objects (colObjects) each containing an "unexpectedValueParams" 
+		 * object - which contains an expression, an expected value and an expected type 
 		 * to test the column with.
-		 * 
 		 */
 		checkForUnexpectedValues : function(colObjects, wizardBody){
 
@@ -1608,45 +1616,40 @@ var LinkedGov_WizardsPanel = {
 					// Set a flag for detecting unmatched values
 					var unexpectedValuesPresent = false;
 
-					//log(colObjects[i]);
-					//log("Running tests on column: "+colObjects[i].unexpectedValueParams.colName);
-
-					// Create a result object for the column by passing a number of variables
+					// Create an "unexpectedValues" "result" object for the column by passing a 
+					// number of variables to the verifyValueTypes function that creates facets 
+					// and performs calculations.
 					colObjects[i].unexpectedValueParams.result = self.verifyValueTypes(
-							colObjects[i].unexpectedValueParams.colName, 
-							colObjects[i].unexpectedValueParams.expression, 
-							colObjects[i].unexpectedValueParams.expectedType, 
+							colObjects[i].unexpectedValueParams.colName,
+							colObjects[i].unexpectedValueParams.expression,
+							colObjects[i].unexpectedValueParams.expectedType,
 							colObjects[i].unexpectedValueParams.exampleValue
 					);
 
-					//log("Result: ");
-					//log(colObjects[i].unexpectedValueParams.result);
-
-					if(colObjects[i].unexpectedValueParams.result.type != "success"){
+					// If the column's result object states the test was not a success, 
+					// set the flag that causes the unexpected values panel to be displayed
+					if(!colObjects[i].unexpectedValueParams.result.success){
 						unexpectedValuesPresent = true;
 					}
-
-					/*
-					 * Once we've finished looping through the colObjects
-					 */
+					
+					// Once we've finished looping through the colObjects
 					if(i == colObjects.length-1){
-						/*
-						 * Decide to show the unexpected values UI or not.
-						 * 
-						 * If any of the column tested on have unexpected values, then this 
-						 * panel should be shown.
-						 */
+						
+						// Decide to show the unexpected values UI or not depending 
+						// on whether there are unexpected values in any of the columns.
 						if(unexpectedValuesPresent){
-							log("Unexpected values present - displaying the UI panel");
+							
+							// Unexpected values present - display the panel
+							// and pass the colObjects array, starting at index "0" (as it's a recursive 
+							// function) and the wizard's body
 							self.displayUnexpectedValuesPanel(colObjects, 0, wizardBody);
+							
 						} else {
-							log("No unexpected values present - not displaying the UI panel");
-
+							
+							// No unexpected values present - do not display the panel
 							self.restoreWizardBody();
-
-							/*
-							 * Remove any facets left over from the tests
-							 */
+							
+							// Remove any facets left over from the tests
 							for(var j=0; j<colObjects.length; j++){
 								LG.ops.removeFacet(colObjects[j].name);
 							}
@@ -1663,23 +1666,25 @@ var LinkedGov_WizardsPanel = {
 		 * Uses a facet to calculate whether at least 90%
 		 * of the columns values are what they are expected to be.
 		 * 
-		 * Returns a result object containing...
+		 * Returns a result object containing:
 		 * 
-		 * averageType
-		 * count
-		 * message
-		 * success
+		 * - averageType
+		 * - count
+		 * - message
+		 * - success
 		 */
 		verifyValueTypes : function(columnName, expression, expectedType, exampleValue){
 
+			// A value to decide whether a column has been successfully typed
 			var percentage = 0.9;
+			// The most frequently occurring type in the column (e.g. int, float, date, postcode)
 			var averageType = "";
+			// How many times the most frequently occurring type occurs.
 			var averageTypeCount = 0;
+			// How many values have been counted as unexpected
 			var errorCount = 0;
 
-			/*
-			 * Build a parameter object using the first of the column names.
-			 */
+			// Build the facet parameter object
 			var facetParams = {
 					"facets" : [ {
 						"type" : "list",
@@ -1696,6 +1701,8 @@ var LinkedGov_WizardsPanel = {
 					"mode" : "row-based"
 			};
 
+			// Compute the facet and retrieve the counts of the values asked for 
+			// by our expression
 			$.ajax({
 				async : false,
 				type : "POST",
@@ -1705,46 +1712,39 @@ var LinkedGov_WizardsPanel = {
 					project : theProject.id
 				},
 				success : function(data) {
-					/*
-					 * Loop through the UI facets
-					 */
-					for ( var i = 0; i < data.facets.length; i++) {
-
-						/*
-						 * If the facet matches the column name and has
-						 * choices returned
-						 */
+					 // Loop through the UI facets
+					 for (var i=0; i<data.facets.length; i++) {
+						// If the facet matches the column name and has choices returned
 						if (data.facets[i].columnName == columnName && typeof data.facets[i].choices != 'undefined') {
-							/*
-							 * Loop through the returned facet choices (count) number of times
-							 * and append them to the unordered list.
-							 */
-							var length = data.facets[i].choices.length;
-
-							for(var j=0; j<length; j++){
-
-								if(data.facets[i].choices[j].c >= averageTypeCount){
-									averageType = data.facets[i].choices[j].v.l;
-									averageTypeCount = data.facets[i].choices[j].c;							
+							// Loop through the returned facet choices, find out which 
+							// choice (== value) is the average type, how many times it occurs,
+							// how many unexpected values occur.
+							var choices = data.facets[i].choices;
+							for(var j=0; j<choices.length; j++){
+								// Find the highest occurring choice.
+								if(choices[j].c >= averageTypeCount){
+									averageType = choices[j].v.l;
+									averageTypeCount = choices[j].c;							
 								}
-
+								// Store the number of unexpected values (the testing expression provided 
+								// by each wizard produces the value "error" if the value is unexpected
 								if(data.facets[i].choices[j].v.l == "error"){
-									errorCount = data.facets[i].choices[j].c;
+									errorCount = choices[j].c;
 								}
 							}
 
+							// Break out of the facet loop
 							i=data.facets.length;
-
 						}
 					}
-
 				},
 				error : function() {
 					alert("A problem was encountered when computing facets.");
 				}
 			});	
 
-			// Construct the result object
+			// Construct a result object containing the returned
+			// counts from the test
 			var result = {
 					colName:columnName,
 					exampleValue:exampleValue,
@@ -1754,35 +1754,48 @@ var LinkedGov_WizardsPanel = {
 					errorCount:errorCount
 			};
 
-			/*
-			 * If the averageType resembles 90% or more of the total 
-			 * number of types, then we can say the column has been typed successfully
-			 */
+			
+			// Populate the result objects further by performing calculations to 
+			// create some semantics from results (i.e. has the column been successfully typed?, 
+			// what the situation is - is it a severe or minor fail...)
+			
 			if(averageTypeCount == theProject.rowModel.total && expectedType == averageType){
+				// If the averageType resembles 90% or more of the total 
+				// number of types, then we can say the column has been typed successfully
 				result.message = "All values in the <span class='colName'>"+result.colName+"</span> column successfully typed as <span class='valueType'>"+averageType+"</span>.";
 				result.success = true;
 				result.type = "success";
 			} else if(errorCount == 0){
+				// If 0 errors (unexpected values) have been detected, the column has been successfully typed.
 				result.message = "All values in the <span class='colName'>"+result.colName+"</span> column successfully typed as <span class='valueType'>"+averageType+"</span>.";
 				result.success = true;
 				result.type = "success";		
 			} else if(averageTypeCount == theProject.rowModel.total && expectedType !== averageType) {
-				result.message = "None of values in the <span class='colName'>"+result.colName+"</span> column could by typed propery. Is this the correct column for this wizard?";
+				// If every value is the same type, but it wasn't what was expected
+				result.message = "None of values in the <span class='colName'>"+result.colName+"</span> column could by typed properly - despite every value being the same type. Is this the correct column for this wizard?";
 				result.success = false;
 				result.type = "fail";		
 			} else if(averageTypeCount >= (theProject.rowModel.total*percentage) && expectedType == averageType){
+				// If the average type occurs 90% or more of the time and it is what we were expecting as a type
+				// Despite this being a good score - we still ask the user to correct the few values that are unexpected, 
+				// and in order to do that, we need to set the result.success flag to false.
 				result.message = "At least "+percentage*100+"% of the <span class='colName'>"+result.colName+"</span> column's values are of the expected type <span class='valueType'>"+averageType+"</span>.";
 				result.success = false;
 				result.type = "warning";
 			} else if(expectedType == averageType){
+				// If the average type in the column is what we were expecting, but hasn't occurred 
+				// as much as we'd hoped
 				result.message = "The <span class='colName'>"+result.colName+"</span> column contains values that were expected, but there are some unexpected values too.";
 				result.success = false;
 				result.type = "warning";
 			} else if(averageTypeCount >= (theProject.rowModel.total*percentage)){
+				// If the column contains an average type that occurs over 90% of the time, but isn't 
+				// what we expected.
 				result.message = "The <span class='colName'>"+result.colName+"</span> column mostly contains values of the type <span class='valueType'>"+averageType+"</span> - which was not expected.";
 				result.success = false;	
 				result.type = "warning";
 			} else {
+				// A unicorn is trapped in the column header
 				result.message = "There's no clear value type in the <span class='colName'>"+result.colName+"</span> column - but the most frequently occurring is <span class='valueType'>"+averageType+"</span>.";
 				result.success = false;	
 				result.type = "notclear";
@@ -1791,49 +1804,61 @@ var LinkedGov_WizardsPanel = {
 			//log(result);
 
 			return result;
-
 		},
 
 		/*
 		 * displayUnexpectedValuesPanel
 		 * 
 		 * After a user has completed a wizard and we have detected
-		 * that there are a certain number of unexpected values.
+		 * that there are a certain number of unexpected values, we recursively 
+		 * loop through the wizard's "colObjects", and check 
 		 * 
 		 * It offers the user the choice of fixing or ignoring any errors
 		 * that may have been produced by incorrectly typing a column.
 		 * 
+		 * Recursion is used to chain the completion of each test
+		 * 
+		 * TODO: This needs to be split up.
 		 */
 		displayUnexpectedValuesPanel : function(colObjects, index, wizardBody){
 
 			var self = this;
-			/*
-			 * TODO: Find a proper home for this var
-			 */
-			LG.vars.hasFixedValue = false;
+			
+			// Hide the Back button - the user needs to pick the buttons 
+			// offered to them in the unexpected values panel instead
+			self.els.returnButton.hide();
+			
+			// Set a boolean for whether the user has fixed a value or not.
+			// This will determine which panels to show
+			self.hasFixedValue = false;
 
-			$(wizardBody).find('div.wizardComplete').remove();
+			// Remove the "complete" message
+			$(wizardBody).find('div.unexpectedValues').remove();
 
+			// Base case - if the index is still valid when looping through 
+			// the colObjects array
 			if(index < colObjects.length) {
 
 				if(typeof colObjects[index].unexpectedValueParams != 'undefined' 
 					&& !colObjects[index].unexpectedValueParams.result.success){
 
-					log("Building unexpected values panel...");
-
+					// log("Building unexpected values panel...");
+					
+					// TODO: Put the following code into a "buildUnexpectedValues" panel
+					// function.
+					
+					// Store a few variables for easier reading					
 					var result = colObjects[index].unexpectedValueParams.result;
-
-					var html = '<div class="warning"><p class="title">Unexpected values</p>';
-
-					/*
-					 * The maximum number of unexpected values we ask the user 
-					 * to attempt to correct.
-					 */
-					var correctionLimit = 15;
-
 					var unexpectedValues = result.errorCount;
 					var percentage = Math.round(((unexpectedValues/theProject.rowModel.total)*100)*Math.pow(10,2))/Math.pow(10,2);
+					// The maximum number of unexpected values we ask the user to attempt to correct.
+					// TODO: Not sure that this is being used (the 90% mark seems to be the only marker)
+					var correctionLimit = 15;
+					
+					// Begin constructing the HTML for the unexpected values panel
+					var html = '<div class="warning"><p class="title">Unexpected values</p>';
 
+					// Depending on the result situation, display different HTML
 					if(result.count == theProject.rowModel.total && !result.success){
 						html+= '<p class="message">None of the values in the <span class="colName">'+result.colName+'</span> column could be typed properly!</p>';
 						html+= '<p class="details">Are you sure you picked the right column?</p>';		
@@ -1845,61 +1870,88 @@ var LinkedGov_WizardsPanel = {
 						html+= '<p class="details">Are you sure you have selected the correct column?</p>';
 					}
 
+					// Give the user an example value to look at when correcting the values.
 					html+= '<p class="message exampleValue">Example value: <span>'+result.exampleValue+'</span></p>';
-
+					// Append buttons allowing the user to undo the wizard, to ignore the unexpected values
+					// and to fix the values depending on whether the the test was a fail or not.
 					html+= '<div class="buttons">';
 					html+= '<a title="Undo" class="button undo" bind="undoButton" href="javascript:{}">Undo</a>';
 					if(!(result.count == theProject.rowModel.total && !result.success)){
 						html+= '<a title="Let me see" class="button fix" bind="fixButton" href="javascript:{}">Let me see</a>';
 					}
 					html+= '<a title="Carry on" class="button carryon" bind="carryOnButton" href="javascript:{}">Carry on</a>';
+					
 					html+= '</div>';
-
 					html += '</div>';
 
-					$(wizardBody).append('<div class="wizardComplete" />');
-					$(wizardBody).find("div.wizardComplete").html(html);
+					// Create the unexpectedValues panel
+					$(wizardBody).append('<div class="unexpectedValues" />');
+					// Inject the HTML we've just constructed
+					$(wizardBody).find("div.unexpectedValues").html(html);
+					// The default actions buttons aren't needed.	
 					$("div.action-buttons").hide();
-					$("div.wizard-body").children().hide().end().find("h2, div.wizardComplete").show();
-					$("div.wizard-panel").css("bottom","32px");
-
-					/*
-					 * Action buttons for the unexpected values panel
-					 */
-					var wizardCompleteEl = $("div.wizardComplete");
-					wizardCompleteEl.find("a.button").click(function(){
+					// Hide everything in the wizard (column selectors, text, selected columns etc) 
+					// except for the header and the unexpected values panel
+					$("div.wizard-body").children().hide().end().find("h2, div.unexpectedValues").show();
+					
+					// TODO: This could be in a function called "setupUnexpectedValuesPanel"
+					// Set up interaction for the action buttons local to the unexpected values panel
+					var unexpectedValuesEl = $("div.unexpectedValues");
+					// For each button inside the panel element
+					unexpectedValuesEl.find("a.button").click(function(){
 
 						if($(this).hasClass("undo")){
-							LG.vars.hasFixedValue = false;
+							// For the Undo button
+							// Reset the hasFixedValue boolean
+							self.hasFixedValue = false;
+							// Simulate a click on the wizards hidden Undo button (this rollsback
+							// the wizard)
 							$("div.action-buttons a.undo").click();
+							// Return the wizard to it's original state
 							self.restoreWizardBody();
-
 						} else if($(this).hasClass("fix")){
-
+							// For the "Let me see" button
+							// Create a facet and filter the rows in the table so 
+							// only the rows with unexpected values in are visible
+							// TODO: Make this clear that's what's happened in the UI panel
+							// TODO: Disable access to the table at this point. We want the user
+							// to only be editing values in the panel
 							self.showUnexpectedValues(result,function(result){
+								// Perform an update in Refine
 								Refine.update({modelsChanged:true},function(){
+									// Create and populate list of input boxes that contain
+									// the unexpected values
 									self.populateUnexpectedValuePanelList(result);
 								});
 							});
+	
+							// Hide certain HTML elements once the "Let me see" button has 
+							// been clicked
+							unexpectedValuesEl.find("p.details").hide();
+							unexpectedValuesEl.find("div.buttons").find("a.button").hide();
+							// Show two new buttons - "Rerun wizard" and "Done".
+							unexpectedValuesEl.find("div.buttons").append("<a class='button rerun' />");
+							unexpectedValuesEl.find("div.buttons").append("<a class='button done' />");
+							unexpectedValuesEl.find("div.buttons").find("a.rerun").html("Re-run wizard").show();
+							unexpectedValuesEl.find("div.buttons").find("a.done").html("Done").show();
 
-							
-							wizardCompleteEl.find("p.details").hide();
-							wizardCompleteEl.find("div.buttons").find("a.button").hide();
-							wizardCompleteEl.find("div.buttons").append("<a class='button rerun' />");
-							wizardCompleteEl.find("div.buttons").append("<a class='button done' />");
-							wizardCompleteEl.find("div.buttons").find("a.rerun").html("Re-run wizard").show();
-							wizardCompleteEl.find("div.buttons").find("a.done").html("Done").show();
-
-							if(LG.vars.hasFixedValue){
-								wizardCompleteEl.find("div.buttons").before('<p class="message rerun-tip">If you have corrected all of the values properly, there should be no more rows left for you to edit.</p>');
+							// Use the hasFixedValue boolean flag to determine whether to show a message to the user
+							// telling them that if they have corrected all the values possible to correct, 
+							// there won't be any rows left in the table (or input boxes left for them to edit).
+							if(self.hasFixedValue){
+								unexpectedValuesEl.find("div.buttons")
+								.before('<p class="message rerun-tip">If you have corrected all of the values properly, there should be no more rows left for you to edit.</p>');
 							}
-
-							wizardCompleteEl.find("div.buttons").find("a.rerun").click(function(){
-								/*
-								 * Edit the cells using the values the user has typed in in the uenxepected values panel
-								 */
+							
+							// Interaction for the "Rerun wizard" button
+							unexpectedValuesEl.find("div.buttons").find("a.rerun").click(function(){
+								
+								// Transform the cells using the values the user has typed into the input boxes 
+								// in the unexepected values panel
 								self.fixUnexpectedValues(result, function(){
-									LG.vars.hasFixedValue = true;
+									// Set the hasFixedValue boolean
+									self.hasFixedValue = true;
+									// Perform an update to reflect the changes in the data table
 									Refine.update({cellsChanged:true}, function(){
 										/*
 										 * Re-run the current wizard using it's last configuration
@@ -1913,28 +1965,39 @@ var LinkedGov_WizardsPanel = {
 								});
 							});
 
-							wizardCompleteEl.find("div.buttons").find("a.done").click(function(){
+							// Interaction for the "Done" button
+							unexpectedValuesEl.find("div.buttons").find("a.done").click(function(){
 
-								LG.vars.hasFixedValue = false;
+								// Reset the hasFixedValue boolean
+								self.hasFixedValue = false;
 
 								// Remove the "error" facet
+								// This removes the filter from the data table - so all the 
+								// rows are now showing.
 								var facets = ui.browsingEngine._facets;
 								for(var i=0; i < facets.length; i++){
 									if(facets[i].facet._config.columnName == result.colName){
 										facets[i].facet._remove();
 									}
 								}
+								
 								// Return the wizard to it's original state
 								self.restoreWizardBody();
 
 							});
 
 						} else if($(this).hasClass("carryon")){
-
+							// For the "Carry On" button
+							// When the user clicks "Carry on" we recurse into this function
+							// but we move on to the next colObject.
+							
+							// Reset the hasFixedValue flag
+							self.hasFixedValue = false;
+							
+							// If we've looped through all of the colObjects
 							if(index == colObjects.length-1){
-								LG.vars.hasFixedValue = false;
-
-								// Remove the "error" facet
+								
+								// Remove the "error" facet / return the rows in the data table to normal
 								var facets = ui.browsingEngine._facets;
 								for(var i=0; i < facets.length; i++){
 									if(facets[i].facet._config.columnName == result.colName){
@@ -1942,11 +2005,12 @@ var LinkedGov_WizardsPanel = {
 									}
 								}
 
-								LG.vars.hasFixedValue = false;
+								// Return the wizard to it's original state
 								self.restoreWizardBody();
+								
 							} else {
-
-								LG.vars.hasFixedValue = false;
+								// If the user has pressed "Carry on", but there are other 
+								// columns to possibly correct values for
 
 								// Remove the "error" facet
 								var facets = ui.browsingEngine._facets;
@@ -1956,15 +2020,18 @@ var LinkedGov_WizardsPanel = {
 									}
 								}
 
-								// Carry on to the next column with unexpected values
+								// Move on to the next colObject by incrementing the index.
 								index = index+1;
+								// Recurse until we've processed each colObject.
 								self.displayUnexpectedValuesPanel(colObjects, index, wizardBody);
 							}
 						}
 					});
 
 				} else {
-
+					// If the colObject does not contain any "unexpected value" data (i.e. the 
+					// parameters and the result
+					
 					// Remove the "error" facet
 					var facets = ui.browsingEngine._facets;
 					for(var i=0; i < facets.length; i++){
@@ -1973,72 +2040,24 @@ var LinkedGov_WizardsPanel = {
 						}
 					}
 
+					// Move on to the next colObject by recursing
 					index = index+1;
 					self.displayUnexpectedValuesPanel(colObjects, index, wizardBody);
 				}
+			} else {
+				// We have looped through the colObjects
 			}
 
 		},
-
-		/*
-		 * fixUnexpectedValues
-		 */
-		fixUnexpectedValues : function(result, callback){
-
-			$("div.wizardComplete").find("ul.unexpectedValueList").children("li").each(function(){
-
-				var li = $(this);
-
-				var data = {
-						cell : $(li).children("input").attr("data-cell"),
-						row : $(li).children("input").attr("data-row"),
-						value : $(li).children("input").val(),
-						engine : JSON.stringify(ui.browsingEngine.getJSON())
-				};
-
-				LG.silentProcessCall({
-					type : "POST",
-					url : "/command/" + "core" + "/" + "edit-one-cell",
-					data : data,
-					success : function(data) {
-						//
-					}
-				});
-
-				if(li[0] == $("div.wizardComplete").find("ul.unexpectedValueList").children("li").eq($("div.wizardComplete").find("ul.unexpectedValueList").children("li").length-1)[0]){
-					callback();
-				}
-			});
-
-
-		},
-
-		/*
-		 * populateUnexpectedValuePanelList 
-		 */
-		populateUnexpectedValuePanelList : function(result){
-
-			var html = '<ul class="unexpectedValueList">';
-
-			var columns = theProject.columnModel.columns;
-			for(var i=0;i<columns.length;i++){
-				if(columns[i].name == result.colName){
-					for(var j=0;j<theProject.rowModel.rows.length;j++){
-						if(theProject.rowModel.rows[j].cells[columns[i].cellIndex] != null){
-							html += '<li><input class="unexpectedValue" type="text" data-cell="'+columns[i].cellIndex+'" data-row="'+theProject.rowModel.rows[j].i+'" rel="'+theProject.rowModel.rows[j].cells[columns[i].cellIndex].v+'" value="'+theProject.rowModel.rows[j].cells[columns[i].cellIndex].v+'" /></li>';
-						}
-					}
-				}
-			}
-
-			html += "</ul>";
-
-			$("div.wizardComplete").find("div.buttons").before(html);
-		},
-
+		
 
 		/*
 		 * showUnexpectedValues
+		 * 
+		 * Filters the rows in the table using the expression provided by the wizard 
+		 * for the unexpected values test.
+		 * 
+		 * This is like simulating a custom text facet on the data.
 		 */
 		showUnexpectedValues : function(result, callback){
 
@@ -2077,6 +2096,83 @@ var LinkedGov_WizardsPanel = {
 
 			callback(result);
 
+		},
+		
+
+		/*
+		 * populateUnexpectedValuePanelList 
+		 * 
+		 * Instead of using a faceted list of values, we can take advantage of 
+		 * the fact the unexpected values feature filters the rows in the data table, 
+		 * so we can simply pluck the values from the table element.
+		 * TODO: Perhaps not the best approach, but the data table will always show the 
+		 * values to be fixed.
+		 */
+		populateUnexpectedValuePanelList : function(result){
+
+			var html = '<ul class="unexpectedValueList">';
+
+			var columns = theProject.columnModel.columns;
+			for(var i=0;i<columns.length;i++){
+				if(columns[i].name == result.colName){
+					for(var j=0;j<theProject.rowModel.rows.length;j++){
+						if(theProject.rowModel.rows[j].cells[columns[i].cellIndex] != null){
+							// The input element needs to contain the cell index and row index 
+							// which we pass to the "edit-one-cell" process call in the "fixUnexpectedValues()" 
+							// function.
+							html += '<li><input class="unexpectedValue" type="text" data-cell="'+
+							columns[i].cellIndex+'" data-row="'+theProject.rowModel.rows[j].i+'" rel="'+
+							theProject.rowModel.rows[j].cells[columns[i].cellIndex].v+'" value="'+
+							theProject.rowModel.rows[j].cells[columns[i].cellIndex].v+'" /></li>';
+						}
+					}
+				}
+			}
+
+			html += "</ul>";
+
+			$("div.unexpectedValues").find("div.buttons").before(html);
+		},
+
+		/*
+		 * fixUnexpectedValues
+		 * 
+		 * Applies the edited values from inside the unexpectedValues panel to the actual data.
+		 */
+		fixUnexpectedValues : function(result, callback){
+
+			// Loop through each of the list elements that contain the input boxes
+			$("div.unexpectedValues").find("ul.unexpectedValueList").children("li").each(function(){
+
+				var li = $(this);
+
+				// Construct a parameter object
+				var data = {
+						cell : $(li).children("input").attr("data-cell"),
+						row : $(li).children("input").attr("data-row"),
+						value : $(li).children("input").val(),
+						engine : JSON.stringify(ui.browsingEngine.getJSON())
+				};
+
+				// Call a SINGULAR edit process as opposed to a MULTI edit process.
+				// Though it may seem backward, we don't want to overwrite multiple cells as they 
+				// may not represent the same thing.
+				// TODO: We should provide an option here to say - "Apply to all identical cells?"
+				LG.silentProcessCall({
+					type : "POST",
+					url : "/command/" + "core" + "/" + "edit-one-cell",
+					data : data,
+					success : function(data) {
+						//
+					}
+				});
+
+				// Test whether we have iterated to the end of the list, in which 
+				// case, callback
+				if(li[0] == $("div.unexpectedValues").find("ul.unexpectedValueList").children("li").eq($("div.unexpectedValues").find("ul.unexpectedValueList").children("li").length-1)[0]){
+					callback();
+				}
+			});
 		}
 
 };

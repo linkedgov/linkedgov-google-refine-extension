@@ -677,31 +677,20 @@ body.lg div.wizard-body h2 {
 	text-align: left;
 }
 
-body.lg div.wizard-body div.wizardComplete {
-	/*    background: none repeat scroll 0 0 #FFFFFF;
-    position: absolute;
-    width: 275px;
-    z-index: 99;
-    display:none;	*/
+body.lg div.wizard-body div.unexpectedValues {
 	
 }
 
-body.lg div.wizard-body div.wizardComplete p {
+body.lg div.wizard-body div.unexpectedValues p {
 	line-height: 1.3;
 	margin-left: 10px;
 	margin-right: 10px;
 	padding: 7px 15px;
 }
 
-body.lg div.wizard-body div.wizardComplete div.warning { /*
-    background: none repeat scroll 0 0 #FFF4CB;
-    border: 1px solid #EAD799;
-    border-radius: 5px 5px 5px 5px;
-    padding: 12px 12px 25px;
-    */
+body.lg div.wizard-body div.unexpectedValues div.warning {
 	background: none repeat scroll 0 0 #EBEEF8;
 	border: 1px solid #BBCCFF;
-	border-radius: 5px 5px 5px 5px;
 	color: #444444;
 	margin-bottom: 10px;
 	padding-bottom: 5px;
@@ -709,18 +698,9 @@ body.lg div.wizard-body div.wizardComplete div.warning { /*
 	text-align: left;
 }
 
-body.lg div.wizard-body div.wizardComplete div.warning p.title { /*
-    background: url("../images/warning-small.png") no-repeat scroll center top transparent;
-    font-size: 18px;
-    font-weight: bold;
-    padding: 55px 0 0;
-    text-align: center;
-    vertical-align: middle;
-    text-transform: capitalize;
-    */
+body.lg div.wizard-body div.unexpectedValues div.warning p.title {
 	background: none repeat scroll 0 0 #FFDEDE;
 	border: 1px solid #E3C2C2;
-	border-radius: 5px;
 	font-size: 14px;
 	font-weight: bold;
 	margin-top: 10px;
@@ -730,14 +710,21 @@ body.lg div.wizard-body div.wizardComplete div.warning p.title { /*
 	vertical-align: middle;
 }
 
-body.lg div.wizard-body div.wizardComplete div.warning p.message {
+body.lg div.wizard-body div.unexpectedValues div.warning p.message {
 	background: none repeat scroll 0 0 #FFFFFF;
 	border: 1px solid #E8E7E7;
-	border-radius: 5px 5px 5px 5px;
 	margin-top: 10px;
 }
 
-body.lg div.wizard-body div.wizardComplete div.warning span.colName {
+body.lg div.wizard-body div.unexpectedValues div.warning span.colName {
+	background: none repeat scroll 0 0 #FFDEDE;
+	border-radius: 3px 3px 3px 3px;
+	font-weight: bold;
+	padding: 1px 5px;
+	display: inline-block;
+}
+
+body.lg div.wizard-body div.unexpectedValues div.warning span.valueType {
 	background: none repeat scroll 0 0 #FFDEDE;
 	border-radius: 3px 3px 3px 3px;
 	font-weight: bold;
@@ -745,30 +732,22 @@ body.lg div.wizard-body div.wizardComplete div.warning span.colName {
 	display: inline-block;
 }
 
-body.lg div.wizard-body div.wizardComplete div.warning span.valueType {
-	background: none repeat scroll 0 0 #FFDEDE;
-	border-radius: 3px 3px 3px 3px;
-	font-weight: bold;
-	padding: 1px 3px;
-	display: inline-block;
-}
-
-body.lg div.wizard-body div.wizardComplete div.warning span.count {
+body.lg div.wizard-body div.unexpectedValues div.warning span.count {
 	background: none repeat scroll 0 0 #FFDEDE;
 	border-radius: 3px 3px 3px 3px;
 	font-weight: bold;
 	padding: 1px 6px;
 }
 
-body.lg div.wizard-body div.wizardComplete div.warning p.details {
+body.lg div.wizard-body div.unexpectedValues div.warning p.details {
 	font-size: 13px;
 	font-weight: bold;
 	margin-bottom: 0;
 	margin-top: 10px;
-	text-align: center;
+	text-align: left;
 }
 
-body.lg div.wizard-body div.wizardComplete div.warning ul.unexpectedValueList
+body.lg div.wizard-body div.unexpectedValues div.warning ul.unexpectedValueList
 	{
 	background: none repeat scroll 0 0 #FFDEDE;
 	border: 1px solid #E3C2C2;
@@ -778,34 +757,34 @@ body.lg div.wizard-body div.wizardComplete div.warning ul.unexpectedValueList
 	padding: 10px;
 }
 
-body.lg div.wizard-body div.wizardComplete div.warning ul.unexpectedValueList li
+body.lg div.wizard-body div.unexpectedValues div.warning ul.unexpectedValueList li
 	{
 	margin-bottom: 3px;
 	padding: 0;
 }
 
-body.lg div.wizard-body div.wizardComplete div.warning ul.unexpectedValueList li input.unexpectedValue
+body.lg div.wizard-body div.unexpectedValues div.warning ul.unexpectedValueList li input.unexpectedValue
 	{
 	padding: 3px;
 	width: 96%;
 }
 
-body.lg div.wizard-body div.wizardComplete div.warning ul.unexpectedValueList li input.unexpectedValue:hover
+body.lg div.wizard-body div.unexpectedValues div.warning ul.unexpectedValueList li input.unexpectedValue:hover
 	{
 	color: #0059FB;
 }
 
-body.lg div.wizard-body div.wizardComplete div.warning ul.unexpectedValueList li input.unexpectedValue:focus
+body.lg div.wizard-body div.unexpectedValues div.warning ul.unexpectedValueList li input.unexpectedValue:focus
 	{
 	background: none repeat scroll 0 0 #FFFFD3;
 }
 
-body.lg div.wizard-body div.wizardComplete div.warning p.rerun-tip {
+body.lg div.wizard-body div.unexpectedValues div.warning p.rerun-tip {
 	background-color: #FBFED3;
 	border: 1px solid #DEE0BB;
 }
 
-body.lg div.wizard-body div.wizardComplete div.warning p.exampleValue span
+body.lg div.wizard-body div.unexpectedValues div.warning p.exampleValue span
 	{
 	background-color: #E0F7DB;
 	border-radius: 3px 3px 3px 3px;
@@ -813,20 +792,20 @@ body.lg div.wizard-body div.wizardComplete div.warning p.exampleValue span
 	padding: 1px 6px;
 }
 
-body.lg div.wizard-body div.wizardComplete div.warning a.button {
+body.lg div.wizard-body div.unexpectedValues div.warning a.button {
 	color: #FFFFFF;
 	font-weight: bold;
 	margin: 0 4px;
 	padding: 2px 10px;
 }
 
-body.lg div.wizard-body div.wizardComplete div.warning div.buttons {
+body.lg div.wizard-body div.unexpectedValues div.warning div.buttons {
 	margin-bottom: 10px;
 	margin-top: 10px;
 	text-align: center;
 }
 
-body.lg div.wizard-body div.wizardComplete div.warning a.button.undo {
+body.lg div.wizard-body div.unexpectedValues div.warning a.button.undo {
 	background: -moz-linear-gradient(center top, #D68C8C, #742F2F) repeat
 		scroll 0 0 transparent;
 	background: -webkit-gradient(linear, left bottom, left top, from(#742F2F),
@@ -834,7 +813,7 @@ body.lg div.wizard-body div.wizardComplete div.warning a.button.undo {
 	text-shadow: 1px 1px #5B1B1B;
 }
 
-body.lg div.wizard-body div.wizardComplete div.warning a.button.fix {
+body.lg div.wizard-body div.unexpectedValues div.warning a.button.fix {
 	background: -moz-linear-gradient(center top, #A3D68C, #40742F) repeat
 		scroll 0 0 transparent;
 	background: -webkit-gradient(linear, left bottom, left top, from(#40742F),
@@ -842,7 +821,7 @@ body.lg div.wizard-body div.wizardComplete div.warning a.button.fix {
 	text-shadow: 1px 1px #153E19;
 }
 
-body.lg div.wizard-body div.wizardComplete div.warning a.button.carryon
+body.lg div.wizard-body div.unexpectedValues div.warning a.button.carryon
 	{
 	background: -moz-linear-gradient(center top, #79B1FE, #294F8C) repeat
 		scroll 0 0 transparent;
@@ -851,7 +830,7 @@ body.lg div.wizard-body div.wizardComplete div.warning a.button.carryon
 	text-shadow: 1px 1px #1E2E6A;
 }
 
-body.lg div.wizard-body div.wizardComplete div.warning a.button.done {
+body.lg div.wizard-body div.unexpectedValues div.warning a.button.done {
 	background: -moz-linear-gradient(center top, #79B1FE, #294F8C) repeat
 		scroll 0 0 transparent;
 	background: -webkit-gradient(linear, left bottom, left top, from(#294F8C),
@@ -859,7 +838,7 @@ body.lg div.wizard-body div.wizardComplete div.warning a.button.done {
 	text-shadow: 1px 1px #1E2E6A;
 }
 
-body.lg div.wizard-body div.wizardComplete div.warning a.button.rerun {
+body.lg div.wizard-body div.unexpectedValues div.warning a.button.rerun {
 	background: -moz-linear-gradient(center top, #A3D68C, #40742F) repeat
 		scroll 0 0 transparent;
 	background: -webkit-gradient(linear, left bottom, left top, from(#40742F),
@@ -867,7 +846,7 @@ body.lg div.wizard-body div.wizardComplete div.warning a.button.rerun {
 	text-shadow: 1px 1px #153E19;
 }
 
-body.lg div.wizard-body div.wizardComplete div.warning a.button.undo:active
+body.lg div.wizard-body div.unexpectedValues div.warning a.button.undo:active
 	{
 	background: -moz-linear-gradient(center top, #742F2F, #D68C8C) repeat
 		scroll 0 0 transparent;
@@ -875,7 +854,7 @@ body.lg div.wizard-body div.wizardComplete div.warning a.button.undo:active
 		to(#742F2F) ) #DDDDDD;
 }
 
-body.lg div.wizard-body div.wizardComplete div.warning a.button.fix:active
+body.lg div.wizard-body div.unexpectedValues div.warning a.button.fix:active
 	{
 	background: -moz-linear-gradient(center top, #40742F, #A3D68C) repeat
 		scroll 0 0 transparent;
@@ -883,7 +862,7 @@ body.lg div.wizard-body div.wizardComplete div.warning a.button.fix:active
 		to(#40742F) ) #DDDDDD;
 }
 
-body.lg div.wizard-body div.wizardComplete div.warning a.button.carryon:active
+body.lg div.wizard-body div.unexpectedValues div.warning a.button.carryon:active
 	{
 	background: -moz-linear-gradient(center top, #294F8C, #79B1FE) repeat
 		scroll 0 0 transparent;
@@ -891,7 +870,7 @@ body.lg div.wizard-body div.wizardComplete div.warning a.button.carryon:active
 		to(#294F8C) ) #DDDDDD;
 }
 
-body.lg div.wizard-body div.wizardComplete div.warning a.button.done:active
+body.lg div.wizard-body div.unexpectedValues div.warning a.button.done:active
 	{
 	background: -moz-linear-gradient(center top, #294F8C, #79B1FE) repeat
 		scroll 0 0 transparent;
@@ -899,7 +878,7 @@ body.lg div.wizard-body div.wizardComplete div.warning a.button.done:active
 		to(#294F8C) ) #DDDDDD;
 }
 
-body.lg div.wizard-body div.wizardComplete div.warning a.button.rerun:active
+body.lg div.wizard-body div.unexpectedValues div.warning a.button.rerun:active
 	{
 	background: -moz-linear-gradient(center top, #40742F, #A3D68C) repeat
 		scroll 0 0 transparent;
