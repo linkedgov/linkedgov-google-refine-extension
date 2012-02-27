@@ -85,7 +85,9 @@ var LinkedGov_generalOperations = {
 		 */
 		findHighestFacetValue : function(colName, expression){
 
-			var myVal = "";
+			// log("findHighestFacetValue");
+			
+			var result = "";
 
 			/*
 			 * Build a parameter object using the first of the column names.
@@ -143,7 +145,7 @@ var LinkedGov_generalOperations = {
 
 							i=data.facets.length;
 
-							myVal = value;
+							result = value;
 
 						}
 					}
@@ -154,7 +156,7 @@ var LinkedGov_generalOperations = {
 				}
 			});	
 
-			return myVal;
+			return result;
 		},
 
 
@@ -165,7 +167,7 @@ var LinkedGov_generalOperations = {
 		 */
 		computeColumnFacet : function(colName, expression, callback){
 
-			log("computeColumnFacet");
+			// log("computeColumnFacet");
 			
 			/*
 			 * Build a parameter object using the first of the column names.
@@ -284,6 +286,7 @@ var LinkedGov_generalOperations = {
 		 */
 		renameColumn : function(oldName, newName, callback) {
 
+			// Check if the new column name isn't present somewhere else
 			if(LG.ops.isUniqueColumnName(newName)){
 				LG.silentProcessCall({
 					type : "POST",
@@ -333,7 +336,6 @@ var LinkedGov_generalOperations = {
 		 * Types a column within Refine.
 		 */
 		parseValueTypesInColumn : function(type, columnName){
-
 
 			var expression = 'value';
 
@@ -648,6 +650,28 @@ var LinkedGov_generalOperations = {
 			}
 
 			return false;
+		},
+		
+	
+		/*
+		 * Trims an object's key-value pair size.
+		 * 
+		 * Used for the suggest & preview caches when 
+		 * reconciling.
+		 */
+		trimObject:function(object, size){
+			var i=0;
+			try{
+				$.each(object,function(k,v){
+					if(i<size){
+						i++;
+					} else {
+						delete obj[k];
+					}
+				});
+			}catch(e){
+				//log(e);
+			}			
 		},
 
 		/*

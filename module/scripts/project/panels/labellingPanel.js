@@ -458,7 +458,7 @@ var LinkedGov_LabellingPanel = {
 						if(schema.rootNodes[i].rdfTypes[0].curie == "owl:Class"){
 
 							var rowLabel = "", rowDescription = "", rowStatus = "";
-							
+
 							for(var j=0; j<schema.rootNodes[i].links.length; j++){
 
 								// Locate the label and comment and populate the input fields
@@ -477,52 +477,50 @@ var LinkedGov_LabellingPanel = {
 									$("div.row-description textarea.row-description").parent().removeClass("good").addClass("great");
 								}
 							}
-							
+
 							LG.vars.labelsAndDescriptions.rowLabel = rowLabel;
 							LG.vars.labelsAndDescriptions.rowDescription = rowDescription;
 							LG.vars.labelsAndDescriptions.rowStatus = rowStatus;
-							
+
 							// If the type is owl:ObjectProperty
 						} else if(schema.rootNodes[i].rdfTypes[0].curie == "owl:ObjectProperty") {
-							
+
 							var colLabel = "", colDescription = "Enter a description...", colStatus = "";
 
-							// Make sure there are twowe've found a label & description
-							// if(schema.rootNodes[i].links.length == 2){
+							// Loop through the owl:ObjectProperty links (label & comment)
 							for(var j=0; j<schema.rootNodes[i].links.length; j++){
 								if(schema.rootNodes[i].links[j].curie == "rdfs:label"){
-									
+
 									// Loop through the label inputs and locate the input with the matching 
 									// column label
 									$("div.column-list ul li").each(function(){
 										if($(this).find("input.column-label").val() == schema.rootNodes[i].links[j].target.value){
-											
+
 											// Labels and descriptions can only be saved if they were validated, 
 											// so it's safe to add the "good" status
 											$(this).removeClass("maybe").addClass("good");																						
 											$(LG.getColumnHeaderElement(schema.rootNodes[i].links[j].target.value)).addClass("good");
 											status = "good";
-											
+
 											// We don't need to populate the label input as it's the same, 
 											// but do it anyway
 											$(this).find("input.column-label").val(schema.rootNodes[i].links[j].target.value);
 											colLabel = schema.rootNodes[i].links[j].target.value;
 
-											
 											// If there is a rdfs:comment for the owl:objectProperty, 
 											// there will be 2 links
 											if(schema.rootNodes[i].links.length == 2){
-																								
+
 												// For the "link" object found to contain the label, use the other link object (the comment) 
 												// to populate the column's description input.
 												// (j?0:1) means use the opposite of j
 												$(this).find("textarea.column-description").val(schema.rootNodes[i].links[(j?0:1)].target.value);
 												colDescription = schema.rootNodes[i].links[(j?0:1)].target.value;
-												
+
 												// Check to see if there's a valid description, 
 												// in which case, give the column a "great" status
 												if(schema.rootNodes[i].links[(j?0:1)].target.value.length > 2){
-									
+
 													// Highlight the input & column header
 													$(this).removeClass("good").addClass("great");											
 													$(LG.getColumnHeaderElement(schema.rootNodes[i].links[j].target.value)).addClass("great");
@@ -533,12 +531,13 @@ var LinkedGov_LabellingPanel = {
 											}
 										}
 									});
-									
+
 									j = schema.rootNodes[i].links.length-1;
 								}
 							}
-							//}
-							
+
+							// Add the column's label and description to the local 
+							// labelsAndDescriptions object
 							LG.vars.labelsAndDescriptions.cols.push({
 								label:colLabel,
 								description:colDescription,
@@ -629,26 +628,24 @@ var LinkedGov_LabellingPanel = {
 			/*
 			 * Store or update the column description in the local object.
 			 */
-			if(colData.length > 0){
-				for(var i=0; i<colData.length; i++){
-					if(colData[i].label == input.val()){
-						colData[i].description = textarea.val();
-						colData[i].status = status;
-						i=colData.length-1;
-					} else if(i == colData.length-1){
-						colData.push({
-							label : input.val(),
-							description : textarea.val(),
-							status : status
-						});
-					}
+			var colFound = false;
+
+			for(var i=0; i<colData.length; i++){
+				// Find the existing column description using the "data-original-name" attribute
+				// attached to the input element. This doesn't get destroyed as the user 
+				// enters a new column name - allowing us to find it's description and status.
+				if(colData[i].label == input.data("original-name")){
+					colData[i].description = textarea.val();
+					colData[i].status = status;
+					i=colData.length-1;
+					colFound = true;
+				} else if(i == colData.length-1 && !colFound){
+					colData.push({
+						label : input.val(),
+						description : textarea.val(),
+						status : status
+					});
 				}
-			} else {
-				colData.push({
-					label : input.val(),
-					description : textarea.val(),
-					status : status
-				});				
 			}
 
 			/*

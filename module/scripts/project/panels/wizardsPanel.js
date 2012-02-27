@@ -5,10 +5,9 @@
  */
 var LinkedGov_WizardsPanel = {
 
-		wizardScriptConfigs:{
-			addressWizard:""
-		},
-		
+		/*
+		 * A list of wizard IDs to use as keys.
+		 */
 		wizardNames:[
 		         "addressWizard",
 		         "dateTimeWizard",
@@ -23,13 +22,17 @@ var LinkedGov_WizardsPanel = {
 		/*
 		 * loadWizardScripts
 		 * 
-		 * Each wizard has it's own script which needs to be loaded recursively.
+		 * Each wizard has it's own script which needs to be loaded.
+		 * 
+		 * To prevent cross-browser AJAX loading issues (Safari), these script loads are chained
+		 * together, which once complete trigger the HTML load.
 		 * 
 		 * Once the scripts have loaded, load each wizards HTML.
-		 * 
 		 */
 		loadWizardScripts : function(index){
 
+			//log("loadWizardScripts");
+			
 			var self = this;
 			
 			$.getScript("extension/linkedgov/scripts/project/wizards/"+self.wizardNames[index]+".js",function(){
@@ -88,9 +91,12 @@ var LinkedGov_WizardsPanel = {
 
 				/* 
 				 * Load each wizards' HTML into the wizard-bodies element.
+				 * 
+				 * Interval needed as a fix for object-creation timing issues.
+				 * TODO: Remove interval if possible.
 				 */				
 				var interval = setInterval(function(){
-					//log("interval");
+					// Test to see if the wizards have been created
 					if(typeof LG.wizards != 'undefined'){
 						
 						self.loadWizardHTML(0);
@@ -118,6 +124,7 @@ var LinkedGov_WizardsPanel = {
 			
 			DOM.loadHTML("linkedgov", "html/project/wizards/"+self.wizardNames[index]+".html", function(response){
 
+				// Store the element to inject the wizard HTML into
 				var wizardBodiesEl = ui.typingPanel._el.wizardsPanel.find("div.wizard-bodies");
 				wizardBodiesEl.html(wizardBodiesEl.html()+response);	
 			
@@ -1014,21 +1021,14 @@ var LinkedGov_WizardsPanel = {
 					"<span class='remove'>X</span>" +
 					self.getFragmentData($cols) +
 					"</li>";
+					
 					/*
 					 * Add jQuery UI's "selected" styles to the column headers in the
 					 * data table.
 					 */
-					//$colName = $(this).val();
-
 					$(LG.getColumnHeaderElement($(this).val())).addClass("selected");
 					LG.selectColumn($(this).val());
 
-					/*$("table.data-header-table tr td.column-header span.column-header-name").each(function(){
-						if($(this).html() == $colName){
-							$(this).parent().parent("td").addClass("ui-selected").addClass("selected");
-							$("table.data-header-table").addClass("ui-selectable");
-						}
-					});*/
 				}
 			});
 
@@ -1254,6 +1254,9 @@ var LinkedGov_WizardsPanel = {
 		 * generateWizardPreview
 		 * 
 		 * NOT BEING USED.
+		 * 
+		 * Allows you to preview the results on cells of a given 
+		 * expression.
 		 */
 		generateWizardPreview : function(previewButton) {
 
@@ -1586,12 +1589,10 @@ var LinkedGov_WizardsPanel = {
 		 */
 		checkForUnexpectedValues : function(colObjects, wizardBody){
 
+			// log("checkForUnexpectedValues");
+
 			var self = this;
 			
-			log("checkForUnexpectedValues");
-
-			log(colObjects);
-
 			/*
 			 * Run the tests on the columns using the colObjects, storing their result back inside
 			 * their "unexpectedValueParams" object.
@@ -1604,11 +1605,13 @@ var LinkedGov_WizardsPanel = {
 				 */
 				if(typeof colObjects[i].unexpectedValueParams != 'undefined'){
 
+					// Set a flag for detecting unmatched values
 					var unexpectedValuesPresent = false;
 
-					log(colObjects[i]);
-					log("Running tests on column: "+colObjects[i].unexpectedValueParams.colName);
+					//log(colObjects[i]);
+					//log("Running tests on column: "+colObjects[i].unexpectedValueParams.colName);
 
+					// Create a result object for the column by passing a number of variables
 					colObjects[i].unexpectedValueParams.result = self.verifyValueTypes(
 							colObjects[i].unexpectedValueParams.colName, 
 							colObjects[i].unexpectedValueParams.expression, 
@@ -1616,8 +1619,8 @@ var LinkedGov_WizardsPanel = {
 							colObjects[i].unexpectedValueParams.exampleValue
 					);
 
-					log("Result: ");
-					log(colObjects[i].unexpectedValueParams.result);
+					//log("Result: ");
+					//log(colObjects[i].unexpectedValueParams.result);
 
 					if(colObjects[i].unexpectedValueParams.result.type != "success"){
 						unexpectedValuesPresent = true;
@@ -1741,6 +1744,7 @@ var LinkedGov_WizardsPanel = {
 				}
 			});	
 
+			// Construct the result object
 			var result = {
 					colName:columnName,
 					exampleValue:exampleValue,
@@ -1752,14 +1756,8 @@ var LinkedGov_WizardsPanel = {
 
 			/*
 			 * If the averageType resembles 90% or more of the total 
-			 * number of types, then the column has been typed successfully
+			 * number of types, then we can say the column has been typed successfully
 			 */
-
-			//log("averageTypeCount = "+averageTypeCount);
-			//log("(theProject.rowModel.total*"+percentage+") = "+(theProject.rowModel.total*percentage));
-			//log("expectedType = "+expectedType);
-			//log("averageType = "+averageType);
-
 			if(averageTypeCount == theProject.rowModel.total && expectedType == averageType){
 				result.message = "All values in the <span class='colName'>"+result.colName+"</span> column successfully typed as <span class='valueType'>"+averageType+"</span>.";
 				result.success = true;
@@ -1790,8 +1788,7 @@ var LinkedGov_WizardsPanel = {
 				result.type = "notclear";
 			}
 
-			log("verifyValueTypes, result: ");
-			log(result);
+			//log(result);
 
 			return result;
 
@@ -1817,17 +1814,6 @@ var LinkedGov_WizardsPanel = {
 
 			$(wizardBody).find('div.wizardComplete').remove();
 
-			/*
-			 * Loop through the column objects and display the 
-			 * unexpected values panel to the user depending on the 
-			 * results. 
-			 */
-
-			//log('displayUnexpectedValuesPanel');
-			//log(colObjects);
-			//log(index);
-
-			//for(var i=0; i<colObjects.length; i++){
 			if(index < colObjects.length) {
 
 				if(typeof colObjects[index].unexpectedValueParams != 'undefined' 
@@ -1903,7 +1889,6 @@ var LinkedGov_WizardsPanel = {
 							wizardCompleteEl.find("div.buttons").append("<a class='button done' />");
 							wizardCompleteEl.find("div.buttons").find("a.rerun").html("Re-run wizard").show();
 							wizardCompleteEl.find("div.buttons").find("a.done").html("Done").show();
-							//wizardCompleteEl.find("div.buttons").before('<p class="message exampleValue">Example value: <span>'+result.exampleValue+'</span></p>');
 
 							if(LG.vars.hasFixedValue){
 								wizardCompleteEl.find("div.buttons").before('<p class="message rerun-tip">If you have corrected all of the values properly, there should be no more rows left for you to edit.</p>');
@@ -1993,8 +1978,6 @@ var LinkedGov_WizardsPanel = {
 				}
 			}
 
-			//} // end for loop
-
 		},
 
 		/*
@@ -2012,8 +1995,6 @@ var LinkedGov_WizardsPanel = {
 						value : $(li).children("input").val(),
 						engine : JSON.stringify(ui.browsingEngine.getJSON())
 				};
-
-				//console.log("Data: ", data);
 
 				LG.silentProcessCall({
 					type : "POST",

@@ -724,18 +724,19 @@ LG.resizeAll_LG = function() {
 /*
  * addReconciliationService
  * 
- * Adds a single service.
+ * Adds a reconciliation service to Refine's ReconciliationManager or the RDF extension's 
+ * RdfReconciliationManager (depending on whether it's a SPARQL endpoint or a standard endpoint)
  */
-LG.addReconciliationService = function(serviceName, serviceNameSuffix, callback){
+LG.addReconciliationService = function(serviceCfg, serviceNameSuffix, callback){
 
+	//log("addReconciliationService");
+	
 	var self = this;
-
-	log("addReconciliationService");
-
+	
 	/*
 	 * Loop through the services config object.
 	 * 
-	 * Find the service with the matching URL
+	 * Find the matching service
 	 * 
 	 * Check it's type
 	 * 
@@ -745,7 +746,7 @@ LG.addReconciliationService = function(serviceName, serviceNameSuffix, callback)
 
 	for(var i=0; i<services.length; i++){
 
-		if(serviceName == services[i].serviceName){
+		if(serviceCfg === services[i]){
 
 			var service = services[i];
 
@@ -795,7 +796,7 @@ LG.addReconciliationService = function(serviceName, serviceNameSuffix, callback)
 							 * Add the same service again, but this time, adding an integer suffix to the end
 							 * of it's name (to avoid a clash).
 							 */
-							LG.addReconciliationService(serviceName, serviceNameSuffix, callback);
+							LG.addReconciliationService(service, serviceNameSuffix, callback);
 						}
 					},"json");
 				});

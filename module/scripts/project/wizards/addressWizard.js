@@ -535,9 +535,9 @@ var LinkedGov_addressWizard = {
 			rootNode.links.push(vcardObj);
 			var schema = LG.rdfOps.getRDFSchema();
 			if (!newRootNode) {
-				log("rootNode has already been updated...");
+				log("RootNode has been updated...");
 			} else {
-				log("Adding first rootNode for address data...");
+				log("Adding first rootNode...");
 				schema.rootNodes.push(rootNode);
 			}
 

@@ -12,7 +12,7 @@
  */
 
 var LinkedGov_rdfOperations = {
-		
+
 		/*
 		 * getRDFSchema
 		 * 
@@ -105,9 +105,9 @@ var LinkedGov_rdfOperations = {
 						if(callback){
 							callback(schema.rootNodes[i], false);
 						}
-						
+
 						i = schema.rootNodes.length;
-						
+
 					} else if (i == schema.rootNodes.length - 1) {
 						//log("created a new root node");
 						rootNode = {
@@ -120,7 +120,7 @@ var LinkedGov_rdfOperations = {
 						if(callback){
 							callback(rootNode, true);
 						}
-						
+
 						i = schema.rootNodes.length;
 					}
 				}
@@ -142,6 +142,8 @@ var LinkedGov_rdfOperations = {
 		},
 
 		/*
+		 * saveMetadataToRDF
+		 * 
 		 * Makes an AJAX call to our custom "get-meta-information" command 
 		 * which returns us a list of key-value pairs for the form that 
 		 * the user filled in at the first stage of importing.
@@ -166,235 +168,222 @@ var LinkedGov_rdfOperations = {
 				}
 			}
 
-			//log("metadataAlreadySaved = "+metadataAlreadySaved);
+			// Destroy any hidden column data
+			LG.ops.eraseHiddenColumnData();
 
-			//if(!metadataAlreadySaved){
+			// Create a vocabulary config object
+			var vocabs = [{
+				name : "dct",
+				uri : "http://purl.org/dc/terms/"
+			},{
+				name : "tags",
+				uri : "http://www.holygoat.co.uk/owl/redwood/0.1/tags/"
+			},{
+				name : "cc",
+				uri : "http://creativecommons.org/ns#"
+			},{
+				name : "oo",
+				uri : "http://purl.org/openorg/"
+			},{
+				name : "foaf",
+				uri : "http://xmlns.com/foaf/0.1/"
+			}];
 
-				/*
-				 * Destroy and hidden column data
-				 */
-				LG.ops.eraseHiddenColumnData();
-
-				var vocabs = [{
-					name : "dct",
-					uri : "http://purl.org/dc/terms/"
-				},{
-					name : "tags",
-					uri : "http://www.holygoat.co.uk/owl/redwood/0.1/tags/"
-				},{
-					name : "cc",
-					uri : "http://creativecommons.org/ns#"
-				},{
-					name : "oo",
-					uri : "http://purl.org/openorg/"
-				},{
-					name : "foaf",
-					uri : "http://xmlns.com/foaf/0.1/"
-				}];
-
-				for(var h=0; h<vocabs.length;h++){
-
-					for (var i = 0; i < schema.prefixes.length; i++) {
-						if (schema.prefixes[i].name == vocabs[h].name) {
-							// log("Found existing RDF prefixes, removing...");
-							schema.prefixes.splice(i, 1);
-							i--;
-						}
+			for(var h=0; h<vocabs.length;h++){
+				for (var i = 0; i < schema.prefixes.length; i++) {
+					if (schema.prefixes[i].name == vocabs[h].name) {
+						// log("Found existing RDF prefixes, removing...");
+						schema.prefixes.splice(i, 1);
+						i--;
 					}
-
-					schema.prefixes.push(vocabs[h]);
 				}
+				
+				schema.prefixes.push(vocabs[h]);
+			}
 
+			// 
+			self.getDatasetMetadata(function(metadataObject){
 
-				self.getDatasetMetadata(function(metadataObject){
+				var rootNode = {
+						links : [],
+						nodeType : "resource",
+						rdfTypes : [],
+						value : "http://example.org/example-dataset/" + theProject.id
+				};
 
-					var rootNode = {
-							links : [],
-							nodeType : "resource",
-							rdfTypes : [],
-							value : "http://example.org/example-dataset/" + theProject.id
-					};
+				$.each(metadataObject,function(key,val){
 
-					$.each(metadataObject,function(key,val){
+					log(key+" : "+val);
 
-						log(key+" : "+val);
-
-						switch(key){
-						case "LG.name" :
-							rootNode.links.push({
-								curie : "dct:title",
-								target : {
-									lang : "en",
-									nodeType : "literal",
-									value : val
-								},
-								uri : "http://purl.org/dc/terms/title"
-							});
-
-							/*
-							 * Manually add the oo:corrections description
-							 */
-							rootNode.links.push({
-								curie : "oo:corrections",
-								target : {
-									nodeType : "literal",
-									value : "mailto:fixme@org"
-								},
-								uri : "http://purl.org/openorg/corrections"
-							});
-
-							break;
-						case "LG.source" :
-							rootNode.links.push({
-								uri:"http://purl.org/dc/terms/source",
-								curie:"dct:source",
-								target:{
-									nodeType:"resource",
-									value:val,
-									rdfTypes:[],
-									links:[]
-								}
-							});
-							break;
-						case "LG.license" :
-							rootNode.links.push({
-								curie : "dct:license",
-								target:{
-									nodeType:"resource",
-									value:val,
-									rdfTypes:[],
-									links:[]
-								},
-								uri : "http://purl.org/dc/terms/license"
-							});
-							break;
-						case "LG.licenseLocation" :
-							if(val != 'null' && val != null && val.length > 4){
-								rootNode.links.push({
-									curie : "cc:attributionURL",
-									target:{
-										nodeType:"resource",
-										value:val,
-										rdfTypes:[],
-										links:[]
-									},
-									uri : "http://creativecommons.org/ns#attributionURL"
-								});
-							}
-							break;
-						case "LG.organisation" :				
-
-							var targetVar = {
+					switch(key){
+					case "LG.name" :
+						rootNode.links.push({
+							curie : "dct:title",
+							target : {
 								lang : "en",
 								nodeType : "literal",
 								value : val
-							};
+							},
+							uri : "http://purl.org/dc/terms/title"
+						});
 
-							if(val.indexOf("http") > 0){
-								targetVar = {
-										nodeType:"resource",
-										value:val,
-										rdfTypes:[],
-										links:[]
-								};
+						/*
+						 * Manually add the oo:corrections description
+						 */
+						rootNode.links.push({
+							curie : "oo:corrections",
+							target : {
+								nodeType : "literal",
+								value : "mailto:fixme@org"
+							},
+							uri : "http://purl.org/openorg/corrections"
+						});
+
+						break;
+					case "LG.source" :
+						rootNode.links.push({
+							uri:"http://purl.org/dc/terms/source",
+							curie:"dct:source",
+							target:{
+								nodeType:"resource",
+								value:val,
+								rdfTypes:[],
+								links:[]
 							}
-
+						});
+						break;
+					case "LG.license" :
+						rootNode.links.push({
+							curie : "dct:license",
+							target:{
+								nodeType:"resource",
+								value:val,
+								rdfTypes:[],
+								links:[]
+							},
+							uri : "http://purl.org/dc/terms/license"
+						});
+						break;
+					case "LG.licenseLocation" :
+						if(val != 'null' && val != null && val.length > 4){
 							rootNode.links.push({
-								curie : "dct:publisher",
-								target : targetVar,
-								uri : "http://purl.org/dc/terms/publisher"
-							});
-
-							break;
-						case "LG.datePublished" :
-							rootNode.links.push({
-								curie : "dct:created",
-								target : {
-									nodeType : "literal",
-									value : val,
-									valueType : "http://www.w3.org/2001/XMLSchema#date"
-								},
-								uri : "http://purl.org/dc/terms/created"
-							});
-							break;
-						case "LG.webLocation" :
-							rootNode.links.push({
-								curie : "foaf:page",
+								curie : "cc:attributionURL",
 								target:{
 									nodeType:"resource",
 									value:val,
 									rdfTypes:[],
 									links:[]
 								},
-								uri : "http://xmlns.com/foaf/0.1/page"
+								uri : "http://creativecommons.org/ns#attributionURL"
 							});
-							break;
-						case "LG.descriptionLocation" :
-							break;
+						}
+						break;
+					case "LG.organisation" :				
 
-						case "LG.frequency" :
+						var targetVar = {
+							lang : "en",
+							nodeType : "literal",
+							value : val
+					};
+
+						if(val.indexOf("http") > 0){
+							targetVar = {
+									nodeType:"resource",
+									value:val,
+									rdfTypes:[],
+									links:[]
+							};
+						}
+
+						rootNode.links.push({
+							curie : "dct:publisher",
+							target : targetVar,
+							uri : "http://purl.org/dc/terms/publisher"
+						});
+
+						break;
+					case "LG.datePublished" :
+						rootNode.links.push({
+							curie : "dct:created",
+							target : {
+								nodeType : "literal",
+								value : val,
+								valueType : "http://www.w3.org/2001/XMLSchema#date"
+							},
+							uri : "http://purl.org/dc/terms/created"
+						});
+						break;
+					case "LG.webLocation" :
+						rootNode.links.push({
+							curie : "foaf:page",
+							target:{
+								nodeType:"resource",
+								value:val,
+								rdfTypes:[],
+								links:[]
+							},
+							uri : "http://xmlns.com/foaf/0.1/page"
+						});
+						break;
+					case "LG.descriptionLocation" :
+						break;
+
+					case "LG.frequency" :
+						rootNode.links.push({
+							curie : "dct:accrualPeriodicity",
+							target : {
+								lang : "en",
+								nodeType : "literal",
+								value : val
+							},
+							uri : "http://purl.org/dc/terms/accrualPeriodicity"
+						});
+						break;
+					case "LG.keywords" :
+						var keywords = val.split(",");
+						for(var i=0;i<keywords.length;i++){
+
 							rootNode.links.push({
-								curie : "dct:accrualPeriodicity",
-								target : {
-									lang : "en",
-									nodeType : "literal",
-									value : val
-								},
-								uri : "http://purl.org/dc/terms/accrualPeriodicity"
+								"uri":"http://www.holygoat.co.uk/owl/redwood/0.1/tags/taggedWithTag",
+								"curie":"tags:taggedWithTag",
+								"target":{
+									"nodeType":"blank",
+									"rdfTypes":[],
+									"links":[
+									         {
+									        	 "uri":"http://www.holygoat.co.uk/owl/redwood/0.1/tags/tag",
+									        	 "curie":"tags:tag",
+									        	 "target":{
+									        		 "nodeType":"literal",
+									        		 "value":keywords[i].trim()
+									        	 }
+									         }
+									         ]
+								}
 							});
-							break;
-						case "LG.keywords" :
-							var keywords = val.split(",");
-							for(var i=0;i<keywords.length;i++){
-
-								rootNode.links.push({
-									"uri":"http://www.holygoat.co.uk/owl/redwood/0.1/tags/taggedWithTag",
-									"curie":"tags:taggedWithTag",
-									"target":{
-										"nodeType":"blank",
-										"rdfTypes":[],
-										"links":[
-										         {
-										        	 "uri":"http://www.holygoat.co.uk/owl/redwood/0.1/tags/tag",
-										        	 "curie":"tags:tag",
-										        	 "target":{
-										        		 "nodeType":"literal",
-										        		 "value":keywords[i].trim()
-										        	 }
-										         }
-										         ]
-									}
-								});
-							}
-							break;
 						}
-					});
-
-					var schema = self.getRDFSchema();
-					schema.rootNodes.splice(0,0,rootNode);
-
-					/*
-					 * Save the RDF.
-					 */
-					Refine.postProcess("rdf-extension", "save-rdf-schema", {}, {
-						schema : JSON.stringify(schema)
-					}, {}, {
-						onDone : function() {
-							//Refine.update({everythingChanged : true}, callback);
-							if(callback){
-								callback();
-							}
-						}
-					});
-
+						break;
+					}
 				});
 
-			//} else {
-			//	log("Metadata has already been saved.");
-			//	if(callback){
-			//		callback();
-			//	}
-			//}
+				var schema = self.getRDFSchema();
+				schema.rootNodes.splice(0,0,rootNode);
+
+				/*
+				 * Save the RDF.
+				 */
+				Refine.postProcess("rdf-extension", "save-rdf-schema", {}, {
+					schema : JSON.stringify(schema)
+				}, {}, {
+					onDone : function() {
+						if(callback){
+							callback();
+						}
+					}
+				});
+
+			});
+
 
 
 		},
@@ -439,7 +428,7 @@ var LinkedGov_rdfOperations = {
 						project : theProject.id
 					}),
 					success:function(data){
-						
+
 						// Decode any encoded URLs in the metadata
 						metadataObject[key] = decodeURIComponent(data.value);
 
@@ -496,9 +485,9 @@ var LinkedGov_rdfOperations = {
 										}
 									}
 								});
-								
+
 								return false;
-								
+
 							} else if(typeof rootNodes[i].links[j].target.links != "undefined") {
 								/*
 								 * Else traverse a level deeper into the node and scan for the 
@@ -509,7 +498,7 @@ var LinkedGov_rdfOperations = {
 									if(rootNodes[i].links[j].target.links[k].target != "undefined" 
 										&& typeof rootNodes[i].links[j].target.links[k].target.columnName != "undefined" 
 											&& rootNodes[i].links[j].target.links[k].target.columnName == colName){
-										
+
 										log("Removing column RDF for: "+rootNodes[i].links[j].target.links[k].target.columnName);
 
 
@@ -552,84 +541,84 @@ var LinkedGov_rdfOperations = {
 		 */
 		renameColumnInRDF : {
 
-				vars : {
-					oldName : "",
-					newName : "",
-					callback : {}
-				},
+			vars : {
+				oldName : "",
+				newName : "",
+				callback : {}
+			},
 
-				start : function(oldName, newName, callback) {
-					
-					var self = this;
-					self.vars.oldName = oldName;
-					self.vars.newName = newName;
-					self.vars.callback = callback;
+			start : function(oldName, newName, callback) {
 
-					/*
-					 * Make sure the schema exists before attempting to rename 
-					 * the column names it contains.
-					 */
-					if (typeof theProject.overlayModels != 'undefined'
-						&& typeof theProject.overlayModels.rdfSchema != 'undefined') {
-
-						var schema = theProject.overlayModels.rdfSchema;
-
-						/*
-						 * Traverse the JSON tree recursively, executing our 
-						 * recursive function that tests if it's found a column name.
-						 */
-						$.each(schema, function(key, val) {
-							self.recursiveFunction(key, val);
-						});
-
-						/*
-						 * Save the RDF.
-						 */
-						Refine.postProcess("rdf-extension", "save-rdf-schema", {}, {
-							schema : JSON.stringify(schema)
-						}, {}, {
-							onDone : function() {
-								log("Finished");
-								callback();
-							}
-						});
-					} else {
-						callback();
-						return false;
-					}
-
-				},
+				var self = this;
+				self.vars.oldName = oldName;
+				self.vars.newName = newName;
+				self.vars.callback = callback;
 
 				/*
-				 * Check if we've found a column name, check if it's the one 
-				 * we need to rename, rename it.
-				 * 
-				 * It's possible for column names to exist as the object of a triple 
-				 * (e.g. x - y - column name), or within a GREL expression string, so 
-				 * we need to check for both.
+				 * Make sure the schema exists before attempting to rename 
+				 * the column names it contains.
 				 */
-				recursiveFunction : function(key, val) {
-					var self = this;
+				if (typeof theProject.overlayModels != 'undefined'
+					&& typeof theProject.overlayModels.rdfSchema != 'undefined') {
 
-					if (val instanceof Object) {
+					var schema = theProject.overlayModels.rdfSchema;
 
-						if (typeof val.columnName != 'undefined') {			
-							if (val.columnName == self.vars.oldName) {
-								val.columnName = self.vars.newName;
-							}
+					/*
+					 * Traverse the JSON tree recursively, executing our 
+					 * recursive function that tests if it's found a column name.
+					 */
+					$.each(schema, function(key, val) {
+						self.recursiveFunction(key, val);
+					});
+
+					/*
+					 * Save the RDF.
+					 */
+					Refine.postProcess("rdf-extension", "save-rdf-schema", {}, {
+						schema : JSON.stringify(schema)
+					}, {}, {
+						onDone : function() {
+							log("Finished");
+							callback();
 						}
-
-						if(typeof val.expression != 'undefined'){
-							if(val.expression.indexOf(self.vars.oldName) > 0){
-								val.expression = val.expression.replace(self.vars.oldName, self.vars.newName);
-							}
-						}
-
-						$.each(val, function(key, value) {
-							self.recursiveFunction(key, value)
-						});
-					}
+					});
+				} else {
+					callback();
+					return false;
 				}
+
+			},
+
+			/*
+			 * Check if we've found a column name, check if it's the one 
+			 * we need to rename, rename it.
+			 * 
+			 * It's possible for column names to exist as the object of a triple 
+			 * (e.g. x - y - column name), or within a GREL expression string, so 
+			 * we need to check for both.
+			 */
+			recursiveFunction : function(key, val) {
+				var self = this;
+
+				if (val instanceof Object) {
+
+					if (typeof val.columnName != 'undefined') {			
+						if (val.columnName == self.vars.oldName) {
+							val.columnName = self.vars.newName;
+						}
+					}
+
+					if(typeof val.expression != 'undefined'){
+						if(val.expression.indexOf(self.vars.oldName) > 0){
+							val.expression = val.expression.replace(self.vars.oldName, self.vars.newName);
+						}
+					}
+
+					$.each(val, function(key, value) {
+						self.recursiveFunction(key, value)
+					});
+				}
+			}
 
 		},
 
@@ -645,7 +634,7 @@ var LinkedGov_rdfOperations = {
 				vocabs : {
 					lg : {
 						curie : "lg",
-						uri : "http://example.org/"
+						uri : "http://data.linkedgov.org/vocab/"
 					},
 					rdfs: {
 						curie: "rdfs",
@@ -693,7 +682,7 @@ var LinkedGov_rdfOperations = {
 							 * to the labelling panel save. Should be separate.
 							 */
 							LG.rdfOps.finaliseRDFSchema.init();
-							
+
 						});
 					});
 				});
@@ -709,7 +698,7 @@ var LinkedGov_rdfOperations = {
 			saveRowAsClass : function(callback) {
 
 				//log("saveRowClass");
-				
+
 				var self = this;
 
 				var schema = LG.rdfOps.getRDFSchema();
@@ -784,7 +773,7 @@ var LinkedGov_rdfOperations = {
 			saveColumnsAsProperties : function(callback) {
 
 				//log("saveColumnsAsProperties");
-				
+
 				var self = this;
 				var cols = LG.vars.labelsAndDescriptions.cols;
 				var schema = LG.rdfOps.getRDFSchema();
@@ -864,7 +853,7 @@ var LinkedGov_rdfOperations = {
 
 			}
 		},
-		
+
 		/*
 		 * finaliseRDFSchema
 		 * 
@@ -874,177 +863,179 @@ var LinkedGov_rdfOperations = {
 		 * their values in RDF using the column name as the property name.
 		 */
 		finaliseRDFSchema : {
-			
-				vars:{
-					vocabs:{
-						lg:{
-							uri:LG.vars.lgNameSpace,
-							curie:"lg"
-						}
+
+			vars:{
+				vocabs:{
+					lg:{
+						uri:LG.vars.lgNameSpace,
+						curie:"lg"
 					}
-				},
-				
-				init: function(){
-					
-					var self = this;
-					
-					//log("finaliseRDFSchema.init()");
-					
-					/*
-					 * Check for/create a root node for column RDF in the schema.
-					 */
-					LG.rdfOps.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
+				}
+			},
 
-						var camelizedRowLabel = LG.camelize(LG.vars.labelsAndDescriptions.rowLabel);
+			init: function(){
 
-						/*
-						 * Camelize the row label that's been entered and type the root node (each row) 
-						 * as the label. E.g. "Each row is a lg:utilityReading".
-						 */
-						rootNode.rdfTypes = [ {
-							uri : self.vars.vocabs.lg.uri + camelizedRowLabel,
-							curie : self.vars.vocabs.lg.curie + ":" + camelizedRowLabel
-						} ];
+				var self = this;
 
-						/*
-						 * Save the RDF for the columns that were not involved in any wizard
-						 * operations.
-						 */
-						self.saveGenericColumnRDF(rootNode, foundRootNode);
-
-					});
-					
-				},
+				//log("finaliseRDFSchema.init()");
 
 				/*
-				 * saveGenericColumnRDF
-				 * 
-				 * Creates the generic RDF for each column that wasn't involved in 
-				 * any of the wizards using the column name as the property for the rows.
+				 * Check for/create a root node for column RDF in the schema.
 				 */
-				saveGenericColumnRDF : function(rootNode, newRootNode, callback) {
+				LG.rdfOps.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
 
-					var self = this;
-					LG.showWizardProgress(true);
+					var camelizedRowLabel = LG.camelize(LG.vars.labelsAndDescriptions.rowLabel);
 
 					/*
-					 * Loop through the column header elements of the data table and check for any 
-					 * headers that haven't been given the RDF "typed" class (that indicates RDF exists for them).
-					 * 
-					 * If the column doesn't have an indicator, then produce generic RDF for it and add it to the existing root
-					 * node for the wizard column RDF.
+					 * Camelize the row label that's been entered and type the root node (each row) 
+					 * as the label. E.g. "Each row is a lg:utilityReading".
 					 */
-					//var columns = theProject.columnModel.columns;
-					//for(var a=0;a<columns.length;a++){
-					$("td.column-header").each(function() {
-						if ($(this).find("span.column-header-name").html() != "All" && !$(this).hasClass("typed") && ($.inArray($(this).find("span.column-header-name").html(), LG.vars.hiddenColumns.split(",")) < 0)) {
+					rootNode.rdfTypes = [ {
+						uri : self.vars.vocabs.lg.uri + camelizedRowLabel,
+						curie : self.vars.vocabs.lg.curie + ":" + camelizedRowLabel
+					} ];
 
-							log("\""+ $(this).find("span.column-header-name").html() + "\" has no RDF, generating generic RDF for it.");
+					/*
+					 * Save the RDF for the columns that were not involved in any wizard
+					 * operations.
+					 */
+					self.saveGenericColumnRDF(rootNode, foundRootNode, function(){
+						// TODO: What to do when finished.
+						LG.showFinishMessage();
+					});
 
-							var camelizedColumnName = LG.camelize($(this).find("span.column-header-name").html());
+				});
 
-							/*
-							 * Default description is: <Row> <lg:columnName> "cell value"
-							 */
+			},
 
-							//log('LG.decodeHTMLEntity($(this).find("span.column-header-name").html()):');
-							//log(LG.decodeHTMLEntity($(this).find("span.column-header-name").html()));
-							
-							var o = {
-									"uri" : self.vars.vocabs.lg.uri + camelizedColumnName,
-									"curie" : self.vars.vocabs.lg.curie + ":" + camelizedColumnName,
-									"target" : {
-										"nodeType" : "cell-as-literal",
-										"expression" : "value",
-										"columnName" : LG.decodeHTMLEntity($(this).find("span.column-header-name").html()),
-										"isRowNumberCell" : false
+			/*
+			 * saveGenericColumnRDF
+			 * 
+			 * Creates the generic RDF for each column that wasn't involved in 
+			 * any of the wizards using the column name as the property for the rows.
+			 */
+			saveGenericColumnRDF : function(rootNode, newRootNode, callback) {
+
+				var self = this;
+				LG.showWizardProgress(true);
+
+				/*
+				 * Loop through the column header elements of the data table and check for any 
+				 * headers that haven't been given the RDF "typed" class (that indicates RDF exists for them).
+				 * 
+				 * If the column doesn't have an indicator, then produce generic RDF for it and add it to the existing root
+				 * node for the wizard column RDF.
+				 */
+				//var columns = theProject.columnModel.columns;
+				//for(var a=0;a<columns.length;a++){
+				$("td.column-header").each(function() {
+					if ($(this).find("span.column-header-name").html() != "All" && !$(this).hasClass("typed") && ($.inArray($(this).find("span.column-header-name").html(), LG.vars.hiddenColumns.split(",")) < 0)) {
+
+						log("\""+ $(this).find("span.column-header-name").html() + "\" has no RDF, generating generic RDF for it.");
+
+						var camelizedColumnName = LG.camelize($(this).find("span.column-header-name").html());
+
+						/*
+						 * Default description is: <Row> <lg:columnName> "cell value"
+						 */
+
+						//log('LG.decodeHTMLEntity($(this).find("span.column-header-name").html()):');
+						//log(LG.decodeHTMLEntity($(this).find("span.column-header-name").html()));
+
+						var o = {
+								"uri" : self.vars.vocabs.lg.uri + camelizedColumnName,
+								"curie" : self.vars.vocabs.lg.curie + ":" + camelizedColumnName,
+								"target" : {
+									"nodeType" : "cell-as-literal",
+									"expression" : "value",
+									"columnName" : LG.decodeHTMLEntity($(this).find("span.column-header-name").html()),
+									"isRowNumberCell" : false
+								}
+						};
+
+						/*
+						 * Detect and specify types & language for the generic RDF about columns.
+						 * 
+						 * The row model isn't an exact replication of the order of the columns (and therefore cells)
+						 * in the data table, so we need to iterate through the column model and select each 
+						 * columns "cellIndex" instead.
+						 */
+						var columns = theProject.columnModel.columns;
+						for(var i=0; i<columns.length; i++){
+							if(columns[i].name == $(this).find("span.column-header-name").html()){
+
+								if(theProject.rowModel.rows[0].cells[columns[i].cellIndex] != null){
+
+									var expression = "grel:if(type(value) == 'number',(if(value % 1 == 0,'int','float')),if(((type(value.match(/\\b\\d{4}[\\-]\\d{1,2}[\\-]\\d{1,2}\\b/))=='array')),'date',if(isBlank(value),null,if(type(value.replace(',','').toNumber())=='number',(if(value % 1 == 0,'int','float')),'string'))))";
+
+
+									/*
+									 * Recursive function to compute a facet for each column to find 
+									 * the most frequently occuring value type (int, float, string...)
+									 */
+									var type = LG.ops.findHighestFacetValue(columns[i].name,expression);
+
+									//log("Finding type of generic column...");
+									//log("columns[i].name: "+columns[i].name);
+									//log("type: "+type);
+
+									if(type == "string"){
+										o.target.lang = "en";
+									} else if(type == "int"){
+										o.target.valueType = "http://www.w3.org/2001/XMLSchema#int";
+										//parseValueTypesInColumn("int",columns[i].name);
+									} else if(type == "float"){
+										o.target.valueType = "http://www.w3.org/2001/XMLSchema#float";
+										//parseValueTypesInColumn("float",columns[i].name);
+									} else if(type == "date"){
+										o.target.valueType = "http://www.w3.org/2001/XMLSchema#date";
+										//parseValueTypesInColumn("date",columns[i].name);
 									}
-							};
 
-
-							/*
-							 * Detect and specify types & language for the generic RDF about columns.
-							 * 
-							 * The row model isn't an exact replication of the order of the columns (and therefore cells)
-							 * in the data table, so we need to iterate through the column model and select each 
-							 * columns "cellIndex" instead.
-							 */
-							var columns = theProject.columnModel.columns;
-							for(var i=0; i<columns.length; i++){
-								if(columns[i].name == $(this).find("span.column-header-name").html()){
-
-									if(theProject.rowModel.rows[0].cells[columns[i].cellIndex] != null){
-
-										var expression = "grel:if(type(value) == 'number',(if(value % 1 == 0,'int','float')),if(((type(value.match(/\\b\\d{4}[\\-]\\d{1,2}[\\-]\\d{1,2}\\b/))=='array')),'date',if(isBlank(value),null,if(type(value.replace(',','').toNumber())=='number',(if(value % 1 == 0,'int','float')),'string'))))";
-
-
-										/*
-										 * Recursive function to compute a facet for each column to find 
-										 * the most frequently occuring value type (int, float, string...)
-										 */
-										var type = LG.ops.findHighestFacetValue(columns[i].name,expression);
-
-										//log("Finding type of generic column...");
-										//log("columns[i].name: "+columns[i].name);
-										//log("type: "+type);
-
-										if(type == "string"){
-											o.target.lang = "en";
-										} else if(type == "int"){
-											o.target.valueType = "http://www.w3.org/2001/XMLSchema#int";
-											//parseValueTypesInColumn("int",columns[i].name);
-										} else if(type == "float"){
-											o.target.valueType = "http://www.w3.org/2001/XMLSchema#float";
-											//parseValueTypesInColumn("float",columns[i].name);
-										} else if(type == "date"){
-											o.target.valueType = "http://www.w3.org/2001/XMLSchema#date";
-											//parseValueTypesInColumn("date",columns[i].name);
-										}
-
-									}
-
-									i = columns.length;
 								}
 
+								i = columns.length;
 							}
 
-
-							rootNode.links.push(o);
-
 						}
-					});
 
-					/*
-					 * Check to see if the root node needs to be added to the schema.
-					 */
-					var schema = LG.rdfOps.getRDFSchema();
 
-					if (!newRootNode) {
-						log("rootNode has already been updated...");
-					} else {
-						log("Adding first rootNode for generic column RDF...");
-						schema.rootNodes.push(rootNode);
+						rootNode.links.push(o);
+
 					}
+				});
 
+				/*
+				 * Check to see if the root node needs to be added to the schema.
+				 */
+				var schema = LG.rdfOps.getRDFSchema();
 
-					/*
-					 * Save the RDF.
-					 */
-					Refine.postProcess("rdf-extension", "save-rdf-schema", {}, {
-						schema : JSON.stringify(schema)
-					}, {}, {
-						onDone : function() {
-							Refine.update({
-								everythingChanged : true
-							},function(){
-								LG.showWizardProgress(false);
-								if(callback){
-									callback();
-								}
-							});
-						}
-					});
+				if (!newRootNode) {
+					log("rootNode has already been updated...");
+				} else {
+					log("Adding first rootNode for generic column RDF...");
+					schema.rootNodes.push(rootNode);
 				}
+
+
+				/*
+				 * Save the RDF.
+				 */
+				Refine.postProcess("rdf-extension", "save-rdf-schema", {}, {
+					schema : JSON.stringify(schema)
+				}, {}, {
+					onDone : function() {
+						Refine.update({
+							everythingChanged : true
+						},function(){
+							LG.showWizardProgress(false);
+							if(callback){
+								callback();
+							}
+						});
+					}
+				});
+			}
 		},
 
 		/*
@@ -1062,106 +1053,106 @@ var LinkedGov_rdfOperations = {
 		applyTypeIcons : {
 
 
-				init : function() {
+			init : function() {
 
-					var self = this;
+				var self = this;
 
-					/*
-					 * Overwrite the Refine update function to include our own callback.
-					 */			
-					var lgUpdate = Refine.update;
-					Refine.update = function(options, callback) {
+				/*
+				 * Overwrite the Refine update function to include our own callback.
+				 */			
+				var lgUpdate = Refine.update;
+				Refine.update = function(options, callback) {
 
-						//log("callback");
-						//log(callback);
-						var theCallback = callback;
-						var theOptions = options;
-						var lgCallback = function() {
-							LG.ops.keepHiddenColumnsHidden();
-							self.apply();
+					//log("callback");
+					//log(callback);
+					var theCallback = callback;
+					var theOptions = options;
+					var lgCallback = function() {
+						LG.ops.keepHiddenColumnsHidden();
+						self.apply();
 
-							if(theCallback){
-								theCallback();
+						if(theCallback){
+							theCallback();
+						}
+					}
+					lgUpdate(theOptions, lgCallback);
+				}
+
+
+			},
+
+			/*
+			 * Make sure the schema exists and the data table has loaded (which sometimes it hasn't). 
+			 * If it hasn't set an interval to check the data table is loaded before applying the 
+			 * RDF symbols to the columns.
+			 */
+			apply : function() {
+
+				//log("Applying type icons...");
+
+				var self = this;
+
+				if (typeof theProject.overlayModels != 'undefined' && 
+						typeof theProject.overlayModels.rdfSchema != 'undefined' && 
+						$("td.column-header").length > 0) {
+
+					$.each(theProject.overlayModels.rdfSchema, function(key, val) {
+						self.recursiveFunction(key, val);
+					});
+
+				} else {
+					var t = setInterval(
+							function() {
+								if ($("td.column-header").length > 0
+										&& typeof theProject.overlayModels != 'undefined'
+											&& typeof theProject.overlayModels.rdfSchema != 'undefined') {
+									clearInterval(t);
+									$.each(theProject.overlayModels.rdfSchema, function(key, val) {
+										self.recursiveFunction(key, val)
+									});
+								}
+							}, 100);
+				}
+			},
+
+			/*
+			 * Traverse through the schema tree and check for any column names existing as direct "columnName" 
+			 * values or as camelized versions within the CURIE properties of descriptions.
+			 * 
+			 * If there's a column name, find that column name in the data table header 
+			 * and apply the CSS class "typed" to display the RDF symbol.
+			 */
+			recursiveFunction : function(key, val) {
+
+				var self = this;
+
+				if (key == "columnName") {
+
+					$("td.column-header").each(function() {
+						if($(this).find("span.column-header-name").length > 0){
+							if ($(this).find("span.column-header-name").html().toLowerCase() == val.toLowerCase()) {
+								$(this).addClass("typed");
 							}
 						}
-						lgUpdate(theOptions, lgCallback);
-					}
+					});
+				} else if(key == "curie" && val != "vcard:Address"){
 
+					$("td.column-header").each(function() {		
+						if($(this).find("span.column-header-name").length > 0){
 
-				},
-
-				/*
-				 * Make sure the schema exists and the data table has loaded (which sometimes it hasn't). 
-				 * If it hasn't set an interval to check the data table is loaded before applying the 
-				 * RDF symbols to the columns.
-				 */
-				apply : function() {
-
-					//log("Applying type icons...");
-
-					var self = this;
-					
-					if (typeof theProject.overlayModels != 'undefined' && 
-							typeof theProject.overlayModels.rdfSchema != 'undefined' && 
-							$("td.column-header").length > 0) {
-
-						$.each(theProject.overlayModels.rdfSchema, function(key, val) {
-							self.recursiveFunction(key, val);
-						});
-
-					} else {
-						var t = setInterval(
-								function() {
-									if ($("td.column-header").length > 0
-											&& typeof theProject.overlayModels != 'undefined'
-												&& typeof theProject.overlayModels.rdfSchema != 'undefined') {
-										clearInterval(t);
-										$.each(theProject.overlayModels.rdfSchema, function(key, val) {
-											self.recursiveFunction(key, val)
-										});
-									}
-								}, 100);
-					}
-				},
-
-				/*
-				 * Traverse through the schema tree and check for any column names existing as direct "columnName" 
-				 * values or as camelized versions within the CURIE properties of descriptions.
-				 * 
-				 * If there's a column name, find that column name in the data table header 
-				 * and apply the CSS class "typed" to display the RDF symbol.
-				 */
-				recursiveFunction : function(key, val) {
-
-					var self = this;
-
-					if (key == "columnName") {
-
-						$("td.column-header").each(function() {
-							if($(this).find("span.column-header-name").length > 0){
-								if ($(this).find("span.column-header-name").html().toLowerCase() == val.toLowerCase()) {
-									$(this).addClass("typed");
-								}
+							if (val.split(":")[1] == LG.camelize($(this).find("span.column-header-name").html().toLowerCase())) {
+								$(this).addClass("typed");
 							}
-						});
-					} else if(key == "curie" && val != "vcard:Address"){
-
-						$("td.column-header").each(function() {		
-							if($(this).find("span.column-header-name").length > 0){
-
-								if (val.split(":")[1] == LG.camelize($(this).find("span.column-header-name").html().toLowerCase())) {
-									$(this).addClass("typed");
-								}
-							}
-						});
-					}
-
-					if (val instanceof Object) {
-						$.each(val, function(key, value) {
-							self.recursiveFunction(key, value)
-						});
-					}
+						}
+					});
 				}
+
+				if (val instanceof Object) {
+					$.each(val, function(key, value) {
+						self.recursiveFunction(key, value)
+					});
+				}
+			}
 
 		}
 }

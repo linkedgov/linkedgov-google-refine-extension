@@ -1273,10 +1273,11 @@ body.lg div#refine-tabs-typing div.suggest-links ul.confirmed-columns li span.li
 body.lg div#refine-tabs-typing div.suggest-links ul li.none {
     background: none repeat scroll 0 0 white;
     border: 1px solid #DDDDDD;
+    font-weight: bold;
     list-style: none outside none;
-    margin: 5px 0;
+    margin: 1px 0;
     padding-bottom: 3px;
-    padding-left: 5px;
+    padding-left: 7px;
     padding-top: 3px;
 }  
 body.lg div#refine-tabs-typing ul.selected-columns li span.remove, body.lg div#refine-tabs-typing ul.confirmed-columns li span.remove {
@@ -1431,7 +1432,7 @@ body.lg div#refine-tabs-typing div.reconcile-panel div.linking-loading div.progr
     background: -webkit-gradient(linear, left bottom, left top, from(#294F8C), to(#79B1FE) ) #DDDDDD;
     width:0%;
 }
-body.lg #flyout-pane {
+body.lg #suggest-pane {
     background: none repeat scroll 0 0 #FFFFFF;
     border: 1px solid #CCCCCC;
     box-shadow: 5px 5px 5px #D3D3D3;
@@ -1441,7 +1442,7 @@ body.lg #flyout-pane {
     position: fixed;
     width: 240px;
 }
-body.lg #flyout-pane div.searching {
+body.lg #suggest-pane div.searching {
     background-color: #FFFFFF;
     background-image: url("../images/column_selecting.gif");
     background-position: 98% center;
@@ -1449,7 +1450,7 @@ body.lg #flyout-pane div.searching {
     padding: 5px 5px 5px 2%;
     text-align: left;
 }
-body.lg #flyout-pane div.options {
+body.lg #suggest-pane div.options {
     background: none repeat scroll 0 0 #E7EEFF;
     border-bottom: 1px solid #CCCCCC;
     float: left;
@@ -1458,7 +1459,7 @@ body.lg #flyout-pane div.options {
     text-align: center;
     width: 240px;
 }
-body.lg #flyout-pane div.options span.text {
+body.lg #suggest-pane div.options span.text {
     display: block;
     float: left;
     font-size: 11px;
@@ -1466,16 +1467,16 @@ body.lg #flyout-pane div.options span.text {
     padding: 5px;
     width: 140px;
 }
-body.lg #flyout-pane div.options p {
+body.lg #suggest-pane div.options p {
 	background: none repeat scroll 0 0 #FFFFFF;
     font-weight: bold;
     padding: 5px;
     text-align: left;
 }
-body.lg #flyout-pane div.options a {
+body.lg #suggest-pane div.options a {
     margin: 8px 3px;
 }
-body.lg #entity-pane {
+body.lg #preview-pane {
     background: none repeat scroll 0 0 #FFFFFF;
     border: 1px solid #CCCCCC;
     display:none;
@@ -1485,23 +1486,23 @@ body.lg #entity-pane {
     position: fixed;
     width: 280px;
 }
-body.lg #entity-pane p.name {
+body.lg #preview-pane p.name {
     background: none repeat scroll 0 0 #E8EEFF;
     font-weight: bold;
     padding: 5px;
 }
-body.lg #entity-pane p.id {
+body.lg #preview-pane p.id {
     background: none repeat scroll 0 0 #FFFFE0;
     font-size: 11px;
     padding: 5px;
 }
-body.lg #entity-pane p.desc {
+body.lg #preview-pane p.desc {
     max-height: 100px;
     overflow-y: auto;
     padding: 5px;
 }
     
-body.lg #flyout-pane ul.fbs-list {
+body.lg #suggest-pane ul.fbs-list {
     background: none repeat scroll 0 0 #FFFFFF;
     border: medium none;
     font-family: Arial;
@@ -1512,26 +1513,26 @@ body.lg #flyout-pane ul.fbs-list {
     padding-top: 0;
     width: 240px;
 }
-body.lg #flyout-pane ul.fbs-list li.fbs-item {
+body.lg #suggest-pane ul.fbs-list li.fbs-item {
 	border:none;
     list-style-type: none;
     margin: 1px;
     padding: 2px 8px 1px 6px;
     cursor:pointer;
 }
-body.lg #flyout-pane ul.fbs-list li.fbs-item:hover {
+body.lg #suggest-pane ul.fbs-list li.fbs-item:hover {
     background: none repeat scroll 0 0 #E6EDFF;
 }
-body.lg #flyout-pane ul.fbs-list li.fbs-item .fbs-item-name:hover {
+body.lg #suggest-pane ul.fbs-list li.fbs-item .fbs-item-name:hover {
 
 }
-body.lg #flyout-pane ul.fbs-list li.fbs-item .fbs-item-name {
+body.lg #suggest-pane ul.fbs-list li.fbs-item .fbs-item-name {
     border:none;
     background: transparent;
     font-size: 12px;
     line-height: 1.4em;
 }
-body.lg #flyout-pane ul.fbs-list li.fbs-item .fbs-item-name label {
+body.lg #suggest-pane ul.fbs-list li.fbs-item .fbs-item-name label {
 	font-size:12px;
 }
 
@@ -1634,7 +1635,7 @@ body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.resul
     background-image: url("../images/matched.png");
     background-position: 5px 3px;
     background-repeat: no-repeat;
-    padding-left: 25px;
+    text-indent: 23px;
 }
 body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result span.colOptions input.edited {
     background-color: #FFFFFF;	
@@ -1645,7 +1646,7 @@ body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.resul
     background-image: url("../images/idontknow.png");
     background-position: 5px 3px;
     background-repeat: no-repeat;
-    padding-left: 25px;
+    text-indent: 23px;
 }
 body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result div.result-body div.ui-progressbar {
     border: 1px solid #DDDDDD;

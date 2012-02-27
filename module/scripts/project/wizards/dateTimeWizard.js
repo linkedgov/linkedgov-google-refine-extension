@@ -1147,14 +1147,9 @@ var LinkedGov_dateTimeWizard = {
 			 */
 			var schema = LG.rdfOps.getRDFSchema();
 			if (!newRootNode) {
-				/*
-				 * rootNode is a pointer object, so changes have been made to the
-				 * schema already.
-				 */
+				log("RootNode has been updated...");
 			} else {
-				/*
-				 * Need to add the RDF to the schema manually.
-				 */
+				log("Adding first rootNode...");
 				schema.rootNodes.push(rootNode);
 			}
 

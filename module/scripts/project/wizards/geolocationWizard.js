@@ -321,11 +321,10 @@ var LinkedGov_geolocationWizard = {
 			rootNode.links.push(obj);
 
 			var schema = LG.rdfOps.getRDFSchema();
-
 			if (!newRootNode) {
-				log("rootNode has already been updated...");
+				log("RootNode has been updated...");
 			} else {
-				log("Adding first rootNode for lat-long data...");
+				log("Adding first rootNode...");
 				schema.rootNodes.push(rootNode);
 			}
 
