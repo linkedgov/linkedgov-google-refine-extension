@@ -1,7 +1,12 @@
 /*
  * wizardsPanel.js
  * 
+ * Holds all functions external and generic to the wizards 
+ * themselves.
  * 
+ * Responsible for things such as loading the wizards, displaying 
+ * the correct buttons, generic features such as column selection, 
+ * restoring wizards, unexpected value testing.
  */
 var LinkedGov_WizardsPanel = {
 
@@ -34,8 +39,14 @@ var LinkedGov_WizardsPanel = {
 			//log("loadWizardScripts");
 			
 			var self = this;
-			
+		
+			// Load the script using the wizardNames keys
 			$.getScript("extension/linkedgov/scripts/project/wizards/"+self.wizardNames[index]+".js",function(){
+				
+				// Once the script has loaded, assign it as a wizard inside the "wizards" array in the global
+				// LG object.
+				// "LG.wizards[self.wizardNames[index]]" is the same as using 
+				// "LG.wizards.addressWizard"
 				switch(self.wizardNames[index]){
 				case  "addressWizard" :
 					LG.wizards[self.wizardNames[index]] = LinkedGov_addressWizard;
@@ -63,30 +74,32 @@ var LinkedGov_WizardsPanel = {
 					break;
 				}
 				
+				// If we haven't finished looping through the wizardNames
 				if(index < self.wizardNames.length-1){
+					// Move on to the next wizard by incrementing index
 					index = index+1;
 					self.loadWizardScripts(index);
 				} else {
+					// Once we've looped through each of the wizardNames keys,
+					// proceed to load each wizard's HTML.
 					self.loadHTML();
 				}
 			});
-
 		},
 
 		/*
 		 * loadHTML
 		 * 
 		 * Each wizard also has it's own HTML that needs to be injected 
-		 * into the "wizard-bodies" div.
+		 * into the "wizard-bodies" <div>.
 		 */
 		loadHTML : function(){
 
 			//log("loadHTML");
 			
 			var self = this;
-			/*
-			 * Load the wizard questions
-			 */
+			
+			// Load the wizard panel skeleton including the wizard questions
 			ui.typingPanel._el.wizardsPanel.html(DOM.loadHTML("linkedgov", "html/project/panels/wizardsPanel.html", function(){
 
 				/* 
@@ -96,19 +109,17 @@ var LinkedGov_WizardsPanel = {
 				 * TODO: Remove interval if possible.
 				 */				
 				var interval = setInterval(function(){
-					// Test to see if the wizards have been created
+					// Test to see if the wizards housing object has been created
+					// TODO: Not sure why this doesn't get created in time, but can't 
+					// get round not having to use an interval.
 					if(typeof LG.wizards != 'undefined'){
-						
 						self.loadWizardHTML(0);
-
 						clearInterval(interval);
 					} else {
 						log("LG.wizards hasn't been created yet");
 					}
 				},100);				
 			}));
-
-
 		},
 
 		/*
@@ -128,18 +139,14 @@ var LinkedGov_WizardsPanel = {
 				var wizardBodiesEl = ui.typingPanel._el.wizardsPanel.find("div.wizard-bodies");
 				wizardBodiesEl.html(wizardBodiesEl.html()+response);	
 			
-				/*
-				 * Store the HTML element inside the actual wizard object as it's body
-				 */
+				// Store the HTML element inside the actual wizard object as it's body
 				wizardBodiesEl.find("div.wizard-body").each(function(){
 					 if($(this).attr("rel") == self.wizardNames[index]){
 						 LG.wizards[$(this).attr("rel")].vars.body = $(this);
 					 }
 				});
 				
-				/* 
-				 * Load each wizards' HTML into the wizard-bodies element.
-				 */
+				// Load each wizards' HTML into the wizard-bodies element
 				if(index < self.wizardNames.length-1){
 					index = index+1;
 					self.loadWizardHTML(index);
@@ -162,7 +169,6 @@ var LinkedGov_WizardsPanel = {
 			 * Begin loading wizard scripts starting with the first
 			 */
 			self.loadWizardScripts(0);
-
 			
 			/*
 			 * Interaction when clicking on a wizard header
@@ -198,7 +204,6 @@ var LinkedGov_WizardsPanel = {
 					$(this).data("hasBeenClicked",false);
 				}
 			});
-
 
 			/*
 			 * Interaction for "Back" button.
@@ -263,7 +268,6 @@ var LinkedGov_WizardsPanel = {
 
 			});
 
-
 			/*
 			 * Interaction for the column selector button. 
 			 * 
@@ -276,8 +280,7 @@ var LinkedGov_WizardsPanel = {
 			 * single-column - only allows the user to select one column
 			 * 
 			 */
-			$("div.selector a.selectColumn").live("click",function () {
-
+			$("div.selector a.selectColumn").live("click",function(){
 				if($(this).hasClass("splitter")){
 					self.buttonSelector($(this),"splitter");			
 				} else if($(this).hasClass("single-column")){ 
@@ -289,36 +292,34 @@ var LinkedGov_WizardsPanel = {
 				}
 			});
 
-			/*
-			 * 'Remove column' interaction for column lists in wizards
-			 */
+			// 'Remove column' interaction for column lists in wizards
 			$("div.wizard-body ul.selected-columns li span.remove").live("click",function(){
 				self.removeColumn($(this));
 			});
-
-			/*
-			 * Preview widget for wizards
-			 */
+			
+			// Preview widget for wizards
 			$("div.preview a.button").live("click",function(){
 				self.generateWizardPreview($(this));
 			});
-
-			/*
-			 * Show and position tooltips
-			 */
+			
+			// Show and position tooltips
 			$("a.info").live("mouseover",function () {
 				$(this).next("span").css("top",($(this).offset().top-($(this).next("span").height()/2))+"px").show();
 			}).live("mouseout",function () {
 				$(this).next("span").hide();
 			});
 
-			/*
-			 * Set up more user interaction but slightly more specific to each wizard.
-			 */
+			// Set up more user interaction but slightly more specific to each wizard.
 			self.setupWizardInteraction();
 
 		},
 
+		/*
+		 * displayPanel
+		 * 
+		 * Shows the wizard panel regardless of what's currently being 
+		 * shown in the Typing panel
+		 */
 		displayPanel: function(){
 			var self = this;
 			// Hide the other panels
@@ -327,12 +328,11 @@ var LinkedGov_WizardsPanel = {
 			this.body.show();
 			// Show the action bar
 			this.els.actionBar.show();
+
 			// Make sure the panel's showing the right thing
-			// this.showQuestions();
-			/*
-			 * Show buttons depending on what panel is 
-			 * being shown
-			 */
+
+			// Show buttons depending on what panel is 
+			// being shown
 			if($("div.questions").css("display") != "none"){
 				// Hide the action buttons
 				this.els.actionButtons.hide();
@@ -357,6 +357,8 @@ var LinkedGov_WizardsPanel = {
 		},
 
 		/*
+		 * showQuestions
+		 * 
 		 * Shows the wizard questions
 		 */
 		showQuestions:function(){
@@ -375,6 +377,8 @@ var LinkedGov_WizardsPanel = {
 		},
 
 		/*
+		 * showWizard
+		 * 
 		 * Displays a specific wizard
 		 */
 		showWizard: function(wizardName){
@@ -447,6 +451,8 @@ var LinkedGov_WizardsPanel = {
 		},
 
 		/*
+		 * setupWizardInteraction
+		 * 
 		 * Sets up more specific user interaction for wizards.
 		 */
 		setupWizardInteraction : function() {
@@ -2063,26 +2069,28 @@ var LinkedGov_WizardsPanel = {
 
 			var facets = ui.browsingEngine._facets;
 
+			// Remove any existing facets for the column in question
 			for(var i=0; i < facets.length; i++){
-
 				if(facets[i].facet._config.columnName == result.colName){
-
 					facets[i].facet._remove();
 				}
 			}
 
+			// Add a facet using the required expressions
+			// Note: This is different to the "compute-facets" call we often use.
+			// We can't avoid not creating a visible facet in order to filter the rows 
+			// in the table
 			ui.browsingEngine.addFacet("list",{
 				"name": result.colName,
 				"columnName": result.colName,
 				"expression": result.expression
 			});
 
-			for(var i=0; i < facets.length; i++){
-
+			// Find the facet we've just added
+			for(var i=0; i<facets.length; i++){
 				if(facets[i].facet._config.columnName == result.colName){
-
 					var colFacet = facets[i].facet;
-
+					// Select the "error" choice
 					colFacet._selection.push({
 						"v":{
 							"v":"error",
@@ -2092,6 +2100,7 @@ var LinkedGov_WizardsPanel = {
 				}
 			}
 
+			// Make sure the Typing panel is showing instead of the Facet/Filter panel
 			$("div#left-panel div.refine-tabs").tabs('select', 1);
 
 			callback(result);

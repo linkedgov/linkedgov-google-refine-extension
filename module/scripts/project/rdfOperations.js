@@ -14,6 +14,27 @@
 var LinkedGov_rdfOperations = {
 
 		/*
+		 * saveBaseURI
+		 * 
+		 * Saves the base URI for the project - to be used 
+		 * when saving the RDF schema.
+		 */
+		saveBaseUri:function(newBaseUri){
+			
+			log("saveBaseUri");
+
+			$.post("/command/rdf-extension/save-baseURI?" + $.param({
+				project: theProject.id,
+				baseURI: newBaseUri
+			}),function(data){
+				if (data.code === "error"){
+					alert('Error saving base URI:' + data.message);
+				}
+			},"json");
+
+		},
+
+		/*
 		 * getRDFSchema
 		 * 
 		 * Returns the RDF plugin schema (if there is one), otherwise returns our
@@ -21,6 +42,8 @@ var LinkedGov_rdfOperations = {
 		 */
 		getRDFSchema : function() {
 
+			// log("getRDFSchema");
+			
 			if (typeof theProject.overlayModels != 'undefined'
 				&& typeof theProject.overlayModels.rdfSchema != 'undefined') {
 				LG.vars.rdfSchema = theProject.overlayModels.rdfSchema;
@@ -34,11 +57,15 @@ var LinkedGov_rdfOperations = {
 		/*
 		 * checkPrefixes
 		 * 
-		 * Check that a wizards namespace prefixes are present in the RDF schema,
-		 * if not, then add them.
+		 * Checks that the vocabularies present in the vocab configuration object that each
+		 * wizard owns are present in the RDF schema.
+		 * 
+		 * If not, then add them.
 		 */
 		checkPrefixes : function(vocabs){
 
+			// log("checkPrefixes");
+			
 			var self = this;
 			var schema = self.getRDFSchema();
 
@@ -76,7 +103,7 @@ var LinkedGov_rdfOperations = {
 		 */
 		checkSchema : function(vocabs, callback) {
 
-			//log("Checking Schema");
+			//log("checkSchema");
 
 			var self = this;
 			var schema = self.getRDFSchema();
@@ -138,40 +165,38 @@ var LinkedGov_rdfOperations = {
 					callback(rootNode, true);
 				}
 			}
-
 		},
 
 		/*
 		 * saveMetadataToRDF
 		 * 
-		 * Makes an AJAX call to our custom "get-meta-information" command 
-		 * which returns us a list of key-value pairs for the form that 
-		 * the user filled in at the first stage of importing.
+		 * Saves the projects metadata in RDF.
 		 * 
-		 * Then create an RDF fragment for each piece of metadata and store 
-		 * it in the RDF schema.
 		 */
 		saveMetadataToRDF : function(callback){
 
 			var self = this;
-			var schema = self.getRDFSchema();
-			//var metadataAlreadySaved = false;
 
-			// Locate the current metadata rootnode 
-			// and remove it before resaving.
+			// Store the projects RDF schema
+			var schema = self.getRDFSchema();
+
+			// Attempt to locate an existing metadata root node 
+			// and remove it before saving the metadata.
 			for(var i=0; i<schema.rootNodes.length; i++){
 				for(var j=0; j<schema.rootNodes[i].links.length; j++){
 					if(schema.rootNodes[i].links[j].curie == "dct:title"){
-						//metadataAlreadySaved = true;
+						// Splice the root node from the rootNodes array
 						schema.rootNodes.splice(i,1);
 					}
 				}
 			}
 
 			// Destroy any hidden column data
-			LG.ops.eraseHiddenColumnData();
+			// TODO: Why do we do this?
+			//LG.ops.eraseHiddenColumnData();
 
-			// Create a vocabulary config object
+			// Create a vocabulary config object storing the vocabulary details
+			// we need to use in order to save the metadata
 			var vocabs = [{
 				name : "dct",
 				uri : "http://purl.org/dc/terms/"
@@ -189,6 +214,8 @@ var LinkedGov_rdfOperations = {
 				uri : "http://xmlns.com/foaf/0.1/"
 			}];
 
+			// Locate and remove any of these vocabularies before adding them
+			// to the prefixes array.
 			for(var h=0; h<vocabs.length;h++){
 				for (var i = 0; i < schema.prefixes.length; i++) {
 					if (schema.prefixes[i].name == vocabs[h].name) {
@@ -197,24 +224,34 @@ var LinkedGov_rdfOperations = {
 						i--;
 					}
 				}
-				
+
 				schema.prefixes.push(vocabs[h]);
 			}
 
-			// 
+			// Grab the project's metadata and use the object returned in 
+			// the callback to create RDF fragments
 			self.getDatasetMetadata(function(metadataObject){
 
+				// Begin to construct the root node
 				var rootNode = {
 						links : [],
 						nodeType : "resource",
-						rdfTypes : [],
-						value : "http://example.org/example-dataset/" + theProject.id
+						rdfTypes : [{
+							"uri":"http://rdfs.org/ns/void#Dataset",
+							"curie":"void:Dataset"
+						}],
+						value : LG.vars.lgNameSpace + "dataset/" + theProject.id
 				};
 
+				// Loop through the metadata key-values in the metadataObject
+				// that was passed to this callback function by the getDatasetMetadata()
+				// function
 				$.each(metadataObject,function(key,val){
 
-					log(key+" : "+val);
+					// log(key+" : "+val);
 
+					// Depending on the metadata key, save a particular type of 
+					// RDF fragment using the correct vocabulary and property.
 					switch(key){
 					case "LG.name" :
 						rootNode.links.push({
@@ -284,8 +321,9 @@ var LinkedGov_rdfOperations = {
 							lang : "en",
 							nodeType : "literal",
 							value : val
-					};
+						};
 
+						// URLs need to be stored differently (as resources)
 						if(val.indexOf("http") > 0){
 							targetVar = {
 									nodeType:"resource",
@@ -340,6 +378,9 @@ var LinkedGov_rdfOperations = {
 						});
 						break;
 					case "LG.keywords" :
+						// The holygot vocabulary requires the tags to be stored using an 
+						// intermediary blank node (e.g. <dataset> <taggedWithTag> <blank_node> <tag> "mySuperTag")
+						// TODO: Seems backward to me, this makes more sense: <dataset> <taggedWithTag> "mySuperTag"[<type=tag>]
 						var keywords = val.split(",");
 						for(var i=0;i<keywords.length;i++){
 
@@ -366,7 +407,10 @@ var LinkedGov_rdfOperations = {
 					}
 				});
 
+				// Get the RDF schema
 				var schema = self.getRDFSchema();
+				// Insert the metadata node into the front of the root node array, 
+				// so it prints out at the top when exporting as RDF/TTL.
 				schema.rootNodes.splice(0,0,rootNode);
 
 				/*
@@ -448,7 +492,11 @@ var LinkedGov_rdfOperations = {
 		/*
 		 * removeColumnInRDF
 		 * 
-		 * Removes a column's RDF from the schema
+		 * Removes a column's RDF from the schema.
+		 * 
+		 * Lots of looping instead of recursion as it's finite.
+		 * 
+		 * TODO: Change approach?
 		 */
 		removeColumnInRDF : function(colName,callback) {
 
@@ -501,7 +549,6 @@ var LinkedGov_rdfOperations = {
 
 										log("Removing column RDF for: "+rootNodes[i].links[j].target.links[k].target.columnName);
 
-
 										rootNodes[i].links.splice(j,1);
 
 										/*
@@ -524,11 +571,10 @@ var LinkedGov_rdfOperations = {
 							}
 						}
 						//check blank-node links (an extra link deep)
+						// Using recursion would solve this
 					}
-
 				}
 			}
-
 		},
 
 		/*
@@ -736,7 +782,7 @@ var LinkedGov_rdfOperations = {
 							curie : "owl:Class",
 							uri : self.vars.vocabs.owl.uri+"Class"
 						} ],
-						value : "http://example.org/example-dataset/terms/class/" + camelizedRowLabel
+						value : LG.vars.lgNameSpace + "terms/class/" + camelizedRowLabel
 				};
 
 				/*
@@ -757,7 +803,8 @@ var LinkedGov_rdfOperations = {
 
 
 				/*
-				 * Add the root node to the schema.
+				 * Add the root node to the schema just after the metadata node 
+				 * (which is the first node)
 				 */
 				schema.rootNodes.splice(1,0,rootNode);
 
@@ -808,7 +855,7 @@ var LinkedGov_rdfOperations = {
 								curie : self.vars.vocabs.owl.curie+":ObjectProperty",
 								uri : self.vars.vocabs.owl.uri+"ObjectProperty"
 							} ],
-							value : "http://example.org/example-dataset/terms/property/" + LG.camelize(cols[i].label),
+							value : LG.vars.lgNameSpace + "terms/property/" + LG.camelize(cols[i].label),
 							links : [ {
 								curie : self.vars.vocabs.rdfs.curie+":label",
 								target : {
@@ -841,6 +888,7 @@ var LinkedGov_rdfOperations = {
 					 * 
 					 * i+2 to skip inserting the rootnode before the metadata node or the 
 					 * owl:Class node.
+					 * 
 					 */
 					schema.rootNodes.splice(i+2,0,rootNode);
 
@@ -926,17 +974,16 @@ var LinkedGov_rdfOperations = {
 				 * If the column doesn't have an indicator, then produce generic RDF for it and add it to the existing root
 				 * node for the wizard column RDF.
 				 */
-				//var columns = theProject.columnModel.columns;
-				//for(var a=0;a<columns.length;a++){
+
 				$("td.column-header").each(function() {
 					if ($(this).find("span.column-header-name").html() != "All" && !$(this).hasClass("typed") && ($.inArray($(this).find("span.column-header-name").html(), LG.vars.hiddenColumns.split(",")) < 0)) {
 
-						log("\""+ $(this).find("span.column-header-name").html() + "\" has no RDF, generating generic RDF for it.");
+						//log("\""+ $(this).find("span.column-header-name").html() + "\" has no RDF, generating generic RDF for it.");
 
 						var camelizedColumnName = LG.camelize($(this).find("span.column-header-name").html());
 
 						/*
-						 * Default description is: <Row> <lg:columnName> "cell value"
+						 * Generic triple structure is: <row> <lg:columnName> "cell value"
 						 */
 
 						//log('LG.decodeHTMLEntity($(this).find("span.column-header-name").html()):');

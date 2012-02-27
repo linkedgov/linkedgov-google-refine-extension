@@ -23,7 +23,7 @@ LG.vars = {
 		blanksSetToNulls : false,
 		rdfSchema : {
 			prefixes : [],
-			baseUri : "http://data.linkedgov.org/",
+			baseUri : "http://data.linkedgov.org/dataset/"+theProject.id+"/",
 			rootNodes : []
 		},
 		labelsAndDescriptions : {
@@ -343,6 +343,11 @@ LG.loadOperationScripts = function(){
 				LG.rdfOps.applyTypeIcons.apply();
 				$(window).resize();
 			}
+						
+			/*
+			 * Save the base URI for the project
+			 */
+			LG.rdfOps.saveBaseUri(LG.vars.rdfSchema.baseUri);
 
 			/*
 			 * Perform a generic update once everything has loaded
@@ -402,16 +407,19 @@ LG.showFinishMessage = function(){
 	var footer = $('<div></div>').addClass("dialog-footer").appendTo(finishMessage);
 
 	$(body).html(
-			"<p>This data is now stored inside LG's database.</p>" +
+			"<p>Well done! This data is much better than it was.</p>" + 
+			"<p>People and machines will be able to understand more from it and find it easier to access it regardless of " +
+			"their location in the world.</p>" + 
+			"<p>This data is now stored inside LinkedGov's database - and is available through the <a href='#'>Question site</a> and " +
+			"the <a href='#'>developer's search</a></p>" +
 			"<h3>What next?</h3>" +
 			"<p>If there are any errors, unexpected values - or work that still " +
-			"needs doing within the data - these will be used to create tasks for people " +
+			"needs doing within the data - these will be used to create tasks for others " +
 			"to complete using their expertise and judgement.</p>" +
-			"<p>For any of the cleaning tasks that were completed, the data is now potentially linkable " +
-			"to other datasets and more accessible to users searching for those particular data " +
+			"<p>Depending on the tasks that have been completed, the data is now potentially linkable " +
+			"to other datasets and as a result - much more accessible to users searching for those particular data " +
 			"types.</p>" +
-			"<p>Well done. This data is now miles better than it was.</p>"
-	);
+			"<p><a href='#'>Bookmark</a> | <a href='#'>Tweet</a> | <a href='#'>Email</a></p>");
 
 	$('<button></button>').addClass('button').html("&nbsp;&nbsp;OK&nbsp;&nbsp;").click(function() {
 		DialogSystem.dismissAll();	

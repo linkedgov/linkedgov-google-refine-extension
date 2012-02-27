@@ -254,12 +254,10 @@ var LinkedGov_generalOperations = {
 					},
 					success : function() {
 						i = i + 1;
-						self.setBlanksToNulls(toNulls, columns, i,
-								callback);
+						self.setBlanksToNulls(toNulls, columns, i, callback);
 					},
 					error : function() {
-						alert("A problem was encountered when performing a text-transform on the column: \""
-								+ columns[i].name + "\".");
+						alert("A problem was encountered when performing a text-transform on the column: \"" + columns[i].name + "\".");
 					}
 				});
 
@@ -367,6 +365,9 @@ var LinkedGov_generalOperations = {
 
 		/*
 		 * Split a column
+		 * 
+		 * Given a column name and a separator, this generic function
+		 * will create two columns, split by the separator.
 		 */
 		splitColumn : function(colName, separator, callback) {
 
@@ -428,8 +429,8 @@ var LinkedGov_generalOperations = {
 		 * hideColumnCompletely
 		 * 
 		 * Visually hides the column from the data table as well as 
-		 * storing the column name in an array of hidden columns using the 
-		 * custom "save-meta-information" command.
+		 * storing the column name in an array of hidden columns using Refine's
+		 * "set-preference" command.
 		 */
 		hideColumnCompletely : function(colName, callback) {
 
@@ -440,37 +441,48 @@ var LinkedGov_generalOperations = {
 			 */
 			var columnIndex = Refine.columnNameToColumnIndex(colName) + 3;
 
+			// Hide the column header
 			$("td.column-header").each(function(){
 				if($(this).find("span.column-header-name").length > 0 && $(this).find("span.column-header-name").html() == colName){
 					$(this).addClass("hiddenCompletely");
 				}
 			});
 
+			// Hide the column's cells
 			$("table.data-table tr").each(function(){
 				$(this).children("td").eq(columnIndex).addClass("hiddenCompletely");
 			});
 
+			// Store the array of hidden columns
 			var array = LG.vars.hiddenColumns.split(",");
 
+			// If we have hidden columns
 			if(array.length > 0 && array[0].length > 0){
-
+				// Loop through them
 				for(var i=0; i<array.length; i++){
+					// Check if we have the column we're looking for
 					if(array[i] == colName){
 						alreadyAdded = true;
 					}
 				}
 
+				// If we haven't hidden the column already, then we can add 
+				// it to the array of hidden columns
 				if(!alreadyAdded){
 					array.push(colName);
 				}
-
+				
+				// Join the array again, so it's easier to save as a preference value
 				LG.vars.hiddenColumns = array.join(",");
 
 			} else {
+				// If we don't have any hidden columns yet, then this is the first, so 
+				// we can just assign the column name as the concatenated column array.
 				LG.vars.hiddenColumns = colName;
 			}
 
-			if(!alreadyAdded){
+			// If we have hidden a new column, then we need to 
+			//if(!alreadyAdded){
 
 				var obj = {
 						"project" : theProject.id,
@@ -492,7 +504,7 @@ var LinkedGov_generalOperations = {
 					}
 				});
 
-			}
+			//}
 
 		},
 
@@ -557,7 +569,13 @@ var LinkedGov_generalOperations = {
 			});
 
 		},
-
+		
+		
+		/*
+		 * eraseHiddenColumnData
+		 * 
+		 * Erases the hidden column metadata
+		 */
 		eraseHiddenColumnData : function(callback){
 
 			var obj = {
@@ -895,7 +913,7 @@ var LinkedGov_generalOperations = {
 					cellsChanged : true
 				}, function() {
 					self.vars.splitterHTML.find("ul.selected-columns").html("").hide();
-					ui.typingPanel.destroyColumnSelector();
+					LG.panels.wizardsPanel.destroyColumnSelector();
 					self.vars.callback();
 				});
 

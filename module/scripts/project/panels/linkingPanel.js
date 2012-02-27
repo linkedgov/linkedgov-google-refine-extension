@@ -20,15 +20,15 @@ var LinkedGov_LinkingPanel = {
 
 			// A shortcut to the bound elements in the panel
 			self.els = ui.typingPanel._el;
-			
+
 			// A shortcut to the panel's body
 			self.body = self.els.linkingPanel;
-			
+
 			// Declare the suggested links, confirmed links and result arrays
 			self.suggestedLinks = [];
 			self.confirmedLinks = [];
 			self.results = [];
-			
+
 			// Initialise the suggest
 			self.suggestPane = "";
 			self.previewPane = "";
@@ -118,25 +118,26 @@ var LinkedGov_LinkingPanel = {
 			self.els.linkButton.click(function(){
 				if(typeof self.confirmedLinks != 'undefined' && self.confirmedLinks.length > 0){
 
-					// Show the reconcile panel
-
-					// LG.showWizardProgress(true);
+					// Show the result panel
+										
 					self.buildProgressBars(function(){
 						self.showResultPanel();
 					});
 
+					// LG.showWizardProgress(true);
+					
 				} else {
 					alert("You need to confirm which columns you want to link. Click the 'Suggest links' button to see which columns might be linkable.");
 				}
 
 			});
-			
+
 			// Set up a temporary vocabulary for reconciliation that lets
 			// us link together a reconciled value and a row in Refine.
 			self.vocabs = {
 					lgRecon:{
 						uri:"http://data.linkedgov.org/reconciliation/predicate/",
-						curie:"lgRecon"
+						curie:"lgrecon"
 					}
 			};
 
@@ -153,7 +154,7 @@ var LinkedGov_LinkingPanel = {
 			});
 
 		},
-		
+
 
 		/*
 		 * loadHTML
@@ -208,7 +209,6 @@ var LinkedGov_LinkingPanel = {
 				// Show the link button
 				this.els.linkButton.show();
 			}
-
 		},
 
 		/*
@@ -252,18 +252,18 @@ var LinkedGov_LinkingPanel = {
 				// Alert the user they will lose their reconciliation results if they 
 				// press "Cancel".
 				var ans = window.confirm("Are you sure? You will lose any un-saved reconciliation data.");
-				
+
 				if(ans){
-					
+
 					self.cancelReconciliation(function(){
 						// After cancelling reconciliation, rollback the history to the saved 
 						// restore point.
 						LG.restoreHistory(self.historyRestoreID);
-						
+
 						// Use an interval to test whether the expected facets have been created from 
 						// cancelling the reconciliation (2 per column)
 						var interval = setInterval(function(){
-							
+
 							if(ui.browsingEngine._facets.length < (self.confirmedLinks.length*2)){
 								// Facets haven't been created yet
 							} else {
@@ -274,18 +274,18 @@ var LinkedGov_LinkingPanel = {
 								$("div.linking-loading div.progressDiv").each(function(){
 									$(this).remove();
 								});
-								
+
 								// Reshow the facet panel children which were hidden at the start of 
 								// reconciliation
 								$("div#refine-tabs-facets").children().show();
-								
+
 								// Make sure the Typing panel is still showing as Refine attempts 
 								// to switch to the facet panel when one is created
 								$("div#left-panel div.refine-tabs").tabs('select', 1);
-								
+
 								// Show the initial "suggest panel"
 								self.showSuggestPanel();
-								
+
 								// Hide the "wizard in progress" message
 								// LG.showWizardProgress(false);
 
@@ -341,7 +341,6 @@ var LinkedGov_LinkingPanel = {
 			if(callback){
 				callback();
 			}
-
 		},
 
 
@@ -370,7 +369,6 @@ var LinkedGov_LinkingPanel = {
 					}
 				}
 			});
-
 		},
 
 		/*
@@ -388,7 +386,6 @@ var LinkedGov_LinkingPanel = {
 					$(this).find("div.ui-progressbar-value").css("width",percentage+"%");
 				}
 			});
-
 		},
 
 		/*
@@ -412,25 +409,24 @@ var LinkedGov_LinkingPanel = {
 						self.results = [];
 						self.confirmedLinks = [];
 						self.suggestedLinks = [];
-						
+
 						// Blank out & hide the result panel
 						$("div.linking-results").hide();
 						$("div.linking-results").html('<h3>Results</h3>');
 						// Show the loading panel
 						$("div.linking-loading").show();
-						
+
 						// Make sure the suggested columns are cleared
 						$("div.suggest-links a.clearButton").click();
-						
+
 						// Make sure the empty list is hidden
 						$("div.suggest-links ul.selected-columns").hide();
-						
+
 						// callback
 						callback();
 					},
 					"json"
 			);
-
 		},
 
 		/*
@@ -447,7 +443,7 @@ var LinkedGov_LinkingPanel = {
 		suggestLinks: function(){
 
 			var self = this;
-			
+
 			// Declare the arrays of suggested and confirmed links
 			self.suggestedLinks = [];
 			self.confirmedLinks = [];
@@ -458,19 +454,19 @@ var LinkedGov_LinkingPanel = {
 			// Loop through each column name and check for any matches of hint words 
 			// against any of the reconciliation services
 			var cols = theProject.columnModel.columns;
-			
+
 			// Loop through cols
 			for(var i=0; i<cols.length; i++){
-				
+
 				// Loop through services
 				for(var j=0; j<services.length; j++){
-					
+
 					// Loop through the hint words of the service
 					for(var k=0; k<services[j].hints.length; k++){
-						
+
 						// Lowercase the column header, check for an instance of each hint
 						if(cols[i].name.toLowerCase().indexOf(services[j].hints[k]) >= 0){
-							
+
 							// Column name contains something we're looking for
 							// Create an object containing the column name and the service it 
 							// has been suggested to use for reconciliation
@@ -485,7 +481,7 @@ var LinkedGov_LinkingPanel = {
 					}
 				}
 			}
-			
+
 			// Build and display a list of the suggested links
 			if(self.suggestedLinks.length > 0){
 				var html="";
@@ -498,7 +494,7 @@ var LinkedGov_LinkingPanel = {
 			} else {
 				$("div.suggest-links ul.selected-columns").html("<li class='none'>None...</li>").css("display","block");
 			}
-			
+
 			// Return the "Suggest links" button back to normal / remove it
 			// TODO: This happens so fast, the user cannot see it, but when 
 			// we use faceting to assess what values are in each column to provide us with a better , the need for a 
@@ -552,7 +548,7 @@ var LinkedGov_LinkingPanel = {
 		reconcileColumns:function(){
 
 			//log("reconcileColumns");
-			
+
 			var self = this;
 
 			// Save the restore point so the user can cancel at any point
@@ -582,13 +578,13 @@ var LinkedGov_LinkingPanel = {
 			 * of the confirmed links.
 			 */
 			for(var i=0; i<self.confirmedLinks.length; i++){
-				
+
 				LG.addReconciliationService(self.confirmedLinks[i].service, 0, function(service){
 
 					for(var j=0; j<self.confirmedLinks.length; j++){
-						
+
 						if(service === self.confirmedLinks[j].service){
-							
+
 							// Create a result - including the column name and it's 
 							// matched service.
 							var result = {
@@ -613,9 +609,7 @@ var LinkedGov_LinkingPanel = {
 						}
 					}
 				});
-
 			}
-
 		},
 
 		/*
@@ -657,7 +651,6 @@ var LinkedGov_LinkingPanel = {
 					self.displayReconciliationResult();
 				}
 			}
-
 		},
 
 		/*
@@ -709,60 +702,58 @@ var LinkedGov_LinkingPanel = {
 
 							// Iterate through the results and begin to construct the HTML for the result panel
 							for(var i=0; i<self.results.length; i++){
-								
+
 								var html = "";
 
 								// This used to be a test case to check that a column 
 								// had it's values matched to a particular type - but we're skipping this stage
 								// ("guess-types" command) and reconciling the values straight away.
 								//if(self.results[i].matched){
-									
-									html += "<div class='description result'>";
-									// We store the endpoint URL using the "data-" attribute so we can access this later
-									html += "<a class='col-name' data-serviceurl='"+self.results[i].service.serviceURL+"'>"+self.results[i].columnName+"</a>";
-									html += "<div class='result-body'>";
-									
-									html += "<p class='value-type'>" +
-									"<span>Type</span>" +
-									"<a href='"+self.results[i].service.resourceInfo.resourceURI+"' target='_blank'>"+self.results[i].service.serviceName+"</a>" +
-									"</p>";
-									
-									// Calculate the percentage of matched values
-									html += "<p class='matches'>" +
-									"<span>Matches</span>" +
-									"<span class='matched'>"+(theProject.rowModel.total-self.results[i].numUnmatched)+"</span> / " +
-									"<span class='total'>"+theProject.rowModel.total+"</span> (<span class='percentage'>"+
-									Math.round((((theProject.rowModel.total-self.results[i].numUnmatched)/theProject.rowModel.total)*100))+"</span>%)</p>";
-						
-									// The progress bar HTML
-									html += '<div class="matches-bar ui-progressbar"><div class="ui-progressbar-value"></div></div>';
-									
-									// Display the buttons "Yes" and "Ignore" depending on whether there are values that 
-									// haven't been matched
-									if(self.results[i].numUnmatched > 0 || self.results[i].numMatched < theProject.rowModel.total){
-										html += "<p class='notification'>There are some values that have not been matched due to possible differences in punctuation or spellings. Would you like to try to match these values yourself?</p>";
-										html += "<p class='notification'><a class='yes button'>Yes</a><a class='ignore button'>Ignore</a></p>";
 
-									}
-									
-									html += "</div><!-- end result-body -->";
-									html += "</div><!-- end result -->";
-									
+								html += "<div class='description result'>";
+								// We store the endpoint URL using the "data-" attribute so we can access this later
+								html += "<a class='col-name' data-serviceurl='"+self.results[i].service.serviceURL+"'>"+self.results[i].columnName+"</a>";
+								html += "<div class='result-body'>";
+
+								html += "<p class='value-type'>" +
+								"<span>Type</span>" +
+								"<a href='"+self.results[i].service.resourceInfo.resourceURI+"' target='_blank'>"+self.results[i].service.serviceName+"</a>" +
+								"</p>";
+
+								// Calculate the percentage of matched values
+								html += "<p class='matches'>" +
+								"<span>Matches</span>" +
+								"<span class='matched'>"+(theProject.rowModel.total-self.results[i].numUnmatched)+"</span> / " +
+								"<span class='total'>"+theProject.rowModel.total+"</span> (<span class='percentage'>"+
+								Math.round((((theProject.rowModel.total-self.results[i].numUnmatched)/theProject.rowModel.total)*100))+"</span>%)</p>";
+
+								// The progress bar HTML
+								html += '<div class="matches-bar ui-progressbar"><div class="ui-progressbar-value"></div></div>';
+
+								// Display the buttons "Yes" and "Ignore" depending on whether there are values that 
+								// haven't been matched
+								if(self.results[i].numUnmatched > 0 || self.results[i].numMatched < theProject.rowModel.total){
+									html += "<p class='notification'>There are some values that have not been matched due to possible differences in punctuation or spellings. Would you like to try to match these values yourself?</p>";
+									html += "<p class='notification'><a class='yes button'>Yes</a><a class='ignore button'>Ignore</a></p>";
+
+								}
+
+								html += "</div><!-- end result-body -->";
+								html += "</div><!-- end result -->";
+
 								//} else {
-									/*
+								/*
 									html += "<div class='description result'>";
 									html += "<a class='col-name' data-serviceurl='"+self.results[i].service.serviceURL+"'>"+self.results[i].columnName+"</a>";
 									html += "<div class='result-body'>";
 									html += "<p>There were no results for this column.</p>";
 									html += "</div><!-- end result-body -->";
 									html += "</div><!-- end result -->";
-									*/
+								 */
 								//}
 
 								$("div.linking-results").append(html);
-
 							}
-
 						} else {
 							log("displayReconciliationResult - shouldn't ever get here...");
 							var html = "<div class='description'>";
@@ -789,7 +780,6 @@ var LinkedGov_LinkingPanel = {
 								$("div.linking-results div.result ul.selected-columns").show();
 								$("div.linking-results div.result").show();
 							});
-
 						});
 
 						/*
@@ -800,7 +790,7 @@ var LinkedGov_LinkingPanel = {
 							var resultDiv = $(this).parent("p").parent("div").parent('div');
 							resultDiv.find("p.notification").hide();
 						});
-						
+
 						// Hide the "linking" loading message
 						$("div#refine-tabs-facets").children().show();
 
@@ -827,12 +817,8 @@ var LinkedGov_LinkingPanel = {
 					 * display facets after reconciliation
 					 */
 					$("div#left-panel div.refine-tabs").tabs('select', 1);
-
 				}
-
 			},500);
-
-
 		},
 
 		/*
@@ -849,7 +835,7 @@ var LinkedGov_LinkingPanel = {
 
 			//log("updateMatches");
 			var self = this;
-			
+
 			// Total number of rows
 			var total = theProject.rowModel.total;
 			// Declare number of values matched as 0
@@ -888,17 +874,13 @@ var LinkedGov_LinkingPanel = {
 				},
 				success : function(data){
 					for ( var i = 0; i < data.facets.length; i++) {
-
-						
 						// If the facet matches the column name and has
 						// choices returned
 						if (data.facets[i].columnName == colName  
 								&& typeof data.facets[i].choices != 'undefined') {
-
 							// Loop through the choices until we have found the "matched" choice
 							for(var j=0; j<data.facets[i].choices.length; j++){
 								if(data.facets[i].choices[j].v.v == "matched"){
-
 									// Store the number of matched values
 									matched = data.facets[i].choices[j].c;
 									// Create a percentage
@@ -911,9 +893,9 @@ var LinkedGov_LinkingPanel = {
 									// Colour the progress bar accordingly
 									if(percentage > 66){
 										$(resultDiv).find("div.matches-bar").find("div.ui-progressbar-value").addClass("green");
-									}else if(percentage > 33){
+									} else if(percentage > 33){
 										$(resultDiv).find("div.matches-bar").find("div.ui-progressbar-value").addClass("yellow");
-									}else {
+									} else {
 										$(resultDiv).find("div.matches-bar").find("div.ui-progressbar-value").addClass("red");
 									}
 								}
@@ -925,7 +907,6 @@ var LinkedGov_LinkingPanel = {
 					alert("A problem was encountered when computing facets.");
 				}
 			});	
-
 		},
 
 		/*
@@ -956,7 +937,7 @@ var LinkedGov_LinkingPanel = {
 			// Call a generic function to compute a facet on a column given a particular 
 			// expression.
 			LG.ops.computeColumnFacet(colName, expression, function(data){
-				
+
 				// Loop through the facets
 				for ( var i = 0; i < data.facets.length; i++) {
 
@@ -967,13 +948,13 @@ var LinkedGov_LinkingPanel = {
 							&& data.facets[i].name.indexOf("judgment") < 0 
 							&& data.facets[i].name.indexOf("candidate") < 0 
 							&& typeof data.facets[i].choices != 'undefined') {
-						
+
 						// Loop through the returned facet choices (count)-number of times
 						// and insert them into an array in order of the most frequently occuring.
 						var highest = 0;
 						var choices = data.facets[i].choices;
 						var arrayOfUnmatchedValues = [];
-						
+
 						for(var j=0; j<choices.length; j++){
 
 							if(choices[j].c >= highest){
@@ -988,7 +969,6 @@ var LinkedGov_LinkingPanel = {
 							}
 						}
 
-						
 						// Build and inject the HTML list
 						html = "<ul class='selected-columns text-input'>";
 
@@ -1023,12 +1003,9 @@ var LinkedGov_LinkingPanel = {
 						if(callback){
 							callback();
 						}
-
 					}
 				}
 			});
-
-
 		},
 
 		/*
@@ -1045,7 +1022,7 @@ var LinkedGov_LinkingPanel = {
 
 			// Expression used for facet
 			var expression = 'forNonBlank(cell.recon.judgment, v, v, if(isNonBlank(value), "(unreconciled)", "(blank)"))';
-			
+
 			// Loop through each result
 			for(var k=0; k<self.results.length; k++){
 				// Call our generic faceting function using a column name and an expression.
@@ -1063,7 +1040,7 @@ var LinkedGov_LinkingPanel = {
 
 							// Store the choices
 							var choices = data.facets[i].choices;
-							
+
 							// Find the number of unmatched and matched values and 
 							// store the counts in the result object
 							for(var j=0; j<choices.length; j++){
@@ -1073,7 +1050,6 @@ var LinkedGov_LinkingPanel = {
 									self.results[k].numMatched = choices[j].c;								
 								}
 							}
-
 						}
 					}
 
@@ -1082,7 +1058,6 @@ var LinkedGov_LinkingPanel = {
 				if(k == self.results.length-1) {
 					callback();
 				}
-
 			} // end for 
 
 		},
@@ -1104,7 +1079,7 @@ var LinkedGov_LinkingPanel = {
 		setUpSearchBox:function(inputElement, unmatchedValue, serviceURL){
 
 			//log('setUpSearchBox');
-			
+
 			var self = this;
 
 			// Find the service's suggest options using it's URL
@@ -1114,13 +1089,13 @@ var LinkedGov_LinkingPanel = {
 					suggestOptions = ReconciliationManager.standardServices[i].suggest.entity;
 				}
 			}
-			
+
 			// Create an AJAX object for the suggest pane. We can specifically choose 
 			// to abort this AJAX call this way
 			self.suggestXHR = {
 					abort:function(){}
 			};
-			
+
 			// Bind "focus" and "keyup" listeners to the input element - allow us 
 			// to provide autosuggestions.
 			inputElement
@@ -1212,7 +1187,7 @@ var LinkedGov_LinkingPanel = {
 
 			return false;
 		},
-		
+
 		/*
 		 * buildSuggestionList
 		 * 
@@ -1220,11 +1195,11 @@ var LinkedGov_LinkingPanel = {
 		 * when matching unmatched values
 		 */
 		buildSuggestionList:function(data, inputElement, unmatchedValue, serviceURL, suggestOptions){
-			
+
 			//log("buildSuggestionList");
-			
+
 			var self = this;
-			
+
 			// Begin to construct the list
 			var ul = $("<ul>").addClass("fbs-list");
 			// Iterate through the suggestion results
@@ -1247,7 +1222,7 @@ var LinkedGov_LinkingPanel = {
 						name = data.result[i].name.replace(inputElement.val().toLowerCase(),"<strong>"+inputElement.val().toLowerCase()+"</strong>");
 					}
 					li.html('<div class="fbs-item-name"><label>'+name+'</label></div>');
-					
+
 					// Attach the suggestion data to the list element
 					li.data("suggest",data.result[i]);
 
@@ -1275,7 +1250,7 @@ var LinkedGov_LinkingPanel = {
 						// hide the preview pane
 						self.previewPane.hide();
 					});
-					
+
 					// Inject the list element.
 					ul.append(li);
 
@@ -1296,7 +1271,7 @@ var LinkedGov_LinkingPanel = {
 			} else {
 				// Show the "options" <div> - this contains buttons for the suggestion pane
 				self.suggestPane.find("div.options").show();
-				
+
 				// Interaction for the "I'm not sure" button.
 				// The user might not be able to find any values to match to the unmatched value, 
 				// so we need to offer them an option to say they can't find the value - or they 
@@ -1312,11 +1287,11 @@ var LinkedGov_LinkingPanel = {
 					self.suggestPane.hide();
 					self.previewPane.hide();
 				});
-				
+
 				// Finally append the list of suggestions to the suggest pane
 				self.suggestPane.append(ul);
 			}
-			
+
 		},
 
 		/*
@@ -1407,14 +1382,14 @@ var LinkedGov_LinkingPanel = {
 						log("Error fetching preview entity");
 					}
 				});
-				
+
 			} else {
 				var data = self.previewCache[suggest.id];
 				self.buildPreviewHTML(data, suggest);
 			}
 
 		},
-		
+
 		/*
 		 * buildPreviewHTML
 		 * 
@@ -1423,7 +1398,7 @@ var LinkedGov_LinkingPanel = {
 		buildPreviewHTML:function(data, suggest){
 
 			var self = this;
-			
+
 			var html = "<p class='name'>"+suggest.name+"</p>";
 			var desc = $("<div />").html(data.html);
 
@@ -1443,7 +1418,7 @@ var LinkedGov_LinkingPanel = {
 			// Store the result in the cache and trim it
 			self.previewCache[suggest.id] = data;
 			LG.ops.trimObject(self.previewCache, 100);
-			
+
 		},
 
 		/*
@@ -1462,7 +1437,7 @@ var LinkedGov_LinkingPanel = {
 			var match = li.data("suggest");
 
 			if (match !== null) {
-				
+
 				// Construct the parameters to pass to the process call
 				var params = {
 						judgment: "matched",
@@ -1491,7 +1466,7 @@ var LinkedGov_LinkingPanel = {
 			}
 
 		},
-		
+
 		/*
 		 * discardReconValues
 		 * 
@@ -1503,12 +1478,13 @@ var LinkedGov_LinkingPanel = {
 
 			var self = this;
 
+			// Construct a parameter object
 			var params = {
 					columnName: columnName,
 					judgment: "none",
 					identifierSpace: "http://www.ietf.org/rfc/rfc3986",
 					schemaSpace: "http://www.ietf.org/rfc/rfc3986",
-					similarValue:value
+					similarValue: value
 			};
 
 			Refine.postCoreProcess(
@@ -1524,8 +1500,6 @@ var LinkedGov_LinkingPanel = {
 						}
 					}
 			);
-			
-
 		},
 
 
@@ -1584,7 +1558,7 @@ var LinkedGov_LinkingPanel = {
 		saveRDF:function(rootNode, newRootNode){
 
 			//log("saveRDF");
-			
+
 			var self = this;
 
 			// Iterate through the results, create each of their relevant 
@@ -1592,10 +1566,10 @@ var LinkedGov_LinkingPanel = {
 			// after checking for and removing an existing reonciliation RDF fragment for 
 			// the column
 			for(var i=0; i<self.results.length; i++){
-				
+
 				// Build the RDF fragment and store it in the result object
 				self.results[i].rdf = self.buildColumnReconciliationRDF(self.results[i]);
-				
+
 				// Check to see if the column already has reconciliation RDF present, 
 				// in which case remove it as we are overriding it.
 				for(var j=0; j<rootNode.links.length; j++){
@@ -1605,10 +1579,10 @@ var LinkedGov_LinkingPanel = {
 						rootNode.links.splice(j,1);
 					}
 				}
-				
+
 				// Push the resulting RDF into the RDF schema 
 				rootNode.links.push(self.results[i].rdf);
-			
+
 			}
 
 			// If it's a new root node, add it to the schema
@@ -1647,9 +1621,9 @@ var LinkedGov_LinkingPanel = {
 		buildColumnReconciliationRDF:function(result){
 
 			//log("buildColumnReconciliationRDF");
-			
+
 			var self = this;
-			
+
 			// Add the results vocabulary to the schema
 			var resourceInfo = result.service.resourceInfo;
 
@@ -1665,8 +1639,8 @@ var LinkedGov_LinkingPanel = {
 			// relationship to the reconciled URI (e.g. lgRecon:Department
 			// instead of an official gov:hasDepartment).
 			if(predicateURI.length < 1){
-				predicateURI = self.vocabs.lgRecon.uri+resourceCURIE;
-				predicateCURIE = self.vocabs.lgRecon.curie+":"+resourceCURIE;
+				predicateURI = self.vocabs.lgRecon.uri+LG.camelize(resourceCURIE);
+				predicateCURIE = self.vocabs.lgRecon.curie+":"+LG.camelize(resourceCURIE);
 			}
 
 			// The RDF fragment makes use of a GREL expression to access the cells reconciled URI.
