@@ -436,11 +436,6 @@ var LinkedGov_generalOperations = {
 
 			var alreadyAdded = false;
 
-			/*
-			 * +3 due to the "All" column
-			 */
-			var columnIndex = Refine.columnNameToColumnIndex(colName) + 3;
-
 			// Hide the column header
 			$("td.column-header").each(function(){
 				if($(this).find("span.column-header-name").length > 0 && $(this).find("span.column-header-name").html() == colName){
@@ -449,6 +444,8 @@ var LinkedGov_generalOperations = {
 			});
 
 			// Hide the column's cells
+			// +3 due to the "All" column
+			var columnIndex = Refine.columnNameToColumnIndex(colName) + 3;
 			$("table.data-table tr").each(function(){
 				$(this).children("td").eq(columnIndex).addClass("hiddenCompletely");
 			});
@@ -500,7 +497,7 @@ var LinkedGov_generalOperations = {
 						}
 					},
 					error : function() {
-						//self.importFail("A problem was encountered when saving metadata");
+
 					}
 				});
 
@@ -516,38 +513,39 @@ var LinkedGov_generalOperations = {
 		 */
 		unhideHiddenColumn : function(colName, callback) {
 
-			/*
-			 * +3 due to the "All" column
-			 */
-			var columnIndex = Refine.columnNameToColumnIndex(colName) + 3;
-
+			
+			// Remove the hiddenCompletely class from the column header
 			$("td.column-header").each(function(){
 				if($(this).find("span.column-header-name").length > 0 && $(this).find("span.column-header-name").html() == colName){
 					$(this).removeClass("hiddenCompletely");
 				}
 			});
 
+			// Remove the hiddenCompletely class from the column cells
+			// +3 due to the "All" column
+			var columnIndex = Refine.columnNameToColumnIndex(colName) + 3;
 			$("table.data-table tr").each(function(){
 				$(this).children("td").eq(columnIndex).removeClass("hiddenCompletely");
 			});
 
+			// Create an array out of the concatenated string of column names
 			var array = LG.vars.hiddenColumns.split(",");
-
 			if(array.length > 0 && array[0].length > 0){
-
+				// Loop through the array and remove the column name that is being removed
 				for(var i=0; i<array.length; i++){
 					if(array[i] == colName){
 						array.splice(i,1);
 						i--;
 					}
 				}
-
+				// Store the joined array again
 				LG.vars.hiddenColumns = array.join(",");
 
 			} else {
 				log("Cannot unhide column as it is not listed as a hidden column.");
 			}
 
+			// Save the joined array using "set-preference"
 			var obj = {
 					"project" : theProject.id,
 					"name" : "LG.hiddenColumns",
@@ -604,8 +602,7 @@ var LinkedGov_generalOperations = {
 		 * getHiddenColumnMetadata
 		 * 
 		 * Retrieves the "LG.hiddenColumns" key and it's value 
-		 * from the project's metadata store.
-		 * 
+		 * from the project's preference store.
 		 */
 		getHiddenColumnMetadata : function(callback){
 
@@ -619,7 +616,6 @@ var LinkedGov_generalOperations = {
 				success : function(data) {
 					if(data.value != null && data.value != "null"){
 						LG.vars.hiddenColumns = decodeURIComponent(data.value);
-						log("LG.vars.hiddenColumns = "+LG.vars.hiddenColumns);
 					}
 					if(callback){
 						callback();
@@ -634,31 +630,46 @@ var LinkedGov_generalOperations = {
 
 		/*
 		 * keepHiddenColumnsHidden
+		 * 
+		 * Whenever Refine updates the data table, it removes the classes from the table 
+		 * header - which destroys our RDF symbols and hidden column classes.
+		 * 
+		 * This function is called in our override of ui.dataTableView.render() inside
+		 * LG.loadOperationScripts().
 		 */
 		keepHiddenColumnsHidden : function(){
 
+			// If we have some hidden column to hide
 			if(typeof LG.vars.hiddenColumns != 'undefined') {
 
+				// Split the string into an array of column names
 				var cols = LG.vars.hiddenColumns.split(",");
 
-				for(var i=0;i<cols.length;i++){
-
+				// Loop through the column names
+				for(var i=0; i<cols.length; i++){
+					
+					// +3 to skip the "All" column cells
 					var columnIndex = Refine.columnNameToColumnIndex(cols[i]) + 3;
 
+					// If the column index is valid
 					if(columnIndex >= 3){
 
+						// Add the "hiddenCompletely" class to the column's table header element
 						$("td.column-header").each(function(){
 							if($(this).find("span.column-header-name").length > 0 && $(this).find("span.column-header-name").html() == cols[i]){
 								$(this).addClass("hiddenCompletely");
 							}
 						});
 
+						// And add the "hiddenCompletely" class to all of the column's cells in the data table
 						$("table.data-table tr").each(function(){
 							$(this).children("td").eq(columnIndex).addClass("hiddenCompletely");
 						});
 					}
 				}	
-
+				
+				// Update the "Unhide "X" columns" button in the top right of the 
+				// screen
 				if(cols.length == "1" && cols[0].length == 0){
 					LG.updateUnhideColumnButton(0);
 				} else {
@@ -813,7 +824,7 @@ var LinkedGov_generalOperations = {
 			 */
 			createNewColumns : function(partIndex, colSuffix) {
 
-				log("createNewColumns");
+				//log("createNewColumns");
 
 				var self = this;
 				// Add new columns for value parts depending on the
@@ -868,7 +879,7 @@ var LinkedGov_generalOperations = {
 
 			partitionForLastPart : function() {
 
-				log("partitionForLastPart");
+				//log("partitionForLastPart");
 
 				// Finally, perform a text transform on the selected column using
 				// the GREL partition function, leaving us with any values upto
@@ -912,7 +923,9 @@ var LinkedGov_generalOperations = {
 				Refine.update({
 					cellsChanged : true
 				}, function() {
+					// Reset the splitting box
 					self.vars.splitterHTML.find("ul.selected-columns").html("").hide();
+					// Remove all traces of column selection
 					LG.panels.wizardsPanel.destroyColumnSelector();
 					self.vars.callback();
 				});

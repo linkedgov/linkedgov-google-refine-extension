@@ -1773,6 +1773,12 @@ body.lg div.action-bar a.button.save {
     margin-left: 0;
     color: #FFFFFF;
 }
+body.lg div.action-bar a.button.next {
+    font-size: 14px;
+    font-weight: bold;
+    margin-left: 0;
+    color: #FFFFFF;
+}
 body.lg div.action-bar a.button.link {
     font-size: 14px;
     font-weight: bold;
@@ -1798,7 +1804,8 @@ body.lg div.action-bar div.action-buttons a.button.preview {
 body.lg div.action-bar div.action-buttons a.button.update, 
 body.lg div.action-bar a.button.finish, 
 body.lg div.action-bar a.button.save,
-body.lg div.action-bar a.button.link {
+body.lg div.action-bar a.button.link,
+body.lg div.action-bar a.button.next {
     background: -moz-linear-gradient(center top, #79B1FE, #294F8C) repeat
         scroll 0 0 transparent;
     background: -webkit-gradient(linear, left bottom, left top, from(#294F8C),
@@ -1831,7 +1838,8 @@ body.lg div.action-bar div.action-buttons a.button.preview:active {
 body.lg div.action-bar div.action-buttons a.button.update:active, 
 body.lg div.action-bar a.button.finish:active, 
 body.lg div.action-bar a.button.save:active,
-body.lg div.action-bar a.button.link:active {
+body.lg div.action-bar a.button.link:active,
+body.lg div.action-bar a.button.next:active {
     background: -moz-linear-gradient(center top, #294F8C, #79B1FE) repeat
         scroll 0 0 transparent;
     background: -webkit-gradient(linear, left bottom, left top, from(#79B1FE),

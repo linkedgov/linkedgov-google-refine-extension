@@ -309,6 +309,11 @@ var LinkedGov_WizardsPanel = {
 				$(this).next("span").hide();
 			});
 
+			// Interaction for "Next" button.
+			self.els.nextButton.click(function(){
+				$("ul.lg-tabs li a[rel='linking-panel']").click();
+			});
+
 			// Set up more user interaction but slightly more specific to each wizard.
 			self.setupWizardInteraction();
 
@@ -342,6 +347,8 @@ var LinkedGov_WizardsPanel = {
 				this.els.returnButton.hide();
 				// Show the finish button
 				this.els.finishButton.hide();
+				// Show the Next button
+				this.els.nextButton.show();
 			} else {
 				// Hide the question collapse button
 				self.els.collapseExpandButton.hide();
@@ -374,6 +381,8 @@ var LinkedGov_WizardsPanel = {
 			this.els.returnButton.hide();
 			// Show the finish button
 			this.els.finishButton.hide();
+			// Show the Next button
+			this.els.nextButton.show();
 		},
 
 		/*
@@ -408,6 +417,8 @@ var LinkedGov_WizardsPanel = {
 			self.els.updateButton.show();
 			// Hide the finish button
 			self.els.finishButton.hide();
+			// Hide the Next button
+			self.els.nextButton.hide();
 			// Update the div.action-buttons rel attribute to relate to the specific wizard
 			self.els.actionButtons.attr("rel",wizardName);
 			// Show the action buttons

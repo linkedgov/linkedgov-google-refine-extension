@@ -71,6 +71,7 @@ TypingPanel.prototype._render = function () {
 	/*
 	 * Typing panel tabs
 	 */
+	
 	$('ul.lg-tabs li a').click(function(){
 		if(!$(this).parent("li").hasClass("active")){
 			
@@ -104,6 +105,7 @@ TypingPanel.prototype._render = function () {
 			// already on the tab
 		}
 	});
+	
 
 	/*
 	 * Add a listener for the "Finish" button

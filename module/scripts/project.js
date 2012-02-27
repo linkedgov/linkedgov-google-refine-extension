@@ -339,8 +339,12 @@ LG.loadOperationScripts = function(){
 
 				//log("Rendered table");
 				ui.dataTableView.render2();
-				LG.ops.keepHiddenColumnsHidden();
+				// Whenever Refine updates the data table, it removes the classes from the table 
+				// header - which destroys our RDF symbols
 				LG.rdfOps.applyTypeIcons.apply();
+				// as well as our hidden column classes.
+				LG.ops.keepHiddenColumnsHidden();
+				// Perform an initial resize
 				$(window).resize();
 			}
 						
