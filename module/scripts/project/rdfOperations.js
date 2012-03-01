@@ -1013,7 +1013,7 @@ var LinkedGov_rdfOperations = {
 
 								if(theProject.rowModel.rows[0].cells[columns[i].cellIndex] != null){
 
-									var expression = "grel:if(type(value) == 'number',(if(value % 1 == 0,'int','float')),if(((type(value.match(/\\b\\d{4}[\\-]\\d{1,2}[\\-]\\d{1,2}\\b/))=='array')),'date',if(isBlank(value),null,if(type(value.replace(',','').toNumber())=='number',(if(value % 1 == 0,'int','float')),'string'))))";
+									var expression = 'grel:if(type(value)=="number",if(value%1==0,"int","float"),if(not(isError(value.toNumber())),if(value.toNumber()%1==0,"int","float"),"string"))';
 
 
 									/*

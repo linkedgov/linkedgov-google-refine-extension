@@ -1812,7 +1812,7 @@ var LinkedGov_WizardsPanel = {
 				result.success = false;	
 				result.type = "warning";
 			} else {
-				// A unicorn is trapped in the column header
+				// A rare case of no frequently occurring types / the facet hasn't worked
 				result.message = "There's no clear value type in the <span class='colName'>"+result.colName+"</span> column - but the most frequently occurring is <span class='valueType'>"+averageType+"</span>.";
 				result.success = false;	
 				result.type = "notclear";
