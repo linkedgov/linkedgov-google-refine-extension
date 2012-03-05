@@ -1,45 +1,84 @@
-<div class="linking-panel" bind="linkingPanelBody">
+<div class="suggest-panel" bind="suggestPanel">
+	<div class="list-of-services description">
+		<p>The linking panel will attempt to identify "things" in the
+			data that are already defined somewhere on the web. By linking them
+			to existing definitions, it helps machines realise that the data is
+			describing the same "things" as someone else has - which automatically links the 
+			data together.</p>
+			<a href="javascript:{}">Show available services</a>
+           <ul class="list-of-services"></ul>
 
-	<div class="suggest-panel">
-		<div class="description">
-			<p>The linking panel will attempt to identify "things" in the
-				data that are already defined somewhere on the web. By linking them
-				to existing definitions, it helps machines realise that the data is
-				describing the same "things" as someone else has.</p>
-			<p>The list of things to link to is very limited for the time
-				being - so don't worry if there's nothing to link!</p>
-			<p>Click on the column names to confirm they have been guessed
-				correctly - otherwise have a go at linking the data yourself.</p>
-		</div>
-
-		<h3>Suggested links</h3>
-		<div class="possible-links">
-			<div class="selector suggest-links">
-				<a class="button suggestButton">Suggest links</a><a class="button clearButton">Clear all</a><a class="info"> <!-- info --></a>
-				<span class="note">The LinkedGov extension can try to detect
-					columns that may contain linkable values. To see what might be
-					linkable, click this button! </span>
-				<ul class="selected-columns">
-
-				</ul>
-			</div>
-			<h3 class="confirmed">Confirmed links</h3>
-			<div class="selector suggest-links confirmed">
-                <ul class="confirmed-columns">
-                
-                </ul>
-            </div>
-		</div>
 	</div>
 	
-	<div class="reconcile-panel">
-	   <div class="linking-loading">
-	       <h3>Reconciling values...</h3>
-	   </div>
-	   <div class="linking-results">
-	   <h3>Results</h3>
-	       <!-- results -->
-	   </div>
-	</div>
+	<!-- div class="description list-of-services">
+	    <a href="javascript:{}">Show available services</a>
+           <ul class="list-of-services"></ul>
+	</div -->
+
 	
-</div>
+	<div class="suggested-links description">
+	<h3>Suggested links</h3>
+	    <p>Click the "Suggest links" button to see which columns might contain values that can be reconciled against one of the services.</p>
+		<div class="suggest-links">
+			<a class="button suggestButton">Suggest links</a><a class="button clearButton">Clear</a><!--  <a class="info"></a>
+			<span class="note">We can try to detect
+				columns that may contain linkable values. To see what might be
+				linkable, click the "Suggest links" button! </span> -->
+			<ul class="selected-columns">
+
+			</ul>
+		</div>
+	</div>
+
+    
+       <div class="manual-links description">
+       <h3>Manual links</h3>
+       <p>If you think a column contains values that can be linked to one of the services, 
+       pick the column and select the service to reconcile it against.</p>
+	    <div class="selector">
+	        <a class="button selectColumn manual-reconciliation-links">Pick column</a> <a
+	            class="info"> <!-- info --> </a> <span class="note">To select
+	            multiple column headings, hold down CTRL (Windows) or Apple (Mac).
+	            You can also drag your mouse across multiple column headers while
+	            holding down the relevant key.<br /> <br />Click anywhere in the
+	            table to unselect the columns.</span>
+	
+	        <ul class="selected-columns" bind="manualReconciliationLinks">
+	        </ul>
+	    </div>  
+       </div>
+       
+       
+       <div class="confirmed-links description">
+       <h3 class="confirmed">Confirmed links</h3>
+       <p>These are the column-service links you have confirmed to reconcile.</p>
+            <a class="button clearButton">Clear</a>
+            <ul class="confirmed-columns">
+        
+            </ul>
+       </div>
+
+       <div class="existing-links description">
+       <h3 class="existing-links">Existing links</h3>
+       <a class="button viewResults">View results</a>
+               <p>These columns have been reconciled previously. You can remove their 
+      reconciliation data by clicking on their remove icon, otherwise they will show up in the results 
+      alongside any newly reconciled columns.</p>
+           <div class="suggest-links existing">
+               <ul class="existing-columns">
+
+               </ul>
+           </div>
+       </div>
+       
+   </div> <!-- end suggest panel -->
+
+<div class="reconcile-panel" bind="reconcilePanel">
+   <div class="linking-loading">
+       <h3>Reconciling values...</h3>
+   </div>
+   <div class="linking-results">
+   <h3>Results</h3>
+       <!-- results -->
+   </div>
+</div> <!-- end reconcile panel -->

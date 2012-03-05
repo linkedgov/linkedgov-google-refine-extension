@@ -20,7 +20,7 @@ var LinkedGov_rdfOperations = {
 		 * when saving the RDF schema.
 		 */
 		saveBaseUri:function(newBaseUri){
-			
+
 			log("saveBaseUri");
 
 			$.post("/command/rdf-extension/save-baseURI?" + $.param({
@@ -43,7 +43,7 @@ var LinkedGov_rdfOperations = {
 		getRDFSchema : function() {
 
 			// log("getRDFSchema");
-			
+
 			if (typeof theProject.overlayModels != 'undefined'
 				&& typeof theProject.overlayModels.rdfSchema != 'undefined') {
 				LG.vars.rdfSchema = theProject.overlayModels.rdfSchema;
@@ -65,7 +65,7 @@ var LinkedGov_rdfOperations = {
 		checkPrefixes : function(vocabs){
 
 			// log("checkPrefixes");
-			
+
 			var self = this;
 			var schema = self.getRDFSchema();
 
@@ -321,7 +321,7 @@ var LinkedGov_rdfOperations = {
 							lang : "en",
 							nodeType : "literal",
 							value : val
-						};
+					};
 
 						// URLs need to be stored differently (as resources)
 						if(val.indexOf("http") > 0){
@@ -575,6 +575,69 @@ var LinkedGov_rdfOperations = {
 					}
 				}
 			}
+		},
+
+
+		/*
+		 * removeColumnReconciliationRDF
+		 * 
+		 * Removes a columns reconciliation RDF data - which can 
+		 * be located using the "lgrecon:" property prefix.
+		 * 
+		 * The RDF data exists as a "link" to a "rootNode" with a curie that 
+		 * begins "lgrecon".
+		 */
+		removeColumnReconciliationRDF: function(columnName, callback) {
+
+				log("removeColumnReconciliationRDF");
+
+				var self = this;
+				
+				/*
+				 * Make sure the schema exists before attempting to rename 
+				 * the column names it contains.
+				 */
+				if (typeof theProject.overlayModels != 'undefined' && typeof theProject.overlayModels.rdfSchema != 'undefined') {
+
+					var schema = self.getRDFSchema();
+					var rootNode = {};
+					
+					// Locate the row root node - distinguishable by it's property
+					// "isRowNumberCell"
+					for(var i=0; i<schema.rootNodes.length; i++){
+						if(typeof schema.rootNodes[i].isRowNumberCell != 'undefined' && schema.rootNodes[i].isRowNumberCell){
+							for(var j=0; j<schema.rootNodes[i].links.length; j++){
+								if(schema.rootNodes[i].links[j].curie.indexOf("lgrecon") >= 0 
+										&& schema.rootNodes[i].links[j].target.columnName == columnName){
+									schema.rootNodes[i].links.splice(j,1);
+									log("Removed reconciliation data for "+columnName);
+									j = schema.rootNodes[i].links.length-1;
+								}
+							}
+							i = schema.rootNodes.length-1;
+						}
+					}
+					
+					/*
+					 * Save the RDF.
+					 */
+					Refine.postProcess("rdf-extension", "save-rdf-schema", {}, {
+						schema : JSON.stringify(schema)
+					}, {}, {
+						onDone : function() {
+							//log("RDF Schema saved");
+							if(callback){
+								callback();
+							}
+						}
+					});
+				} else {
+					if(callback){
+						callback();
+					}
+					return false;
+				}
+
 		},
 
 		/*

@@ -34,93 +34,7 @@ LG.vars = {
 		},
 		lgNameSpace: "http://data.linkedgov.org/",
 		hiddenColumns: "",
-		reconServices : [{
-			serviceName:"UK Government departments",
-			serviceType:"sparql",
-			hints:["department","organisation"],
-			resourceType:"http://reference.data.gov.uk/def/central-government/Department",
-			endpoint:"http://services.data.gov.uk/reference/sparql",
-			labelProperty:"http://www.w3.org/2000/01/rdf-schema#label",
-			descriptionProperty:"http://reference.data.gov.uk/def/central-government/Department",
-			vocabURI:"http://reference.data.gov.uk/def/central-government/",
-			vocabCURIE:"gov",
-			propertyCURIE:"gov",
-			resourceCURIE:"Department"
-		},{
-			serviceName:"UK Ward & Borough names",
-			serviceType:"sparql",
-			hints:["ward","borough"],
-			resourceType:"http://data.ordnancesurvey.co.uk/ontology/admingeo/LondonBoroughWard",
-			endpoint:"http://api.talis.com/stores/ordnance-survey/services/sparql",
-			labelProperty:"http://www.w3.org/2000/01/rdf-schema#label",
-			descriptionProperty:"http://data.ordnancesurvey.co.uk/ontology/admingeo/ward",
-			vocabURI:"http://data.ordnancesurvey.co.uk/ontology/admingeo/",
-			vocabCURIE:"admingeo",
-			propertyCURIE:"ward",
-			resourceCURIE:"LondonBoroughWard"
-		},{
-			name:"UK Public bodies",
-			type:"sparql",
-			keywords:["body", "bodies"],
-			possibleTypes:["http://reference.data.gov.uk/def/central-government/PublicBody"],
-			endpoint:"http://services.data.gov.uk/reference/sparql",
-			labelProperty:"http://www.w3.org/2000/01/rdf-schema#label"
-		},{
-			name:"UK Schools",
-			type:"sparql",
-			keywords:["school"],
-			possibleTypes:["http://education.data.gov.uk/def/school/School"],
-			endpoint:"http://services.data.gov.uk/education/sparql",
-			labelProperty:"http://www.w3.org/2000/01/rdf-schema#label"
-		},{
-			name:"UK Train Stations",
-			type:"sparql",
-			keywords:["train","station"],
-			possibleTypes:["http://transport.data.gov.uk/def/naptan/Station"],
-			endpoint:"http://services.data.gov.uk/transport/sparql",
-			labelProperty:"http://www.w3.org/2004/02/skos/core#prefLabel"
-		},{
-			name:"UK Bus Stops",
-			type:"sparql",
-			keywords:["stop","bus"],
-			possibleTypes:["http://transport.data.gov.uk/def/naptan/BusStopPoint"],
-			endpoint:"http://services.data.gov.uk/transport/sparql",
-			labelProperty:"http://www.w3.org/2004/02/skos/core#prefLabel"
-		},{
-			name:"UK Airports",
-			type:"sparql",
-			keywords:["airport"],
-			possibleTypes:["http://transport.data.gov.uk/def/naptan/Airport"],
-			endpoint:"http://services.data.gov.uk/transport/sparql",
-			labelProperty:"http://www.w3.org/2004/02/skos/core#prefLabel"
-		},{
-			name:"Country names",
-			type:"sparql",
-			keywords:["country"],
-			possibleTypes:["http://data.ordnancesurvey.co.uk/ontology/place/Country"],
-			endpoint:"http://api.talis.com/stores/ordnance-survey/services/sparql",
-			labelProperty:"http://www.w3.org/2000/01/rdf-schema#label"
-		},{
-			name:"Parish names",
-			type:"sparql",
-			keywords:["parish"],
-			possibleTypes:["http://data.ordnancesurvey.co.uk/ontology/admingeo/CivilParish"],
-			endpoint:"http://api.talis.com/stores/ordnance-survey/services/sparql",
-			labelProperty:"http://www.w3.org/2000/01/rdf-schema#label"
-		},{
-			name:"County names",
-			type:"sparql",
-			keywords:["county","authority"],
-			possibleTypes:["http://data.ordnancesurvey.co.uk/ontology/admingeo/County"],
-			endpoint:"http://api.talis.com/stores/ordnance-survey/services/sparql",
-			labelProperty:"http://www.w3.org/2000/01/rdf-schema#label"
-		},{
-			name:"Company name",
-			type:"standard",
-			keywords:["supplier","company","payee","payer"],
-			possibleTypes:["/organization/organization"],
-			endpoint:"http://opencorporates.com/reconcile"
-		}]
+		reconServices : []
 
 };
 
@@ -189,16 +103,15 @@ LG.loadTypingPanel = function(callback) {
 	$("div#refine-tabs-typing").html(DOM.loadHTML("linkedgov", "html/project/panels/typingPanel.html",function(){
 
 		$.getScript("extension/linkedgov/scripts/project/panels/typingPanel.js",function(){
+			// There are timing issues surrounding the creation of the typing panel
 			var interval = setInterval(function(){
+				// Wait until the "ui" object is definitely created
 				if(typeof ui != 'undefined'){
-
-					log("here");
+					// Create our own "typingPanel" object inside Refine's "ui" object
 					ui.typingPanel = new TypingPanel($("div#refine-tabs-typing"));
-					log("here2");
+					// Store the 
 					LG.panels.typingPanel = ui.typingPanel;
-					log("here3");
-					log(ui.typingPanel);
-
+					
 					clearInterval(interval);
 
 					if(callback){

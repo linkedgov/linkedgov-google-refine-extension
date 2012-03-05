@@ -287,6 +287,8 @@ var LinkedGov_WizardsPanel = {
 					self.buttonSelector($(this),"single-column");
 				} else if($(this).hasClass("text-input")){ 
 					self.buttonSelector($(this),"text-input");			
+				} else if($(this).hasClass("manual-reconciliation-links")){ 
+					self.buttonSelector($(this),"manual-reconciliation-links");			
 				} else {
 					self.buttonSelector($(this),"default");			
 				}
@@ -840,7 +842,22 @@ var LinkedGov_WizardsPanel = {
 									});
 
 									break;
-
+									
+								case "manual-reconciliation-links" :
+									
+									$cols.append( 
+											"<li>" +
+											"<span class='col'>" + 
+											$(ui.selected).children().find(".column-header-name").html() + 
+											"</span>" + 
+											"<span class='confirm'>C</span>" +
+											"<span class='remove'>X</span>" +
+											self.getFragmentData($cols) +
+											"</li>"
+									)
+									.show();
+									break;
+									
 								default:
 									break;
 								}
@@ -1336,10 +1353,10 @@ var LinkedGov_WizardsPanel = {
 		/*
 		 * getFragmentData
 		 * 
-		 * When creating a column entry in a list of selected columns, each wizard 
-		 * has it's own particular options for each column.
+		 * This function constructs and returns HTML for columns that have 
+		 * been selected.
 		 * 
-		 * For columns selected in the date & time wizard - the user has to be able 
+		 * E.g. for columns selected in the date & time wizard - the user has to be able 
 		 * to specify what parts of a date or time are contained in a column, whereas 
 		 * for the geolocation wizard, the user needs to be able to specify whether the 
 		 * columns contain latitude or longitude and so on. 
@@ -1355,129 +1372,155 @@ var LinkedGov_WizardsPanel = {
 			 * "bind" attribute.
 			 */
 			switch (columnList.attr("bind")) {
-			case "dateTimeColumns" :
+				case "dateTimeColumns" :
+	
+					fragmentHTML = "<span class='dateFrags colOptions'>";
+	
+					var symbols = ["Y","M","D","h","m","s"];
+					for(var i=0;i<symbols.length;i++){
+						fragmentHTML += "<input type='checkbox' class='date-checkbox' value='"+symbols[i]+"' /><span>"+symbols[i]+"</span>";
+					}
+	
+					fragmentHTML += "</span>";
+	
+					// Option to specify that the date/time is a duration
+					fragmentHTML += "<span class='colOptions duration'>" +
+					"<input type='checkbox' class='duration' value='duration' />" +
+					"<span>Duration</span>" +
+					"<div class='duration-input'>" + 
+					"<input class='duration-value' type='text' />" +
+					"<select class='duration'>" +
+					"<option value='seconds'>seconds</option>" +
+					"<option value='minutes'>minutes</option>" +
+					"<option value='hours'>hours</option>" +
+					"<option value='days'>days</option>" +
+					"<option value='months'>months</option>" +
+					"<option value='years'>years</option>" +
+					"</select>" +
+					"</div>" +
+					"</span>";
+	
+					// Option for specifying the order of day and month
+					fragmentHTML += "<span class='colOptions mb4d'>" +
+					"<input type='checkbox' class='mb4d' value='mb4d' />" +
+					"<span>Month before day (e.g. 07/23/1994)</span>" +
+					"</span>";
+					// Input for specifying the year the dates occur in
+					fragmentHTML += "<span class='colOptions year'>" +
+					"<span>Do you know the year?</span>" +
+					"<input type='text' class='year' value='' maxlength='4' />" +
+					"</span>";
+					// Input for specifying the day the times occur on
+					fragmentHTML += "<span class='colOptions day'>" +
+					"<span>Do you know the day?</span>" +
+					"<input id='datepicker-"+$.generateId()+"' type='text' class='day datepicker' value='' />" +
+					"</span>";
+					fragmentHTML += "<span class='colOptions unseparated'>" +
+					"<input type='checkbox' class='unseparated' value='unseparated' />" +
+					"<span>Unseparated date (20090724)</span>" +
+					"<div class='unseparated-input'>" + 
+					"<select class='duration1'>" +
+					"<option value='--'>--</option>" +
+					"<option value='year'>Year</option>" +
+					"<option value='month'>Month</option>" +
+					"<option value='day'>Day</option>" +
+					"</select>" +
+					"<select class='duration2'>" +
+					"<option value='--'>--</option>" +
+					"<option value='year'>Year</option>" +
+					"<option value='month'>Month</option>" +
+					"<option value='day'>Day</option>" +
+					"</select>" +
+					"<select class='duration3'>" +
+					"<option value='--'>--</option>" +
+					"<option value='year'>Year</option>" +
+					"<option value='month'>Month</option>" +
+					"<option value='day'>Day</option>" +
+					"</select>" +
+					"</span>";
+	
+					/*
+					 * Add a specific CSS class to the list of columns so CSS styles can 
+					 * be applied.
+					 */
+					columnList.addClass("date-checkboxes");
+					break;
+					
+				case "addressColumns" :
+	
+					
+					fragmentHTML = "<span class='colOptions'>";
+					// Provide the vCard vocabulary properties as possible address parts
+					// TODO: Not great. Perhaps present the user with City, Town, County 
+					// and then save them using the vCard restrictions
+					fragmentHTML += 
+						"<select class='address-select'>" + 
+						"<option value='street-address'>Street Address</option>" + 
+						"<option value='extended-address'>Extended Address</option>" +
+						"<option value='locality'>Locality</option>" + 
+						"<option value='region'>Region</option>" + 
+						"<option value='postcode'>Postcode</option>" + 
+						"<option value='country-name'>Country</option>" + 
+						"<option value='mixed'>Mixed</option>" + 
+						"</select>";
+	
+					fragmentHTML += "</span>";
+	
+					// Option for specifying the order of day and month
+					fragmentHTML += "<span class='colOptions postcode'>" +
+					"<input type='checkbox' class='postcode' value='postcode' />" +
+					"<span>Contains postcode</span>" +
+					"</span>";
+	
+					/*
+					 * Add a specific CSS class to the list of columns so CSS styles can 
+					 * be applied.
+					 */
+					columnList.addClass("address-fragments");
+					break;
+					
+				case "geolocationColumns" :
+	
+					fragmentHTML = "<span class='colOptions'>";
+	
+					fragmentHTML += 
+						"<select class='geolocation-select'>" + 
+						"<option value='lat'>Latitude</option>" + 
+						"<option value='long'>Longitude</option>" +
+						"<option value='northing'>Northing</option>" + 
+						"<option value='easting'>Easting</option>" + 
+						"</select>";	
+	
+					fragmentHTML += "</span>";
+					/*
+					 * Add the "fragments" class to the list of columns so CSS styles can 
+					 * be applied.
+					 */
+					columnList.addClass("fragments");
+					break;
+					
+				case "manualReconciliationLinks" :
+					
+					fragmentHTML = "<span class='colOptions'>";
+	
+					fragmentHTML += "<select class='services-select'>";
+					
+					// Iterate through our reconciliation services
+					for(var i=0; i<LG.vars.reconServices.length; i++){
+						fragmentHTML += "<option value='"+i+"'>"+LG.vars.reconServices[i].serviceName+"</option>";
+					}
 
-				fragmentHTML = "<span class='dateFrags colOptions'>";
-
-				var symbols = ["Y","M","D","h","m","s"];
-				for(var i=0;i<symbols.length;i++){
-					fragmentHTML += "<input type='checkbox' class='date-checkbox' value='"+symbols[i]+"' /><span>"+symbols[i]+"</span>";
-				}
-
-				fragmentHTML += "</span>";
-
-				// Option to specify that the date/time is a duration
-				fragmentHTML += "<span class='colOptions duration'>" +
-				"<input type='checkbox' class='duration' value='duration' />" +
-				"<span>Duration</span>" +
-				"<div class='duration-input'>" + 
-				"<input class='duration-value' type='text' />" +
-				"<select class='duration'>" +
-				"<option value='seconds'>seconds</option>" +
-				"<option value='minutes'>minutes</option>" +
-				"<option value='hours'>hours</option>" +
-				"<option value='days'>days</option>" +
-				"<option value='months'>months</option>" +
-				"<option value='years'>years</option>" +
-				"</select>" +
-				"</div>" +
-				"</span>";
-
-				// Option for specifying the order of day and month
-				fragmentHTML += "<span class='colOptions mb4d'>" +
-				"<input type='checkbox' class='mb4d' value='mb4d' />" +
-				"<span>Month before day (e.g. 07/23/1994)</span>" +
-				"</span>";
-				// Input for specifying the year the dates occur in
-				fragmentHTML += "<span class='colOptions year'>" +
-				"<span>Do you know the year?</span>" +
-				"<input type='text' class='year' value='' maxlength='4' />" +
-				"</span>";
-				// Input for specifying the day the times occur on
-				fragmentHTML += "<span class='colOptions day'>" +
-				"<span>Do you know the day?</span>" +
-				"<input id='datepicker-"+$.generateId()+"' type='text' class='day datepicker' value='' />" +
-				"</span>";
-				fragmentHTML += "<span class='colOptions unseparated'>" +
-				"<input type='checkbox' class='unseparated' value='unseparated' />" +
-				"<span>Unseparated date (20090724)</span>" +
-				"<div class='unseparated-input'>" + 
-				"<select class='duration1'>" +
-				"<option value='--'>--</option>" +
-				"<option value='year'>Year</option>" +
-				"<option value='month'>Month</option>" +
-				"<option value='day'>Day</option>" +
-				"</select>" +
-				"<select class='duration2'>" +
-				"<option value='--'>--</option>" +
-				"<option value='year'>Year</option>" +
-				"<option value='month'>Month</option>" +
-				"<option value='day'>Day</option>" +
-				"</select>" +
-				"<select class='duration3'>" +
-				"<option value='--'>--</option>" +
-				"<option value='year'>Year</option>" +
-				"<option value='month'>Month</option>" +
-				"<option value='day'>Day</option>" +
-				"</select>" +
-				"</span>";
-
-				/*
-				 * Add a specific CSS class to the list of columns so CSS styles can 
-				 * be applied.
-				 */
-				columnList.addClass("date-checkboxes");
-				break;
-			case "addressColumns" :
-
-				fragmentHTML = "<span class='colOptions'>";
-
-				fragmentHTML += 
-					"<select class='address-select'>" + 
-					"<option value='street-address'>Street Address</option>" + 
-					"<option value='extended-address'>Extended Address</option>" +
-					"<option value='locality'>Locality</option>" + 
-					"<option value='region'>Region</option>" + 
-					"<option value='postcode'>Postcode</option>" + 
-					"<option value='country-name'>Country</option>" + 
-					"<option value='mixed'>Mixed</option>" + 
-					"</select>";
-
-				fragmentHTML += "</span>";
-
-				// Option for specifying the order of day and month
-				fragmentHTML += "<span class='colOptions postcode'>" +
-				"<input type='checkbox' class='postcode' value='postcode' />" +
-				"<span>Contains postcode</span>" +
-				"</span>";
-
-				/*
-				 * Add a specific CSS class to the list of columns so CSS styles can 
-				 * be applied.
-				 */
-				columnList.addClass("address-fragments");
-				break;
-			case "geolocationColumns" :
-
-				fragmentHTML = "<span class='colOptions'>";
-
-				fragmentHTML += 
-					"<select class='geolocation-select'>" + 
-					"<option value='lat'>Latitude</option>" + 
-					"<option value='long'>Longitude</option>" +
-					"<option value='northing'>Northing</option>" + 
-					"<option value='easting'>Easting</option>" + 
-					"</select>";	
-
-				fragmentHTML += "</span>";
-				/*
-				 * Add the "fragments" class to the list of columns so CSS styles can 
-				 * be applied.
-				 */
-				columnList.addClass("fragments");
-				break;
-			default :
-				break;
+					fragmentHTML += "</select>";	
+	
+					fragmentHTML += "</span>";
+					/*
+					 * Add the "fragments" class to the list of columns so CSS styles can 
+					 * be applied.
+					 */
+					columnList.addClass("fragments");
+					break;
+				default :
+					break;
 			}
 
 			return fragmentHTML;

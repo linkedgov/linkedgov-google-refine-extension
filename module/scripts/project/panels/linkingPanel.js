@@ -19,7 +19,9 @@ var LinkedGov_LinkingPanel = {
 			var self = this;
 
 			// A shortcut to the bound elements in the panel
-			self.els = ui.typingPanel._el;
+			// We rebind the elements because we've dynamically loaded 
+			// the linking panel HTML which includes bound elements (the panels).
+			self.els = DOM.bind(ui.typingPanel._div);
 
 			// A shortcut to the panel's body
 			self.body = self.els.linkingPanel;
@@ -56,76 +58,32 @@ var LinkedGov_LinkingPanel = {
 				// After removing and saving 0 services, we load our 
 				// array of our own services and store them in an object.
 				$.getScript("extension/linkedgov/scripts/project/reconciliationServices.js", function(data){
+					// After loading the reconciliation service configs, 
+					// we store them in the global LG.vars object.
 					LG.vars.reconServices = eval('(' + data + ')');
-				});
-			});
+					// As part of the callback, we then set up the 
+					// different panes of the linking panel
+					self.setupListOfServices();
+					self.setupSuggestLinks();
+					self.setupManualLinks();
+					self.setupConfirmedLinks();
+					self.setupExistingLinks();
+					self.setupResultPanel();
 
-
-			// Interaction for the "Suggest links" button
-			$("div.suggest-links a.suggestButton").live("click",function(){
-				self.els.linkButton.show();
-				$(this).html("Suggesting...").addClass("selecting");
-				$(this).after('<span class="column-selecting-icon"><img src="extension/linkedgov/images/column_selecting.gif" /></span>');
-				self.suggestLinks();
-				$("div.suggest-links a.clearButton").css("display","inline-block");
-				$("div.suggest-links a.suggestButton").hide();
-				$("div.possible-links h3.confirmed").hide();
-				$("div.suggest-links.confirmed").hide();
-				$("div.suggest-links.confirmed ul").html("");
-			});
-
-			// Interaction for the "Clear all" button
-			$("div.suggest-links a.clearButton").live("click",function(){
-				$("div.suggest-links a.clearButton").hide();
-				$("div.possible-links h3.confirmed").hide();
-				$("div.suggest-links.confirmed").hide();
-				$("div.suggest-links ul").html("");
-				$("div.suggest-links a.suggestButton").css("display","inline-block");
-				$("div.suggest-links ul.selected-columns").hide();
-				// Reset any suggested or confirmed links
-				self.suggestedLinks = [];
-				self.confirmedLinks = [];
-				self.results = [];
-			});
-
-			// Interaction for the remove button in the column list
-			$("div.possible-links ul.selected-columns li span.remove").live("click",function(){
-				$(this).parent("li").slideUp(500,function(){
-					var ul = $(this).parent("ul");
-					$(this).remove();
-					if(ul.children("li").length < 1){
-						ul.parent("div").find("a.clearButton").hide();
-						ul.parent("div").find("a.suggestButton").show();
-						ul.hide();
-					}
-				});
-			});
-
-			// Interaction for result headers
-			$("div.result a.col-name").live("click",function(){
-
-				$("div.result div.result-body").slideUp();
-
-				if($(this).parent("div").find("div.result-body").css("display") == "none"){
-					$(this).parent("div").find("div.result-body").slideDown();
-				}
-
-				// Update the matches-bar
-				self.updateMatches($(this).parent());
+				});	
 			});
 
 			// Interaction for the "Link" button
 			self.els.linkButton.click(function(){
 				if(typeof self.confirmedLinks != 'undefined' && self.confirmedLinks.length > 0){
 
-					// Show the result panel
-										
+					// Show the result panel		
 					self.buildProgressBars(function(){
 						self.showResultPanel();
 					});
 
 					// LG.showWizardProgress(true);
-					
+
 				} else {
 					alert("You need to confirm which columns you want to link. Click the 'Suggest links' button to see which columns might be linkable.");
 				}
@@ -155,6 +113,383 @@ var LinkedGov_LinkingPanel = {
 
 		},
 
+		/*
+		 * setupListOfServices
+		 * 
+		 * Creates and loads a list of the reconciliation services 
+		 * available to the user to link to their data.
+		 */
+		setupListOfServices:function(){
+
+			var self = this;
+
+			var html = "";
+
+			for(var i=0; i<LG.vars.reconServices.length; i++){
+				html+="<li>"+LG.vars.reconServices[i].serviceName+"</li>";
+			}
+
+			$("div.list-of-services ul").html(html);
+
+			// When the user clicks the "Show available services" link,
+			// the list slides down
+			$("div.list-of-services a").toggle(function(){
+				$(this).parent().find("ul").slideDown();
+				$(this).html("Hide list of services");
+			}, function(){
+				$(this).parent().find("ul").slideUp();
+				$(this).html("Show list of available services");
+			});
+
+		},
+
+		/*
+		 * setupSuggestLinks
+		 * 
+		 * Sets up interaction for the suggest-links feature.
+		 * 
+		 * 1. User clicks "Suggest links" button.
+		 * 2. Scan column headers for hint words
+		 * 3. Create, inject and display a list of links
+		 * 4. User confirms or removes links.
+		 * 5. User presses "Link".
+		 * 6. Columns begin to reconcile.
+		 */
+		setupSuggestLinks:function(){
+
+			//log("setupSuggestLinks");
+
+			var self = this;
+
+			// Interaction for the "Suggest links" button
+			$("div.suggest-links a.suggestButton").live("click",function(){
+				// Display the "Link" button
+				self.els.linkButton.show();
+				// Change the button's text to an "in-progress" message
+				$(this).html("Suggesting...").addClass("selecting");
+				// Add a loading icon
+				$(this).after('<span class="column-selecting-icon"><img src="extension/linkedgov/images/column_selecting.gif" /></span>');
+				// Begin to suggest links
+				self.suggestLinks();
+				// Display the "Clear all" button that will allow the user
+				// to clear the suggested links
+				$("div.suggest-links a.clearButton").css("display","inline-block");
+				// Hide the "Suggest links" button
+				$("div.suggest-links a.suggestButton").hide();
+			});
+
+			// Interaction for the "Clear" button
+			$("div.suggest-links a.clearButton").live("click",function(){
+				// Hide the "Clear all" button
+				$("div.suggest-links a.clearButton").hide();
+				// Hide the "Confirmed links" header 
+				//$("div.linking-panel h3.confirmed").hide();
+				// Hide the confirmed links <div>
+				//$("div.suggest-links.confirmed").hide();
+				// Remove the suggest link entries from the confirmed-links list
+				//$("div.suggest-links.confirmed ul").html("");
+				// Show the "Suggest links" button
+				$("div.suggest-links a.suggestButton").css("display","inline-block");
+				// Remove the suggested links and hide the list
+				$("div.suggest-links ul.selected-columns").html("").hide();
+				// Reset the suggested-links, confirmed-links and result arrays
+				self.suggestedLinks = [];
+			});
+
+			// Interaction for the confirm icon for each suggested link
+			$("div.suggest-links span.confirm").live("click",function(){
+
+				// Add the confirmed suggestion to a new object containing only confirmations
+				self.confirmedLinks.push(self.suggestedLinks[parseInt($(this).parent().attr("data-index"))]);
+
+				// Add column to confirmed list
+				$("div.confirmed-links ul.confirmed-columns").append('<li><span class="col">'+$(this).parent().find("span.col").html()+'</span><span class="link">'+$(this).parent().find("span.link").html()+'</span></li>').show();
+				// Show confirmed list
+				$("div.confirmed-links").show();
+				// Show "Clear" button for confirmed links
+				$("div.confirmed-links a.clearButton").css("display","inline-block");
+				// Show confirmed header
+				$("div.suggest-panel h3.confirmed").show();
+				// Remove column from suggested list
+				$(this).parent("li").slideUp(500,function(){
+					var ul = $(this).parent();
+					$("div.confirmed-links ul.confirmed-columns li:last").slideDown(500);
+					$(this).remove();
+					// Hide the selected-columns list if there are none left (removes their 
+					// margin-gap and hide the "Clear" button
+					if(ul.children("li").length < 1){
+						ul.hide();
+						ul.parent("div").find("a.clearButton").hide();
+						ul.parent("div").find("a.suggestButton").show();
+					}
+				});
+			});
+
+			// Interaction for the remove icon for each suggested link
+			$("div.suggested-links ul.selected-columns li span.remove").live("click",function(){
+				$(this).parent("li").slideUp(500,function(){
+					var ul = $(this).parent("ul");
+					$(this).remove();
+					if(ul.children("li").length < 1){
+						ul.parent("div").find("a.clearButton").hide();
+						ul.parent("div").find("a.suggestButton").show();
+						ul.hide();
+					}
+				});
+			});
+
+		},
+
+		/*
+		 * setupManualLinks
+		 * 
+		 * Sets up interaction for the manual links feature
+		 * 
+		 * 1. User selects a column
+		 * 2. Select-list of service names available to choose from
+		 * 3. User selects a service.
+		 * 4. User presses "Link".
+		 * 5. Columns begin to reconcile.
+		 * 
+		 * TODO: the LG.panels.wizardsPanel.getFragmentData is being used here, 
+		 * which isn't great. The function should be moved into the generic operations file.
+		 */
+		setupManualLinks:function(){
+
+			//log("setupManualLinks");
+
+			var self = this;
+
+			$("div.manual-links ul.selected-columns li span.confirm").live("click",function(){
+
+				var addLink = true;
+				var columnName = $(this).parent("li").find("span.col").html();
+				var service = LG.vars.reconServices[parseInt($(this).parent("li").find("select").val())];
+
+				// Check that the column hasn't already been confirmed - or that it exists as an 
+				// existing link
+				for(var i=0; i<self.confirmedLinks.length; i++){
+					if(columnName == self.confirmedLinks[i].columnName){
+						addLink = false;
+					}
+				}
+				for(var i=0; i<self.existingLinks.length; i++){
+					if(columnName == self.existingLinks[i].columnName){
+						addLink = false;
+					}
+				}
+
+				if(addLink){
+
+					// Add the confirmed suggestion to a new object containing only confirmations
+					self.confirmedLinks.push({
+						columnName:columnName,
+						service:service
+					});
+
+					// Add column to confirmed list
+					$("ul.confirmed-columns").append('<li><span class="col">'+columnName+'</span><span class="link">'+service.serviceName+'</span></li>').show();			
+					// Show list
+					$("div.confirmed-links").show();
+					// Show "Clear" button for confirmed links
+					$("div.confirmed-links a.clearButton").css("display","inline-block");
+					// Show confirmed header
+					$("div.suggest-panel h3.confirmed").show();
+					// Remove column from manual links list
+					$(this).parent("li").slideUp(500,function(){
+						var ul = $(this).parent();
+						$(this).remove();
+						// Hide the selected-columns list if there are none left (removes their 
+						// margin-gap
+						if(ul.children("li").length < 1){
+							ul.hide();
+						}
+						$("div.confirmed-links ul.confirmed-columns li:last").slideDown(500);
+					});
+				} else {
+					alert("This column has already been confirmed or there is reconciliation data that exists for this column already");
+				}
+
+			});
+
+			// Interaction for the remove button in the column list
+			$("div.manual-links ul.selected-columns li span.remove").live("click",function(){
+				$(this).parent("li").slideUp(500,function(){
+					var ul = $(this).parent("ul");
+					$(this).remove();
+					if(ul.children("li").length < 1){
+						ul.hide();
+					}
+				});
+			});
+
+		},
+
+		/*
+		 * setupConfirmedLinks
+		 * 
+		 * Sets up interaction for the confirmed columns list
+		 */
+		setupConfirmedLinks:function(){
+
+			var self = this;
+
+			// Interaction for the "Clear all" button
+			$("div.confirmed-links a.clearButton").live("click",function(){
+				// Remove the confirmed links and hide the list
+				$("div.confirmed-links ul.confirmed-columns").html("").hide();
+				// Hide the confirmed links <div>
+				$("div.confirmed-links").hide();
+				// Hide the confirmed links header
+				$("div.suggest-panel h3.confirmed").hide();
+				// Reset the confirmed-links array
+				self.confirmedLinks = [];
+			});
+
+		},
+
+		/*
+		 * setupExistingLinks
+		 * 
+		 * Displays the columns and links for existing reconciliation.
+		 * 
+		 * 1. Check all columns for existing reconciliation data
+		 * 2. Grab the column name and the service name
+		 * 3. Create, inject and show a list in the existing links pane
+		 * 4. User presses "Link"
+		 * 5. Existing reconciliation data appears in the results panel
+		 * alongside newly reconciled data.
+		 */
+		setupExistingLinks:function(){
+
+			//log("setupExistingLinks");
+
+			var self = this;
+
+			var columns = theProject.columnModel.columns;
+			var html = "";
+			var columnName = "";
+			var showList = false;
+			// If we don't have the service config for the existing reconciliation 
+			// data, then we list the existing linked service as missing.
+			var serviceName = "Missing service";
+			var service = {};
+			self.existingLinks = [];
+
+			// Loop through the column model to find columns with reconciliation objects
+			for(var i=0; i<columns.length; i++){
+
+				if(typeof columns[i].reconConfig != 'undefined' && typeof columns[i].reconStats != 'undefined'){
+					// This column has reconciliation data
+
+					// Find the service name by looping through the 
+					// service configs and matching the type URI					
+					for(var j=0; j<LG.vars.reconServices.length; j++){
+						if(LG.vars.reconServices[j].resourceInfo.resourceURI == columns[i].reconConfig.type.id){
+							// We have found the matching reconciliation service
+							serviceName = LG.vars.reconServices[j].serviceName;
+							service = LG.vars.reconServices[j];
+						}
+					}
+
+					// Add the existing link as an entry to the HTML list
+					html+="<li><span class='col'>"+columns[i].name+"</span><span class='remove'>X</span><span class='link'>"+serviceName+"</span></li>";
+
+					// Store the existing column-service link in an array.
+					// This is used to check against when suggesting links to the user,
+					// so we don't suggest to reconcile a column with existing reconciliation 
+					// data
+					self.existingLinks.push({
+						columnName:columns[i].name,
+						serviceName:serviceName,
+						service:service
+					});
+
+					showList = true;
+				}
+			}
+
+			// Inject the HTML and make sure the containing elements are 
+			// visible if there actually are existing links
+			if(showList){
+				$("div.existing-links").find("ul").html(html).show();
+				$("div.existing-links").find("div.existing").show();
+				$("div.existing-links").show();
+				$("h3.existing-links").show();
+			}
+
+			// Set up interaction for the remove button for each link in the list
+			$("div.existing-links ul.existing-columns li span.remove").live("click",function(){				
+				// Store the column name relating to the clicked remove sign
+				var columnName = $(this).parent().find("span.col").html();
+				// Make the user confirm that they want to delete all reconciliation data for the selected
+				// column				
+				var ans = window.confirm("Are you sure? This will delete the reconciliation data for the column \""+columnName+"\"");
+				// On confirmation
+				if(ans){
+
+					// 1. Slide and hide the entry from the list
+					$(this).parent().slideUp(function(){
+						$(this).remove();
+						if($("ul.existing-columns li").length < 1){
+							$("div.existing").hide();
+							$("h3.existing-links").hide();
+							$("div.existing-links").hide();
+						}
+					});
+
+					// 2. Delete the reconciliation data for the column
+					Refine.postCoreProcess(
+							"recon-discard-judgments",
+							{ columnName: columnName, clearData: true },
+							null,
+							{ cellsChanged: true, columnStatsChanged: true }
+					);
+
+					// 3. Remove the link from the existingLinks array
+					for(var i=0; i<self.existingLinks.length; i++){
+						if(self.existingLinks[i].columnName == columnName){
+							self.existingLinks.splice(i,1);
+						}
+					}
+
+					// 4. Remove the columns reconciliation RDF data
+					LG.rdfOps.removeColumnReconciliationRDF(columnName);
+
+				}
+			});
+
+			// Set up interaction for the "View results" button
+			$("div.existing-links a.viewResults").click(function(){
+				self.showResultPanel();
+			});
+
+		},
+
+		/*
+		 * setupResultPanel
+		 * 
+		 * Sets up interaction for the result panel
+		 */
+		setupResultPanel:function(){
+
+			log("setupResultPanel");
+
+			var self = this;
+
+			// Interaction for result headers
+			$("div.result a.col-name").live("click",function(){
+
+				$("div.result div.result-body").slideUp();
+
+				if($(this).parent("div").find("div.result-body").css("display") == "none"){
+					$(this).parent("div").find("div.result-body").slideDown();
+				}
+
+				// Update the matches-bar
+				self.updateMatches($(this).parent());
+			});
+		},
 
 		/*
 		 * loadHTML
@@ -190,6 +525,8 @@ var LinkedGov_LinkingPanel = {
 			this.els.finishButton.hide();
 			// Show this panel
 			this.body.show();
+			// Hide the back button
+			this.els.returnButton.hide();
 			/*
 			 * Show buttons depending on what panel is 
 			 * being shown
@@ -198,7 +535,7 @@ var LinkedGov_LinkingPanel = {
 				// Show the save button
 				this.els.saveButton.show();
 				// Show the cancel button
-				this.els.cancelButton.css("display","inline-block");	
+				this.els.cancelButton.css("display","inline-block");
 				// Hide the link button
 				this.els.linkButton.hide();
 			} else {
@@ -226,9 +563,11 @@ var LinkedGov_LinkingPanel = {
 			// Show the link button
 			this.els.linkButton.show();
 			// Show the suggest panel
-			this.els.linkingPanel.find("div.suggest-panel").show();
+			this.els.suggestPanel.show();
 			// Hide the reconcile panel
-			this.els.linkingPanel.find("div.reconcile-panel").hide();
+			this.els.reconcilePanel.hide();
+			// Hide the back button
+			this.els.returnButton.hide();
 		},
 
 		/*
@@ -244,7 +583,13 @@ var LinkedGov_LinkingPanel = {
 			this.els.linkButton.hide();
 
 			// Hide the suggest panel
-			this.els.linkingPanel.find("div.suggest-panel").hide();
+			this.els.suggestPanel.hide();
+
+			// Show the reconcile panel
+			this.els.reconcilePanel.show(0, function(){
+				// Begin reconciliation on the confirmed columns
+				self.reconcileColumns();					
+			});
 
 			// Show & set up the cancel button
 			this.els.cancelButton.unbind("click").bind("click",function(){
@@ -299,12 +644,6 @@ var LinkedGov_LinkingPanel = {
 				}
 			})
 			.css("display","inline-block");
-
-			// Show the reconcile panel
-			this.els.linkingPanel.find("div.reconcile-panel").show(0, function(){
-				// Begin reconciliation on the confirmed columns
-				self.reconcileColumns();					
-			});
 		},
 
 		/*
@@ -360,6 +699,13 @@ var LinkedGov_LinkingPanel = {
 			var self = this;
 
 			$.get("/command/core/get-processes?" + $.param({ project: theProject.id }), null, function(data) {
+
+				log("data.processes.length "+data.processes.length);
+
+				log("before "+self.numberOfRunningProcesses);
+				self.numberOfRunningProcesses = data.processes.length;
+				log("after "+self.numberOfRunningProcesses)
+
 				for(var i=0;i<data.processes.length;i++){
 					if(data.processes[i].description.indexOf("Reconcile") >= 0){
 						// The only way to detect which column each process is operating on is to 
@@ -422,6 +768,12 @@ var LinkedGov_LinkingPanel = {
 						// Make sure the empty list is hidden
 						$("div.suggest-links ul.selected-columns").hide();
 
+						// Make sure the confirmed columns are cleared
+						$("div.confirmed-links a.clearButton").click();
+
+						// Hide the confirmed links div
+						$("div.confirmed-links").hide();
+
 						// callback
 						callback();
 					},
@@ -444,9 +796,8 @@ var LinkedGov_LinkingPanel = {
 
 			var self = this;
 
-			// Declare the arrays of suggested and confirmed links
+			// Reset the suggestedLinks array
 			self.suggestedLinks = [];
-			self.confirmedLinks = [];
 
 			// Shortcut to our reconciliation services
 			var services = LG.vars.reconServices;
@@ -464,20 +815,64 @@ var LinkedGov_LinkingPanel = {
 					// Loop through the hint words of the service
 					for(var k=0; k<services[j].hints.length; k++){
 
-						// Lowercase the column header, check for an instance of each hint
+						// Once we've looped through all of the existing links, 
+						// check the suggestLink boolean,
+						// lowercase the column header and check for an instance of each hint
+						// before suggesting the link
 						if(cols[i].name.toLowerCase().indexOf(services[j].hints[k]) >= 0){
 
-							// Column name contains something we're looking for
-							// Create an object containing the column name and the service it 
-							// has been suggested to use for reconciliation
-							self.suggestedLinks.push({
-								columnName:cols[i].name,
-								service:services[j]
-							});
+							// Boolean that lets us suggest a link
+							var suggestLink = true;
 
-							// Break out of the services loop
-							j=services.length-1;
-						}						
+							// If links exist already, we need to exclude the columns  
+							// from the suggestions
+							if(self.existingLinks.length > 0){
+								//log("have existing links");
+
+								// Loop through the existing services and make sure that 
+								// the suggested column doesn't have reconciliation data already
+								for(var m=0; m<self.existingLinks.length; m++){
+
+									// If the column already existing as an existing link, 
+									// we don't want to suggest this link
+									if(cols[i].name == self.existingLinks[m].columnName){
+										//log("column '"+cols[i].name+"' has recon data already");
+										suggestLink = false;
+									}
+								}
+							}
+							// If links have been confirmed already, we need to exclude the columns  
+							// from the suggestions
+							if(self.confirmedLinks.length > 0){
+								//log("have confirmed links");
+
+								for(var n=0; n<self.confirmedLinks.length; n++){
+
+									// If the column already existing as an existing link, 
+									// we don't want to suggest this link
+									if(cols[i].name == self.confirmedLinks[n].columnName){
+										//log("column '"+cols[i].name+"' has been confirmed already");
+										suggestLink = false;
+									}
+								}
+							}
+
+							if(suggestLink){
+								// Column name contains something we're looking for
+								//log("Suggesting link..."+cols[i].name);
+
+								// Create an object containing the column name and the service it 
+								// has been suggested to use for reconciliation
+								self.suggestedLinks.push({
+									columnName:cols[i].name,
+									service:services[j]
+								});
+
+								k=services[j].hints.length-1;
+								// Break out of the services loop
+								j=services.length-1;
+							}
+						}
 					}
 				}
 			}
@@ -502,29 +897,6 @@ var LinkedGov_LinkingPanel = {
 			$("div.suggest-links a.suggestButton").html("Suggest links").removeClass("selecting");
 			$("div.suggest-links span.column-selecting-icon").remove();
 
-			$("div.suggest-links span.confirm").click(function(){
-
-				// Add the confirmed suggestion to a new object containing only confirmations
-				self.confirmedLinks.push(self.suggestedLinks[parseInt($(this).parent().attr("data-index"))]);
-
-				// Add column to confirmed list
-				$("ul.confirmed-columns").append('<li><span class="col">'+$(this).parent().find("span.col").html()+'</span><span class="link">'+$(this).parent().find("span.link").html()+'</span></li>');
-				// Show list
-				$("div.suggest-links.confirmed").show();
-				// Show confirmed header
-				$("div.possible-links h3.confirmed").show();
-				// Remove column from suggested list
-				$(this).parent("li").slideUp(500,function(){
-					var ul = $(this).parent()
-					$("ul.confirmed-columns li:last").slideDown(500);
-					$(this).remove();
-					// Hide the selected-columns list if there are none left (removes their 
-					// margin-gap
-					if(ul.children("li").length < 1){
-						ul.hide();
-					}
-				});
-			});
 		},
 
 
@@ -568,47 +940,156 @@ var LinkedGov_LinkingPanel = {
 			 * Display a new panel that shows the results / scores of 
 			 * attempting reconciliation on the confirmed columns.
 			 */
-			var links = self.confirmedLinks;
 			self.results = [];
 
-			/*
-			 * Iterate through the confirmed links, add each link's service to 
-			 * the reconciliation manager, then as a callback, create a result object ready to be 
-			 * populated with the reconciliation results and begin reconciliation once we've processed all 
-			 * of the confirmed links.
-			 */
-			for(var i=0; i<self.confirmedLinks.length; i++){
+			if(self.existingLinks.length > 0){
 
-				LG.addReconciliationService(self.confirmedLinks[i].service, 0, function(service){
+				/*
+				 * Iterate through the existing links array and create "result" objects
+				 * for the columns to exist along side the new reconciliation results.
+				 * 
+				 * We also need to add the existing link's reconcilation service to the 
+				 * reconciliation manager
+				 */
+				/*for(var i=0; i<self.existingLinks.length; i++){
 
-					for(var j=0; j<self.confirmedLinks.length; j++){
+					for(var j=0; j<LG.vars.reconServices.length; j++){
 
-						if(service === self.confirmedLinks[j].service){
+						if(self.existingLinks[i].serviceName == LG.vars.reconServices[j].serviceName){
 
-							// Create a result - including the column name and it's 
-							// matched service.
-							var result = {
-									columnName:self.confirmedLinks[j].columnName,
-									service:service
-							};
+							log("Adding result for column: "+self.existingLinks[i].columnName);
 
-							// Remove the link from the confirmedLinks array
-							self.confirmedLinks.splice(j,1);
+							LG.addReconciliationService(LG.vars.reconServices[j], 0, function(service){
 
-							// Add the result to the array of results
-							self.results.push(result);
+								// Add a result object, importantly including the 
+								// "existingLink" property which skips reconciliation
+								var result = {
+										columnName:self.existingLinks[i].columnName,
+										service:LG.vars.reconServices[j],
+										existingLink:true
+								};
 
-							// Break from the loop
-							j = self.confirmedLinks.length-1;
+								self.results.push(result);
 
-							// If we've processed every confirmed link then we can 
-							// begin to reconcile
-							if(self.confirmedLinks.length == 0){
-								self.startReconcile();
-							}
+								j=LG.vars.reconServices.length-1;
+
+							});
 						}
 					}
-				});
+				}
+				*/
+				
+				for(var k=0; k<self.existingLinks.length; k++){
+
+							// Find an existing service and use it
+							for(var l=0; l<LG.vars.reconServices.length; l++){
+								if(self.existingLinks[k].serviceName == LG.vars.reconServices[l].serviceName 
+										&& typeof LG.vars.reconServices[l].id != 'undefined'){
+									// Create a result - including the column name and it's 
+									// matched service.
+									
+									//log("Creating existing result for column "+self.existingLinks[k].columnName);
+									
+									var result = {
+											columnName:self.existingLinks[k].columnName,
+											service:LG.vars.reconServices[l],
+											existingLink:true
+									};
+
+									// Remove the link from the confirmedLinks array
+									self.existingLinks.splice(k,1);
+
+									k--;
+									
+									// Add the result to the array of results
+									self.results.push(result);
+									
+									l = LG.vars.reconServices.length-1;
+								} else if(l == LG.vars.reconServices.length-1){
+									
+									//log("Adding service for column: "+self.existingLinks[k].columnName);
+
+									LG.addReconciliationService(self.existingLinks[k].service, 0, function(service){
+
+										for(var m=0; m<self.existingLinks.length; m++){
+
+											// We don't actually add the correct service for the existing
+											// link's column - but it doesn't matter
+											// TODO: Take another look at avoiding this.
+											if(service === self.existingLinks[m].service){
+
+												// Create a result - including the column name and it's 
+												// matched service.
+												var result = {
+														columnName:self.existingLinks[m].columnName,
+														service:service,
+														existingLink:true
+												};
+
+												// Remove the link from the confirmedLinks array
+												self.existingLinks.splice(m,1);
+
+												// Add the result to the array of results
+												self.results.push(result);
+
+												// Break from the loop
+												m = self.existingLinks.length-1;
+
+											}
+										}
+									});
+									
+									k--;
+								}
+							}
+				}
+
+			} 
+			
+			if(self.confirmedLinks.length > 0){
+
+				/*
+				 * Iterate through the confirmed links, add each link's service to 
+				 * the reconciliation manager, then as a callback, create a result object ready to be 
+				 * populated with the reconciliation results and begin reconciliation once we've processed all 
+				 * of the confirmed links.
+				 */
+				for(var i=0; i<self.confirmedLinks.length; i++){
+
+					LG.addReconciliationService(self.confirmedLinks[i].service, 0, function(service){
+
+						for(var j=0; j<self.confirmedLinks.length; j++){
+
+							if(service === self.confirmedLinks[j].service){
+
+								// Create a result - including the column name and it's 
+								// matched service.
+								var result = {
+										columnName:self.confirmedLinks[j].columnName,
+										service:service
+								};
+
+								// Remove the link from the confirmedLinks array
+								self.confirmedLinks.splice(j,1);
+
+								// Add the result to the array of results
+								self.results.push(result);
+
+								// Break from the loop
+								j = self.confirmedLinks.length-1;
+
+								// If we've processed every confirmed link then we can 
+								// begin to reconcile
+								if(self.confirmedLinks.length == 0){
+									self.startReconcile();
+								}
+							}
+						}
+					});
+				}
+			} else {
+				// Only existing links being viewed
+				self.startReconcile();
 			}
 		},
 
@@ -618,38 +1099,48 @@ var LinkedGov_LinkingPanel = {
 		 * Iterates through the results array and commences Refine's 
 		 * "reconcile" process which will continue to poll every second
 		 * until reconciliation is complete.
+		 * 
+		 * It skips any "result" objects that are existing link as they have already 
+		 * been reconciled.
 		 */
 		startReconcile:function(){
 
-			//log("startReconcile");
+			log("startReconcile");
 
 			var self = this;
 
 			for(var i=0; i<self.results.length; i++){
-				Refine.postCoreProcess(
-						"reconcile",
-						{},
-						{
-							columnName: self.results[i].columnName,
-							config: JSON.stringify({
-								mode: "standard-service",
-								service: self.results[i].service.serviceURL,
-								identifierSpace: "http://www.ietf.org/rfc/rfc3986",
-								schemaSpace: "http://www.ietf.org/rfc/rfc3986",
-								type: { id: self.results[i].service.resourceInfo.resourceURI, name: self.results[i].service.resourceInfo.resourceURI },
-								autoMatch: true,
-								columnDetails: []
-							})
-						},
-						{ cellsChanged: true, columnStatsChanged: true },
-						{}
-				);
+				// Make sure the result is not an existing link, in which case it doesn't
+				// need to be reconciled
+				log(typeof self.results[i].existingLink +" "+ !self.results[i].existingLink);
+
+				if(!self.results[i].existingLink){
+					Refine.postCoreProcess(
+							"reconcile",
+							{},
+							{
+								columnName: self.results[i].columnName,
+								config: JSON.stringify({
+									mode: "standard-service",
+									service: self.results[i].service.serviceURL,
+									identifierSpace: "http://www.ietf.org/rfc/rfc3986",
+									schemaSpace: "http://www.ietf.org/rfc/rfc3986",
+									type: { id: self.results[i].service.resourceInfo.resourceURI, name: self.results[i].service.resourceInfo.resourceURI },
+									autoMatch: true,
+									columnDetails: []
+								})
+							},
+							{ cellsChanged: true, columnStatsChanged: true },
+							{}
+					);
+				}
 
 				// Once we've iterated through the results, 
 				// we can show the results panel while the reconcilaition continues
 				if(i == self.results.length-1){
 					self.displayReconciliationResult();
 				}
+
 			}
 		},
 
@@ -668,27 +1159,48 @@ var LinkedGov_LinkingPanel = {
 			$("div#refine-tabs-facets").children().hide();
 
 			/*
-			 * Wait for the facets to be created (our signal that reconciliation 
-			 * has finished).
-			 * 
-			 * Grab some information from the facets
-			 * 
-			 * Hide the facets 
+			 * Work out how many facets we are expecting to be created 
+			 * so we can check that reconciliation has finished. Remembering 
+			 * to skip any existing link results. Refine creates two facets per 
+			 * column when it's finished reconciling them.
 			 */
+			/*var numberOfFacetsExpected = 0;
+			for(var i=0; i<self.results.length; i++){
+				if(typeof self.results[i].existingLink != 'undefined' && self.results[i].existingLink == true){
+					// Skip
+				} else {
+					numberOfFacetsExpected += 1;
+				}
+			}
+			log("We are expecting "+numberOfFacetsExpected+" facets");*/
+
+			/*
+			 * - Wait for the facets to be created (our signal that reconciliation 
+			 * has finished).
+			 * - Grab some information from the facets
+			 * - Hide the facets 
+			 */
+
+			// Initialise the number of running processes to 1
+			// This will increase as the reconciliation begins.
+			self.numberOfRunningProcesses = 1;
+
 			var interval = setInterval(function(){
+
+				//log("ui.browsingEngine._facets.length = "+ui.browsingEngine._facets.length);
+
+
+				log("self.numberOfRunningProcesses = "+self.numberOfRunningProcesses);
 
 				/*
 				 * Update the progress bars while we wait for the reconciliation to finish
 				 */
 				self.pollReconciliationJobs();
 
-				/*
-				 * Reconciliation produces two facets per column once it's complete.
-				 * 
-				 * Our test for checking whether reconciliation has finished across all 
-				 * columns is once all the facets have been created.
-				 */			
-				if(ui.browsingEngine._facets.length > (self.results.length*2)-1){
+				// Once all the facets have been created.
+				if(self.numberOfRunningProcesses == 0){
+
+					clearInterval(interval);
 
 					/*
 					 * Checks that the facets have been created once reconciliation 
@@ -800,16 +1312,57 @@ var LinkedGov_LinkingPanel = {
 						// we can hide the loading panel and show the results panel.
 						$("div.linking-loading").hide();
 						$("div.linking-results").show();
-						// Simulate a click on the first result's header
-						$("div.linking-results div.result a.col-name").eq(0).click();
+
+						// Display the first result that was not an existing link
+						/*
+						$("div.linking-results div.result a.col-name").each(function(){
+							log("Showing result");
+							for(var i=0; i<self.results.length; i++){
+								if($(this).html() == self.results[i].columnName && !self.results[i].existingLink){
+									log("Showing first result that isn't an existing link");
+									$(this).click();
+									resultDisplayed = true;
+								}
+							}
+							if($(this)[0] == $("div.linking-results div.result a.col-name").eq($("div.linking-results div.result a.col-name").length-1)[0] && !resultDisplayed){
+									log("No existing links, showing first result");
+									$("div.linking-results div.result a.col-name").eq(0).click();
+
+							}
+						});*/
+
+						var resultDisplayed = false;
+						for(var i=0; i<self.results.length; i++){
+							$("div.linking-results div.result a.col-name").each(function(){
+								if(self.results[i].columnName == $(this).html() && !self.results[i].existingLink){
+									log("Showing first result that isn't an existing link amongst existing links");
+									$(this).click();
+									resultDisplayed = true;
+								}
+							});
+							if(i==self.results.length-1 && !resultDisplayed){
+								log("All existing links - showing the first result");
+								$("div.linking-results div.result a.col-name").eq(0).click();
+							}
+						}
+
+
+
 						// Make sure the Typing panel is showing
 						$("div#left-panel div.refine-tabs").tabs('select', 1);
 						// Show the save button
 						self.els.saveButton.show();
+						// Show and set up the Back button so the user can return 
+						// to the Suggest panel
+						self.els.returnButton.unbind("click").bind("click",function(){
+							self.cancelReconciliation(function(){
+								self.showSuggestPanel();
+							});
+						}).show();
 
 					});
 
-					clearInterval(interval);
+
 
 				} else {
 					/*
@@ -1078,17 +1631,24 @@ var LinkedGov_LinkingPanel = {
 		 */
 		setUpSearchBox:function(inputElement, unmatchedValue, serviceURL){
 
-			//log('setUpSearchBox');
+			log('setUpSearchBox');
 
 			var self = this;
 
 			// Find the service's suggest options using it's URL
 			var suggestOptions;
 			for(var i=0; i<ReconciliationManager.standardServices.length;i++){
+
+				log("ReconciliationManager.standardServices[i].url = "+ReconciliationManager.standardServices[i].url);
+				log("serviceURL = "+serviceURL);
+
 				if(ReconciliationManager.standardServices[i].url == serviceURL){
 					suggestOptions = ReconciliationManager.standardServices[i].suggest.entity;
 				}
 			}
+
+			log("suggestOptions");
+			log(suggestOptions);
 
 			// Create an AJAX object for the suggest pane. We can specifically choose 
 			// to abort this AJAX call this way
@@ -1235,7 +1795,7 @@ var LinkedGov_LinkingPanel = {
 						self.previewXHR.abort();
 						self.previewPane.hide();
 						// Pass the suggestion <li> element, the input element and the original value
-						self.matchCellsFromSearch(li, inputElement, unmatchedValue, function(li, inputElement){
+						self.matchCellsFromSearch($(this), inputElement, unmatchedValue, function(li, inputElement){
 							// Once the cells have been matched, style and update the value inside the input element
 							inputElement.val(li.data("suggest").name).removeClass("edited").removeClass("dontknow").addClass("matched");
 							// Update the progress bar for each result
@@ -1430,11 +1990,14 @@ var LinkedGov_LinkingPanel = {
 		 */
 		matchCellsFromSearch:function(li, inputElement, localValue, callback){
 
-			//log('matchCellsFromSearch');
+			log('matchCellsFromSearch');
 
 			var self = this;
 
 			var match = li.data("suggest");
+
+			log(li);
+			log(li.data("suggest"));
 
 			if (match !== null) {
 
