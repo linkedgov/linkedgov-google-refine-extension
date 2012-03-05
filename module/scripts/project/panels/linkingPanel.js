@@ -419,7 +419,7 @@ var LinkedGov_LinkingPanel = {
 			}
 
 			// Set up interaction for the remove button for each link in the list
-			$("div.existing-links ul.existing-columns li span.remove").live("click",function(){		
+			$("div.existing-links ul.existing-columns li span.remove").unbind("click").bind("click",function(){		
 				// Store the column name relating to the clicked remove sign
 				var columnName = $(this).parent().find("span.col").html();
 				// Make the user confirm that they want to delete all reconciliation data for the selected
