@@ -419,7 +419,7 @@ var LinkedGov_LinkingPanel = {
 			}
 
 			// Set up interaction for the remove button for each link in the list
-			$("div.existing-links ul.existing-columns li span.remove").live("click",function(){				
+			$("div.existing-links ul.existing-columns li span.remove").live("click",function(){		
 				// Store the column name relating to the clicked remove sign
 				var columnName = $(this).parent().find("span.col").html();
 				// Make the user confirm that they want to delete all reconciliation data for the selected
@@ -460,7 +460,7 @@ var LinkedGov_LinkingPanel = {
 			});
 
 			// Set up interaction for the "View results" button
-			$("div.existing-links a.viewResults").click(function(){
+			$("div.existing-links a.viewResults").unbind("click").bind("click",function(){
 				self.showResultPanel();
 			});
 
@@ -919,7 +919,7 @@ var LinkedGov_LinkingPanel = {
 		 */
 		reconcileColumns:function(){
 
-			//log("reconcileColumns");
+			log("reconcileColumns");
 
 			var self = this;
 
@@ -988,8 +988,8 @@ var LinkedGov_LinkingPanel = {
 									// Create a result - including the column name and it's 
 									// matched service.
 									
-									//log("Creating existing result for column "+self.existingLinks[k].columnName);
-									
+									log("Creating existing result for column "+self.existingLinks[k].columnName);
+								
 									var result = {
 											columnName:self.existingLinks[k].columnName,
 											service:LG.vars.reconServices[l],
@@ -1004,7 +1004,10 @@ var LinkedGov_LinkingPanel = {
 									// Add the result to the array of results
 									self.results.push(result);
 									
+									log(self.results);
+									
 									l = LG.vars.reconServices.length-1;
+									
 								} else if(l == LG.vars.reconServices.length-1){
 									
 									//log("Adding service for column: "+self.existingLinks[k].columnName);
@@ -1081,6 +1084,8 @@ var LinkedGov_LinkingPanel = {
 								// If we've processed every confirmed link then we can 
 								// begin to reconcile
 								if(self.confirmedLinks.length == 0){
+									log("here");
+
 									self.startReconcile();
 								}
 							}
@@ -1089,6 +1094,8 @@ var LinkedGov_LinkingPanel = {
 				}
 			} else {
 				// Only existing links being viewed
+				log("here 2");
+				
 				self.startReconcile();
 			}
 		},
@@ -1109,6 +1116,8 @@ var LinkedGov_LinkingPanel = {
 
 			var self = this;
 
+			log(self.results);
+			
 			for(var i=0; i<self.results.length; i++){
 				// Make sure the result is not an existing link, in which case it doesn't
 				// need to be reconciled
@@ -1140,7 +1149,6 @@ var LinkedGov_LinkingPanel = {
 				if(i == self.results.length-1){
 					self.displayReconciliationResult();
 				}
-
 			}
 		},
 
@@ -1153,9 +1161,12 @@ var LinkedGov_LinkingPanel = {
 		 */
 		displayReconciliationResult: function(){
 
-			//log("displayReconciliationResult");
+			log("displayReconciliationResult");
 
 			var self = this;
+			
+			log(self.results);
+			
 			$("div#refine-tabs-facets").children().hide();
 
 			/*
@@ -1201,6 +1212,8 @@ var LinkedGov_LinkingPanel = {
 				if(self.numberOfRunningProcesses == 0){
 
 					clearInterval(interval);
+					
+					log("here");
 
 					/*
 					 * Checks that the facets have been created once reconciliation 
@@ -1356,6 +1369,7 @@ var LinkedGov_LinkingPanel = {
 						// to the Suggest panel
 						self.els.returnButton.unbind("click").bind("click",function(){
 							self.cancelReconciliation(function(){
+								self.setupExistingLinks();
 								self.showSuggestPanel();
 							});
 						}).show();
