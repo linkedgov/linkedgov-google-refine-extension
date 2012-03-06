@@ -79,6 +79,7 @@ var LinkedGov_LinkingPanel = {
 
 					// Show the result panel		
 					self.buildProgressBars(function(){
+						$("p.loader").hide();
 						self.showResultPanel();
 					});
 
@@ -691,6 +692,8 @@ var LinkedGov_LinkingPanel = {
 		 * 
 		 * The call returns an array of process objects which contain a progress percentage 
 		 * we used to update the progress bars with.
+		 * 
+		 * Build
 		 */
 		pollReconciliationJobs:function(){
 
@@ -700,18 +703,72 @@ var LinkedGov_LinkingPanel = {
 
 			$.get("/command/core/get-processes?" + $.param({ project: theProject.id }), null, function(data) {
 
-				log("data.processes.length "+data.processes.length);
+				//log("data.processes.length "+data.processes.length);
 
-				log("before "+self.numberOfRunningProcesses);
+				//log("before "+self.numberOfRunningProcesses);
 				self.numberOfRunningProcesses = data.processes.length;
-				log("after "+self.numberOfRunningProcesses)
+				//log("after "+self.numberOfRunningProcesses)
 
-				for(var i=0;i<data.processes.length;i++){
-					if(data.processes[i].description.indexOf("Reconcile") >= 0){
-						// The only way to detect which column each process is operating on is to 
-						// strip the description of the process which includes the column name
-						var columnName = data.processes[i].description.split("Reconcile cells in column ")[1].split(" to type")[0];
-						self.updateProgressBar(columnName, data.processes[i].progress);
+				// Check to see if any processes have completed by testing the length of 
+				// our processesArray against the returned processes object
+				if(self.processesArray.length == 0){
+					for(var i=0; i<data.processes.length; i++){
+						self.processesArray.push({
+							columnName : data.processes[i].description.split("Reconcile cells in column ")[1].split(" to type")[0],
+							progress : data.processes[i].progress,
+							complete: false
+						});
+					}
+				}
+
+				// If our process list has more processes than Refine's process list
+				if(self.processesArray.length > data.processes.length){
+					// A process has completed
+					// Boolean to signal we've found our process
+					var found = false;
+
+					// Loop through our process list
+					for(var i=0; i<self.processesArray.length; i++){
+
+						// Loop through Refine's process list
+						for(var j=0; j<data.processes.length; j++){
+
+							// Make sure this is a reconciliation process
+							if(data.processes[j].description.indexOf("Reconcile") >= 0){
+
+								// Store Refine's process name
+								var columnName = data.processes[j].description.split("Reconcile cells in column ")[1].split(" to type")[0];
+
+								// Check to see if this process exists in our list already
+								if(self.processesArray[i].columnName == columnName){
+									// Yes it does - so this one hasn't completed yet
+									found = false;
+								} else if(j == data.processes.length-1 && !found){
+									// If we've iterated through Refine's process list without
+									// finding our process. This is the missing one.
+									found = true;
+									self.processesArray[i].complete = true;
+									self.updateProgressBar(self.processesArray[i].columnName, 100);
+								}
+							}
+						}
+					}
+				} else {
+					// Loop through our process list
+					for(var i=0; i<self.processesArray.length; i++){
+						// Loop through Refine's process list
+						for(var j=0; j<data.processes.length; j++){
+							// Make sure this is a reconciliation process
+							if(data.processes[j].description.indexOf("Reconcile") >= 0){
+								// Store Refine's process name
+								var columnName = data.processes[j].description.split("Reconcile cells in column ")[1].split(" to type")[0];
+								if(self.processesArray[i].columnName == columnName){
+									// Update our processes progress
+									self.processesArray[i].progress = data.processes[j].progress;
+									self.updateProgressBar(self.processesArray[i].columnName, self.processesArray[i].progress);
+								}
+							}
+						}
 					}
 				}
 			});
@@ -730,6 +787,10 @@ var LinkedGov_LinkingPanel = {
 			$("div.linking-loading").find("div.progressDiv").each(function(){
 				if($(this).find("p.columnName").html() == columnName){
 					$(this).find("div.ui-progressbar-value").css("width",percentage+"%");
+					if(percentage == 100){
+						$(this).find("div.ui-progressbar-value").addClass("complete");
+						$(this).find("p.columnName").css("background","none");
+					}
 				}
 			});
 		},
@@ -919,7 +980,7 @@ var LinkedGov_LinkingPanel = {
 		 */
 		reconcileColumns:function(){
 
-			log("reconcileColumns");
+			//log("reconcileColumns");
 
 			var self = this;
 
@@ -977,78 +1038,78 @@ var LinkedGov_LinkingPanel = {
 						}
 					}
 				}
-				*/
-				
+				 */
+
 				for(var k=0; k<self.existingLinks.length; k++){
 
-							// Find an existing service and use it
-							for(var l=0; l<LG.vars.reconServices.length; l++){
-								if(self.existingLinks[k].serviceName == LG.vars.reconServices[l].serviceName 
-										&& typeof LG.vars.reconServices[l].id != 'undefined'){
-									// Create a result - including the column name and it's 
-									// matched service.
-									
-									log("Creating existing result for column "+self.existingLinks[k].columnName);
-								
-									var result = {
-											columnName:self.existingLinks[k].columnName,
-											service:LG.vars.reconServices[l],
-											existingLink:true
-									};
+					// Find an existing service and use it
+					for(var l=0; l<LG.vars.reconServices.length; l++){
+						if(self.existingLinks[k].serviceName == LG.vars.reconServices[l].serviceName 
+								&& typeof LG.vars.reconServices[l].id != 'undefined'){
+							// Create a result - including the column name and it's 
+							// matched service.
 
-									// Remove the link from the confirmedLinks array
-									self.existingLinks.splice(k,1);
+							log("Creating existing result for column "+self.existingLinks[k].columnName);
 
-									k--;
-									
-									// Add the result to the array of results
-									self.results.push(result);
-									
-									log(self.results);
-									
-									l = LG.vars.reconServices.length-1;
-									
-								} else if(l == LG.vars.reconServices.length-1){
-									
-									//log("Adding service for column: "+self.existingLinks[k].columnName);
+							var result = {
+									columnName:self.existingLinks[k].columnName,
+									service:LG.vars.reconServices[l],
+									existingLink:true
+							};
 
-									LG.addReconciliationService(self.existingLinks[k].service, 0, function(service){
+							// Remove the link from the confirmedLinks array
+							self.existingLinks.splice(k,1);
 
-										for(var m=0; m<self.existingLinks.length; m++){
+							k--;
 
-											// We don't actually add the correct service for the existing
-											// link's column - but it doesn't matter
-											// TODO: Take another look at avoiding this.
-											if(service === self.existingLinks[m].service){
+							// Add the result to the array of results
+							self.results.push(result);
 
-												// Create a result - including the column name and it's 
-												// matched service.
-												var result = {
-														columnName:self.existingLinks[m].columnName,
-														service:service,
-														existingLink:true
-												};
+							log(self.results);
 
-												// Remove the link from the confirmedLinks array
-												self.existingLinks.splice(m,1);
+							l = LG.vars.reconServices.length-1;
 
-												// Add the result to the array of results
-												self.results.push(result);
+						} else if(l == LG.vars.reconServices.length-1){
 
-												// Break from the loop
-												m = self.existingLinks.length-1;
+							//log("Adding service for column: "+self.existingLinks[k].columnName);
 
-											}
-										}
-									});
-									
-									k--;
+							LG.addReconciliationService(self.existingLinks[k].service, 0, function(service){
+
+								for(var m=0; m<self.existingLinks.length; m++){
+
+									// We don't actually add the correct service for the existing
+									// link's column - but it doesn't matter
+									// TODO: Take another look at avoiding this.
+									if(service === self.existingLinks[m].service){
+
+										// Create a result - including the column name and it's 
+										// matched service.
+										var result = {
+												columnName:self.existingLinks[m].columnName,
+												service:service,
+												existingLink:true
+										};
+
+										// Remove the link from the confirmedLinks array
+										self.existingLinks.splice(m,1);
+
+										// Add the result to the array of results
+										self.results.push(result);
+
+										// Break from the loop
+										m = self.existingLinks.length-1;
+
+									}
 								}
-							}
+							});
+
+							k--;
+						}
+					}
 				}
 
 			} 
-			
+
 			if(self.confirmedLinks.length > 0){
 
 				/*
@@ -1084,8 +1145,6 @@ var LinkedGov_LinkingPanel = {
 								// If we've processed every confirmed link then we can 
 								// begin to reconcile
 								if(self.confirmedLinks.length == 0){
-									log("here");
-
 									self.startReconcile();
 								}
 							}
@@ -1093,9 +1152,7 @@ var LinkedGov_LinkingPanel = {
 					});
 				}
 			} else {
-				// Only existing links being viewed
-				log("here 2");
-				
+				// Only existing links being viewed				
 				self.startReconcile();
 			}
 		},
@@ -1116,13 +1173,16 @@ var LinkedGov_LinkingPanel = {
 
 			var self = this;
 
+			// Initialise the processes array. We fill this with Refine's
+			// running processes, so we can tell which ones have completed
+			// and which are still running in order to give feedback to the user.
+			self.processesArray = [];
+
 			log(self.results);
-			
+
 			for(var i=0; i<self.results.length; i++){
 				// Make sure the result is not an existing link, in which case it doesn't
 				// need to be reconciled
-				log(typeof self.results[i].existingLink +" "+ !self.results[i].existingLink);
-
 				if(!self.results[i].existingLink){
 					Refine.postCoreProcess(
 							"reconcile",
@@ -1164,9 +1224,9 @@ var LinkedGov_LinkingPanel = {
 			log("displayReconciliationResult");
 
 			var self = this;
-			
+
 			log(self.results);
-			
+
 			$("div#refine-tabs-facets").children().hide();
 
 			/*
@@ -1212,7 +1272,7 @@ var LinkedGov_LinkingPanel = {
 				if(self.numberOfRunningProcesses == 0){
 
 					clearInterval(interval);
-					
+
 					log("here");
 
 					/*
@@ -1260,7 +1320,6 @@ var LinkedGov_LinkingPanel = {
 								if(self.results[i].numUnmatched > 0 || self.results[i].numMatched < theProject.rowModel.total){
 									html += "<p class='notification'>There are some values that have not been matched due to possible differences in punctuation or spellings. Would you like to try to match these values yourself?</p>";
 									html += "<p class='notification'><a class='yes button'>Yes</a><a class='ignore button'>Ignore</a></p>";
-
 								}
 
 								html += "</div><!-- end result-body -->";
@@ -1367,12 +1426,12 @@ var LinkedGov_LinkingPanel = {
 						self.els.saveButton.show();
 						// Show and set up the Back button so the user can return 
 						// to the Suggest panel
-						self.els.returnButton.unbind("click").bind("click",function(){
-							self.cancelReconciliation(function(){
-								self.setupExistingLinks();
-								self.showSuggestPanel();
-							});
-						}).show();
+						//self.els.returnButton.unbind("click").bind("click",function(){
+						//	self.cancelReconciliation(function(){
+						//		self.setupExistingLinks();
+						//		self.showSuggestPanel();
+						//	});
+						//}).show();
 
 					});
 

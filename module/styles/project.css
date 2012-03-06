@@ -1467,7 +1467,7 @@ body.lg div#refine-tabs-typing div.reconcile-panel div.linking-loading div.progr
 }
 body.lg div#refine-tabs-typing div.reconcile-panel div.linking-loading div.progressDiv p.columnName {
     background-color: #FFFFFF;
-    background-image: url("../images/column_selecting.gif");
+    background-image: url("/images/small-spinner.gif");
     background-position: 98% center;
     background-repeat: no-repeat;
     border: 1px solid #DDDDDD;
@@ -1499,6 +1499,10 @@ body.lg div#refine-tabs-typing div.reconcile-panel div.linking-loading div.progr
     background: -moz-linear-gradient(center top , #79B1FE, #294F8C) repeat scroll 0 0 transparent;
     background: -webkit-gradient(linear, left bottom, left top, from(#294F8C), to(#79B1FE) ) #DDDDDD;
     width:0%;
+}
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-loading div.progressDiv div.recon-bar div.ui-progressbar-value.complete {
+    background: -moz-linear-gradient(center top , #73C262, #1F3709) repeat scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#1F3709), to(#73C262) ) #DDDDDD;
 }
 body.lg #suggest-pane {
     background: none repeat scroll 0 0 #FFFFFF;

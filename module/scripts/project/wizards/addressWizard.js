@@ -70,7 +70,7 @@ var LinkedGov_addressWizard = {
 			self.vars.hiddenColumns = [];
 			self.vars.addressName = "";
 			self.vars.postcodePresent = false;
-			self.vars.unexpectedValueRegex = 'grel:if(isBlank(value),"postcode",if(isError(if(partition(value,'+self.vars.postCodeRegex+')[1].length() > 0,"postcode","error")),"error",if(partition(value,'+self.vars.postCodeRegex+')[1].length() > 0,"postcode","error")))';
+			self.vars.unexpectedValueRegex = 'grel:if(isBlank(value),"postcode",if(isError(if(partition(value,'+self.vars.postCodeRegex+')[1].length() > 0,"postcode","error")),"error",if(partition(value,'+self.vars.postCodeRegex+')[1].length() > 0,"postcode",if(isBlank(cells["postcode"].value),"postcode","error"))))';
 
 			/*
 			 * Build an array of column objects with their options
@@ -177,12 +177,11 @@ var LinkedGov_addressWizard = {
 		/*
 		 * validatePostCodeColumns
 		 * 
-		 * Asks the user for a new column name (to name the column with the newly
-		 * extracted postcode) and creates a new column based on extracting the
-		 * postcode from the column the user has selected.
+		 * Checks for any columns that have been specified as containing postcodes.
 		 * 
-		 * Recurse through the columns as each new column needs to be processed 
-		 * once Refine has totally finished processing the previous column.
+		 * It then runs a regex match on the postcode values, which if they pass, become 
+		 * uppercased and have any spaces removed. The values that fail the postcode 
+		 * regex are left as they are.
 		 * 
 		 */
 		validatePostCodeColumns : function(index, callback) {
@@ -395,9 +394,9 @@ var LinkedGov_addressWizard = {
 						 * Create the other vCard address fragments
 						 */
 						uri = vocabs.vcard.uri + colObjects[i].part;
-					curie = vocabs.vcard.curie + ":" + colObjects[i].part;
-					colObjects[i].rdf = self.makeVCardFragment(colObjects[i].name, uri, curie);
-					break;
+						curie = vocabs.vcard.curie + ":" + colObjects[i].part;
+						colObjects[i].rdf = self.makeVCardFragment(colObjects[i].name, uri, curie);
+						break;
 
 					}
 				}
@@ -413,6 +412,8 @@ var LinkedGov_addressWizard = {
 		 * part separated by a comma.
 		 * 
 		 * Finally, collapse the address-part columns used to create the new column.
+		 * 
+		 * TODO: Trailing commas and spaces
 		 */
 		createAddressColumn:function(callback){
 
@@ -429,6 +430,7 @@ var LinkedGov_addressWizard = {
 			var addressParts = ["street-address","extended-address","locality","region","country-name","postcode"];
 			var lastCol = "";
 
+			// Edit expresion 
 			for(var h=0; h<addressParts.length;h++){
 				for(var i=0; i<colObjects.length; i++){
 					if(colObjects[i].part == addressParts[h]){
