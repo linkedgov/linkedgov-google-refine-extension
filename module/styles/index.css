@@ -32,6 +32,11 @@ body.lg div.action-area-tab-body {
     visibility:visible !important;
     display:none;
 }
+body.lg #create-project-progress-bar-frame {
+    border: 1px solid #BBCCFF;
+    padding: 3px;
+    width: 100%;
+}
 
 /* ---- */
 

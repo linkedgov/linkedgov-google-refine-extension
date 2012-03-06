@@ -216,21 +216,29 @@ var LinkedGov_addressWizard = {
 			} else if (colObjects[i].containsPostcode || colObjects[i].part == "postcode") {
 
 				self.vars.postcodePresent = true;
+				
 				/*
-				 * We create a new column based on the specified postcode column (
-				 * 
+				 * In case of a postcode appearing in a mixed address value (i.e. with many parts),
+				 * we need to extract and create a new column for the postcode, while at the same time, 
+				 * performing validation on the values using the eexpression
+				 *
 				 * partition() is the GREL function used to perform the regex match. It returns 
 				 * an array of 3 elements - the middle element being the regex match.
 				 * 
 				 * The expression ends with "[1]" so we grab the middle element (the
 				 * postcode value) of the returned 3-part regex result.
 				 * 
+				 * baseColumnName: the column containing postcodes
+				 * expression: an expression that validates and extracts a postcode from a string
+				 * newColumnName: a name for the new column containg postcodes (trying to avoid a clash so using (LG))
+				 * columnInsertIndex: the position to insert the new column (just after the postcode column in our case)
+				 * onError: if there's an error, we want to keep the original value
 				 */
 				Refine.postCoreProcess(
 						"add-column",
 						{
 							baseColumnName : colObjects[i].name,
-							expression : "if(partition(value,"+self.vars.postCodeRegex+")[1].length() > 0,toUppercase(partition(value,"+self.vars.postCodeRegex+")[1].replace(' ','')),value)",
+							expression : "if(partition(value,"+self.vars.postCodeRegex+")[1].length() > 0,toUppercase(partition(value,"+self.vars.postCodeRegex+")[1].replace(' ','')),trim(value))",
 							newColumnName : colObjects[i].name + " Postcode (LG)",
 							columnInsertIndex : Refine.columnNameToColumnIndex(colObjects[i].name) + 1,
 							onError : "keep-original"
@@ -248,6 +256,8 @@ var LinkedGov_addressWizard = {
 								 * it.
 								 */
 								if (colObjects[i].part == "mixed") {
+									
+									//log("We have a mixed address");
 
 									/*
 									 * We need to add a new column object to the array for the new postcode 
@@ -261,17 +271,22 @@ var LinkedGov_addressWizard = {
 
 									i++;
 
-									/*
-									 * Prevent further recursion
-									 */
+									// After adding the new postcode column to the colObjects array, 
+									// we can check to see if we started with one column, then after adding this 
+									// column means we have 2 columns - meaning we can perform a callback without 
+									// recursing any further.
 									if (colObjects.length == 2) {
+										log("calling back")
 										callback();
 									} else {
+										log("recursing")
 										self.validatePostCodeColumns(i, callback);
 									}
 
 								} else {
 
+									//log("Removing postcode column");
+									
 									// Remove the old postcode column
 									LG.silentProcessCall({
 										type : "POST",
@@ -442,12 +457,15 @@ var LinkedGov_addressWizard = {
 			/*
 			 * Build the expression used to join the various 
 			 * address parts together as a string.
+			 * 
+			 * TODO: Missing the "mixed" part here.
 			 */
 			var expression = "";
 			var addressParts = ["street-address","extended-address","locality","region","country-name","postcode"];
 			var lastCol = "";
 
-			// Edit expresion 
+			// Build an expression that concatenates the columns in question in the order described 
+			// by the addressParts array above.
 			for(var h=0; h<addressParts.length;h++){
 				for(var i=0; i<colObjects.length; i++){
 					if(colObjects[i].part == addressParts[h]){
@@ -457,16 +475,12 @@ var LinkedGov_addressWizard = {
 				}
 			}
 
-			//var trimStart = 0;
-			//if(expression[0] == ","){
-			//	trimStart = 2;
-			//}
-
-			//expression = expression.substring(trimStart, expression.length - 6);
+			// Remove the ", " from the end of our expression using chomp()
 			expression = 'chomp('+expression.substring(0,expression.length-1)+',", ")';
 
-			log(expression);
+			//log(expression);
 			
+
 			Refine.postCoreProcess(
 					"add-column",
 					{
@@ -659,6 +673,7 @@ var LinkedGov_addressWizard = {
 			Refine.update({
 				modelsChanged : true
 			}, function() {
+				log("Finished address wizard");
 				LG.panels.wizardsPanel.resetWizard(self.vars.elmts.addressBody);
 				LG.panels.wizardsPanel.showUndoButton(self.vars.elmts.addressBody);
 				LG.showWizardProgress(false);

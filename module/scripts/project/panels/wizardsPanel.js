@@ -1941,7 +1941,7 @@ var LinkedGov_WizardsPanel = {
 					// Store a few variables for easier reading					
 					var result = colObjects[index].unexpectedValueParams.result;
 					var unexpectedValues = result.errorCount;
-					var percentage = Math.round(((unexpectedValues/theProject.rowModel.total)*100)*Math.pow(10,2))/Math.pow(10,2);
+					var percentage = Math.round(((unexpectedValues/theProject.rowModel.total)*100));
 					// The maximum number of unexpected values we ask the user to attempt to correct.
 					// TODO: Not sure that this is being used (the 90% mark seems to be the only marker)
 					var correctionLimit = 15;
@@ -1957,7 +1957,7 @@ var LinkedGov_WizardsPanel = {
 						html+= '<p class="message"><span class="count">'+result.errorCount+'</span> unexpected value'+(unexpectedValues == 1 ? ' has ' : 's have ')+'been detected in the column <span class="colName">'+result.colName+'</span>.</p>';
 						html+= '<p class="details">Can you fix '+(unexpectedValues == 1 ? 'it' : 'them')+'?</p>';
 					} else {
-						html+= '<p class="message">Around '+percentage+'% of the values ('+unexpectedValues+') in the <span class="colName">'+result.colName+'</span> column have been deteceted as unexpected values.'
+						html+= '<p class="message">Around '+percentage+'% of the values ('+unexpectedValues+') in the <span class="colName">'+result.colName+'</span> column have been detected as unexpected values.'
 						html+= '<p class="details">Are you sure you have selected the correct column?</p>';
 					}
 
