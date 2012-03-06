@@ -113,11 +113,27 @@ var LinkedGov_dateTimeWizard = {
 					 */
 					self.checkForMultiColumnDateTimes(function() {
 						self.checkCombinations(function() {
-							//log("Checking schema...");
-							LG.rdfOps.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
-								//log("About to save RDF...");
-								self.saveRDF(rootNode, foundRootNode);
-							});
+							
+							/*
+							 * We are able to test that the columns involved in the wizards operations have 
+							 * resulted in being typed as a date or not.
+							 */
+							if(self.vars.expectedValue == "date" || self.vars.expectedValue == "time" || self.vars.expectedValue == "date-time"){
+								// We populate the colObjects with the variables needed to perform these 
+								// tests
+								var colObjects = self.prepareColumnObjectsForValueTest();
+								// Then initiate the test, passing the colObjects and the wizard's body
+								LG.panels.wizardsPanel.checkForUnexpectedValues(colObjects, self.vars.elmts.dateTimeBody, function(){
+									
+									//log("Checking schema...");
+									LG.rdfOps.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
+										//log("About to save RDF...");
+										self.saveRDF(rootNode, foundRootNode);
+									});
+								});
+							}
+							
+
 						});
 					});
 
@@ -634,7 +650,9 @@ var LinkedGov_dateTimeWizard = {
 					 */
 					if (i == colObjects.length - 1) {
 						self.vars.resultColumn = colObjects[i].name;
-						callback();
+						if(callback){
+							callback();
+						}
 					}
 
 				} else {
@@ -1198,17 +1216,6 @@ var LinkedGov_dateTimeWizard = {
 				// Hide the "wizard in progress" message
 				LG.showWizardProgress(false);
 
-				/*
-				 * We are able to test that the columns involved in the wizards operations have 
-				 * resulted in being typed as a date or not.
-				 */
-				if(self.vars.expectedValue == "date" || self.vars.expectedValue == "time" || self.vars.expectedValue == "date-time"){
-					// We populate the colObjects with the variables needed to perform these 
-					// tests
-					var colObjects = self.prepareColumnObjectsForValueTest();
-					// Then initiate the test, passing the colObjects and the wizard's body
-					LG.panels.wizardsPanel.checkForUnexpectedValues(colObjects, self.vars.elmts.dateTimeBody);
-				}
 
 			});
 
@@ -1268,16 +1275,9 @@ var LinkedGov_dateTimeWizard = {
 
 			var self = this;
 			
-			// Display the "working..." sign
-			LG.showWizardProgress(true);
-
-			// Restart the wizard again with the manually fixed values, so 
-			// we skip any user input.
 			self.checkForMultiColumnDateTimes(function() {
-				self.checkCombinations(function() {
-					self.onComplete();
-				});
+				self.checkCombinations();
 			});
-
+			
 		}
 };

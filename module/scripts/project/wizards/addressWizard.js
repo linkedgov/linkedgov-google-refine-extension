@@ -66,7 +66,7 @@ var LinkedGov_addressWizard = {
 			}catch(e){
 				self.vars.historyRestoreID = 0;
 			}			
-			
+
 			self.vars.hiddenColumns = [];
 			self.vars.addressName = "";
 			self.vars.postcodePresent = false;
@@ -105,24 +105,41 @@ var LinkedGov_addressWizard = {
 				 * Perform the postcode regex match on any columns that contain postcodes
 				 */
 				self.validatePostCodeColumns(index, function() {
-					/*
-					 * Build the address fragments RDF
-					 */
-					self.makeAddressFragments(function() {
-						/*
-						 * Create a new column containing the parts of the address
-						 * the user specified and collapse the other columns.
-						 */
-						self.createAddressColumn(function(){
-							/*
-							 * Save the RDF
-							 */
-							LG.rdfOps.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
-								self.saveRDF(rootNode, foundRootNode);
-							});
 
-						})
-					});
+
+					/*
+					 * We can check that a column contains postcodes if the user 
+					 * has specified it does
+					 */
+					if(self.vars.postcodePresent){
+						
+						log("here");
+						
+						var colObjects = self.prepareColumnObjectsForValueTest();
+						LG.panels.wizardsPanel.checkForUnexpectedValues(colObjects, self.vars.elmts.addressBody, function(){
+
+							log("address wizard callback");
+							
+							/*
+							 * Build the address fragments RDF
+							 */
+							self.makeAddressFragments(function(){
+								/*
+								 * Create a new column containing the parts of the address
+								 * the user specified and collapse the other columns.
+								 */
+								self.createAddressColumn(function(){
+									/*
+									 * Save the RDF
+									 */
+									LG.rdfOps.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
+										self.saveRDF(rootNode, foundRootNode);
+									});
+
+								})
+							});
+						});
+					}
 				});
 
 			} else {
@@ -394,9 +411,9 @@ var LinkedGov_addressWizard = {
 						 * Create the other vCard address fragments
 						 */
 						uri = vocabs.vcard.uri + colObjects[i].part;
-						curie = vocabs.vcard.curie + ":" + colObjects[i].part;
-						colObjects[i].rdf = self.makeVCardFragment(colObjects[i].name, uri, curie);
-						break;
+					curie = vocabs.vcard.curie + ":" + colObjects[i].part;
+					colObjects[i].rdf = self.makeVCardFragment(colObjects[i].name, uri, curie);
+					break;
 
 					}
 				}
@@ -434,19 +451,22 @@ var LinkedGov_addressWizard = {
 			for(var h=0; h<addressParts.length;h++){
 				for(var i=0; i<colObjects.length; i++){
 					if(colObjects[i].part == addressParts[h]){
-						expression += 'if(isError(cells["' + colObjects[i].name + '"].value),"",cells["' + colObjects[i].name + '"].value)+", "+';
+						expression += 'if(isError(cells["' + colObjects[i].name + '"].value),"",if(isBlank(cells["' + colObjects[i].name + '"].value),"",cells["' + colObjects[i].name + '"].value+", "))+';
 						lastCol = colObjects[i].name;
 					}
 				}
 			}
 
-			var trimStart = 0;
-			if(expression[0] == ","){
-				trimStart = 2;
-			}
+			//var trimStart = 0;
+			//if(expression[0] == ","){
+			//	trimStart = 2;
+			//}
 
-			expression = expression.substring(trimStart, expression.length - 6);
+			//expression = expression.substring(trimStart, expression.length - 6);
+			expression = 'chomp('+expression.substring(0,expression.length-1)+',", ")';
 
+			log(expression);
+			
 			Refine.postCoreProcess(
 					"add-column",
 					{
@@ -550,8 +570,6 @@ var LinkedGov_addressWizard = {
 				schema : JSON.stringify(schema)
 			}, {}, {
 				onDone : function() {
-					// DialogSystem.dismissUntil(self._level - 1);
-					// theProject.overlayModels.rdfSchema = schema;
 					self.onComplete();
 				}
 			});
@@ -644,15 +662,16 @@ var LinkedGov_addressWizard = {
 				LG.panels.wizardsPanel.resetWizard(self.vars.elmts.addressBody);
 				LG.panels.wizardsPanel.showUndoButton(self.vars.elmts.addressBody);
 				LG.showWizardProgress(false);
+				self.vars.addressName = "";
 
 				/*
 				 * We can check that a column contains postcodes if the user 
 				 * has specified it does
 				 */
-				if(self.vars.postcodePresent){
-					var colObjects = self.prepareColumnObjectsForValueTest();
-					LG.panels.wizardsPanel.checkForUnexpectedValues(colObjects, self.vars.elmts.addressBody);
-				}
+				//if(self.vars.postcodePresent){
+				//	var colObjects = self.prepareColumnObjectsForValueTest();
+				//	LG.panels.wizardsPanel.checkForUnexpectedValues(colObjects, self.vars.elmts.addressBody);
+				//}
 
 			});
 		},
@@ -671,6 +690,8 @@ var LinkedGov_addressWizard = {
 		 */
 		prepareColumnObjectsForValueTest:function(){
 
+			log("prepareColumnObjectsForValueTest");
+			
 			var self = this;
 
 			var colObjects = self.vars.colObjects;
@@ -681,10 +702,10 @@ var LinkedGov_addressWizard = {
 				 * Test unexpeceted values on the new "address" column that has
 				 * been created.
 				 */
-				if(colObjects[i].name == self.vars.addressName){
-					
+				if(self.vars.colObjects[i].part == "postcode"){
+
 					log("Testing unexpected values on column: "+colObjects[i].name);
-					
+
 					colObjects[i].unexpectedValueParams = {
 							expression : self.vars.unexpectedValueRegex,
 							colName : colObjects[i].name,
@@ -692,10 +713,6 @@ var LinkedGov_addressWizard = {
 							exampleValue : "NW51PL"
 					};
 
-					if(self.vars.colObjects.length > 1 || (self.vars.colObjects.length == 1 && self.vars.colObjects[0].containsPostcode)){
-						colObjects[i].unexpectedValueParams.exampleValue = "27 Boscastle Road, Kentish Town, NW52QT";
-					}
-					
 					if(self.vars.colObjects.length == 1 && self.vars.colObjects[0].part == "postcode"){
 						colObjects[i].unexpectedValueParams.exampleValue = "NW52QT";
 					}	
@@ -719,9 +736,9 @@ var LinkedGov_addressWizard = {
 
 			var self = this;
 
-			LG.showWizardProgress(true);
+			//LG.showWizardProgress(true);
 
-			self.onComplete();
+			//self.onComplete();
 
 		}
 

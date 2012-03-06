@@ -256,7 +256,7 @@ var LinkedGov_WizardsPanel = {
 					for(var i=0; i<array.length; i++){
 						for(var j=0; j<wizardObject.vars.hiddenColumns.length; j++){
 							if(array[i] == wizardObject.vars.hiddenColumns[j]){
-								LG.unhideHiddenColumn(array[i]);
+								LG.ops.unhideHiddenColumn(array[i]);
 								wizardObject.vars.hiddenColumns.splice(j,1);
 								j--;
 							}
@@ -1655,10 +1655,11 @@ var LinkedGov_WizardsPanel = {
 		 * object - which contains an expression, an expected value and an expected type 
 		 * to test the column with.
 		 */
-		checkForUnexpectedValues : function(colObjects, wizardBody){
+		checkForUnexpectedValues : function(colObjects, wizardBody, callback){
 
-			// log("checkForUnexpectedValues");
-
+			log("checkForUnexpectedValues");
+			log(colObjects.length);
+			
 			var self = this;
 			
 			/*
@@ -1667,11 +1668,15 @@ var LinkedGov_WizardsPanel = {
 			 */
 			for(var i=0; i<colObjects.length; i++){
 
+				log(colObjects[i]);
+				
 				/*
 				 * Check the column object has the unexepctedValueParams object which 
 				 * contains the variables to test on.
 				 */
 				if(typeof colObjects[i].unexpectedValueParams != 'undefined'){
+					
+					log("colObjects[i].unexpectedValueParams != 'undefined'");
 
 					// Set a flag for detecting unmatched values
 					var unexpectedValuesPresent = false;
@@ -1702,22 +1707,43 @@ var LinkedGov_WizardsPanel = {
 							// Unexpected values present - display the panel
 							// and pass the colObjects array, starting at index "0" (as it's a recursive 
 							// function) and the wizard's body
-							self.displayUnexpectedValuesPanel(colObjects, 0, wizardBody);
+							self.displayUnexpectedValuesPanel(colObjects, 0, wizardBody, callback);
 							
 						} else {
 							
 							// No unexpected values present - do not display the panel
-							self.restoreWizardBody();
+							//self.restoreWizardBody();
 							
 							// Remove any facets left over from the tests
-							for(var j=0; j<colObjects.length; j++){
-								LG.ops.removeFacet(colObjects[j].name);
-							}
+							//for(var j=0; j<colObjects.length; j++){
+							//	LG.ops.removeFacet(colObjects[j].name);
+							//}
+							
+							// Hide the unexpected values panel
+							self.finishUnexpectedValuesTest(callback);
 						}
 					}
 				}
 			}
 
+		},
+		
+		/*
+		 * finishUnexpectedValuesTest
+		 * 
+		 * Removes the unexpected values panel and returns 
+		 * the wizard to the state where it was left.
+		 * 
+		 * The callback will be the wizards remaning operations.
+		 */
+		finishUnexpectedValuesTest:function(callback){
+			ui.browsingEngine.remove();
+			$("div.unexpectedValues").hide().remove();
+			$("div.wizard-body").children().show();
+			$("div.split, span.note").hide();
+			$("div.action-buttons").show().find("a.undo").css("display","inline-block");
+			LG.showWizardProgress(true);
+			callback();
 		},
 
 		/*
@@ -1735,6 +1761,10 @@ var LinkedGov_WizardsPanel = {
 		 */
 		verifyValueTypes : function(columnName, expression, expectedType, exampleValue){
 
+			log("verifyValueTypes");
+			
+			var self = this;			
+			
 			// A value to decide whether a column has been successfully typed
 			var percentage = 0.9;
 			// The most frequently occurring type in the column (e.g. int, float, date, postcode)
@@ -1861,7 +1891,8 @@ var LinkedGov_WizardsPanel = {
 				result.type = "notclear";
 			}
 
-			//log(result);
+			log("result");
+			log(result);
 
 			return result;
 		},
@@ -1880,7 +1911,7 @@ var LinkedGov_WizardsPanel = {
 		 * 
 		 * TODO: This needs to be split up.
 		 */
-		displayUnexpectedValuesPanel : function(colObjects, index, wizardBody){
+		displayUnexpectedValuesPanel : function(colObjects, index, wizardBody, callback){
 
 			var self = this;
 			
@@ -1954,6 +1985,8 @@ var LinkedGov_WizardsPanel = {
 					// except for the header and the unexpected values panel
 					$("div.wizard-body").children().hide().end().find("h2, div.unexpectedValues").show();
 					
+					LG.showWizardProgress(false);
+					
 					// TODO: This could be in a function called "setupUnexpectedValuesPanel"
 					// Set up interaction for the action buttons local to the unexpected values panel
 					var unexpectedValuesEl = $("div.unexpectedValues");
@@ -1976,9 +2009,9 @@ var LinkedGov_WizardsPanel = {
 							// TODO: Make this clear that's what's happened in the UI panel
 							// TODO: Disable access to the table at this point. We want the user
 							// to only be editing values in the panel
-							self.showUnexpectedValues(result,function(result){
+							self.showUnexpectedValues(result, function(result){
 								// Perform an update in Refine
-								Refine.update({modelsChanged:true},function(){
+								Refine.update({modelsChanged:true}, function(){
 									// Create and populate list of input boxes that contain
 									// the unexpected values
 									self.populateUnexpectedValuePanelList(result);
@@ -1992,7 +2025,7 @@ var LinkedGov_WizardsPanel = {
 							// Show two new buttons - "Rerun wizard" and "Done".
 							unexpectedValuesEl.find("div.buttons").append("<a class='button rerun' />");
 							unexpectedValuesEl.find("div.buttons").append("<a class='button done' />");
-							unexpectedValuesEl.find("div.buttons").find("a.rerun").html("Re-run wizard").show();
+							unexpectedValuesEl.find("div.buttons").find("a.rerun").html("Fix").show();
 							unexpectedValuesEl.find("div.buttons").find("a.done").html("Done").show();
 
 							// Use the hasFixedValue boolean flag to determine whether to show a message to the user
@@ -2020,7 +2053,10 @@ var LinkedGov_WizardsPanel = {
 										 * LG.wizards.**wizardName**.rerunWizard(), but uses the current wizard
 										 * HTML panel to extract the name.
 										 */
-										LG.wizards[wizardBody.attr('rel')].rerunWizard();						
+										LG.wizards[wizardBody.attr('rel')].rerunWizard();		
+										
+										self.checkForUnexpectedValues(colObjects, wizardBody, callback);
+										
 									});
 								});
 							});
@@ -2041,8 +2077,7 @@ var LinkedGov_WizardsPanel = {
 									}
 								}
 								
-								// Return the wizard to it's original state
-								self.restoreWizardBody();
+								self.finishUnexpectedValuesTest(callback);
 
 							});
 
@@ -2065,8 +2100,7 @@ var LinkedGov_WizardsPanel = {
 									}
 								}
 
-								// Return the wizard to it's original state
-								self.restoreWizardBody();
+								self.finishUnexpectedValuesTest(callback);
 								
 							} else {
 								// If the user has pressed "Carry on", but there are other 
@@ -2083,7 +2117,7 @@ var LinkedGov_WizardsPanel = {
 								// Move on to the next colObject by incrementing the index.
 								index = index+1;
 								// Recurse until we've processed each colObject.
-								self.displayUnexpectedValuesPanel(colObjects, index, wizardBody);
+								self.displayUnexpectedValuesPanel(colObjects, index, wizardBody, callback);
 							}
 						}
 					});
@@ -2102,7 +2136,7 @@ var LinkedGov_WizardsPanel = {
 
 					// Move on to the next colObject by recursing
 					index = index+1;
-					self.displayUnexpectedValuesPanel(colObjects, index, wizardBody);
+					self.displayUnexpectedValuesPanel(colObjects, index, wizardBody, callback);
 				}
 			} else {
 				// We have looped through the colObjects

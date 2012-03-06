@@ -66,8 +66,15 @@ var LinkedGov_geolocationWizard = {
 				 * Convert the lat/long columns to numbers before operating on them
 				 */
 				self.convertColumnsToNumber(0,function(){
-					LG.rdfOps.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
-						self.saveRDF(rootNode, foundRootNode);
+					/*
+					 * We can check the columns contain floats or ints depending on 
+					 * what the user has specified.
+					 */
+					var colObjects = self.prepareColumnObjectsForValueTest();
+					LG.panels.wizardsPanel.checkForUnexpectedValues(colObjects, self.vars.elmts.geolocationBody, function(){
+						LG.rdfOps.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
+							self.saveRDF(rootNode, foundRootNode);
+						});
 					});
 				});
 
@@ -135,7 +142,11 @@ var LinkedGov_geolocationWizard = {
 				success : function() {
 
 					if(index==self.vars.colObjects.length-1){
-						Refine.update({cellsChanged : true},callback);
+						if(callback){
+							Refine.update({cellsChanged : true},callback);
+						} else {
+							Refine.update({cellsChanged : true});
+						}
 					} else {
 						index = index+1;
 						self.convertColumnsToNumber(index++, callback);
@@ -411,13 +422,6 @@ var LinkedGov_geolocationWizard = {
 				// Add typed class to column headers
 				LG.showWizardProgress(false);
 
-				/*
-				 * We can check the columns contain floats or ints depending on 
-				 * what the user has specified.
-				 */
-				var colObjects = self.prepareColumnObjectsForValueTest();
-				LG.panels.wizardsPanel.checkForUnexpectedValues(colObjects, self.vars.elmts.geolocationBody);
-
 				self.vars.coordinateName = "";
 
 			});
@@ -478,16 +482,12 @@ var LinkedGov_geolocationWizard = {
 			/*
 			 * Display the "working..." sign
 			 */
-			LG.showWizardProgress(true);
+			//LG.showWizardProgress(true);
 
 			/*
 			 * Convert the lat/long columns to numbers before operating on them
 			 */
-			self.convertColumnsToNumber(0,function(){
-				LG.rdfOps.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
-					self.saveRDF(rootNode, foundRootNode);
-				});
-			});
+			self.convertColumnsToNumber(0);
 
 
 		}
