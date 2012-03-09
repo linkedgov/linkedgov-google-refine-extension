@@ -52,6 +52,8 @@ var LinkedGov_addressWizard = {
 		},
 
 		/*
+		 * initialise
+		 * 
 		 * Build the column objects and commence a chain of validation and RDF saving 
 		 * operations.
 		 */
@@ -61,6 +63,8 @@ var LinkedGov_addressWizard = {
 
 			self.vars.elmts = elmts;
 
+			// We store the current Undo/Redo history ID in order to 
+			// rollback one step when the user presses "Undo" at the end of the wizard
 			try{
 				self.vars.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
 			}catch(e){
@@ -70,6 +74,9 @@ var LinkedGov_addressWizard = {
 			self.vars.hiddenColumns = [];
 			self.vars.addressName = "";
 			self.vars.postcodePresent = false;
+			// Construct a GREL expression to be used in the unexpected values panel for validating
+			// a postcode. Tests to see if the value is blank or if it's a valid postcode. If it's valid
+			// or blank, it returns the value "postcode", otherwise "error".
 			self.vars.unexpectedValueRegex = 'grel:if(isBlank(value),"postcode",if(isError(if(partition(value,'+self.vars.postCodeRegex+')[1].length() > 0,"postcode","error")),"error",if(partition(value,'+self.vars.postCodeRegex+')[1].length() > 0,"postcode",if(isBlank(cells["postcode"].value),"postcode","error"))))';
 
 			/*
@@ -106,20 +113,15 @@ var LinkedGov_addressWizard = {
 				 */
 				self.validatePostCodeColumns(index, function() {
 
-
 					/*
 					 * We can check that a column contains postcodes if the user 
 					 * has specified it does
 					 */
 					if(self.vars.postcodePresent){
-						
-						log("here");
-						
+
 						var colObjects = self.prepareColumnObjectsForValueTest();
 						LG.panels.wizardsPanel.checkForUnexpectedValues(colObjects, self.vars.elmts.addressBody, function(){
 
-							log("address wizard callback");
-							
 							/*
 							 * Build the address fragments RDF
 							 */
@@ -161,7 +163,7 @@ var LinkedGov_addressWizard = {
 
 			/*
 			 * If there are columns that have been selected, loop through them and 
-			 * store their names and options in an array.
+			 * store their names and options in an array so we can 
 			 */
 			if ($(self.vars.elmts.addressColumns).children("li").length > 0) {
 				$(self.vars.elmts.addressColumns).children("li").each(function() {
@@ -216,7 +218,7 @@ var LinkedGov_addressWizard = {
 			} else if (colObjects[i].containsPostcode || colObjects[i].part == "postcode") {
 
 				self.vars.postcodePresent = true;
-				
+
 				/*
 				 * In case of a postcode appearing in a mixed address value (i.e. with many parts),
 				 * we need to extract and create a new column for the postcode, while at the same time, 
@@ -256,7 +258,7 @@ var LinkedGov_addressWizard = {
 								 * it.
 								 */
 								if (colObjects[i].part == "mixed") {
-									
+
 									//log("We have a mixed address");
 
 									/*
@@ -276,17 +278,15 @@ var LinkedGov_addressWizard = {
 									// column means we have 2 columns - meaning we can perform a callback without 
 									// recursing any further.
 									if (colObjects.length == 2) {
-										log("calling back")
 										callback();
 									} else {
-										log("recursing")
 										self.validatePostCodeColumns(i, callback);
 									}
 
 								} else {
 
 									//log("Removing postcode column");
-									
+
 									// Remove the old postcode column
 									LG.silentProcessCall({
 										type : "POST",
@@ -361,7 +361,7 @@ var LinkedGov_addressWizard = {
 		 */
 		makeAddressFragments : function(callback) {
 
-			log("makeAddressFragments");
+			//log("makeAddressFragments");
 
 			var self = this;
 			var colObjects = self.vars.colObjects;
@@ -378,62 +378,60 @@ var LinkedGov_addressWizard = {
 			 *  - country-name
 			 *  - mixed
 			 */
-			for ( var i = 0; i <= colObjects.length; i++) {
+			for (var i=0; i<colObjects.length; i++) {
 
 				/*
-				 * Call the callback function here instead of after the for loop as it sometimes 
-				 * gets called before it's finished iterating.
+				 * The only special cases for the address fragment RDF
+				 * are the "postcode" fragment and a "mixed" address. The others
+				 * all share similar RDF.
+				 * 
 				 */
-				if (i == colObjects.length) {
-					callback();
-				} else {
+				switch (colObjects[i].part) {
 
-					/*
-					 * The only special cases for the address fragment RDF
-					 * are the "postcode" fragment and a "mixed" address. The others
-					 * all share similar RDF.
-					 * 
-					 */
-					switch (colObjects[i].part) {
+				case "mixed":
 
-					case "mixed":
+					// TODO: What to store if mixed address?
+					//log("mixed fragment");
+					//log(colObjects[i]);
 
-						// TODO: What to store if mixed address?
-						//log("mixed fragment");
-						//log(colObjects[i]);
-
-						break;
-
-					case "postcode":
-
-						/*
-						 * Create the vCard postcode RDF
-						 */
-						uri = vocabs.vcard.uri + colObjects[i].part;
-						curie = vocabs.vcard.curie + ":" + colObjects[i].part;
-						colObjects[i].rdf = self.makeVCardFragment(colObjects[i].name, uri, curie);
-						/*
-						 * Create the OSPC postcode RDF
-						 */
-						uri = vocabs.ospc.uri + colObjects[i].part;
-						curie = vocabs.ospc.curie + ":" + colObjects[i].part;
-						colObjects[i].ospcRdf = self.makeOSPCFragment(colObjects[i].name, uri, curie, vocabs.ospc.resourceURI);
-						break;
-
-					default:
-
-						/*
-						 * Create the other vCard address fragments
-						 */
-						uri = vocabs.vcard.uri + colObjects[i].part;
-					curie = vocabs.vcard.curie + ":" + colObjects[i].part;
-					colObjects[i].rdf = self.makeVCardFragment(colObjects[i].name, uri, curie);
 					break;
 
-					}
+				case "postcode":
+
+					/*
+					 * Create the vCard postcode RDF
+					 */
+					uri = vocabs.vcard.uri + colObjects[i].part;
+					curie = vocabs.vcard.curie + ":" + colObjects[i].part;
+					colObjects[i].rdf = self.makeVCardFragment(colObjects[i].name, uri, curie);
+					/*
+					 * Create the OSPC postcode RDF
+					 */
+					uri = vocabs.ospc.uri + colObjects[i].part;
+					curie = vocabs.ospc.curie + ":" + colObjects[i].part;
+					colObjects[i].ospcRdf = self.makeOSPCFragment(colObjects[i].name, uri, curie, vocabs.ospc.resourceURI);
+					break;
+
+				default:
+
+					/*
+					 * Create the other vCard address fragments
+					 */
+					uri = vocabs.vcard.uri + colObjects[i].part;
+				curie = vocabs.vcard.curie + ":" + colObjects[i].part;
+				colObjects[i].rdf = self.makeVCardFragment(colObjects[i].name, uri, curie);
+				break;
+
 				}
 
 			}
+
+			/*
+			 * Call the callback function here instead of after the for loop as it sometimes 
+			 * gets called before it's finished iterating.
+			 */
+			callback();
+
 
 		},
 
@@ -444,8 +442,6 @@ var LinkedGov_addressWizard = {
 		 * part separated by a comma.
 		 * 
 		 * Finally, collapse the address-part columns used to create the new column.
-		 * 
-		 * TODO: Trailing commas and spaces
 		 */
 		createAddressColumn:function(callback){
 
@@ -479,8 +475,10 @@ var LinkedGov_addressWizard = {
 			expression = 'chomp('+expression.substring(0,expression.length-1)+',", ")';
 
 			//log(expression);
-			
 
+
+			// Adds a new column containing a concatenation of the values specified 
+			// in each of the columns specified by the user for the wizard.
 			Refine.postCoreProcess(
 					"add-column",
 					{
@@ -518,7 +516,7 @@ var LinkedGov_addressWizard = {
 		/*
 		 * saveRDF
 		 * 
-		 * Builds the vCard:Address node, which is typed as a location, and adds the 
+		 * Builds the vCard:Address node and adds the 
 		 * various address fragments to it before adding it to the RDF schema.
 		 */
 		saveRDF : function(rootNode, newRootNode) {
@@ -531,10 +529,34 @@ var LinkedGov_addressWizard = {
 
 			/*
 			 * Any address data will always be the child of a vCard:Address node, 
-			 * which are identified using the hash ID "#location".
+			 * which are identified using the hash ID "#columnName".
 			 */
 			var camelizedLocationName = LG.camelize(self.vars.addressName);
 
+			/*
+			 * The vcard Address template:
+			 * 
+			 * "uri" : http://data.linkedgov.org/dataset/1398564336982/0#+homeAddress,
+			 *		"curie" : lg+":"+homeAddress,
+			 *		"target" : {
+			 *			"nodeType" : "cell-as-resource",
+			 *			"expression" : "value+\"#"+homeAddress+"\"",
+			 *			"isRowNumberCell" : true,
+			 *			"rdfTypes" : [ {
+			 *				"uri" : "http://www.w3.org/2006/vcard/ns#Address",
+			 *				"curie" : "vcard:Address"
+			 *			} ],
+			 *			"links" : []
+			 *		}
+			 * 
+			 * Output as TTL:
+			 * 
+			 * <http://data.linkedgov.org/dataset/1398564336982/2#popo> a vcard:Address ; 
+			 * vcard:street-address "OLD QUEEN STREET" ; 
+			 * vcard:locality "LONDON" ; 
+			 * ospc:postcode <http://data.ordnancesurvey.co.uk/id/postcodeunit/SW1H9HP> ; 
+			 * vcard:postcode "SW1H9HP" .
+			 */
 			var vcardObj = {
 					"uri" : self.vars.vocabs.lg.uri+camelizedLocationName,
 					"curie" : self.vars.vocabs.lg.curie+":"+camelizedLocationName,
@@ -551,9 +573,8 @@ var LinkedGov_addressWizard = {
 			};
 
 			/*
-			 * Loop through the column objects and add their RDF, with an extra 
-			 * push of RDF for the postcode fragment which contains slightly different RDF 
-			 * data to the other fragments.
+			 * Loop through the column objects and add their RDF, making sure to add the RDF for the 
+			 * postcode fragment which contains slightly different RDF data to the other fragments.
 			 */
 			for ( var i = 0; i < colObjects.length; i++) {
 
@@ -562,6 +583,9 @@ var LinkedGov_addressWizard = {
 				}
 				if (typeof colObjects[i].rdf != 'undefined') {
 					vcardObj.target.links.push(colObjects[i].rdf);
+				} else {
+					// Column doesn't have RDF
+					// TODO: Only case is a "mixed" address
 				}
 			}
 
@@ -628,7 +652,7 @@ var LinkedGov_addressWizard = {
 					"curie" : curie,
 					"target" : {
 						"nodeType" : "cell-as-resource",
-						"expression" : "\"" + pcodeURI + "\"+value.replace(\" \",\"\")",
+						"expression" : "\"" + pcodeURI + "\"+value",
 						"columnName" : colName,
 						"isRowNumberCell" : false,
 						"rdfTypes" : [
@@ -664,7 +688,8 @@ var LinkedGov_addressWizard = {
 		},
 
 		/*
-		 * Return the wizard to its original state.
+		 * Updates Refine and returns the wizard's UI to its original state.
+		 * Usually called after we've saved the RDF.
 		 */
 		onComplete : function() {
 
@@ -678,16 +703,6 @@ var LinkedGov_addressWizard = {
 				LG.panels.wizardsPanel.showUndoButton(self.vars.elmts.addressBody);
 				LG.showWizardProgress(false);
 				self.vars.addressName = "";
-
-				/*
-				 * We can check that a column contains postcodes if the user 
-				 * has specified it does
-				 */
-				//if(self.vars.postcodePresent){
-				//	var colObjects = self.prepareColumnObjectsForValueTest();
-				//	LG.panels.wizardsPanel.checkForUnexpectedValues(colObjects, self.vars.elmts.addressBody);
-				//}
-
 			});
 		},
 
@@ -705,8 +720,8 @@ var LinkedGov_addressWizard = {
 		 */
 		prepareColumnObjectsForValueTest:function(){
 
-			log("prepareColumnObjectsForValueTest");
-			
+			//log("prepareColumnObjectsForValueTest");
+
 			var self = this;
 
 			var colObjects = self.vars.colObjects;
@@ -719,7 +734,7 @@ var LinkedGov_addressWizard = {
 				 */
 				if(self.vars.colObjects[i].part == "postcode"){
 
-					log("Testing unexpected values on column: "+colObjects[i].name);
+					//log("Testing unexpected values on column: "+colObjects[i].name);
 
 					colObjects[i].unexpectedValueParams = {
 							expression : self.vars.unexpectedValueRegex,
@@ -740,53 +755,18 @@ var LinkedGov_addressWizard = {
 
 		/*
 		 * rerunWizard
-		 * 
-		 * Called from the unexpected values panel. The user is given the 
-		 * choice to manually fix postcodes, which they can verify their changes
-		 * against by pressing "Re-run wizard", which calls this function.
-		 * 
-		 * This calls a simple postcode fixing function.
 		 */
 		rerunWizard: function(){
-
-			var self = this;
-
-			//LG.showWizardProgress(true);
-
-			//self.onComplete();
-
+			/*
+			 * Empty function
+			 * 
+			 * During the 'unexpected values' test, some wizards need to 
+			 * re-run certain operations in order to fix and transform the values 
+			 * back to the state where they can be tested to see if those values 
+			 * are expected or not.
+			 * 
+			 * The address wizard does not need to in this case.
+			 */
 		}
-
-		/*
-		 * fixPostcodes
-		 *
-		 * Specifically for postcodes, and called within the unexpected values panel,
-		 * this function simply performs a text-transform on a column containing postcodes,
-		 * as the RDF fragments have already been set up.
-		 */
-		/*fixPostcodes: function(callback){
-
-			var self = this;
-
-			LinkedGov.silentProcessCall({
-				type : "POST",
-				url : "/command/" + "core" + "/" + "text-transform",
-				data : {
-					columnName : self.vars.addressName,
-					expression : 'if(partition(value,'+self.vars.postCodeRegex+')[1].length() > 0,partition(value,'+self.vars.postCodeRegex+')[1].replace(" ",""),value)',
-					onError : 'keep-original',
-					repeat : false,
-					repeatCount : ""
-				},
-				success : function() {
-					Refine.update({cellsChanged : true},callback);
-				},
-				error : function() {
-					self.onFail("A problem was encountered when fixing postcodes in the column: \""+ self.vars.addressName + "\".");
-				}
-			});
-
-		}*/
-
 
 };

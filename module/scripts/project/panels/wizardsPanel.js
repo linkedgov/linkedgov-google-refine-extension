@@ -425,7 +425,8 @@ var LinkedGov_WizardsPanel = {
 			self.els.actionButtons.attr("rel",wizardName);
 			// Show the action buttons
 			self.els.actionButtons.show();		
-
+			// Hide the undo button
+			self.els.undoButton.hide();
 			
 			//LG.panels.typingPanel._el.actionBar.find("div.action-buttons").find("a.update").attr("bind",$("div.wizard-body").find("a.update").attr("bind"));
 
@@ -672,9 +673,9 @@ var LinkedGov_WizardsPanel = {
 				/*
 				 * Exposes the column headers - 'true' to mask.
 				 */
-				LG.exposeColumnHeaders(true);
+				//LG.exposeColumnHeaders(true);
 
-				$(button).after('<span class="column-selecting-icon"><img src="extension/linkedgov/images/column_selecting.gif" /></span>');
+				//$(button).after('<span class="column-selecting-icon"><img src="extension/linkedgov/images/column_selecting.gif" /></span>');
 
 				/*
 				 * Remove any existing column selectors on the page
@@ -687,226 +688,213 @@ var LinkedGov_WizardsPanel = {
 				 */
 				$(button).html("Finish picking");
 				$(button).addClass("selecting");
-
+				// Change the cursor to the "cell" icon
+				//$("body").css("cursor","cell");
+				//$("table td a.data-table-cell-edit").css("cursor","cell");
+				//$("table.data-header-table td.column-header, table.data-table td.column-header").css("cursor", "cell !important");
+				
 				/*
 				 * Cache the location of the selected columns (some may already be present)
 				 */
 				$cols = $(button).parent().children("ul.selected-columns");
 
-				/*
-				 * Invoke the "selectable" plugin on the data table, and only allow the user to select 
-				 * "td.column-header" elements, then handle the various interactions.
-				 */
-				$("table.data-header-table").selectable({
-					filter: 'td.column-header',
-					selected: function (event, ui) {
+				LG.setUpColumnOverlays(function(columnName){
+					// What happens when the column is selected
+					/*
+					 * Assume it will be added to the list of selected columns
+					 */
+					var addToList = true;
+					/*
+					 * Loop through any existing select columns in the list 
+					 */
+					$cols.children("li").children("span.col").each(function(){
 						/*
-						 * Element selected.
+						 * Check if selected column already exists in the list.
 						 * 
-						 * If the selected column is not the "All" column
+						 * If it already exists, assume the user is wanting to 
+						 * deselect the column.
 						 */
-						if($(ui.selected).children().find(".column-header-name").html() != "All"){
+						if($(this).html() == columnName){
+
 							/*
-							 * Assume it will be added to the list of selected columns
+							 * Remove the column from the select columns list and remove the highlighted 
+							 * "ui-selected" class from the column header in the data table.
 							 */
-							var addToList = true;
+							$(this).parent("li").remove();
+							//$(ui.selected).removeClass("ui-selected");
+							//$(ui.selected).removeClass("selected");
+
+							//LG.deselectColumn($(ui.selected).children().find(".column-header-name").html());
+
 							/*
-							 * Loop through any existing select columns in the list 
+							 * Check to see if there are any selected columns still present in the list, 
+							 * which if there aren't, hide the list.
 							 */
-							$cols.children("li").children("span.col").each(function(){
-								/*
-								 * Check if selected column already exists in the list.
-								 * 
-								 * If it already exists, assume the user is wanting to 
-								 * deselect the column.
-								 */
-								if($(this).html() == $(ui.selected).children().find(".column-header-name").html()){
+							if($cols.children("li").length < 1){
+								$cols.html("").hide();
+							} else {
+								$cols.show();
+							}
+							/*
+							 * If a selected column exists in the list, but hidden by the 
+							 * "skip" class, then show the selected column again.
+							 */
+							if($(this).parent().hasClass("skip")){
+								$(this).parent().removeClass("skip").show();
+							}
 
-									/*
-									 * Remove the column from the select columns list and remove the highlighted 
-									 * "ui-selected" class from the column header in the data table.
-									 */
-									$(this).parent("li").remove();
-									$(ui.selected).removeClass("ui-selected");
-									$(ui.selected).removeClass("selected");
+							/*
+							 * If the column already exists in the list, then we don't want to 
+							 * add another entry for it.
+							 */
+							addToList = false;
+						}
+					});
 
-									LG.deselectColumn($(ui.selected).children().find(".column-header-name").html());
+					/*
+					 * If the selected column doesn't already exist in the selected columns list,
+					 * create an entry in the list for it, depending on the mode parameter for the 
+					 * column list.
+					 * 
+					 * Each mode calls the getFragmentData() function, passing the column-list that 
+					 * has a class attached to the element to determine what HTML to inject into each 
+					 * column entry.
+					 */
+					if(addToList){
 
-									/*
-									 * Check to see if there are any selected columns still present in the list, 
-									 * which if there aren't, hide the list.
-									 */
-									if($cols.children("li").length < 1){
-										$cols.html("").hide();
-									} else {
-										$cols.show();
-									}
-									/*
-									 * If a selected column exists in the list, but hidden by the 
-									 * "skip" class, then show the selected column again.
-									 */
-									if($(this).parent().hasClass("skip")){
-										$(this).parent().removeClass("skip").show();
-									}
+						switch(mode){
 
-									/*
-									 * If the column already exists in the list, then we don't want to 
-									 * add another entry for it.
-									 */
-									addToList = false;
-								}
+						case "default" :
+							/*
+							 * default - allows multiple columns to be added to the list.
+							 */
+							$cols.append( 
+									"<li>" +
+									"<span class='col'>" + 
+									columnName + 
+									"</span>" + 
+									"<span class='remove'>X</span>" +
+									self.getFragmentData($cols) +
+									"</li>"
+							)
+							.show();
+							break;
+
+						case "single-column" :
+							/*
+							 * single-column - only allows one column to be selected - hence the use 
+							 * of html() instead of append().
+							 */
+							$cols.html( 
+									"<li>" +
+									"<span class='col'>" + 
+									columnName + 
+									"</span>" + 
+									"<span class='remove'>X</span>" +
+									self.getFragmentData($cols) +
+									"</li>"
+							)
+							.show();							
+							break;
+
+						case "splitter" :
+							/*
+							 * splitter - only allows one column to be selected and doesn't ask 
+							 * for any fragment data. Used in the address wizard to split columns 
+							 * containing multiple address parts.
+							 */
+							$cols.html(
+									"<li>" +
+									"<span class='col'>" + 
+									columnName + 
+									"</span>" + 
+									"<span class='remove'>X</span>" +
+							"</li>")
+							.show();	
+							break;
+
+						case "text-input" :
+
+							/*
+							 * generateColumnFacet returns a list of the 10 most frequently 
+							 * occurring <li> elements.
+							 */
+							self.generateColumnFacet(columnName,10,function(html){
+								$cols.html(html);
+								$cols.data("colName",columnName);
+								$cols.children("li").each(function(){
+									$(this).html(
+											"<span class='col'>" +
+											$(this).html() +
+											"</span>" +
+											"<span class='remove'>X</span>" +
+											"<span class='colOptions'>" +
+											"<input type='text' class='textbox "+$(this).html()+"' />" +
+									"</span>");
+								});	
+								$cols.show();
 							});
 
-							/*
-							 * If the selected column doesn't already exist in the selected columns list,
-							 * create an entry in the list for it, depending on the mode parameter for the 
-							 * column list.
-							 * 
-							 * Each mode calls the getFragmentData() function, passing the column-list that 
-							 * has a class attached to the element to determine what HTML to inject into each 
-							 * column entry.
-							 */
-							if(addToList){
-
-								switch(mode){
-
-								case "default" :
-									/*
-									 * default - allows multiple columns to be added to the list.
-									 */
-									$cols.append( 
-											"<li>" +
-											"<span class='col'>" + 
-											$(ui.selected).children().find(".column-header-name").html() + 
-											"</span>" + 
-											"<span class='remove'>X</span>" +
-											self.getFragmentData($cols) +
-											"</li>"
-									)
-									.show();
-									break;
-
-								case "single-column" :
-									/*
-									 * single-column - only allows one column to be selected - hence the use 
-									 * of html() instead of append().
-									 */
-									$cols.html( 
-											"<li>" +
-											"<span class='col'>" + 
-											$(ui.selected).children().find(".column-header-name").html() + 
-											"</span>" + 
-											"<span class='remove'>X</span>" +
-											self.getFragmentData($cols) +
-											"</li>"
-									)
-									.show();							
-									break;
-
-								case "splitter" :
-									/*
-									 * splitter - only allows one column to be selected and doesn't ask 
-									 * for any fragment data. Used in the address wizard to split columns 
-									 * containing multiple address parts.
-									 */
-									$cols.html(
-											"<li>" +
-											"<span class='col'>" + 
-											$(ui.selected).children().find(".column-header-name").html() + 
-											"</span>" + 
-											"<span class='remove'>X</span>" +
-									"</li>")
-									.show();	
-									break;
-
-								case "text-input" :
-
-									/*
-									 * generateColumnFacet returns a list of the 10 most frequently 
-									 * occurring <li> elements.
-									 */
-									self.generateColumnFacet($(ui.selected).children().find(".column-header-name").html(),10,function(html){
-										$cols.html(html);
-										$cols.data("colName",$(ui.selected).children().find(".column-header-name").html());
-										$cols.children("li").each(function(){
-											$(this).html(
-													"<span class='col'>" +
-													$(this).html() +
-													"</span>" +
-													"<span class='remove'>X</span>" +
-													"<span class='colOptions'>" +
-													"<input type='text' class='textbox "+$(this).html()+"' />" +
-											"</span>");
-										});	
-										$cols.show();
-									});
-
-									break;
-									
-								case "manual-reconciliation-links" :
-									
-									$cols.append( 
-											"<li>" +
-											"<span class='col'>" + 
-											$(ui.selected).children().find(".column-header-name").html() + 
-											"</span>" + 
-											"<span class='confirm'>C</span>" +
-											"<span class='remove'>X</span>" +
-											self.getFragmentData($cols) +
-											"</li>"
-									)
-									.show();
-									break;
-									
-								default:
-									break;
-								}
-
-								$(ui.selected).addClass("selected");
-
-								LG.selectColumn($(ui.selected).children().find(".column-header-name").html());
-
-							}
-						} else {
-							$(ui.selected).removeClass("ui-selected");
+							break;
+							
+						case "manual-reconciliation-links" :
+							
+							$cols.append( 
+									"<li>" +
+									"<span class='col'>" + 
+									columnName + 
+									"</span>" + 
+									"<span class='confirm'>C</span>" +
+									"<span class='remove'>X</span>" +
+									self.getFragmentData($cols) +
+									"</li>"
+							)
+							.show();
+							break;
+							
+						default:
+							break;
 						}
-					},
-					unselected: function (event, ui) {
-						/*
-						 * Remove the column from the selected column list when it's 
-						 * column header is deselected.
-						 */
-						var hasEntry = false;
-						$cols.children("li").children("span.col").each(function(){
-							if($(this).html() == $(ui.unselected).children().find(".column-header-name").html()){
-								if(hasEntry){
-									$(this).parent("li").remove();
-									$(ui.unselected).removeClass("ui-selected");
-									$(ui.unselected).removeClass("selected");							
-								} else {
-									hasEntry = true;
-								}
-							}
-						});
-					},
-					selecting: function (event, ui) {
-						// log("selecting");
-					},
-					unselecting: function (event, ui) {
-						// log("unselecting");
-						//$cols.html("").hide();
+
+						//$(ui.selected).addClass("selected");
+
+						//LG.selectColumn($(ui.selected).children().find(".column-header-name").html());
+
 					}
+				},function(columnName){
+					// What happens when the column is deselected
+					/*
+					 * Remove the column from the selected column list when it's 
+					 * column header is deselected.
+					 */
+					var hasEntry = false;
+					$cols.children("li").children("span.col").each(function(){
+						log($(this).html() +"=="+ columnName)
+						if($(this).html() == columnName){
+							$(this).parent("li").remove();
+							if($cols.children("li").length < 1){
+								$cols.hide();
+							}
+						}
+					});
 				});
+				
 			} else {
 				/*
 				 * If the column-selector button has the class "selecting", end 
 				 * column selection.
 				 */
-				$('span.column-selecting-icon').remove();
+				//$('span.column-selecting-icon').remove();
 				/*
 				 * Removes the expose for the column headers.
 				 */
-				LG.exposeColumnHeaders(false);
+				//LG.exposeColumnHeaders(false);
+				// Change the cursor back to normal
+				//$("body").css("cursor","auto");
+				//$("table td a.data-table-cell-edit").css("cursor","pointer");
+				//$("table.data-header-table td.column-header, table.data-table td.column-header").css("cursor", "pointer");
+				
+				LG.removeColumnOverlays();
 				self.destroyColumnSelector();
 			}	
 		},
@@ -967,7 +955,7 @@ var LinkedGov_WizardsPanel = {
 
 			var self = this;
 
-			LG.exposeColumnHeaders(true);
+			//LG.exposeColumnHeaders(true);
 
 			/*
 			 * Remove any jQueryUI selectable stuff if the user has been 
@@ -1061,7 +1049,7 @@ var LinkedGov_WizardsPanel = {
 					 * data table.
 					 */
 					$(LG.getColumnHeaderElement($(this).val())).addClass("selected");
-					LG.selectColumn($(this).val());
+					//LG.selectColumn($(this).val());
 
 				}
 			});
@@ -1246,7 +1234,7 @@ var LinkedGov_WizardsPanel = {
 				 * "ui-selected" class as it's now been deselected.
 				 */
 				$(LG.getColumnHeaderElement($li_el.find("span.col").html())).removeClass("selected");
-				LG.deselectColumn($li_el.find("span.col").html());
+				//LG.deselectColumn($li_el.find("span.col").html());
 				/*
 				$("td.column-header div.column-header-title span.column-header-name").each(function(){
 					if($(this).html() == $li_el.find("span.col").html()){
@@ -1271,7 +1259,7 @@ var LinkedGov_WizardsPanel = {
 				 * Remove highlight from column header in the data table
 				 */
 				$(LG.getColumnHeaderElement($li_el.find("span.col").html())).removeClass("selected");
-				LG.deselectColumn($li_el.find("span.col").html());
+				//LG.deselectColumn($li_el.find("span.col").html());
 				/*
 				$("td.column-header div.column-header-title span.column-header-name").each(function(){
 					if($(this).html() == $li_el.find("span.col").html()){
@@ -1575,39 +1563,6 @@ var LinkedGov_WizardsPanel = {
 			);
 		},
 
-
-		/*
-		 * THIS ISN'T BEING USED DUE TO COMPLICATIONS WITH 
-		 * EDITING THE UNDO-REDO HISTORY IN THE FRONT END.
-		 * 
-		 * summariseWizardHistoryEntry
-		 */
-		summariseWizardHistoryEntry : function(wizardName, wizardHistoryRestoreID){
-
-			/*
-			 * Find the history entries between the restore point and 
-			 * the "now" entry, remove them all but the first entry and 
-			 * rename it to the name of the wizard.
-			 */
-			var removeEntry = false;
-			for(var i=0; i<ui.historyPanel._data.past.length;i++){
-				if(removeEntry){
-					log("Removing --- "+ui.historyPanel._data.past[i].description);
-					ui.historyPanel._data.past.splice(i,1);
-					i--;
-				}
-				if(ui.historyPanel._data.past[i].id == wizardHistoryRestoreID){
-					removeEntry = true;
-					i++;
-					ui.historyPanel._data.past[i].description = wizardName;
-				}
-
-			}
-
-			ui.historyPanel._render();
-
-		},
-		
 		/*
 		 * resetWizard
 		 * 
@@ -1657,8 +1612,7 @@ var LinkedGov_WizardsPanel = {
 		 */
 		checkForUnexpectedValues : function(colObjects, wizardBody, callback){
 
-			log("checkForUnexpectedValues");
-			log(colObjects.length);
+			//log("checkForUnexpectedValues");
 			
 			var self = this;
 			
@@ -1667,8 +1621,6 @@ var LinkedGov_WizardsPanel = {
 			 * their "unexpectedValueParams" object.
 			 */
 			for(var i=0; i<colObjects.length; i++){
-
-				log(colObjects[i]);
 				
 				/*
 				 * Check the column object has the unexepctedValueParams object which 
@@ -1710,15 +1662,7 @@ var LinkedGov_WizardsPanel = {
 							self.displayUnexpectedValuesPanel(colObjects, 0, wizardBody, callback);
 							
 						} else {
-							
 							// No unexpected values present - do not display the panel
-							//self.restoreWizardBody();
-							
-							// Remove any facets left over from the tests
-							//for(var j=0; j<colObjects.length; j++){
-							//	LG.ops.removeFacet(colObjects[j].name);
-							//}
-							
 							// Hide the unexpected values panel
 							self.finishUnexpectedValuesTest(callback);
 						}
@@ -1732,16 +1676,21 @@ var LinkedGov_WizardsPanel = {
 		 * finishUnexpectedValuesTest
 		 * 
 		 * Removes the unexpected values panel and returns 
-		 * the wizard to the state where it was left.
+		 * the wizard to the state where it was left before the unexpected values 
+		 * panel appeared.
 		 * 
-		 * The callback will be the wizards remaning operations.
+		 * The callback is usually the wizards remaning operations.
 		 */
 		finishUnexpectedValuesTest:function(callback){
+			
+			var self = this;
+			
 			ui.browsingEngine.remove();
 			$("div.unexpectedValues").hide().remove();
 			$("div.wizard-body").children().show();
 			$("div.split, span.note").hide();
-			$("div.action-buttons").show().find("a.undo").css("display","inline-block");
+			self.els.actionButtons.show().find("a.undo").css("display","inline-block");
+			self.els.returnButton.show();
 			LG.showWizardProgress(true);
 			callback();
 		},
@@ -1761,7 +1710,7 @@ var LinkedGov_WizardsPanel = {
 		 */
 		verifyValueTypes : function(columnName, expression, expectedType, exampleValue){
 
-			log("verifyValueTypes");
+			//log("verifyValueTypes");
 			
 			var self = this;			
 			
@@ -1968,7 +1917,7 @@ var LinkedGov_WizardsPanel = {
 					html+= '<div class="buttons">';
 					html+= '<a title="Undo" class="button undo" bind="undoButton" href="javascript:{}">Undo</a>';
 					if(!(result.count == theProject.rowModel.total && !result.success)){
-						html+= '<a title="Let me see" class="button fix" bind="fixButton" href="javascript:{}">Let me see</a>';
+						html+= '<a title="Let me see" class="button letmesee" bind="letmeseeButton" href="javascript:{}">Let me see</a>';
 					}
 					html+= '<a title="Carry on" class="button carryon" bind="carryOnButton" href="javascript:{}">Carry on</a>';
 					
@@ -2002,7 +1951,7 @@ var LinkedGov_WizardsPanel = {
 							$("div.action-buttons a.undo").click();
 							// Return the wizard to it's original state
 							self.restoreWizardBody();
-						} else if($(this).hasClass("fix")){
+						} else if($(this).hasClass("letmesee")){
 							// For the "Let me see" button
 							// Create a facet and filter the rows in the table so 
 							// only the rows with unexpected values in are visible
@@ -2023,9 +1972,9 @@ var LinkedGov_WizardsPanel = {
 							unexpectedValuesEl.find("p.details").hide();
 							unexpectedValuesEl.find("div.buttons").find("a.button").hide();
 							// Show two new buttons - "Rerun wizard" and "Done".
-							unexpectedValuesEl.find("div.buttons").append("<a class='button rerun' />");
+							unexpectedValuesEl.find("div.buttons").append("<a class='button fix' />");
 							unexpectedValuesEl.find("div.buttons").append("<a class='button done' />");
-							unexpectedValuesEl.find("div.buttons").find("a.rerun").html("Fix").show();
+							unexpectedValuesEl.find("div.buttons").find("a.fix").html("Fix").show();
 							unexpectedValuesEl.find("div.buttons").find("a.done").html("Done").show();
 
 							// Use the hasFixedValue boolean flag to determine whether to show a message to the user
@@ -2036,8 +1985,8 @@ var LinkedGov_WizardsPanel = {
 								.before('<p class="message rerun-tip">If you have corrected all of the values properly, there should be no more rows left for you to edit.</p>');
 							}
 							
-							// Interaction for the "Rerun wizard" button
-							unexpectedValuesEl.find("div.buttons").find("a.rerun").click(function(){
+							// Interaction for the "Fix" button
+							unexpectedValuesEl.find("div.buttons").find("a.fix").click(function(){
 								
 								// Transform the cells using the values the user has typed into the input boxes 
 								// in the unexepected values panel
@@ -2207,8 +2156,10 @@ var LinkedGov_WizardsPanel = {
 		 */
 		populateUnexpectedValuePanelList : function(result){
 
-			var html = '<ul class="unexpectedValueList">';
-
+			
+			var html = '<p class="note">A maximum of ten values are shown</p>';
+			html += '<ul class="unexpectedValueList">';
+			
 			var columns = theProject.columnModel.columns;
 			for(var i=0;i<columns.length;i++){
 				if(columns[i].name == result.colName){

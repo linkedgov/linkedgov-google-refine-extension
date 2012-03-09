@@ -111,7 +111,7 @@ LG.loadTypingPanel = function(callback) {
 					ui.typingPanel = new TypingPanel($("div#refine-tabs-typing"));
 					// Store the 
 					LG.panels.typingPanel = ui.typingPanel;
-					
+
 					clearInterval(interval);
 
 					if(callback){
@@ -146,7 +146,7 @@ LG.loadPanelScripts = function() {
 					LG.panels.wizardsPanel = LinkedGov_WizardsPanel;
 					LG.panels.wizardsPanel.initialise();
 					//LG.panels.wizardsPanel.loadHTML();
-					
+
 				});
 
 				/*
@@ -260,7 +260,7 @@ LG.loadOperationScripts = function(){
 				// Perform an initial resize
 				$(window).resize();
 			}
-						
+
 			/*
 			 * Save the base URI for the project
 			 */
@@ -336,7 +336,7 @@ LG.showFinishMessage = function(){
 			"<p>Depending on the tasks that have been completed, the data is now potentially linkable " +
 			"to other datasets and as a result - much more accessible to users searching for those particular data " +
 			"types.</p>" +
-			"<p><a href='#'>Bookmark</a> | <a href='#'>Tweet</a> | <a href='#'>Email</a></p>");
+	"<p><a href='#'>Bookmark</a> | <a href='#'>Tweet</a> | <a href='#'>Email</a></p>");
 
 	$('<button></button>').addClass('button').html("&nbsp;&nbsp;OK&nbsp;&nbsp;").click(function() {
 		DialogSystem.dismissAll();	
@@ -513,6 +513,102 @@ LG.quickTools = function() {
 };
 
 /*
+ * setUpColumnOverlays
+ * 
+ * Creates overlays for the columns which are shown when 
+ * hovering over columns when picking them.
+ * 
+ * Stores pointers to the overlay <divs> inside an associative 
+ * array using the column name as the key.
+ * 
+ * E.g. self.vars.columnOverlays["Address 1"].div would return 
+ * the overlay for that column 
+ */
+LG.setUpColumnOverlays = function(selectedCallback, deselectedCallback){
+
+	var self = this;
+
+	self.vars.selectedColumns = [];
+	self.vars.columnOverlays = [];
+
+	// Start index at 1 because of the "All" header
+	var index = 0;
+
+	$("table.data-header-table tbody tr td.column-header").each(function(){
+
+		// Skip adding an overlay for the "All" column
+		if(index > 0){
+			var el = $(this);
+			var colName = $(this).find("span.column-header-name").html();
+			var div = $("<div/>")
+			.addClass("column-overlay")
+			.data("col-name",colName)
+			.data("leftPosition",el.offset().left)
+			.height($("table.data-table").height()+el.height()+10)
+			.width(el.width()+10)
+			.css("left",el.offset().left+"px")
+			.css("top",el.offset().top+"px");
+			
+			// Assign select and deselect listeners to the overylay div
+			div.toggle(function(){
+				el.addClass("selected");
+				selectedCallback($(this).data("col-name"));
+			},function(){
+				el.removeClass("selected");
+				deselectedCallback($(this).data("col-name"));
+			});
+
+			$("div.data-table-container").append(div);
+			
+			var lastScrollLeft = 0;
+			$("div.data-table-container").scroll(function() {
+			    var scrollDifference = $("div.data-table-container").scrollLeft();
+			    if (lastScrollLeft != scrollDifference) {
+			    	lastScrollLeft = scrollDifference;
+			    	LG.repositionColumnOverlays(scrollDifference);
+			    }
+			});
+			
+			self.vars.columnOverlays[colName] = {
+					div : div,
+					colIndex : Refine.columnNameToColumnIndex(colName),
+					colName : colName
+			};
+		}
+		
+		index++;
+	});
+};
+
+/*
+ * repositionColumnOverlays
+ * 
+ * When the data table is scrolled, the column overlays misalign.
+ * The only apparent workaround is to reposition the overlays with JS.
+ */
+LG.repositionColumnOverlays = function(difference){
+		
+	$("div.column-overlay").each(function(){
+		$(this).css("left",$(this).data("leftPosition")-difference+"px");
+		if(parseInt($(this).css("left")) < 300){
+			$(this).hide();
+		} else {
+			$(this).show();
+		}
+	});
+	
+};
+
+/*
+ * removeColumnOverlays
+ * 
+ * Removes any column overlays created
+ */
+LG.removeColumnOverlays = function(){
+	$("div.column-overlay").remove();
+};
+
+/*
  * exposeColumnHeaders
  * 
  * Applies a mask of opacity to elements that leave the column headers exposed.
@@ -647,88 +743,147 @@ LG.resizeAll_LG = function() {
 };
 
 /*
+ * handleJSError
+ * 
+ * In case of a JavaScript error, we need to return the page to a state 
+ * where the user can progress regardless of their point in their journey.
+ * - In a wizard
+ * - On the linking panel
+ * - On the labelling panel
+ * 
+ * TODO: Use the undo/redo history to rollback?
+ */
+LG.handleJSError = function(message) {
+
+	alert("Oops! Something went wrong!\n\n("+message+")");
+	// Make sure the "Wizard in progress" message is hidden
+	LG.showWizardProgress(false);
+	// Find the active tab that's open
+	if($("ul.lg-tabs li.active").length > 0){
+		var panelName = $("div#"+$("ul.lg-tabs li.active").find("a").attr("rel")).attr("bind");
+		// Make sure the body of the tab is displayed
+		LG.panels[panelName].displayPanel();
+	}
+};
+
+/*
  * addReconciliationService
  * 
  * Adds a reconciliation service to Refine's ReconciliationManager or the RDF extension's 
- * RdfReconciliationManager (depending on whether it's a SPARQL endpoint or a standard endpoint)
+ * RdfReconciliationManager (depending on whether it's a SPARQL endpoint or a standard endpoint).
+ * 
+ * Also makes sure we aren't adding the same service.
  */
 LG.addReconciliationService = function(serviceCfg, serviceNameSuffix, callback){
 
 	//log("addReconciliationService");
-	
+
 	var self = this;
-	
+
 	/*
-	 * Loop through the services config object.
+	 * Loop through the services to find the matching service using the serviceCfg variable.
 	 * 
-	 * Find the matching service
+	 * Check that the same service hasn't been added already.
 	 * 
-	 * Check it's type
+	 * Check it's type - standard or sparql.
 	 * 
-	 * Add it appropriately
+	 * Add it the correct way - to Refine's recon manager or the RDF extension's recon manager.
 	 */
 	var services = LG.vars.reconServices;
+	var standardServices = ReconciliationManager.standardServices;
+	var service = undefined;
 
-	for(var i=0; i<services.length; i++){
-
-		if(serviceCfg === services[i]){
-
-			var service = services[i];
-
-			//log("services "+i);
-
-			i = services.length-1;
-
-			//log("found service config for "+service.name);
-			//log("service type = "+service.type);
-
-			if(service.serviceType == "standard"){
-
-				ReconciliationManager.registerStandardService(service.endpoint);
-				log("Successfully added service - "+service.serviceName);
-
-				callback(service);
-
-			} else if(service.serviceType == "sparql"){
-
-				ReconciliationManager.save(function(){
-
-					$.post("/command/rdf-extension/addService",{
-						"datasource":"sparql",
-						"name":service.serviceName+(serviceNameSuffix == 1 ? "" : "-"+serviceNameSuffix),
-						"url":service.endpoint,
-						"type":"plain",
-						"graph":"",
-						"properties":service.labelURI
-					},
-					function(data){
-						if(typeof data.code != 'undefined' && data.code != 'error'){
-							log("Successfully added service");
-							/*
-							 * Store the ID & URL given to the service by the RDF extension 
-							 * back into our service object
-							 */
-							service.id = data.service.id;
-							service.serviceURL = "http://127.0.0.1:3333/extension/rdf-extension/services/"+service.id;
-							RdfReconciliationManager.registerService(data);
-
-							callback(service);
-
-						} else {
-							log("Error adding service");
-							serviceNameSuffix = serviceNameSuffix+1;
-							/*
-							 * Add the same service again, but this time, adding an integer suffix to the end
-							 * of it's name (to avoid a clash).
-							 */
-							LG.addReconciliationService(service, serviceNameSuffix, callback);
-						}
-					},"json");
-				});
+	for(var i=0; i<standardServices.length; i++){
+		if(standardServices[i].name.indexOf(serviceCfg.serviceName) >= 0){
+			// The service has already been added
+			// Find the service in our services list and add 
+			// the ID and URL of the already-registered service
+			for(var j=0; j<services.length; j++){
+				if(serviceCfg === services[j]){
+					service = services[j];
+					try {
+						// Mimic the returned data we get by actually registering a service
+						// (id and URL).
+						service.serviceURL = standardServices[i].url;
+						service.id = standardServices[i].url.split("http://127.0.0.1:3333/extension/rdf-extension/services/")[1];
+					}catch(e){
+						log(e);
+						service = undefined;
+					}
+					j = services.length-1;
+					i = standardServices.length-1;
+				}
 			}
-
-
 		}
+	}
+
+	if(typeof service == 'undefined'){
+
+		for(var i=0; i<services.length; i++){
+
+			if(serviceCfg === services[i]){
+
+				var service = services[i];
+
+				//log("services "+i);
+
+				// Skip looking for any more matches
+				i = services.length-1;
+
+				//log("found service config for "+service.name);
+				//log("service type = "+service.type);
+
+				if(service.serviceType == "standard"){
+
+					ReconciliationManager.registerStandardService(service.endpoint);
+					log("Successfully added service - "+service.serviceName);
+
+					callback(service);
+
+				} else if(service.serviceType == "sparql"){
+
+					ReconciliationManager.save(function(){
+
+						$.post("/command/rdf-extension/addService",{
+							"datasource":"sparql",
+							"name":service.serviceName+(serviceNameSuffix == 1 ? "" : "-"+serviceNameSuffix),
+							"url":service.endpoint,
+							"type":"plain",
+							"graph":"",
+							"properties":service.labelURI
+						},
+						function(data){
+							if(typeof data.code != 'undefined' && data.code != 'error'){
+								log("Successfully added service");
+								/*
+								 * Store the ID & URL given to the service by the RDF extension 
+								 * back into our service object
+								 */
+								service.id = data.service.id;
+								service.serviceURL = "http://127.0.0.1:3333/extension/rdf-extension/services/"+service.id;
+								RdfReconciliationManager.registerService(data);
+
+								callback(service);
+
+							} else {
+								log("Error adding service");
+								serviceNameSuffix = serviceNameSuffix+1;
+								/*
+								 * Add the same service again, but this time, adding an integer suffix to the end
+								 * of it's name (to avoid a clash).
+								 */
+								LG.addReconciliationService(service, serviceNameSuffix, callback);
+							}
+						},"json");
+					});
+				}
+
+
+			}
+		}
+	} else {
+		// Service has already been added, call the callback with the service
+		callback(service);
 	}
 
 
@@ -1007,5 +1162,9 @@ function log(str) {
 $(document).ready(function() {
 
 	LG.initialise();
+
+	window.onerror = function(o) {
+		LG.handleJSError(o);
+	};
 
 });

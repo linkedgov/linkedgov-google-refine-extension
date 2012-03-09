@@ -24,6 +24,10 @@ var LinkedGov_measurementsWizard = {
 				fb : {
 					curie : "fb",
 					uri : "http://rdf.freebase.com/rdf/"
+				},
+				lgMeasurement: {
+					curie: "lgMeasurement",
+					uri: "http://data.linkedgov.org/terms/measurement/"
 				}
 			}
 		},
@@ -191,8 +195,8 @@ var LinkedGov_measurementsWizard = {
 				}
 
 				rootNode.links.push({
-					"uri" : "http://example.linkedgov.org/" + camelColName,
-					"curie" : "lg:" + camelColName,
+					"uri" : self.vars.vocabs.lgMeasurement.uri+camelColName,
+					"curie" : self.vars.vocabs.lgMeasurement.curie + ":" + camelColName,
 					"target" : {
 						"nodeType" : "cell-as-blank",
 						"isRowNumberCell" : true,

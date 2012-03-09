@@ -1,573 +1,255 @@
-body.lg #header {
-	border-bottom: 3px solid #DDDDDD;
-	height: 48px;
-	margin: 0;
-	overflow: hidden;
-	padding-left: 20px;
-	padding-top: 9px;
-	position: relative;
-}
-
-body.lg #slogan {
-	color: #444444;
-	display: inline-block;
-	font-size: 110%;
-	font-style: italic;
-	margin-bottom: 0;
-	margin-left: 15px;
-	margin-right: 1em;
-	vertical-align: middle;
-	width: 110px;
-}
-
-body.lg a#unhide-columns-button {
-	display: none;
-}
-/* Feedback form CSS */
-div#feedback-form {
-	min-height: 0;
-	width: auto;
-}
-
-div#feedback-form label {
-	display: block;
-	margin-bottom: 5px;
-}
-
-div#feedback-form input {
-	display: block;
-	margin-bottom: 10px;
-}
-
-div#feedback-form input.text {
-	padding: 5px;
-	width: 96%;
-}
-
-div#feedback-form fieldset {
-	padding: 0;
-	border: 0;
-	margin-top: 25px;
-}
-
-div#feedback-form h1 {
-	font-size: 1.2em;
-	margin: .6em 0;
-}
-
-div#feedback-form .validateTips {
-	background: none repeat scroll 0 0 #FFE6E6;
-	border: 1px solid #EAC0C0;
-	padding: 10px;
-	display: none;
-}
-
-div#feedback-form textarea {
-	padding: 5px;
-	height: 95px;
-	width: 96%;
-}
-
-div#feedback-form .ui-state-error {
-	background: none repeat scroll 0 0 #FFE6E6;
-	border: 1px solid #EAC0C0;
-}
-
-.dialog-footer {
-	text-align: right;
-}
-
-.dialog-footer button {
-	margin-right: 6px;
-}
-
-div#beta {
-	position: fixed;
-	width: 150px;
-	top: -25px;
-	right: -28px;
-	z-index: 100;
-	text-align: center;
-	padding: 7px 40px 10px 40px;
-	-webkit-transform-origin: top left;
-	-webkit-transform: translateX(85px) translateY(-30px) rotate(42deg);
-	-moz-transform-origin: top left;
-	-moz-transform: translateX(85px) translateY(-30px) rotate(42deg);
-	-webkit-transform-origin-x: 0%;
-	-webkit-transform-origin-y: 0%;
-	background: -moz-linear-gradient(90deg, #718AD3 0%, #99BAFF 100%) repeat
-		scroll 0 0 #FEFEFE;
-	background: -webkit-gradient(linear, left bottom, left top, from(#718AD3),
-		to(#99BAFF) ) #FEFEFE;
-	color: white !important;
-	text-decoration: none;
-	-webkit-font-smoothing: antialiased;
-	-moz-border-radius: 6px;
-	-webkit-border-radius: 6px;
-	border-radius: 6px;
-	-moz-box-shadow: 0 0 1px rgba(0, 0, 0, 0.2) inset, 0 2px 0
-		rgba(255, 255, 255, 0.2) inset, 0 1px 4px rgba(0, 0, 0, 0.4);
-	-webkit-box-shadow: 0 0 1px rgba(0, 0, 0, 0.2) inset, 0 2px 0
-		rgba(255, 255, 255, 0.2) inset, 0 1px 4px rgba(0, 0, 0, 0.4);
-	box-shadow: 0 0 1px rgba(0, 0, 0, 0.2) inset, 0 2px 0
-		rgba(255, 255, 255, 0.2) inset, 0 1px 4px rgba(0, 0, 0, 0.4);
-	text-transform: none;
-}
-
-div#beta p {
-	font-family: Tahoma;
-	font-size: 20px;
-	font-weight: inherit;
-	line-height: 1;
-	margin: 0;
-	padding: 0;
-	text-shadow: -1px 1px 0 rgba(38, 48, 85, 0.75);
-	text-transform: uppercase;
-}
-
-div.finish-message h3 {
-	padding-bottom: 20px;
-}
-
-div.finish-message p {
-	padding-bottom: 20px;
-}
-
-.hiddenCompletely {
-	display: none !important;
-}
-
-div.ui-widget-overlay {
-	z-index: 9998 !important;
-}
-
-div.ui-dialog {
-	z-index: 9999 !important;
-}
-
-body.lg #project-title {
-	font-size: 1.6em;
-	height: 40px;
-	left: 303px;
-	padding: 0;
-	top: 19px;
-}
-
-body.lg #project-controls {
-	font-size: 1.3em;
-	height: 40px;
-	right: 10px;
-}
-
-body.lg #project-title,#project-controls {
-	display: none;
-	margin-left: 5px;
-	margin-right: 5px;
-	position: absolute;
-	top: 18px;
-}
-
-body.wizard-progress div.dialog-frame,body.wizard-progress div.dialog-overlay
-	{
-	display: none !important;
-}
-
-body.lg div.wizardProgressMessage {
-	bottom: 0;
-	display: none;
-	left: 305px;
-	position: fixed;
-	right: 0;
-	text-align: center;
-	top: 92px;
-}
-
-body.lg div.wizardProgressMessage div.overlay {
-	background-color: #AAAAAA;
-	bottom: 0;
-	left: 0;
-	opacity: 0.8;
-	position: absolute;
-	right: 0;
-	top: 0;
-}
-
-body.lg div.wizardProgressMessage p {
-	background: none repeat scroll 0 0 #FFFFFF;
-	border-radius: 10px 10px 10px 10px;
-	display: block;
-	font-size: 2em;
-	margin: auto;
-	opacity: 1;
-	padding-bottom: 10px;
-	padding-top: 10px;
-	position: relative;
-	text-align: center;
-	top: 40%;
-	width: 225px;
-}
-
-body.lg div.wizardProgressMessage p img {
-	display: block;
-	margin: 10px auto auto;
-}
-
-body.lg table.data-header-table td.column-header.bad {
-	background-color: #FFEDED;
-}
-
-body.lg table.data-header-table td.column-header.maybe {
-	/*background-color: #EFEFEF;*/
-	
-}
-
-body.lg table.data-header-table td.column-header.good {
-	background-color: #FCFEEB;
-}
-
-body.lg table.data-header-table td.column-header.great {
-	background-color: #EFFFEA;
-}
-/*
-body.lg table.data-header-table td.column-header.selected {
-	 background-color: #DAFFD9;
-}
-*/
-body.lg table.data-header-table td.column-header.typed {
-	background-image: url("../images/rdf-small.png");
-	background-position: center 5px;
-	background-repeat: no-repeat;
-}
-
-body.lg table.data-header-table td.column-header,body.lg table.data-table td.column-header {
-	height: 45px;
-	vertical-align: bottom;
-}
-
-body.lg div.quick-tool {
-	background: none repeat scroll 0 0 #FFFFFF;
-	border-color: #B5B5B5 #777777 #777777 #B5B5B5;
-	border-style: solid;
-	border-width: 1px;
-	font-size: 1.1em;
-	font-weight: normal;
-	margin-left: 0;
-	margin-top: 1px;
-	padding: 1px;
-	position: absolute;
-	width: 80px !important;
-	z-index: 9999;
-}
-
-body.lg div.quick-tool ul {
-	list-style-type: none;
-}
-
-body.lg div.quick-tool ul li {
-	cursor: pointer;
-	display: inline-block;
-	float: left;
-	margin: 1px;
-	padding: 5px;
-	width: 68px;
-}
-
-body.lg div.quick-tool ul li:hover {
-	background: none repeat scroll 0 0 #DBE8F8;
-}
-
-body.lg div#left-panel div.refine-tabs {
-	/*visibility: hidden;*/
-}
-
-body.lg table.data-header-table tr td.skip {
-	background-color: #F4F4F4;
-	opacity: 0.3;
-}
-
-body.lg div.typing-panel-body {
-    bottom: 35px;
-    display:none;
-    height: auto !important;
-    overflow-y: auto;
-    padding: 7px;
-    position: absolute;
-    top: 60px;
-    width: 286px;
-}
-body.lg div.typing-panel-body p.loader {
-	text-align:center;
-	margin-top:75%;
-}
-body.lg div.wizards-panel-body {
-	padding:0;
-}
-body.lg div#wizard-panel div.questions {
-    float: left;
-    padding: 0 10px 5px;
-}
-body.lg ul.lg-tabs {
-	/*
-    background: none repeat scroll 0 0 #FFFFFF;
-    border-bottom: 1px solid #BBCCFF;
-    height: 25px;
-    list-style-type: none;
-    margin: 0 0 0;
-    padding: 8px 5px 0;
-    width: 290px;
-    */
-    /*Breadcrumbs */
-    background: none repeat scroll 0 0 #FFFFFF;
-    height: 25px;
-    list-style-type: none;
-    margin: 6px 0;
+#project-title
+{
+    font-size: 1.6em;
+    height: 40px;
+    left: 0;
     padding: 0 0 0;
-    width: 300px;
 }
-body.lg ul.lg-tabs li {
-	/*
-    background: none repeat scroll 0 0 #F2F5FF;
-    border: 1px solid #BBCCFF;
-    float: left;
-    height: 24px;
-    line-height: 25px;
-    margin-left: 2px;
-    margin-right: 2px;
-    padding-left: 5px;
-    padding-right: 5px;
-    text-align: center;
-    width:27%;
-    */
-    /* Breadcrumbs */
-    background: url("../images/breadcrumb.png") no-repeat scroll -1px center #F2F5FF;
-    border-bottom: 1px solid #BBCCFF;
-    border-top: 1px solid #BBCCFF;
-    float: left;
-    height: 24px;
-    line-height: 25px;
-    margin-left: 0;
-    margin-right: 0;
-    text-align: center;
-    width: 93px;
+.dialog-footer
+{
+    text-align: right;
 }
-body.lg ul.lg-tabs li.first {
-    background-image: none !important;
-    padding-left: 1px;	
+.dialog-footer button
+{
+    margin-right: 6px;
 }
-body.lg ul.lg-tabs li.second {
-    padding-left: 10px;
-    padding-right: 0; 
+.hiddenCompletely
+{
+    display: none !important;
 }
-body.lg ul.lg-tabs li.last {
-    padding-left: 10px;  
+body.lg #header
+{
+    border-bottom: 3px solid #DDDDDD;
+    height: 48px;
+    margin: 0;
+    overflow: hidden;
+    padding-left: 20px;
+    padding-top: 9px;
+    position: relative;
 }
-body.lg ul.lg-tabs li a, body.lg ul.lg-tabs li a:hover {
-    font-weight: bold;
-    font-weight: normal;
-    color:#333333;
-    text-decoration:none;
+body.lg #notification-container
+{
+    display: none !important;
 }
-body.lg ul.lg-tabs li a:focus {
-	outline:none;
+body.lg #preview-pane
+{
+    background: none repeat scroll 0 0 #FFFFFF;
+    border: 1px solid #CCCCCC;
+    display: none;
+    font-size: 12px;
+    left: 275px;
+    padding: 0;
+    position: fixed;
+    width: 280px;
 }
-body.lg ul.lg-tabs li.active {
-    /*border-bottom:1px solid #FFFFFF;
-    background: none repeat scroll 0 0 #FFFFFF;*/
-    /* Breadcrumbs */
-    background-color: #FFFFFF;
-    background-image: url("../images/breadcrumb-active.png");
-    border-bottom: medium none;
-}
-body.lg ul.lg-tabs li.inactive {
-    /*border-bottom:1px solid #FFFFFF;
-    background: none repeat scroll 0 0 #FFFFFF;*/
-    /* Breadcrumbs */
-    background-image: url("../images/breadcrumb-inactive.png");
-}
-body.lg ul.lg-tabs li.active a {
-	font-weight:bold;
-}
-body.lg div#refine-tabs-typing div#intro-message {
-    background: none repeat scroll 0 0 #F4F7FF;
-    border: 1px solid #BBCCFF;
-    margin: 20px;
-    padding: 10px;
-    position: absolute;
-    top: 60px;
-}
-body.lg div#refine-tabs-typing div#intro-message p {
-    padding:0;
-}
-body.lg div#refine-tabs-typing div#intro-message ul {
-    margin: 15px 0 0;
-    padding: 10px;
-}
-body.lg div#refine-tabs-typing div#intro-message ul li {
-    margin-bottom: 15px;
-}
-body.lg div.wizard-panel {     
-    padding-left: 0;
-    padding-top: 5px;
-}
-body.lg div.labelling-panel {
-/*	bottom: 72px;
-	height: auto !important;
-	overflow-y: auto;
-	padding: 0;
-	position: absolute;
-	top: 28px;
-	width: 300px;
-	left: 300px;*/
-}
-body.lg div.labelling-panel h3 {
-	margin-bottom: 0px;
-	margin-left: 0;
-	padding-bottom: 5px;
-}
-
-body.lg div.labelling-panel ul.key {
-	list-style-type: none;
-	margin-bottom: 10px;
-	margin-left: 18px;
-	margin-top: 0;
-}
-
-body.lg div.labelling-panel ul.key li {
-	margin-bottom: 5px;
-}
-
-body.lg div.labelling-panel div.row-description {
-	margin: 5px 7px 15px;
-}
-
-body.lg div.labelling-panel div.row-description input {
-	background-position: 5px 3px;
-	background-repeat: no-repeat;
-	border-right: 1px solid #D6D6D6;
-	border-bottom: 1px solid #D6D6D6;
-	border-left: 1px solid #8F8F8F;
-	border-top: 1px solid #8F8F8F;
-	margin: 0;
-	padding: 4px 3px 4px 25px;
-	width: 87%;
-}
-
-body.lg div.labelling-panel div.row-description textarea {
-	border-right: 1px solid #D6D6D6;
-	border-bottom: 1px solid #D6D6D6;
-	border-left: 1px solid #8F8F8F;
-	border-top: 1px solid #8F8F8F;
-	color: #999999;
-	display: none;
-	font-style: italic;
-	height: 32px;
-	margin: 3px 0 0;
-	padding: 3px;
-	width: 96% !important;
-}
-
-body.lg div.labelling-panel div.column-list {
-	margin-left: 7px;
-	margin-right: 7px;
-	margin-top: 10px;
-	padding: 0;
-}
-
-body.lg div.labelling-panel div.column-list ul {
-	margin: 0;
-	list-style-type: none;
-}
-
-body.lg div.labelling-panel div.column-list ul li {
-	margin-bottom: 15px;
-}
-
-body.lg div.labelling-panel div.column-list ul li.bad input,body.lg div.labelling-panel div.row-description.bad input
-	{
-	background-color: #FFEDED;
-	background-image: url(../images/error.png);
-}
-
-body.lg div.labelling-panel div.column-list ul li.maybe input,body.lg div.labelling-panel div.row-description.maybe input
-	{ /*background-color:#EFEFEF;*/
-	background-image: url(../images/unknown.png);
-}
-
-body.lg div.labelling-panel div.column-list ul li.good input,body.lg div.labelling-panel div.row-description.good input
-	{
-	background-color: #FCFEEB;
-	background-image: url(../images/good.png);
-}
-
-body.lg div.labelling-panel div.column-list ul li.great input,body.lg div.labelling-panel div.row-description.great input
-	{
-	background-color: #EFFFEA;
-	background-image: url(../images/great.png);
-}
-
-body.lg div.labelling-panel div.column-list ul li input.column-label {
-	/*	border: 1px solid #D6D6D6;
-    background-position: right center;
-    background-repeat: no-repeat;
-    margin: 0 0 0;
-    padding: 3px;
-    width: 96%;
-    */
-	background-position: 5px 3px;
-	background-repeat: no-repeat;
-	border-right: 1px solid #D6D6D6;
-	border-bottom: 1px solid #D6D6D6;
-	border-left: 1px solid #8F8F8F;
-	border-top: 1px solid #8F8F8F;
-	margin: 0;
-	padding: 4px 3px 4px 25px;
-	width: 87%;
-}
-/*
-body.lg div.labelling-panel div.column-list ul li input.column-label {
-    background: -moz-linear-gradient(90deg, #B4C5FE 0%, #D6DFFF 100%) repeat scroll 0 0 #FEFEFE;
-    border: 1px solid #CBD1EB;
-    border-radius: 5px 5px 5px 5px;
-    color: #323232;
-    font-size: 13px;
-    font-weight: bold;
-    margin: 10px 0 3px;
-    padding: 4px 3px 4px 9px;
-    text-shadow: 1px 1px 0 #FFFFFF;
-    width: 94%;
-}
-*/
-body.lg div.labelling-panel div.column-list ul li input.column-label:hover {
-	color: #0059D5;
-}
-
-body.lg div.labelling-panel div.column-list ul li textarea {
-	border-right: 1px solid #D6D6D6;
-	border-bottom: 1px solid #D6D6D6;
-	border-left: 1px solid #8F8F8F;
-	border-top: 1px solid #8F8F8F;
-	color: #999999;
-	display: none;
-	font-style: italic;
-	height: 32px;
-	margin: 3px 0 0;
-	padding: 3px;
-	width: 96% !important;
-}
-/*
-body.lg div.labelling-panel div.column-list ul li textarea {
-    border: 1px solid #D6D6D6;
-    border-radius: 5px 5px 5px 5px;
-    color: #999999;
-    display: inline-block;
-    font-style: italic;
-    height: 32px;
-    margin: 3px 0 0;
+body.lg #preview-pane p.desc
+{
+    max-height: 100px;
+    overflow-y: auto;
     padding: 5px;
-    width: 95% !important;
 }
-*/
-body.lg a.wizard-header {
+body.lg #preview-pane p.id
+{
+    background: none repeat scroll 0 0 #FFFFE0;
+    font-size: 11px;
+    padding: 5px;
+}
+body.lg #preview-pane p.name
+{
+    background: none repeat scroll 0 0 #E8EEFF;
+    font-weight: bold;
+    padding: 5px;
+}
+body.lg #project-controls
+{
+    font-size: 1.3em;
+    height: 40px;
+    right: 10px;
+}
+body.lg #project-title
+{
+    font-size: 1.6em;
+    height: 40px;
+    left: 303px;
+    padding: 0;
+    top: 19px;
+}
+body.lg #project-title,#project-controls
+{
+    display: none;
+    margin-left: 5px;
+    margin-right: 5px;
+    position: absolute;
+    top: 18px;
+}
+body.lg #slogan
+{
+    color: #444444;
+    display: inline-block;
+    font-size: 110%;
+    font-style: italic;
+    margin-bottom: 0;
+    margin-left: 15px;
+    margin-right: 1em;
+    vertical-align: middle;
+    width: 110px;
+}
+body.lg #suggest-pane
+{
+    background: none repeat scroll 0 0 #FFFFFF;
+    border: 1px solid #CCCCCC;
+    box-shadow: 5px 5px 5px #D3D3D3;
+    display: none;
+    font-size: 12px;
+    margin-top: 1px;
+    position: fixed;
+    width: 240px;
+}
+body.lg #suggest-pane div.noresults
+{
+    background-color: #FFFFFF;
+    font-weight: bold;
+    padding: 5px 5px 5px 10px;
+    text-align: left;
+}
+body.lg #suggest-pane div.options
+{
+    background: none repeat scroll 0 0 #E7EEFF;
+    border-bottom: 1px solid #CCCCCC;
+    float: none;
+    padding-bottom: 1px;
+    padding-top: 0;
+    text-align: center;
+    width: 240px;
+}
+body.lg #suggest-pane div.options a
+{
+    margin: 8px 3px;
+}
+body.lg #suggest-pane div.options p
+{
+    background: none repeat scroll 0 0 #FFFFFF;
+    font-weight: bold;
+    padding: 5px;
+    text-align: left;
+}
+body.lg #suggest-pane div.options span.text
+{
+    display: block;
+    float: left;
+    font-size: 11px;
+    font-weight: normal;
+    padding: 5px;
+    width: 140px;
+}
+body.lg #suggest-pane div.searching
+{
+    background-color: #FFFFFF;
+    background-image: url("/images/small-spinner.gif");
+    background-position: 98% center;
+    background-repeat: no-repeat;
+    font-weight: bold;
+    padding: 5px 5px 5px 10px;
+    text-align: left;
+}
+body.lg #suggest-pane ul.fbs-list
+{
+    background: none repeat scroll 0 0 #FFFFFF;
+    border: medium none;
+    font-family: Arial;
+    font-size: 12px;
+    max-height: 220px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding-top: 0;
+    width: 240px;
+}
+body.lg #suggest-pane ul.fbs-list li.fbs-item
+{
+    border: none;
+    cursor: pointer;
+    list-style-type: none;
+    margin: 1px;
+    padding: 2px 8px 1px 3px;
+}
+body.lg #suggest-pane ul.fbs-list li.fbs-item .fbs-item-name
+{
+    background: transparent;
+    border: none;
+    font-size: 12px;
+    line-height: 1.4em;
+}
+body.lg #suggest-pane ul.fbs-list li.fbs-item .fbs-item-name label
+{
+    font-size: 12px;
+}
+body.lg #suggest-pane ul.fbs-list li.fbs-item .fbs-item-name:hover
+{
+}
+body.lg #suggest-pane ul.fbs-list li.fbs-item:hover
+{
+    background: none repeat scroll 0 0 #E6EDFF;
+}
+body.lg .fbs-flyout-pane .rdf-flyout-content div.rdf-header
+{
+    background: none repeat scroll 0 0 #BBCCFF;
+    font-family: Arial;
+    font-size: 12px;
+    font-weight: bold;
+    margin: 0px;
+    padding: 5px;
+}
+body.lg .fbs-flyout-pane .rdf-flyout-content div.resource_preview_description
+{
+    font-family: Arial;
+    font-size: 12px;
+    height: 100px;
+    overflow-y: auto;
+    padding: 5px;
+}
+body.lg .fbs-flyout-pane .rdf-flyout-content h2
+{
+    background: none repeat scroll 0 0 #DDDDDD;
+    font-family: Arial;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 5px;
+}
+body.lg .fbs-pane
+{
+    width: 239px;
+}
+body.lg .fbs-pane,.fbs-flyout-pane
+{
+    padding: 0px;
+}
+body.lg .ui-selectable
+{
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+body.lg .ui-selectable .ui-selecting
+{
+    background-color: #FFF;
+}
+body.lg .ui-selected,body.lg .ui-selectable .ui-selected
+{
+}
+body.lg a#unhide-columns-button
+{
+    display: none;
+}
+body.lg a.data-table-cell-edit
+{
+    display: none !important;
+}
+body.lg a.data-table-recon-action
+{
+    display: none;
+}
+body.lg a.wizard-header
+{
     background: none repeat scroll 0 0 #EBEEF8;
     border: 1px solid #BBCCFF;
     color: #444444;
@@ -578,45 +260,57 @@ body.lg a.wizard-header {
     padding: 8px;
     text-decoration: none;
 }
-
-body.lg a.wizard-header.exp {
-	background-image: url("../images/arrow-exp.png");
+body.lg a.wizard-header span.help
+{
+    width: 25px;
 }
-
-body.lg a.wizard-header:hover {
-	border: 1px solid #444444;
+body.lg a.wizard-header span.highlight
+{
+    color: #333333;
+    font-weight: bold;
 }
-
-body.lg a.wizard-header span.wizardIcon {
-	display: inline-block;
-	float: left;
-	padding-right: 10px;
+body.lg a.wizard-header span.question
+{
+    display: block;
+    float: left;
+    width: 78%;
 }
-
-body.lg a.wizard-header span.wizardIcon img { /*
-    background-color: #FFFFFF;
-    border: 1px solid #BBCCFF;
-    border-radius: 3px 3px 3px 3px;
-    padding: 6px 5px 5px 6px;
-    */
-	
+body.lg a.wizard-header span.wizardIcon
+{
+    display: inline-block;
+    float: left;
+    padding-right: 10px;
 }
-
-body.lg a.wizard-header.collapsed {
-	background: none no-repeat scroll right center #EBEEF8;
-	margin: 5px;
-	padding: 9px;
+body.lg a.wizard-header span.wizardIcon img
+{
 }
-
-body.lg a.wizard-header.collapsed span.question {
-	display: none;
+body.lg a.wizard-header.collapsed
+{
+    background: none no-repeat scroll right center #EBEEF8;
+    margin: 5px;
+    padding: 9px;
 }
-
-body.lg a.wizard-header.collapsed span.wizardIcon {
-	padding-right: 0;
+body.lg a.wizard-header.collapsed span.question
+{
+    display: none;
 }
-
-body.lg div#refine-tabs-typing a.collapse-expand {
+body.lg a.wizard-header.collapsed span.wizardIcon
+{
+    padding-right: 0;
+}
+body.lg a.wizard-header.exp
+{
+    background-image: url("../images/arrow-exp.png");
+}
+body.lg a.wizard-header:hover
+{
+    border: 1px solid #444444;
+}
+body.lg div#left-panel div.refine-tabs
+{
+}
+body.lg div#refine-tabs-typing a.collapse-expand
+{
     bottom: 6px;
     font-family: Lucida Console;
     font-size: 18px;
@@ -630,275 +324,139 @@ body.lg div#refine-tabs-typing a.collapse-expand {
     width: 20px;
     z-index: 99;
 }
-/*body.lg div#refine-tabs-typing a.collapse-expand.expand {
-    background: url("../images/wizard_layout2.png") no-repeat scroll 0 0 #FFFFFF;
+body.lg div#refine-tabs-typing a.info
+{
+    background: url("../images/info.png") no-repeat scroll 0 0 transparent;
+    display: inline-block;
+    float: right;
+    height: 16px;
+    margin-right: 0;
+    margin-top: 3px;
+    outline: medium none;
+    position: relative;
+    width: 16px;
 }
-body.lg div#refine-tabs-typing a.collapse-expand:hover {
-    background-color: #E7E7E7;
-    text-decoration: none;
-}*/
-body.lg div.wizard-body span.wizardIcon {
-	display: inline;
-	float: right;
-	padding-left: 10px;
+body.lg div#refine-tabs-typing a.info:hover
+{
+    cursor: pointer;
 }
-
-body.lg div.wizard-body span.wizardIcon img { /*
-    background-color: #FFFFFF;
+body.lg div#refine-tabs-typing div#intro-message
+{
+    background: none repeat scroll 0 0 #F4F7FF;
     border: 1px solid #BBCCFF;
-    border-radius: 3px 3px 3px 3px;
-    padding: 6px 5px 5px 6px;
-    */
-	
+    margin: 20px;
+    padding: 10px;
+    position: absolute;
+    top: 60px;
 }
-
-body.lg a.wizard-header span.question {
-	display: block;
-	float: left;
-	width: 78%;
+body.lg div#refine-tabs-typing div#intro-message p
+{
+    padding: 0;
 }
-
-body.lg a.wizard-header span.highlight {
-	color: #333333;
-	font-weight: bold;
+body.lg div#refine-tabs-typing div#intro-message ul
+{
+    margin: 15px 0 0;
+    padding: 10px;
 }
-
-body.lg a.wizard-header span.help {
-	width: 25px;
+body.lg div#refine-tabs-typing div#intro-message ul li
+{
+    margin-bottom: 15px;
 }
-body.lg div.wizard-bodies {
-	display:none;
-	padding:0;
+body.lg div#refine-tabs-typing div#linking-panel div.confirmed-links
+{
+    background-color: #FCFFDA !important;
+    border: 1px solid #D5D784 !important;
+    display: none;
 }
-body.lg div.wizard-body {
-	display:none;
+body.lg div#refine-tabs-typing div#linking-panel div.existing-links
+{
+    background-color: #F5F5F5 !important;
+    border: 1px solid #CCCCCC !important;
+    display: none;
+}
+body.lg div#refine-tabs-typing div#linking-panel div.list-of-services a
+{
+    cursor: pointer;
+    display: block;
+    margin-bottom: 5px;
+    margin-top: 5px;
+    padding-left: 5px;
+}
+body.lg div#refine-tabs-typing div#linking-panel div.list-of-services ul
+{
+    display: none;
+    list-style-type: square;
+    padding-left: 10px;
+    padding-right: 5px;
+}
+body.lg div#refine-tabs-typing div#linking-panel div.list-of-services ul li
+{
+    padding-bottom: 3px;
+    padding-top: 3px;
+}
+body.lg div#refine-tabs-typing div#linking-panel div.manual-links
+{
+}
+body.lg div#refine-tabs-typing div#linking-panel div.suggested-links
+{
+}
+body.lg div#refine-tabs-typing div#linking-panel div.suggest-panel div.description
+{
     padding: 5px;
 }
-body.lg div.wizard-body h2 {
-	border-bottom: 1px solid #DDDDDD;
-	line-height: 30px;
-	margin-bottom: 10px;
-	padding-bottom: 10px;
-	padding-left: 0;
-	padding-top: 0px;
-	text-align: left;
+body.lg div#refine-tabs-typing div#linking-panel div.suggest-panel div.description p
+{
+    padding: 5px;
 }
-
-body.lg div.wizard-body div.unexpectedValues {
-	
+body.lg div#refine-tabs-typing div#linking-panel div.suggest-panel div.existing-links a.viewResults
+{
+    float: right;
+    margin-right: 5px;
+    margin-top: 5px;
 }
-
-body.lg div.wizard-body div.unexpectedValues p {
-	line-height: 1.3;
-	margin-left: 10px;
-	margin-right: 10px;
-	padding: 7px 15px;
+body.lg div#refine-tabs-typing div#linking-panel div.suggest-panel div.selector
+{
+    margin: 5px 0 1px;
 }
-
-body.lg div.wizard-body div.unexpectedValues div.warning {
-	background: none repeat scroll 0 0 #EBEEF8;
-	border: 1px solid #BBCCFF;
-	color: #444444;
-	margin-bottom: 10px;
-	padding-bottom: 5px;
-	padding-top: 5px;
-	text-align: left;
+body.lg div#refine-tabs-typing div#linking-panel div.suggest-panel div.suggest-links
+{
+    display: block;
+    margin: 5px 0 1px;
 }
-
-body.lg div.wizard-body div.unexpectedValues div.warning p.title {
-	background: none repeat scroll 0 0 #FFDEDE;
-	border: 1px solid #E3C2C2;
-	font-size: 14px;
-	font-weight: bold;
-	margin-top: 10px;
-	padding: 5px;
-	text-align: center;
-	text-transform: capitalize;
-	vertical-align: middle;
+body.lg div#refine-tabs-typing div#linking-panel div.suggest-panel h3
+{
+    margin-bottom: 5px;
+    margin-left: 5px;
+    margin-top: 5px;
 }
-
-body.lg div.wizard-body div.unexpectedValues div.warning p.message {
-	background: none repeat scroll 0 0 #FFFFFF;
-	border: 1px solid #E8E7E7;
-	margin-top: 10px;
+body.lg div#refine-tabs-typing div#linking-panel div.suggest-panel h3.confirmed,body.lg div#refine-tabs-typing div#linking-panel div.suggest-panel h3.existing-links
+{
+    display: none;
 }
-
-body.lg div.wizard-body div.unexpectedValues div.warning span.colName {
-	background: none repeat scroll 0 0 #FFDEDE;
-	border-radius: 3px 3px 3px 3px;
-	font-weight: bold;
-	padding: 1px 5px;
-	display: inline-block;
+body.lg div#refine-tabs-typing div#linking-panel div.suggest-panel h3.existing-links
+{
+    display: inline-block;
+    margin-bottom: 10px;
+    margin-top: 10px;
 }
-
-body.lg div.wizard-body div.unexpectedValues div.warning span.valueType {
-	background: none repeat scroll 0 0 #FFDEDE;
-	border-radius: 3px 3px 3px 3px;
-	font-weight: bold;
-	padding: 1px 3px;
-	display: inline-block;
+body.lg div#refine-tabs-typing div.confirmed-links ul.confirmed-columns li span.link,body.lg div#refine-tabs-typing div.suggest-links ul.existing-columns li span.link
+{
+    background: url("../images/link.png"),
+        -webkit-gradient(linear, left bottom, left top, from(#DDDDDD),
+        to(#FFFFFF) ) #DDDDDD;
+    background-image: url("../images/link.png"),
+        -moz-linear-gradient(center top, #FFFFFF, #DDDDDD);
+    background-repeat: no-repeat;
+    border-top: 1px solid #DDDDDD;
+    float: left;
+    font-weight: normal;
+    line-height: 20px;
+    padding: 1px 5px 1px 25px;
+    text-shadow: 1px 1px #FFFFFF;
+    width: 90%;
 }
-
-body.lg div.wizard-body div.unexpectedValues div.warning span.count {
-	background: none repeat scroll 0 0 #FFDEDE;
-	border-radius: 3px 3px 3px 3px;
-	font-weight: bold;
-	padding: 1px 6px;
-}
-
-body.lg div.wizard-body div.unexpectedValues div.warning p.details {
-	font-size: 13px;
-	font-weight: bold;
-	margin-bottom: 0;
-	margin-top: 10px;
-	text-align: left;
-}
-
-body.lg div.wizard-body div.unexpectedValues div.warning ul.unexpectedValueList
-	{
-	background: none repeat scroll 0 0 #FFDEDE;
-	border: 1px solid #E3C2C2;
-	border-radius: 5px 5px 5px 5px;
-	list-style-type: none;
-	margin: 10px;
-	padding: 10px;
-}
-
-body.lg div.wizard-body div.unexpectedValues div.warning ul.unexpectedValueList li
-	{
-	margin-bottom: 3px;
-	padding: 0;
-}
-
-body.lg div.wizard-body div.unexpectedValues div.warning ul.unexpectedValueList li input.unexpectedValue
-	{
-	padding: 3px;
-	width: 96%;
-}
-
-body.lg div.wizard-body div.unexpectedValues div.warning ul.unexpectedValueList li input.unexpectedValue:hover
-	{
-	color: #0059FB;
-}
-
-body.lg div.wizard-body div.unexpectedValues div.warning ul.unexpectedValueList li input.unexpectedValue:focus
-	{
-	background: none repeat scroll 0 0 #FFFFD3;
-}
-
-body.lg div.wizard-body div.unexpectedValues div.warning p.rerun-tip {
-	background-color: #FBFED3;
-	border: 1px solid #DEE0BB;
-}
-
-body.lg div.wizard-body div.unexpectedValues div.warning p.exampleValue span
-	{
-	background-color: #E0F7DB;
-	border-radius: 3px 3px 3px 3px;
-	font-weight: bold;
-	padding: 1px 6px;
-}
-
-body.lg div.wizard-body div.unexpectedValues div.warning a.button {
-	color: #FFFFFF;
-	font-weight: bold;
-	margin: 0 4px;
-	padding: 2px 10px;
-}
-
-body.lg div.wizard-body div.unexpectedValues div.warning div.buttons {
-	margin-bottom: 10px;
-	margin-top: 10px;
-	text-align: center;
-}
-
-body.lg div.wizard-body div.unexpectedValues div.warning a.button.undo {
-	background: -moz-linear-gradient(center top, #D68C8C, #742F2F) repeat
-		scroll 0 0 transparent;
-	background: -webkit-gradient(linear, left bottom, left top, from(#742F2F),
-		to(#D68C8C) ) #DDDDDD;
-	text-shadow: 1px 1px #5B1B1B;
-}
-
-body.lg div.wizard-body div.unexpectedValues div.warning a.button.fix {
-	background: -moz-linear-gradient(center top, #A3D68C, #40742F) repeat
-		scroll 0 0 transparent;
-	background: -webkit-gradient(linear, left bottom, left top, from(#40742F),
-		to(#A3D68C) ) #DDDDDD;
-	text-shadow: 1px 1px #153E19;
-}
-
-body.lg div.wizard-body div.unexpectedValues div.warning a.button.carryon
-	{
-	background: -moz-linear-gradient(center top, #79B1FE, #294F8C) repeat
-		scroll 0 0 transparent;
-	background: -webkit-gradient(linear, left bottom, left top, from(#294F8C),
-		to(#79B1FE) ) #DDDDDD;
-	text-shadow: 1px 1px #1E2E6A;
-}
-
-body.lg div.wizard-body div.unexpectedValues div.warning a.button.done {
-	background: -moz-linear-gradient(center top, #79B1FE, #294F8C) repeat
-		scroll 0 0 transparent;
-	background: -webkit-gradient(linear, left bottom, left top, from(#294F8C),
-		to(#79B1FE) ) #DDDDDD;
-	text-shadow: 1px 1px #1E2E6A;
-}
-
-body.lg div.wizard-body div.unexpectedValues div.warning a.button.rerun {
-	background: -moz-linear-gradient(center top, #A3D68C, #40742F) repeat
-		scroll 0 0 transparent;
-	background: -webkit-gradient(linear, left bottom, left top, from(#40742F),
-		to(#A3D68C) ) #DDDDDD;
-	text-shadow: 1px 1px #153E19;
-}
-
-body.lg div.wizard-body div.unexpectedValues div.warning a.button.undo:active
-	{
-	background: -moz-linear-gradient(center top, #742F2F, #D68C8C) repeat
-		scroll 0 0 transparent;
-	background: -webkit-gradient(linear, left bottom, left top, from(#D68C8C),
-		to(#742F2F) ) #DDDDDD;
-}
-
-body.lg div.wizard-body div.unexpectedValues div.warning a.button.fix:active
-	{
-	background: -moz-linear-gradient(center top, #40742F, #A3D68C) repeat
-		scroll 0 0 transparent;
-	background: -webkit-gradient(linear, left bottom, left top, from(#A3D68C),
-		to(#40742F) ) #DDDDDD;
-}
-
-body.lg div.wizard-body div.unexpectedValues div.warning a.button.carryon:active
-	{
-	background: -moz-linear-gradient(center top, #294F8C, #79B1FE) repeat
-		scroll 0 0 transparent;
-	background: -webkit-gradient(linear, left bottom, left top, from(#79B1FE),
-		to(#294F8C) ) #DDDDDD;
-}
-
-body.lg div.wizard-body div.unexpectedValues div.warning a.button.done:active
-	{
-	background: -moz-linear-gradient(center top, #294F8C, #79B1FE) repeat
-		scroll 0 0 transparent;
-	background: -webkit-gradient(linear, left bottom, left top, from(#79B1FE),
-		to(#294F8C) ) #DDDDDD;
-}
-
-body.lg div.wizard-body div.unexpectedValues div.warning a.button.rerun:active
-	{
-	background: -moz-linear-gradient(center top, #40742F, #A3D68C) repeat
-		scroll 0 0 transparent;
-	background: -webkit-gradient(linear, left bottom, left top, from(#A3D68C),
-		to(#40742F) ) #DDDDDD;
-}
-
-body.lg div#refine-tabs-typing div.description p {
-	line-height: 1.3;
-	padding: 7px 15px;
-}
-
-body.lg div#refine-tabs-typing div.description {
+body.lg div#refine-tabs-typing div.description
+{
     background: none repeat scroll 0 0 #F2F5FF;
     border: 1px solid #BBCCFF;
     color: #444444;
@@ -907,324 +465,415 @@ body.lg div#refine-tabs-typing div.description {
     padding-top: 5px;
     text-align: left;
 }
-
-body.lg div#refine-tabs-typing div.description a.ex {
-	cursor: pointer;
-	display: block;
-	padding-bottom: 5px;
+body.lg div#refine-tabs-typing div.description a.ex
+{
+    cursor: pointer;
+    display: block;
+    padding-bottom: 5px;
 }
-
-body.lg div#refine-tabs-typing div.description span.ex-text {
-	display: none;
-	background: none repeat scroll 0 0 #FFFFCD;
-	border: 1px solid yellow;
-	padding: 5px;
+body.lg div#refine-tabs-typing div.description p
+{
+    line-height: 1.3;
+    padding: 7px 15px;
 }
-
-body.lg div#refine-tabs-typing p.label {
-	padding: 5px;
-}
-
-body.lg div.wizard-body ol.steps {
-	margin: 0 0 5px 35px;
-	padding: 0;
-	text-align: left;
-}
-
-body.lg div.wizard-body ol.steps li {
-	color: #000000;
-	margin-bottom: 5px;
-	padding: 0;
-}
-
-body.lg div.next-button {
-    background: none repeat scroll 0 0 #BBCCFF;
-    border-top: 1px solid #CCCCCC;
-    bottom: 0;
-    padding: 4px 0;
-    position: absolute;
-    text-align: center;
-    width: 300px;
-}
-body.lg div.action-bar a.button.returnButton {
-    background: -moz-linear-gradient(center top , #FFFFFF, #E7E7E7) repeat scroll 0 0 transparent;
-    color: #333333;
-    display:none;
-    font-size: 14px;
-    font-weight: normal;
-    position: absolute;
-    right: 5px;
-    text-align: center;
-    text-shadow: 1px 1px #FFFFFF;
-}
-body.lg div.action-bar a.button.returnButton:active {
-    background: -moz-linear-gradient(center top , #E7E7E7, #FFFFFF) repeat scroll 0 0 transparent;
-}
-body.lg div.selector a.selectColumn {
-	width: 80px;
-	text-align: center;
-}
-body.lg div.selector a.clearButton {
-	margin-left:2px;
-	display:none;
-}
-body.lg div.selector span.column-selecting-icon {
-	display: inline;
-	margin-left: 5px;
-	margin-top: 0;
-	padding: 2px;
-	position: absolute;
-}
-
-body.lg div.selector a.selecting {
-	background: -moz-linear-gradient(center top, #E3E3E3, #F9F9F9) repeat scroll 0 0 transparent;
-	background: -webkit-gradient(linear, left bottom, left top, from(#F9F9F9), to(#E3E3E3) ) #DDDDDD;
-}
-
-body.lg div.next-button a.button {
-	font-weight: bold;
-}
-
-body.lg div.wizard-body div.split {
-	background: none repeat scroll 0 0 #F9F9F9;
-	border: 1px solid #DDDDDD;
-	margin-bottom: 10px;
-	margin-top: 5px;
-	padding: 5px 10px 10px;
-	display: none;
-}
-
-body.lg div.wizard-body div.split label {
-	float: left;
-	margin-bottom: 5px;
-	margin-top: 0px;
-	padding-left: 0;
-	width: 219px;
-}
-
-body.lg div.wizard-body div.split input.splitCharacter {
-	background-color: #FFFFCC;
-	margin-top: 5px;
-	text-align: center;
-	width: 15px;
-}
-
-body.lg div.wizard-body ul.checkboxes {
-	float: left;
-	list-style-type: none;
-	margin: 0 0 5px;
-	padding: 0;
-}
-
-body.lg div.wizard-body ul.checkboxes li {
-	margin-bottom: 5px;
-}
-
-body.lg div.wizard-body ul.checkboxes input {
-	margin: 0;
-}
-
-body.lg ul.date-checkboxes li input.date-checkbox {
-	padding: 0;
-}
-
-body.lg ul.date-checkboxes li span {
-	
-}
-
-body.lg div#refine-tabs-typing label {
-	padding-left: 5px;
-}
-
-body.lg div#refine-tabs-typing span.note {
-    background: none repeat scroll 0 0 #FFFFD2;
-    border: 1px solid #CFCE7D;
-	border-radius: 5px 5px 5px 5px;
-	box-shadow: 0 0 10px #7D7D7D;
-	color: #000000;
-	display: none;
-	font-size: 12px;
-	left: 315px;
-	line-height: 1.3;
-	margin: 5px 0;
-	padding: 15px 20px;
-	position: fixed;
-	text-align: left;
-	top: 45%;
-	width: 250px;
-	z-index: 9999;
-}
-
-body.lg div#refine-tabs-typing a.info {
-	background: url("../images/info.png") no-repeat scroll 0 0 transparent;
-	display: inline-block;
-	float: right;
-	height: 16px;
-	margin-right: 0;
-	margin-top: 3px;
-	outline: medium none;
-	position: relative;
-	width: 16px;
-}
-
-body.lg div.split a.info {
-	
-}
-
-body.lg div#refine-tabs-typing a.info:hover {
-	cursor: pointer;
-}
-
-body.lg div#refine-tabs-typing div.selector {
-	background-color: #DAF4DA;
-	border: 1px solid #A2CFA4;
-	clear: both;
-	margin: 5px 0 10px;
-	padding: 5px;
-}
-
-body.lg div#refine-tabs-typing div.selector p {
-	padding-bottom: 10px;
-	text-align: left;
-}
-
-body.lg div.wizard-body div.preview {
-	background-color: #FBECD8;
-	border: 1px solid #EFCFAA;
-	border-radius: 5px 5px 5px 5px;
-	clear: both;
-	margin: 5px 0 10px;
-	padding: 5px;
-}
-
-body.lg div.wizard-body div.preview a.button {
-	
-}
-
-body.lg div.wizard-body div.preview ul {
-	list-style-type: none;
-}
-
-body.lg div.wizard-body div.preview ul.cell-previews {
-	background: none repeat scroll 0 0 #FFFFFF;
-	border: 1px solid #DDDDDD;
-	margin-top: 5px;
-	padding-bottom: 1px;
-	padding-left: 1px;
-	padding-right: 1px;
-	display: none;
-}
-
-body.lg div.wizard-body div.preview ul.cell-previews li {
-	border: 1px solid #DDDDDD;
-	margin-top: 1px;
-}
-
-body.lg div.wizard-body div.preview ul.cell-previews li span {
-	display: inline-block;
-	padding-bottom: 0px;
-	padding-left: 6px;
-	padding-top: 2px;
-	font-weight: bold;
-}
-
-body.lg div.wizard-body div.preview ul.cell-previews ul.values {
-	background: #FFFFFF;
-}
-
-body.lg div.wizard-body div.preview ul.cell-previews ul.values li {
-	border-color: #EEEEEE -moz-use-text-color -moz-use-text-color;
-	border-style: solid none none;
-	border-width: 1px medium medium;
-	color: #4266B3;
-	margin: 1px;
-	padding-bottom: 2px;
-	padding-left: 6px;
-	padding-top: 2px;
-	text-align: left;
-}
-
-body.lg div#refine-tabs-typing ul.selected-columns {
-	background: none repeat scroll 0 0 #FFFFFF;
-	border: 1px solid #DDDDDD;
-	color: #333333;
+body.lg div#refine-tabs-typing div.description span.ex-text
+{
+    background: none repeat scroll 0 0 #FFFFCD;
+    border: 1px solid yellow;
     display: none;
-	line-height: 17px;
-	list-style-type: none;
-	margin-bottom: 2px;
-	margin-top: 5px;
-	overflow: hidden;
-	padding-left: 1px;
-	padding-right: 1px;
+    padding: 5px;
 }
-body.lg div#refine-tabs-typing ul.confirmed-columns, body.lg div#refine-tabs-typing ul.existing-columns {
-    background: none repeat scroll 0 0 #FFFFFF;
-    color: #333333;
-    line-height: 17px;
-    list-style-type: none;
-    margin-bottom: 2px;
-    margin-top: 0px;
-    overflow: hidden;
-    padding-left: 1px;
-    padding-right: 1px;
+body.lg div#refine-tabs-typing div.manual-links ul.selected-columns li span.col
+{
+    width: 72%;
 }
-body.lg div#refine-tabs-typing div#linking-panel div.suggested-links {
-    
+body.lg div#refine-tabs-typing div.manual-links ul.selected-columns li span.confirm
+{
+    margin-top: 4px;
 }
-body.lg div#refine-tabs-typing div#linking-panel div.manual-links {
-	
+body.lg div#refine-tabs-typing div.manual-links ul.selected-columns li span.remove
+{
+    margin-left: 0;
+    margin-top: 4px;
 }
-body.lg div#refine-tabs-typing div#linking-panel div.confirmed-links {
-	display:none;
-    background-color: #FCFFDA !important;
-    border: 1px solid #D5D784 !important; 
+body.lg div#refine-tabs-typing div.reconcile-panel
+{
+    display: none;
 }
-body.lg div#refine-tabs-typing div#linking-panel div.existing-links {
-	display:none;
-    background-color: #F5F5F5 !important;
-    border: 1px solid #CCCCCC !important;
-}
-
-body.lg div#refine-tabs-typing div#linking-panel div.suggest-panel div.selector {
-    margin: 5px 0 1px;
-}
-body.lg div#refine-tabs-typing div#linking-panel div.suggest-panel div.description {
-	padding:5px;
-}
-body.lg div#refine-tabs-typing div#linking-panel div.suggest-panel div.description p {
-	padding:5px;
-}
-body.lg div#refine-tabs-typing div#linking-panel div.suggest-panel h3 {
-    margin-bottom: 5px;
-    margin-left: 5px;
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-loading
+{
     margin-top: 5px;
 }
-body.lg div#refine-tabs-typing div#linking-panel div.suggest-panel h3.confirmed,
-body.lg div#refine-tabs-typing div#linking-panel div.suggest-panel h3.existing-links {
-	display:none;
-}
-body.lg div#refine-tabs-typing div#linking-panel div.suggest-panel h3.existing-links {
-    display: inline-block;
-    margin-bottom: 10px;
+body.lg div#refine-tabs-typing div.linking-loading div.progressDiv
+{
+    background-color: #F2F5FF !important;
+    border: 1px solid #BBCCFF !important;
     margin-top: 10px;
 }
-body.lg div#refine-tabs-typing div#linking-panel div.suggest-panel div.existing-links a.viewResults {
-	float: right;
+body.lg div#refine-tabs-typing div.linking-loading div.progressDiv div.recon-bar
+{
+    border: 1px solid #DDDDDD;
+    height: 10px;
+    margin: 0;
+    padding: 5px;
+}
+body.lg div#refine-tabs-typing div.linking-loading div.progressDiv div.recon-bar div.ui-progressbar-value
+{
+    background: -moz-linear-gradient(center top, #79B1FE, #294F8C) repeat
+        scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#294F8C),
+        to(#79B1FE) ) #DDDDDD;
+    margin: 0;
+    width: 0%;
+}
+body.lg div#refine-tabs-typing div.linking-loading div.progressDiv div.recon-bar div.ui-progressbar-value.complete
+{
+    background: -moz-linear-gradient(center top, #73C262, #1F3709) repeat
+        scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#1F3709),
+        to(#73C262) ) #DDDDDD;
+}
+body.lg div#refine-tabs-typing div.linking-loading div.progressDiv p
+{
+    padding: 5px;
+}
+body.lg div#refine-tabs-typing div.linking-loading div.progressDiv p.columnName
+{
+    background-color: #FFFFFF;
+    background-image: url("/images/small-spinner.gif");
+    background-position: 98% center;
+    background-repeat: no-repeat;
+    border: 1px solid #DDDDDD;
+    display: block;
+    font-weight: bold;
+    margin: 1px;
+    padding: 5px;
+    text-shadow: 1px 1px #FFFFFF;
+}
+body.lg div#refine-tabs-typing div.linking-loading div.progressDiv p.columnName span.percentage
+{
+    float: right;
+    font-weight: bold;
+    line-height: 15px;
+    margin-right: 23px;
+}
+body.lg div#refine-tabs-typing div.linking-loading div.progressDiv p.service
+{
+    background: url("../images/link.png"),
+        -webkit-gradient(linear, left bottom, left top, from(#DDDDDD),
+        to(#FFFFFF) ) #DDDDDD;
+    background-image: url("../images/link.png"),
+        -moz-linear-gradient(center top, #FFFFFF, #DDDDDD);
+    background-repeat: no-repeat;
+    border: 1px solid #DDDDDD;
+    font-weight: normal;
+    line-height: 20px;
+    margin: 1px;
+    padding: 1px 5px 1px 25px;
+    text-shadow: 1px 1px #FFFFFF;
+}
+body.lg div#refine-tabs-typing div.linking-loading p.message,body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results p.message
+{
+    background: none repeat scroll 0 0 #F2F5FF;
+    border: 1px solid #DAE2FF;
+    margin-top: 10px;
+    padding: 10px;
+}
+body.lg div#refine-tabs-typing div.linking-results
+{
+    display: none;
+}
+body.lg div#refine-tabs-typing div.linking-results div.description
+{
+    background: none repeat scroll 0 0 white;
+    border: 1px solid #BBCCFF;
+    color: #444444;
+    margin-top: 10px;
+    padding: 0;
+    text-align: left;
+}
+body.lg div#refine-tabs-typing div.linking-results div.description a.col-name
+{
+    background: url("../images/arrow.png") no-repeat scroll 6px center
+        #E3E9FF;
+    color: #000000;
+    cursor: pointer;
+    display: block;
+    font-weight: bold;
+    padding: 2% 3% 2% 8%;
+    text-decoration: none;
+}
+body.lg div#refine-tabs-typing div.linking-results div.description a.col-name.expanded
+{
+    background: url("../images/arrow-exp.png") no-repeat scroll 5px 7px
+        #E3E9FF;
+}
+body.lg div#refine-tabs-typing div.linking-results div.description a.col-name:hover
+{
+    background-color: #CCDDFF;
+}
+body.lg div#refine-tabs-typing div.linking-results div.description p
+{
+    line-height: 1.3;
+    padding: 7px 15px;
+}
+body.lg div#refine-tabs-typing div.linking-results div.description p span
+{
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    padding-bottom: 1%;
+    padding-left: 0;
+    padding-top: 1%;
+    width: 98%;
+}
+body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.description p span.matched,body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.description p span.total,body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.description p span.percentage
+{
+    display: inline;
+    width: auto;
+}
+body.lg div#refine-tabs-typing div.linking-results div.description p.notification
+{
+    background: none repeat scroll 0 0 #FFFFDC;
+}
+body.lg div#refine-tabs-typing div.linking-results div.description p.notification a
+{
+    display: inline-block;
     margin-right: 5px;
+}
+body.lg div#refine-tabs-typing div.linking-results div.description p.notification-buttons a.button
+{
+    margin-left: 15px;
+    margin-right: 5px;
+    margin-top: 10px;
+}
+body.lg div#refine-tabs-typing div.linking-results div.result div.result-body div.ui-progressbar
+{
+    border: 1px solid #DDDDDD;
+    height: 10px;
+    margin-bottom: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    padding: 1px;
+}
+body.lg div#refine-tabs-typing div.linking-results div.result div.result-body ul.selected-columns
+{
+    border: medium none;
+    padding: 10px;
+}
+body.lg div#refine-tabs-typing div.linking-results div.result div.result-body ul.selected-columns li
+{
+    background: none repeat scroll 0 0 #FFFFFF;
+    border: medium none;
+    color: #333333;
+    list-style-type: none;
+    margin-bottom: 10px;
+    margin-top: 0;
+    overflow: hidden;
+    padding-left: 0;
+}
+body.lg div#refine-tabs-typing div.linking-results div.result div.result-body,body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result div.result-body.collapsed
+{
+    display: none;
+}
+body.lg div#refine-tabs-typing div.linking-results div.result div.result-body.expanded
+{
+    display: block;
+}
+body.lg div#refine-tabs-typing div.linking-results div.result div.ui-progressbar div.ui-progressbar-value
+{
+    margin: 0;
+}
+body.lg div#refine-tabs-typing div.linking-results div.result div.ui-progressbar div.ui-progressbar-value.green
+{
+    background: -moz-linear-gradient(center top, #73C262, #1F3709) repeat
+        scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#1F3709),
+        to(#73C262) ) #DDDDDD;
+}
+body.lg div#refine-tabs-typing div.linking-results div.result div.ui-progressbar div.ui-progressbar-value.red
+{
+    background: -moz-linear-gradient(center top, #C26262, #370909) repeat
+        scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#370909),
+        to(#C26262) ) #DDDDDD;
+}
+body.lg div#refine-tabs-typing div.linking-results div.result div.ui-progressbar div.ui-progressbar-value.yellow
+{
+    background: -moz-linear-gradient(center top, #EDF570, #BBB630) repeat
+        scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#BBB630),
+        to(#EDF570) ) #DDDDDD;
+}
+body.lg div#refine-tabs-typing div.linking-results div.result span.col
+{
+    background: none repeat scroll 0 0 #F2F5FF;
+    display: block;
+    float: left;
+    padding: 4px 0 4px 3px;
+    width: 98%;
+}
+body.lg div#refine-tabs-typing div.linking-results div.result span.colOptions input
+{
+    background-color: #FFFFE8;
+    background-image: none;
+    font-size: 14px;
+    margin-top: 0;
+    width: 96%;
+}
+body.lg div#refine-tabs-typing div.linking-results div.result span.colOptions input.dontknow
+{
+    background-color: #F5F5F5;
+    background-image: url("../images/idontknow.png");
+    background-position: 5px 3px;
+    background-repeat: no-repeat;
+    text-indent: 23px;
+}
+body.lg div#refine-tabs-typing div.linking-results div.result span.colOptions input.edited
+{
+    background-color: #FFFFFF;
+    background-image: none;
+}
+body.lg div#refine-tabs-typing div.linking-results div.result span.colOptions input.matched
+{
+    background-color: #E7F8E2;
+    background-image: url("../images/matched.png");
+    background-position: 5px 3px;
+    background-repeat: no-repeat;
+    text-indent: 23px;
+}
+body.lg div#refine-tabs-typing div.linking-results h3
+{
+    margin-bottom: 5px;
+    margin-top: 5px;
+    padding: 0;
+}
+body.lg div#refine-tabs-typing div.reconcile-panel p.loading
+{
+    text-align: center;
+}
+body.lg div#refine-tabs-typing div.selector
+{
+    background-color: #DAF4DA;
+    border: 1px solid #A2CFA4;
+    clear: both;
+    margin: 5px 0 10px;
+    padding: 5px;
+}
+body.lg div#refine-tabs-typing div.selector p
+{
+    padding-bottom: 10px;
+    text-align: left;
+}
+body.lg div#refine-tabs-typing div.suggest-links a.clearButton
+{
+    display: none;
+}
+body.lg div#refine-tabs-typing div.suggest-links ul
+{
+    border: medium none;
+    margin-bottom: 0 !important;
+}
+body.lg div#refine-tabs-typing div.suggest-links ul li.none
+{
+    background: none repeat scroll 0 0 white;
+    border: 1px solid #DDDDDD;
+    font-weight: bold;
+    list-style: none outside none;
+    margin: 1px 0;
+    padding-bottom: 3px;
+    padding-left: 7px;
+    padding-top: 3px;
+}
+body.lg div#refine-tabs-typing div.suggest-links ul.confirmed-columns li
+{
+    display: none;
+}
+body.lg div#refine-tabs-typing div.suggest-links ul.selected-columns li span.col
+{
+    border-right: 1px solid #DDDDDD;
+    padding: 1% 3% 1% 2%;
+    width: 86%;
+}
+body.lg div#refine-tabs-typing div.suggest-links ul.selected-columns li span.link
+{
+    background: url("../images/link.png"),
+        -webkit-gradient(linear, left bottom, left top, from(#DDDDDD),
+        to(#FFFFFF) ) #DDDDDD;
+    background-image: url("../images/link.png"),
+        -moz-linear-gradient(center top, #FFFFFF, #DDDDDD);
+    background-repeat: no-repeat;
+    border-right: 1px solid #DDDDDD;
+    border-top: 1px solid #DDDDDD;
+    float: left;
+    font-weight: normal;
+    padding: 1% 1% 1% 10%;
+    text-shadow: 1px 1px #FFFFFF;
+    width: 80%;
+}
+body.lg div#refine-tabs-typing div.suggest-links ul.selected-columns li span.remove
+{
+    margin-left: -5px;
     margin-top: 5px;
 }
-body.lg div#refine-tabs-typing ul.selected-columns li {
-	background: none repeat scroll 0 0 #FFFFFF;
-	border: 1px solid #DDDDDD;
-	color: #333333;
-	line-height: 17px;
-	list-style-type: none;
-	margin-bottom: 1px;
-	margin-top: 1px;
-	overflow: hidden;
-	padding-left: 0;
+body.lg div#refine-tabs-typing div.suggest-panel div.confirmed-links
+{
+    background-color: #F2F5FF !important;
+    border: 1px solid #BBCCFF !important;
+    display: none;
 }
-body.lg div#refine-tabs-typing ul.confirmed-columns li, body.lg div#refine-tabs-typing ul.existing-columns li {
+body.lg div#refine-tabs-typing div.suggest-panel div.confirmed-links a.button
+{
+    float: right;
+    margin-bottom: 5px;
+    margin-right: 10px;
+    margin-top: 15px;
+}
+body.lg div#refine-tabs-typing div.suggest-panel div.confirmed-links p
+{
+    display: inline-block;
+    float: none;
+    padding: 5px;
+    width: 72%;
+}
+body.lg div#refine-tabs-typing label
+{
+    padding-left: 5px;
+}
+body.lg div#refine-tabs-typing p.label
+{
+    padding: 5px;
+}
+body.lg div#refine-tabs-typing span.note
+{
+    background: none repeat scroll 0 0 #FFFFD2;
+    border: 1px solid #CFCE7D;
+    border-radius: 5px 5px 5px 5px;
+    box-shadow: 0 0 10px #7D7D7D;
+    color: #000000;
+    display: none;
+    font-size: 12px;
+    left: 315px;
+    line-height: 1.3;
+    margin: 5px 0;
+    padding: 15px 20px;
+    position: fixed;
+    text-align: left;
+    top: 45%;
+    width: 250px;
+    z-index: 9999;
+}
+body.lg div#refine-tabs-typing ul.confirmed-columns li span.col,body.lg div#refine-tabs-typing ul.existing-columns li span.col
+{
+    display: block;
+    float: left;
+    font-weight: bold;
+    padding: 2px 5px;
+    text-shadow: 1px 1px #FFFFFF;
+    width: 98%;
+}
+body.lg div#refine-tabs-typing ul.confirmed-columns li,body.lg div#refine-tabs-typing ul.existing-columns li
+{
     background-origin: padding-box, padding-box;
     background-position: left center;
     background-repeat: no-repeat;
@@ -1238,127 +887,55 @@ body.lg div#refine-tabs-typing ul.confirmed-columns li, body.lg div#refine-tabs-
     overflow: hidden;
     padding: 0 5px 0 0;
 }
-body.lg div#refine-tabs-typing ul.selected-columns li span.col {
-	background: none repeat scroll 0 0 #FFFFFF;
-	display: block;
-	float: left;
-	font-weight: bold;
-	padding: 2px 22px 2px 6px;
-	width: 89%;
+body.lg div#refine-tabs-typing ul.confirmed-columns,body.lg div#refine-tabs-typing ul.existing-columns
+{
+    background: none repeat scroll 0 0 #FFFFFF;
+    color: #333333;
+    line-height: 17px;
+    list-style-type: none;
+    margin-bottom: 2px;
+    margin-top: 0px;
+    overflow: hidden;
+    padding-left: 1px;
+    padding-right: 1px;
 }
-body.lg div#refine-tabs-typing ul.confirmed-columns li span.col, body.lg div#refine-tabs-typing ul.existing-columns li span.col {
+body.lg div#refine-tabs-typing ul.selected-columns
+{
+    background: none repeat scroll 0 0 #FFFFFF;
+    border: 1px solid #DDDDDD;
+    color: #333333;
+    display: none;
+    line-height: 17px;
+    list-style-type: none;
+    margin-bottom: 2px;
+    margin-top: 5px;
+    overflow: hidden;
+    padding-left: 1px;
+    padding-right: 1px;
+}
+body.lg div#refine-tabs-typing ul.selected-columns li
+{
+    background: none repeat scroll 0 0 #FFFFFF;
+    border: 1px solid #DDDDDD;
+    color: #333333;
+    line-height: 17px;
+    list-style-type: none;
+    margin-bottom: 1px;
+    margin-top: 1px;
+    overflow: hidden;
+    padding-left: 0;
+}
+body.lg div#refine-tabs-typing ul.selected-columns li span.col
+{
+    background: none repeat scroll 0 0 #FFFFFF;
     display: block;
     float: left;
     font-weight: bold;
-    padding: 2px 5px;
-    text-shadow: 1px 1px #FFFFFF;
-    width: 98%;
+    padding: 2px 22px 2px 6px;
+    width: 89%;
 }
-body.lg div#refine-tabs-typing div.suggest-panel div.confirmed-links {
-	background-color:#F2F5FF !important;
-	border:1px solid #BBCCFF !important;
-	display:none;
-}
-body.lg div#refine-tabs-typing div.suggest-panel div.confirmed-links p {
-    display: inline-block;
-    float: none;
-    padding: 5px;
-    width: 72%;
-}
-body.lg div#refine-tabs-typing div.suggest-panel div.confirmed-links a.button {
-    float: right;
-    margin-bottom: 5px;
-    margin-right: 10px;
-    margin-top: 15px;
-}
-body.lg div#refine-tabs-typing div.suggest-links a.clearButton {
-    display:none;
-}
-body.lg div#refine-tabs-typing div.suggest-links ul {
-    border: medium none;
-    margin-bottom: 0 !important;
-}
-body.lg div#refine-tabs-typing div.suggest-links ul.selected-columns li span.col {
-    border-right: 1px solid #DDDDDD;
-    padding: 1% 3% 1% 2%;
-    width: 86%;
-}
-body.lg div#refine-tabs-typing div.suggest-links ul.selected-columns li span.link {
-    background-image: url("../images/link.png"), -moz-linear-gradient(center top , #FFFFFF, #DDDDDD);
-    background: url("../images/link.png"), -webkit-gradient(linear, left bottom, left top, from(#DDDDDD), to(#FFFFFF) ) #DDDDDD;
-    background-repeat: no-repeat;
-    border-right: 1px solid #DDDDDD;
-    border-top: 1px solid #DDDDDD;
-    float: left;
-    font-weight: normal;
-    padding: 1% 1% 1% 10%;
-    text-shadow: 1px 1px #FFFFFF;
-    width: 80%;
-}
-body.lg div#refine-tabs-typing div.suggest-links ul.confirmed-columns li {
-	display:none;
-}
-body.lg div#refine-tabs-typing div.confirmed-links ul.confirmed-columns li span.link,
-body.lg div#refine-tabs-typing div.suggest-links ul.existing-columns li span.link {
-    background-image: url("../images/link.png"), -moz-linear-gradient(center top , #FFFFFF, #DDDDDD);
-    background: url("../images/link.png"), -webkit-gradient(linear, left bottom, left top, from(#DDDDDD), to(#FFFFFF) ) #DDDDDD;
-    background-repeat: no-repeat;
-    border-top: 1px solid #DDDDDD;
-    float: left;
-    font-weight: normal;
-    line-height: 20px;
-    padding: 1px 5px 1px 25px;
-    text-shadow: 1px 1px #FFFFFF;
-    width: 90%;
-}
-body.lg div#refine-tabs-typing div.suggest-links ul li.none {
-    background: none repeat scroll 0 0 white;
-    border: 1px solid #DDDDDD;
-    font-weight: bold;
-    list-style: none outside none;
-    margin: 1px 0;
-    padding-bottom: 3px;
-    padding-left: 7px;
-    padding-top: 3px;
-}  
-body.lg div#refine-tabs-typing ul.selected-columns li span.remove, 
-body.lg div#refine-tabs-typing ul.confirmed-columns li span.remove,
-body.lg div#refine-tabs-typing ul.existing-columns li span.remove {
-	background-image: url("../images/delete-hover.png");
-	background-position: -16px 0;
-	background-repeat: no-repeat;
-	border-radius: 3px 3px 3px 3px;
-	color: #773030;
-	cursor: pointer;
-	float: right;
-	font-family: Arial;
-	font-size: 9px;
-	height: 16px;
-	line-height: 13px;
-	margin-left: -20px;
-	margin-right: 3px;
-	margin-top: 3px;
-	padding: 0;
-	position: relative;
-	text-align: center;
-	text-indent: 9999px;
-	width: 16px;
-}
-body.lg div#refine-tabs-typing div.manual-links ul.selected-columns li span.col {
-	width: 72%;
-}
-body.lg div#refine-tabs-typing div.manual-links ul.selected-columns li span.remove {
-    margin-left: 0;
-    margin-top: 4px;
-}
-body.lg div#refine-tabs-typing div.manual-links ul.selected-columns li span.confirm {
-    margin-top: 4px;
-}
-body.lg div#refine-tabs-typing div.suggest-links ul.selected-columns li span.remove {
-    margin-left: -5px;
-    margin-top: 5px;
-}
-body.lg div#refine-tabs-typing ul.selected-columns li span.confirm {
+body.lg div#refine-tabs-typing ul.selected-columns li span.confirm
+{
     background-image: url("../images/confirm-hover.png");
     background-position: -16px 0;
     background-repeat: no-repeat;
@@ -1378,456 +955,43 @@ body.lg div#refine-tabs-typing ul.selected-columns li span.confirm {
     text-indent: 9999px;
     width: 16px;
 }
-body.lg div#refine-tabs-typing div#linking-panel div.list-of-services a {
-    cursor: pointer;
-    display: block;
-    margin-bottom: 5px;
-    margin-top: 5px;
-    padding-left: 5px;
-}
-body.lg div#refine-tabs-typing div#linking-panel div.list-of-services ul {
-    list-style-type: square;
-    padding-left: 10px;
-    padding-right: 5px;
-    display:none;
-}
-body.lg div#refine-tabs-typing div#linking-panel div.list-of-services ul li {
-    padding-bottom: 3px;
-    padding-top: 3px;
-}
-body.lg div#refine-tabs-typing ul.selected-columns li span.remove:hover, body.lg div#refine-tabs-typing ul.existing-columns li span.remove:hover {
-	background-position: 0 0;
-}
-body.lg div#refine-tabs-typing ul.selected-columns li span.confirm:hover {
+body.lg div#refine-tabs-typing ul.selected-columns li span.confirm:hover
+{
     background-position: 0 0;
 }
-body.lg div.wizard-body ul.selected-columns li.skip {
-	display: none;
-}
-
-body.lg div.wizard-body ul.selected-columns li span.colOptions select,
-body.lg div.suggest-panel ul li span.colOptions select {
-    font-size: 12px;
-    height: 22px;
-	margin: 3px 0 2px 5px;
-	padding: 0;
-	width: 96%;
-}
-
-body.lg div.wizard-body ul.selected-columns li span.colOptions select.duration {
-	width: auto;
-}
-
-body.lg div.wizard-body ul.selected-columns li span.colOptions {
-	background-color: #F9F9F9;
-	border-top: 1px solid #EDEDED;
-	display: block;
-	float: none;
-	font-size: 11px;
-	margin-left: 0;
-	margin-top: 0;
-	padding-left: 0;
-	padding-right: 0;
-}
-
-body.lg div.wizard-body ul.selected-columns li span.colOptions input {
-	margin-left: 5px;
-}
-
-body.lg div.wizard-body ul.selected-columns li span.colOptions span {
-	padding-left: 3px;
-}
-
-body.lg ul.selected-columns li span.colOptions input.textbox {
-	margin-bottom: 0px;
-	margin-top: 5px;
-	width: 92%;
-	font-size: 14px;
-	background-color: #FFFFCC;
-}
-/* Recon Results */
-body.lg div#refine-tabs-typing div#linking-panel div.suggest-panel div.suggest-links {
-    margin: 5px 0 1px;
-    display: block;
-    margin: 5px 0 1px;
-}
-body.lg div#refine-tabs-typing div.reconcile-panel {
-	display:none;
-}
-body.lg div#refine-tabs-typing div.reconcile-panel p.loading {
-    text-align: center;
-}
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-loading div.progressDiv {
-    background-color: #F2F5FF !important;
-    border: 1px solid #BBCCFF !important;
-    margin-top: 10px;
-}
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-loading div.progressDiv p {
-    padding: 5px;           
-}
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-loading div.progressDiv p.columnName {
-    background-color: #FFFFFF;
-    background-image: url("/images/small-spinner.gif");
-    background-position: 98% center;
+body.lg div#refine-tabs-typing ul.selected-columns li span.remove,body.lg div#refine-tabs-typing ul.confirmed-columns li span.remove,body.lg div#refine-tabs-typing ul.existing-columns li span.remove
+{
+    background-image: url("../images/delete-hover.png");
+    background-position: -16px 0;
     background-repeat: no-repeat;
-    border: 1px solid #DDDDDD;
-    display: block;
-    font-weight: bold;
-    margin: 1px;
-    padding: 5px;
-    text-shadow: 1px 1px #FFFFFF;
-}
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-loading div.progressDiv p.service {
-    background-image: url("../images/link.png"), -moz-linear-gradient(center top , #FFFFFF, #DDDDDD);
-    background: url("../images/link.png"), -webkit-gradient(linear, left bottom, left top, from(#DDDDDD), to(#FFFFFF) ) #DDDDDD;
-    background-repeat: no-repeat;
-    border: 1px solid #DDDDDD;
-    font-weight: normal;
-    line-height: 20px;
-    margin: 1px;
-    padding: 1px 5px 1px 25px;
-    text-shadow: 1px 1px #FFFFFF;
-}
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-loading div.progressDiv div.recon-bar {
-    border: 1px solid #DDDDDD;
-    height: 10px;
-    margin: 0;
-    padding: 5px;       
-}
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-loading div.progressDiv div.recon-bar div.ui-progressbar-value {
-    margin:0;
-    background: -moz-linear-gradient(center top , #79B1FE, #294F8C) repeat scroll 0 0 transparent;
-    background: -webkit-gradient(linear, left bottom, left top, from(#294F8C), to(#79B1FE) ) #DDDDDD;
-    width:0%;
-}
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-loading div.progressDiv div.recon-bar div.ui-progressbar-value.complete {
-    background: -moz-linear-gradient(center top , #73C262, #1F3709) repeat scroll 0 0 transparent;
-    background: -webkit-gradient(linear, left bottom, left top, from(#1F3709), to(#73C262) ) #DDDDDD;
-}
-body.lg #suggest-pane {
-    background: none repeat scroll 0 0 #FFFFFF;
-    border: 1px solid #CCCCCC;
-    box-shadow: 5px 5px 5px #D3D3D3;
-    display:none;
-    font-size: 12px;
-    margin-top: 1px;
-    position: fixed;
-    width: 240px;
-}
-body.lg #suggest-pane div.searching {
-    background-color: #FFFFFF;
-    background-image: url("../images/column_selecting.gif");
-    background-position: 98% center;
-    background-repeat: no-repeat;
-    padding: 5px 5px 5px 2%;
-    text-align: left;
-}
-body.lg #suggest-pane div.options {
-    background: none repeat scroll 0 0 #E7EEFF;
-    border-bottom: 1px solid #CCCCCC;
-    float: left;
-    padding-bottom: 1px;
-    padding-top: 0;
-    text-align: center;
-    width: 240px;
-}
-body.lg #suggest-pane div.options span.text {
-    display: block;
-    float: left;
-    font-size: 11px;
-    font-weight: normal;
-    padding: 5px;
-    width: 140px;
-}
-body.lg #suggest-pane div.options p {
-	background: none repeat scroll 0 0 #FFFFFF;
-    font-weight: bold;
-    padding: 5px;
-    text-align: left;
-}
-body.lg #suggest-pane div.options a {
-    margin: 8px 3px;
-}
-body.lg #preview-pane {
-    background: none repeat scroll 0 0 #FFFFFF;
-    border: 1px solid #CCCCCC;
-    display:none;
-    font-size: 12px;
-    left: 275px;
-    padding: 0;
-    position: fixed;
-    width: 280px;
-}
-body.lg #preview-pane p.name {
-    background: none repeat scroll 0 0 #E8EEFF;
-    font-weight: bold;
-    padding: 5px;
-}
-body.lg #preview-pane p.id {
-    background: none repeat scroll 0 0 #FFFFE0;
-    font-size: 11px;
-    padding: 5px;
-}
-body.lg #preview-pane p.desc {
-    max-height: 100px;
-    overflow-y: auto;
-    padding: 5px;
-}
-    
-body.lg #suggest-pane ul.fbs-list {
-    background: none repeat scroll 0 0 #FFFFFF;
-    border: medium none;
-    font-family: Arial;
-    font-size: 12px;
-    max-height: 220px;
-    overflow-x: hidden;
-    overflow-y: auto;
-    padding-top: 0;
-    width: 240px;
-}
-body.lg #suggest-pane ul.fbs-list li.fbs-item {
-	border:none;
-    list-style-type: none;
-    margin: 1px;
-    padding: 2px 8px 1px 6px;
-    cursor:pointer;
-}
-body.lg #suggest-pane ul.fbs-list li.fbs-item:hover {
-    background: none repeat scroll 0 0 #E6EDFF;
-}
-body.lg #suggest-pane ul.fbs-list li.fbs-item .fbs-item-name:hover {
-
-}
-body.lg #suggest-pane ul.fbs-list li.fbs-item .fbs-item-name {
-    border:none;
-    background: transparent;
-    font-size: 12px;
-    line-height: 1.4em;
-}
-body.lg #suggest-pane ul.fbs-list li.fbs-item .fbs-item-name label {
-	font-size:12px;
-}
-
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results {
-    display:none;
-}
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results h3 {
-	margin-bottom: 5px;
-	margin-top: 5px;
-    padding:0;
-}
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.description {
-    background: none repeat scroll 0 0 white;
-    border: 1px solid #BBCCFF;
-    color: #444444;
-    margin-bottom: 10px;
-    padding: 0;
-    text-align: left;
-}
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.description p {
-    line-height: 1.3;
-    padding: 7px 15px;
-}
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.description p span {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 5px;
-    padding-bottom: 1%;
-    padding-left: 0;
-    padding-top: 1%;
-    width: 98%;
-}
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.description p span.matched, 
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.description p span.total, 
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.description p span.percentage {
-    display:inline;	
-    width:auto;
-}
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.description a.col-name {
-    background: none repeat scroll 0 0 #E3E9FF;
-    color: #000000;
+    border-radius: 3px 3px 3px 3px;
+    color: #773030;
     cursor: pointer;
-    display: block;
-    font-weight: bold;
-    padding: 2% 3%;
-    text-decoration: none;
+    float: right;
+    font-family: Arial;
+    font-size: 9px;
+    height: 16px;
+    line-height: 13px;
+    margin-left: -20px;
+    margin-right: 3px;
+    margin-top: 3px;
+    padding: 0;
+    position: relative;
+    text-align: center;
+    text-indent: 9999px;
+    width: 16px;
 }
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.description a.col-name:hover {
-	background: none repeat scroll 0 0 #CCDDFF;
+body.lg div#refine-tabs-typing ul.selected-columns li span.remove:hover,body.lg div#refine-tabs-typing ul.existing-columns li span.remove:hover
+{
+    background-position: 0 0;
 }
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.description p.notification {
-    background: none repeat scroll 0 0 #FFFFDC;
-}
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.description p.notification a {
-    display:inline-block;
-    margin-right:5px;
-}
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.description p.notification-buttons a.button {
-    margin-left: 15px;
-    margin-right: 5px;
-    margin-top: 10px;
-}
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result div.result-body, 
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result div.result-body.collapsed {
-	display:none;
-}
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result div.result-body.expanded {
-    display:block;
-}
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result div.result-body ul.selected-columns {
-    border: medium none;
-    padding: 10px;
-}
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result div.result-body ul.selected-columns li {
-    background: none repeat scroll 0 0 #FFFFFF;
-    border:none;
-    color: #333333;
-    line-height: 17px;
-    list-style-type: none;
-    margin-bottom: 10px;
-    margin-top: 1px;
-    overflow: hidden;
-    padding-left: 0;
-}   
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result span.col {
-    background: none repeat scroll 0 0 #FFFFFF;
-    display: block;
+body.lg div#wizard-panel div.questions
+{
     float: left;
-    font-weight: bold;
-    padding: 2px 0 3px;
-    width: 100%;
+    padding: 0 10px 5px;
 }
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result span.colOptions input {
-    background-color: #FFFFE8;
-    background-image:none;
-    font-size: 14px;
-    width: 96%;
-}
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result span.colOptions input.matched {
-    background-color: #E7F8E2;
-    background-image: url("../images/matched.png");
-    background-position: 5px 3px;
-    background-repeat: no-repeat;
-    text-indent: 23px;
-}
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result span.colOptions input.edited {
-    background-color: #FFFFFF;	
-    background-image:none;
-}
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result span.colOptions input.dontknow {
-    background-color: #F5F5F5; 
-    background-image: url("../images/idontknow.png");
-    background-position: 5px 3px;
-    background-repeat: no-repeat;
-    text-indent: 23px;
-}
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result div.result-body div.ui-progressbar {
-    border: 1px solid #DDDDDD;
-    height: 10px;
-    margin-bottom: 10px;
-    margin-left: 10px;
-    margin-right: 10px;
-    padding: 1px;
-}
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result div.ui-progressbar div.ui-progressbar-value {
-    margin:0;
-}
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result div.ui-progressbar div.ui-progressbar-value.green {
-    background: -moz-linear-gradient(center top , #73C262, #1F3709) repeat scroll 0 0 transparent;
-    background: -webkit-gradient(linear, left bottom, left top, from(#1F3709), to(#73C262) ) #DDDDDD;
-}
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result div.ui-progressbar div.ui-progressbar-value.yellow {
-    background: -moz-linear-gradient(center top , #EDF570, #BBB630) repeat scroll 0 0 transparent;
-    background: -webkit-gradient(linear, left bottom, left top, from(#BBB630), to(#EDF570) ) #DDDDDD;
-}
-body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result div.ui-progressbar div.ui-progressbar-value.red {
-    background:-moz-linear-gradient(center top , #C26262, #370909) repeat scroll 0 0 transparent;
-    background: -webkit-gradient(linear, left bottom, left top, from(#370909), to(#C26262) ) #DDDDDD;
-}
-body.lg p.suggestinput {
-	visibility:hidden;
-	display:none;
-}
-body.lg p.suggestinput input.suggestbox {
-    background: none repeat scroll 0 0 #FBFAC9;
-    border: 1px inset #898989;
-    width: 96%;
-}
-body.lg div.wizard-body ul.date-checkboxes li span.colOptions.mb4d,body.lg div.wizard-body ul.date-checkboxes li span.colOptions.day,body.lg div.wizard-body ul.date-checkboxes li span.colOptions.year,body.lg div.wizard-body ul.date-checkboxes li span.colOptions.unseparated
-	{ /*background-color: #FFFFCC;*/
-	display: none;
-}
-
-body.lg div.wizard-body ul.date-checkboxes li span.colOptions.day span,body.lg div.wizard-body ul.date-checkboxes li span.colOptions.year span
-	{
-	padding-left: 5px;
-}
-
-body.lg div.wizard-body ul.date-checkboxes li span.colOptions.year input
-	{
-	height: 10px;
-	margin-bottom: 2px;
-	margin-left: 6px;
-	margin-top: 2px;
-	width: 30px;
-}
-
-body.lg div.wizard-body ul.date-checkboxes li span.colOptions.day input
-	{
-	height: 10px;
-	margin-bottom: 2px;
-	margin-left: 6px;
-	margin-top: 2px;
-	width: 60px;
-}
-
-body.lg div.wizard-body ul.date-checkboxes li span.colOptions.duration {
-	display: none;
-}
-
-body.lg div.wizard-body ul.date-checkboxes li span.colOptions div.duration-input
-	{
-	display: none;
-	padding-bottom: 2px;
-}
-
-body.lg div.wizard-body ul.date-checkboxes li span.colOptions.unseparated
-	{
-	display: none;
-}
-
-body.lg div.wizard-body ul.date-checkboxes li span.colOptions div.unseparated-input
-	{
-	display: none;
-	padding-bottom: 2px;
-}
-
-body.lg div.wizard-body ul.date-checkboxes li span.colOptions div.unseparated-input select
-	{
-	font-size: 10px;
-	width: auto;
-}
-
-body.lg div.wizard-body ul.address-fragments li span.postcode {
-	display: none;
-}
-
-div.duration-input input.duration-value {
-	font-size: 12px;
-	height: 10px;
-	width: 30px;
-}
-
-body.lg div.wizard-body ul.date-checkboxes li span.dateFrags span {
-	padding-left: 1%;
-	padding-right: 1%;
-}
-
-body.lg div.wizard-body ul.date-checkboxes li span.dateFrags input {
-	margin-left: 5px;
-}
-
-body.lg div.action-bar {
+body.lg div.action-bar
+{
     background-color: #E3E9FF;
     border-top: 1px solid #BBCCFF;
     bottom: 0;
@@ -1839,289 +1003,1198 @@ body.lg div.action-bar {
     text-align: center;
     width: 300px;
 }
-body.lg div.action-bar div.action-buttons {
-    display:none;
-}
-body.lg div.action-bar div.action-buttons a.button {
-	font-size: 14px;
-	font-weight: bold;
-	margin-left: 0;
-	color: #FFFFFF;
-}
-body.lg div.action-bar a.button.finish {
+body.lg div.action-bar a.button.cancel
+{
+    color: #FFFFFF;
     font-size: 14px;
     font-weight: bold;
     margin-left: 0;
-    color: #FFFFFF;
-    display:none;
 }
-body.lg div.action-bar a.button.cancel {
-    font-size: 14px;
-    font-weight: bold;
-    margin-left: 0;
-    color: #FFFFFF;
-}
-body.lg div.action-bar a.button.save {
-    font-size: 14px;
-    font-weight: bold;
-    margin-left: 0;
-    color: #FFFFFF;
-}
-body.lg div.action-bar a.button.next {
-    font-size: 14px;
-    font-weight: bold;
-    margin-left: 0;
-    color: #FFFFFF;
-}
-body.lg div.action-bar a.button.link {
-    font-size: 14px;
-    font-weight: bold;
-    margin-left: 0;
-    color: #FFFFFF;
-}
-body.lg div.action-bar div.action-buttons a.button.undo {
-	background: -moz-linear-gradient(center top, #D68C8C, #742F2F) repeat
-		scroll 0 0 transparent;
-	background: -webkit-gradient(linear, left bottom, left top, from(#742F2F),
-		to(#D68C8C) ) #DDDDDD;
-	text-shadow: 1px 1px #5B1B1B;
-	display: none;
-}
-
-body.lg div.action-bar div.action-buttons a.button.preview {
-	background: -moz-linear-gradient(center top, #8FD68C, #32742F) repeat
-		scroll 0 0 transparent;
-	background: -webkit-gradient(linear, left bottom, left top, from(#742F2F),
-		to(#D68C8C) ) #DDDDDD;
-	text-shadow: 1px 1px #153E19;
-}
-body.lg div.action-bar div.action-buttons a.button.update, 
-body.lg div.action-bar a.button.finish, 
-body.lg div.action-bar a.button.save,
-body.lg div.action-bar a.button.link,
-body.lg div.action-bar a.button.next {
-    background: -moz-linear-gradient(center top, #79B1FE, #294F8C) repeat
-        scroll 0 0 transparent;
-    background: -webkit-gradient(linear, left bottom, left top, from(#294F8C),
-        to(#79B1FE) ) #DDDDDD;
-    text-shadow: 1px 1px #1E2E6A;
-}
-body.lg div.action-bar a.button.cancel {
+body.lg div.action-bar a.button.cancel
+{
     background: -moz-linear-gradient(center top, #D68C8C, #742F2F) repeat
         scroll 0 0 transparent;
     background: -webkit-gradient(linear, left bottom, left top, from(#742F2F),
         to(#D68C8C) ) #DDDDDD;
-    text-shadow: 1px 1px #5B1B1B;
     display: none;
+    text-shadow: 1px 1px #5B1B1B;
 }
-body.lg div.action-bar div.action-buttons a.button.undo:active {
-	background: -moz-linear-gradient(center top, #742F2F, #D68C8C) repeat
-		scroll 0 0 transparent;
-	background: -webkit-gradient(linear, left bottom, left top, from(#D68C8C),
-		to(#742F2F) ) #DDDDDD;
-	text-shadow: 1px 1px #5B1B1B;
-}
-body.lg div.action-bar div.action-buttons a.button.preview:active {
-	background: -moz-linear-gradient(center top, #32742F, #8FD68C) repeat
-		scroll 0 0 transparent;
-	background: -webkit-gradient(linear, left bottom, left top, from(#8FD68C),
-		to(#32742F) ) #DDDDDD;
-	text-shadow: 1px 1px #153E19;
-}
-
-body.lg div.action-bar div.action-buttons a.button.update:active, 
-body.lg div.action-bar a.button.finish:active, 
-body.lg div.action-bar a.button.save:active,
-body.lg div.action-bar a.button.link:active,
-body.lg div.action-bar a.button.next:active {
-    background: -moz-linear-gradient(center top, #294F8C, #79B1FE) repeat
-        scroll 0 0 transparent;
-    background: -webkit-gradient(linear, left bottom, left top, from(#79B1FE),
-        to(#294F8C) ) #DDDDDD;
-    text-shadow: 1px 1px #153E19;
-}
-body.lg div.action-bar a.button.cancel:active {
+body.lg div.action-bar a.button.cancel:active
+{
     background: -moz-linear-gradient(center top, #742F2F, #D68C8C) repeat
         scroll 0 0 transparent;
     background: -webkit-gradient(linear, left bottom, left top, from(#D68C8C),
         to(#742F2F) ) #DDDDDD;
     text-shadow: 1px 1px #5B1B1B;
 }
-body.lg div.wizard-body div.updateBG {
-	background: none repeat scroll 0 0 #BBCCFF;
-	margin: 0 -10px -10px;
-	padding: 5px 10px 5px 5px;
-	text-align: right;
+body.lg div.action-bar a.button.finish
+{
+    color: #FFFFFF;
+    display: none;
+    font-size: 14px;
+    font-weight: bold;
+    margin-left: 0;
 }
-
-body.lg div.wizard-body div.measurementSearch {
-	background-color: #FFFFC9;
-	border: 1px solid #E3E3E3;
-	padding: 10px;
+body.lg div.action-bar a.button.link
+{
+    color: #FFFFFF;
+    font-size: 14px;
+    font-weight: bold;
+    margin-left: 0;
 }
-
-body.lg div.wizard-body div.measurementSearch label {
-	display: block;
-	margin-bottom: 5px;
-	padding: 0;
+body.lg div.action-bar a.button.next
+{
+    color: #FFFFFF;
+    font-size: 14px;
+    font-weight: bold;
+    margin-left: 0;
 }
-
-body.lg div.wizard-body div.measurementSearch input#unitInputField {
-	width: 97%;
+body.lg div.action-bar a.button.returnButton
+{
+    background: -moz-linear-gradient(center top, #FFFFFF, #E7E7E7) repeat
+        scroll 0 0 transparent;
+    color: #333333;
+    display: none;
+    font-size: 14px;
+    font-weight: normal;
+    position: absolute;
+    right: 5px;
+    text-align: center;
+    text-shadow: 1px 1px #FFFFFF;
 }
-
-body.lg div.wizard-body div.nullValueInput {
-	background-color: #FFFFC9;
-	border: 1px solid #E3E3E3;
-	border-radius: 5px 5px 5px 5px;
-	padding: 15px;
+body.lg div.action-bar a.button.returnButton:active
+{
+    background: -moz-linear-gradient(center top, #E7E7E7, #FFFFFF) repeat
+        scroll 0 0 transparent;
 }
-
-body.lg div.wizard-body div.nullValueInput label {
-	display: block;
-	margin-bottom: 5px;
-	padding: 0;
+body.lg div.action-bar a.button.save
+{
+    color: #FFFFFF;
+    font-size: 14px;
+    font-weight: bold;
+    margin-left: 0;
 }
-
-body.lg div.wizard-body div.nullValueInput input#nullValueInputField {
-	width: 97%;
+body.lg div.action-bar div.action-buttons
+{
+    display: none;
 }
-
-body.lg table.data-table tr td.blankValueHighlight {
-	background-color: #FFFFAA;
+body.lg div.action-bar div.action-buttons a.button
+{
+    color: #FFFFFF;
+    font-size: 14px;
+    font-weight: bold;
+    margin-left: 0;
 }
-
-body.lg .fbs-pane {
-	width: 239px;
+body.lg div.action-bar div.action-buttons a.button.preview
+{
+    background: -moz-linear-gradient(center top, #8FD68C, #32742F) repeat
+        scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#742F2F),
+        to(#D68C8C) ) #DDDDDD;
+    text-shadow: 1px 1px #153E19;
 }
-
-body.lg div.rangeSelect div.range {
+body.lg div.action-bar div.action-buttons a.button.preview:active
+{
+    background: -moz-linear-gradient(center top, #32742F, #8FD68C) repeat
+        scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#8FD68C),
+        to(#32742F) ) #DDDDDD;
+    text-shadow: 1px 1px #153E19;
+}
+body.lg div.action-bar div.action-buttons a.button.undo
+{
+    background: -moz-linear-gradient(center top, #D68C8C, #742F2F) repeat
+        scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#742F2F),
+        to(#D68C8C) ) #DDDDDD;
+    display: none;
+    text-shadow: 1px 1px #5B1B1B;
+}
+body.lg div.action-bar div.action-buttons a.button.undo:active
+{
+    background: -moz-linear-gradient(center top, #742F2F, #D68C8C) repeat
+        scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#D68C8C),
+        to(#742F2F) ) #DDDDDD;
+    text-shadow: 1px 1px #5B1B1B;
+}
+body.lg div.action-bar div.action-buttons a.button.update,body.lg div.action-bar a.button.finish,body.lg div.action-bar a.button.save,body.lg div.action-bar a.button.link,body.lg div.action-bar a.button.next
+{
+    background: -moz-linear-gradient(center top, #79B1FE, #294F8C) repeat
+        scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#294F8C),
+        to(#79B1FE) ) #DDDDDD;
+    text-shadow: 1px 1px #1E2E6A;
+}
+body.lg div.action-bar div.action-buttons a.button.update:active,body.lg div.action-bar a.button.finish:active,body.lg div.action-bar a.button.save:active,body.lg div.action-bar a.button.link:active,body.lg div.action-bar a.button.next:active
+{
+    background: -moz-linear-gradient(center top, #294F8C, #79B1FE) repeat
+        scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#79B1FE),
+        to(#294F8C) ) #DDDDDD;
+    text-shadow: 1px 1px #153E19;
+}
+body.lg div.column-header-recon-stats-bar
+{
+    display: none;
+}
+body.lg div.data-table-recon-candidates
+{
+    display: none;
+}
+body.lg div.data-table-recon-extra
+{
+    display: none;
+}
+body.lg div.labelling-panel
+{
+}
+body.lg div.labelling-panel div.column-list
+{
+    margin-left: 7px;
+    margin-right: 7px;
+    margin-top: 10px;
+    padding: 0;
+}
+body.lg div.labelling-panel div.column-list ul
+{
+    list-style-type: none;
+    margin: 0;
+}
+body.lg div.labelling-panel div.column-list ul li
+{
+    margin-bottom: 15px;
+}
+body.lg div.labelling-panel div.column-list ul li input.column-label
+{
+    background-position: 5px 3px;
+    background-repeat: no-repeat;
+    border-bottom: 1px solid #D6D6D6;
+    border-left: 1px solid #8F8F8F;
+    border-right: 1px solid #D6D6D6;
+    border-top: 1px solid #8F8F8F;
+    margin: 0;
+    padding: 4px 3px 4px 25px;
+    width: 87%;
+}
+body.lg div.labelling-panel div.column-list ul li input.column-label:hover
+{
+    color: #0059D5;
+}
+body.lg div.labelling-panel div.column-list ul li textarea
+{
+    border-bottom: 1px solid #D6D6D6;
+    border-left: 1px solid #8F8F8F;
+    border-right: 1px solid #D6D6D6;
+    border-top: 1px solid #8F8F8F;
+    color: #999999;
+    display: none;
+    font-style: italic;
+    height: 32px;
+    margin: 3px 0 0;
+    padding: 3px;
+    width: 96% !important;
+}
+body.lg div.labelling-panel div.column-list ul li.bad input,body.lg div.labelling-panel div.row-description.bad input
+{
+    background-color: #FFEDED;
+    background-image: url(../images/error.png);
+}
+body.lg div.labelling-panel div.column-list ul li.good input,body.lg div.labelling-panel div.row-description.good input
+{
+    background-color: #FCFEEB;
+    background-image: url(../images/good.png);
+}
+body.lg div.labelling-panel div.column-list ul li.great input,body.lg div.labelling-panel div.row-description.great input
+{
+    background-color: #EFFFEA;
+    background-image: url(../images/great.png);
+}
+body.lg div.labelling-panel div.column-list ul li.maybe input,body.lg div.labelling-panel div.row-description.maybe input
+{
+    background-image: url(../images/unknown.png);
+}
+body.lg div.labelling-panel div.row-description
+{
+    margin: 5px 7px 15px;
+}
+body.lg div.labelling-panel div.row-description input
+{
+    background-position: 5px 3px;
+    background-repeat: no-repeat;
+    border-bottom: 1px solid #D6D6D6;
+    border-left: 1px solid #8F8F8F;
+    border-right: 1px solid #D6D6D6;
+    border-top: 1px solid #8F8F8F;
+    margin: 0;
+    padding: 4px 3px 4px 25px;
+    width: 87%;
+}
+body.lg div.labelling-panel div.row-description textarea
+{
+    border-bottom: 1px solid #D6D6D6;
+    border-left: 1px solid #8F8F8F;
+    border-right: 1px solid #D6D6D6;
+    border-top: 1px solid #8F8F8F;
+    color: #999999;
+    display: none;
+    font-style: italic;
+    height: 32px;
+    margin: 3px 0 0;
+    padding: 3px;
+    width: 96% !important;
+}
+body.lg div.labelling-panel h3
+{
+    margin-bottom: 0px;
+    margin-left: 0;
+    padding-bottom: 5px;
+}
+body.lg div.labelling-panel ul.key
+{
+    list-style-type: none;
+    margin-bottom: 10px;
+    margin-left: 18px;
+    margin-top: 0;
+}
+body.lg div.labelling-panel ul.key li
+{
+    margin-bottom: 5px;
+}
+body.lg div.labelling-panel,body.lg div#linking-panel
+{
+}
+body.lg div.next-button
+{
+    background: none repeat scroll 0 0 #BBCCFF;
+    border-top: 1px solid #CCCCCC;
+    bottom: 0;
+    padding: 4px 0;
+    position: absolute;
+    text-align: center;
+    width: 300px;
+}
+body.lg div.next-button a.button
+{
+    font-weight: bold;
+}
+body.lg div.quick-tool
+{
+    background: none repeat scroll 0 0 #FFFFFF;
+    border-color: #B5B5B5 #777777 #777777 #B5B5B5;
+    border-style: solid;
+    border-width: 1px;
+    font-size: 1.1em;
+    font-weight: normal;
+    margin-left: 0;
+    margin-top: 1px;
+    padding: 1px;
+    position: absolute;
+    width: 80px !important;
+    z-index: 9999;
+}
+body.lg div.quick-tool ul
+{
+    list-style-type: none;
+}
+body.lg div.quick-tool ul li
+{
+    cursor: pointer;
+    display: inline-block;
+    float: left;
+    margin: 1px;
+    padding: 5px;
+    width: 68px;
+}
+body.lg div.quick-tool ul li:hover
+{
+    background: none repeat scroll 0 0 #DBE8F8;
+}
+body.lg div.rangeSelect div.range
+{
     background-color: #FFFFFF;
     border: 1px solid #DDDDDD;
     margin-top: 5px;
     padding: 5px;
     text-align: left;
 }
-
-body.lg div.rangeSelect div.range span {
-	display: block;
-	font-size: 12px;
-	padding-bottom: 3px;
-	padding-left: 1px;
-	width: 35px;
+body.lg div.rangeSelect div.range select
+{
+    font-family: inherit;
+    margin-bottom: 5px;
+    width: 99%;
 }
-
-body.lg div.rangeSelect div.range select {
-	margin-bottom: 5px;
-	width: 99%;
-	font-family: inherit;
-}
-
-body.lg table.data-table tr td.mask {
-	opacity: 0.4;
-}
-/**** jQuery UI Selectable styles ****/
-body.lg .ui-selectable .ui-selecting {
-	background-color: #FFF;
-}
-
-body.lg .ui-selected,body.lg .ui-selectable .ui-selected {
-	/*background-color: #DAF4DA;*/
-	
-}
-
-body.lg table.data-header-table td.column-header.selected {
-	background-color: #DAF4DA;
-}
-
-body.lg .ui-selectable {
-	list-style-type: none;
-	margin: 0;
-	padding: 0;
-}
-
-body.lg table.ui-selectable td.column-header:hover {
-	/*background-color:#FFF;*/
-	
-}
-
-body.lg div.ui-datepicker {
-	background: none repeat scroll 0 0 #E3E9FF;
-	border: 1px solid #CCCCCC;
-	box-shadow: 0 0 10px #999999;
-}
-
-body.lg div.ui-datepicker .ui-widget-header {
-	background: none repeat scroll 0 0 #BBCCFF;
-	border: 1px solid #FFFFFF;
-	color: #333333;
-}
-
-body.lg div.ui-datepicker .ui-state-default,.ui-widget-content .ui-state-default
-	{
-	background: none repeat scroll 0 0 #FFFFFF;
-	border: 1px solid #CCCCCC;
-	color: #333333;
-	font-weight: bold;
-}
-
-body.lg div.ui-datepicker .ui-state-hover {
-	background: none repeat scroll 0 0 #FEFFE8;
-	border: 1px solid #CCCCCC;
-	color: #333333;
-	font-weight: bold;
-}
-
-body.lg div.labelling-panel, body.lg div#linking-panel {
-	
-}
-
-/* Dark skin */
-#project-title {
-	font-size: 1.6em;
-	height: 40px;
-	left: 0;
-	padding: 0 0 0;
-}
-
-/* Recon css */
-body.lg div.column-header-recon-stats-bar {
-	display:none;
-}
-body.lg a.data-table-recon-action {
-	display:none;
-}
-body.lg div.data-table-recon-candidates {
-	display:none;
-}
-body.lg div.data-table-recon-extra {
-	display:none;
-}
-
-
-/* Flyout pane */
-body.lg .fbs-pane, .fbs-flyout-pane {
-    padding: 0px;
-}
-body.lg .fbs-flyout-pane .rdf-flyout-content div.resource_preview_description {
-    font-family: Arial;
+body.lg div.rangeSelect div.range span
+{
+    display: block;
     font-size: 12px;
-    height: 100px;
+    padding-bottom: 3px;
+    padding-left: 1px;
+    width: 35px;
+}
+body.lg div.selector a.clearButton
+{
+    display: none;
+    margin-left: 2px;
+}
+body.lg div.selector a.selectColumn
+{
+    text-align: center;
+    width: 80px;
+}
+body.lg div.selector a.selecting
+{
+    background: -moz-linear-gradient(center top, #E3E3E3, #F9F9F9) repeat
+        scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#F9F9F9),
+        to(#E3E3E3) ) #DDDDDD;
+}
+body.lg div.selector span.column-selecting-icon
+{
+    display: inline;
+    margin-left: 5px;
+    margin-top: 0;
+    padding: 2px;
+    position: absolute;
+}
+body.lg div.split a.info
+{
+}
+body.lg div.typing-panel-body
+{
+    bottom: 35px;
+    display: none;
+    height: auto !important;
     overflow-y: auto;
-    padding: 5px;
+    padding: 7px;
+    position: absolute;
+    top: 60px;
+    width: 286px;
 }
-body.lg .fbs-flyout-pane .rdf-flyout-content div.rdf-header {
+body.lg div.typing-panel-body p.loader
+{
+    margin-top: 75%;
+    text-align: center;
+}
+body.lg div.ui-datepicker
+{
+    background: none repeat scroll 0 0 #E3E9FF;
+    border: 1px solid #CCCCCC;
+    box-shadow: 0 0 10px #999999;
+}
+body.lg div.ui-datepicker .ui-state-default,.ui-widget-content .ui-state-default
+{
+    background: none repeat scroll 0 0 #FFFFFF;
+    border: 1px solid #CCCCCC;
+    color: #333333;
+    font-weight: bold;
+}
+body.lg div.ui-datepicker .ui-state-hover
+{
+    background: none repeat scroll 0 0 #FEFFE8;
+    border: 1px solid #CCCCCC;
+    color: #333333;
+    font-weight: bold;
+}
+body.lg div.ui-datepicker .ui-widget-header
+{
     background: none repeat scroll 0 0 #BBCCFF;
-    font-family: Arial;
-    font-size: 12px;
-    font-weight: bold;
-    padding: 5px;
-    margin:0px;
+    border: 1px solid #FFFFFF;
+    color: #333333;
 }
-body.lg .fbs-flyout-pane .rdf-flyout-content h2 {
-    background: none repeat scroll 0 0 #DDDDDD;
-    font-family: Arial;
-    font-size: 12px;
-    font-weight: bold;
+body.lg div.wizard-bodies
+{
+    display: none;
+    padding: 0;
+}
+body.lg div.wizard-body
+{
+    display: none;
     padding: 5px;
+}
+body.lg div.wizard-body div.measurementSearch
+{
+    background-color: #FFFFC9;
+    border: 1px solid #E3E3E3;
+    padding: 10px;
+}
+body.lg div.wizard-body div.measurementSearch input#unitInputField
+{
+    width: 97%;
+}
+body.lg div.wizard-body div.measurementSearch label
+{
+    display: block;
+    margin-bottom: 5px;
+    padding: 0;
+}
+body.lg div.wizard-body div.nullValueInput
+{
+    background-color: #FFFFC9;
+    border: 1px solid #E3E3E3;
+    border-radius: 5px 5px 5px 5px;
+    padding: 15px;
+}
+body.lg div.wizard-body div.nullValueInput input#nullValueInputField
+{
+    width: 97%;
+}
+body.lg div.wizard-body div.nullValueInput label
+{
+    display: block;
+    margin-bottom: 5px;
+    padding: 0;
+}
+body.lg div.wizard-body div.preview
+{
+    background-color: #FBECD8;
+    border: 1px solid #EFCFAA;
+    border-radius: 5px 5px 5px 5px;
+    clear: both;
+    margin: 5px 0 10px;
+    padding: 5px;
+}
+body.lg div.wizard-body div.preview a.button
+{
+}
+body.lg div.wizard-body div.preview ul
+{
+    list-style-type: none;
+}
+body.lg div.wizard-body div.preview ul.cell-previews
+{
+    background: none repeat scroll 0 0 #FFFFFF;
+    border: 1px solid #DDDDDD;
+    display: none;
+    margin-top: 5px;
+    padding-bottom: 1px;
+    padding-left: 1px;
+    padding-right: 1px;
+}
+body.lg div.wizard-body div.preview ul.cell-previews li
+{
+    border: 1px solid #DDDDDD;
+    margin-top: 1px;
+}
+body.lg div.wizard-body div.preview ul.cell-previews li span
+{
+    display: inline-block;
+    font-weight: bold;
+    padding-bottom: 0px;
+    padding-left: 6px;
+    padding-top: 2px;
+}
+body.lg div.wizard-body div.preview ul.cell-previews ul.values
+{
+    background: #FFFFFF;
+}
+body.lg div.wizard-body div.preview ul.cell-previews ul.values li
+{
+    border-color: #EEEEEE -moz-use-text-color -moz-use-text-color;
+    border-style: solid none none;
+    border-width: 1px medium medium;
+    color: #4266B3;
+    margin: 1px;
+    padding-bottom: 2px;
+    padding-left: 6px;
+    padding-top: 2px;
+    text-align: left;
+}
+body.lg div.wizard-body div.split
+{
+    background: none repeat scroll 0 0 #F9F9F9;
+    border: 1px solid #DDDDDD;
+    display: none;
+    margin-bottom: 10px;
+    margin-top: 5px;
+    padding: 5px 10px 10px;
+}
+body.lg div.wizard-body div.split input.splitCharacter
+{
+    background-color: #FFFFCC;
+    margin-top: 5px;
+    text-align: center;
+    width: 15px;
+}
+body.lg div.wizard-body div.split label
+{
+    float: left;
+    margin-bottom: 5px;
+    margin-top: 0px;
+    padding-left: 0;
+    width: 219px;
+}
+body.lg div.wizard-body div.unexpectedValues
+{
+}
+body.lg div.wizard-body div.unexpectedValues div.warning
+{
+    background: none repeat scroll 0 0 #EBEEF8;
+    border: 1px solid #BBCCFF;
+    color: #444444;
+    margin-bottom: 10px;
+    padding-bottom: 0;
+    padding-top: 5px;
+    text-align: left;
+}
+body.lg div.wizard-body div.unexpectedValues div.warning a.button
+{
+    color: #FFFFFF;
+    font-weight: bold;
+    margin: 0 4px;
+    padding: 2px 10px;
+}
+body.lg div.wizard-body div.unexpectedValues div.warning a.button.carryon
+{
+    background: -moz-linear-gradient(center top, #79B1FE, #294F8C) repeat
+        scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#294F8C),
+        to(#79B1FE) ) #DDDDDD;
+    text-shadow: 1px 1px #1E2E6A;
+}
+body.lg div.wizard-body div.unexpectedValues div.warning a.button.carryon:active
+{
+    background: -moz-linear-gradient(center top, #294F8C, #79B1FE) repeat
+        scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#79B1FE),
+        to(#294F8C) ) #DDDDDD;
+}
+body.lg div.wizard-body div.unexpectedValues div.warning a.button.done
+{
+    background: -moz-linear-gradient(center top, #79B1FE, #294F8C) repeat
+        scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#294F8C),
+        to(#79B1FE) ) #DDDDDD;
+    text-shadow: 1px 1px #1E2E6A;
+}
+body.lg div.wizard-body div.unexpectedValues div.warning a.button.done:active
+{
+    background: -moz-linear-gradient(center top, #294F8C, #79B1FE) repeat
+        scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#79B1FE),
+        to(#294F8C) ) #DDDDDD;
+}
+body.lg div.wizard-body div.unexpectedValues div.warning a.button.fix
+{
+    background: -moz-linear-gradient(center top, #A3D68C, #40742F) repeat
+        scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#40742F),
+        to(#A3D68C) ) #DDDDDD;
+    text-shadow: 1px 1px #153E19;
+}
+body.lg div.wizard-body div.unexpectedValues div.warning a.button.fix:active
+{
+    background: -moz-linear-gradient(center top, #40742F, #A3D68C) repeat
+        scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#A3D68C),
+        to(#40742F) ) #DDDDDD;
+}
+body.lg div.wizard-body div.unexpectedValues div.warning a.button.letmesee
+{
+    background: -moz-linear-gradient(center top, #A3D68C, #40742F) repeat
+        scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#40742F),
+        to(#A3D68C) ) #DDDDDD;
+    text-shadow: 1px 1px #153E19;
+}
+body.lg div.wizard-body div.unexpectedValues div.warning a.button.letmesee:active
+{
+    background: -moz-linear-gradient(center top, #40742F, #A3D68C) repeat
+        scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#A3D68C),
+        to(#40742F) ) #DDDDDD;
+}
+body.lg div.wizard-body div.unexpectedValues div.warning a.button.undo
+{
+    background: -moz-linear-gradient(center top, #D68C8C, #742F2F) repeat
+        scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#742F2F),
+        to(#D68C8C) ) #DDDDDD;
+    text-shadow: 1px 1px #5B1B1B;
+}
+body.lg div.wizard-body div.unexpectedValues div.warning a.button.undo:active
+{
+    background: -moz-linear-gradient(center top, #742F2F, #D68C8C) repeat
+        scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#D68C8C),
+        to(#742F2F) ) #DDDDDD;
+}
+body.lg div.wizard-body div.unexpectedValues div.warning div.buttons
+{
+    margin-bottom: 10px;
+    margin-top: 10px;
+    text-align: center;
+}
+body.lg div.wizard-body div.unexpectedValues div.warning p.details
+{
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 0;
+    margin-top: 10px;
+    text-align: left;
+}
+body.lg div.wizard-body div.unexpectedValues div.warning p.exampleValue span
+{
+    background-color: #E0F7DB;
+    border-radius: 3px 3px 3px 3px;
+    font-weight: bold;
+    padding: 1px 6px;
+}
+body.lg div.wizard-body div.unexpectedValues div.warning p.message
+{
+    background: none repeat scroll 0 0 #FFFFFF;
+    border: 1px solid #E8E7E7;
+    margin-top: 5px;
+}
+body.lg div.wizard-body div.unexpectedValues div.warning p.note
+{
+    background: none repeat scroll 0 0 #FDFFE4;
+    border: 1px solid #E8E7E7;
+    font-size: 12px;
+    margin-top: 5px;
+    padding: 7px 15px;
+    text-align: center;
+}
+body.lg div.wizard-body div.unexpectedValues div.warning p.rerun-tip
+{
+    background-color: #FBFED3;
+    border: 1px solid #DEE0BB;
+}
+body.lg div.wizard-body div.unexpectedValues div.warning p.title
+{
+    background: none repeat scroll 0 0 #FFDEDE;
+    border: 1px solid #E3C2C2;
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: 5px;
+    padding: 5px;
+    text-align: center;
+    text-transform: capitalize;
+    vertical-align: middle;
+}
+body.lg div.wizard-body div.unexpectedValues div.warning span.colName
+{
+    background: none repeat scroll 0 0 #FFDEDE;
+    border-radius: 3px 3px 3px 3px;
+    display: inline-block;
+    font-weight: bold;
+    padding: 1px 5px;
+}
+body.lg div.wizard-body div.unexpectedValues div.warning span.count
+{
+    background: none repeat scroll 0 0 #FFDEDE;
+    border-radius: 3px 3px 3px 3px;
+    font-weight: bold;
+    padding: 1px 6px;
+}
+body.lg div.wizard-body div.unexpectedValues div.warning span.valueType
+{
+    background: none repeat scroll 0 0 #FFDEDE;
+    border-radius: 3px 3px 3px 3px;
+    display: inline-block;
+    font-weight: bold;
+    padding: 1px 3px;
+}
+body.lg div.wizard-body div.unexpectedValues div.warning ul.unexpectedValueList
+{
+    background: none repeat scroll 0 0 #FFDEDE;
+    border: 1px solid #E3C2C2;
+    list-style-type: none;
+    margin: 5px 10px 10px;
+    padding: 5px;
+}
+body.lg div.wizard-body div.unexpectedValues div.warning ul.unexpectedValueList li
+{
+    margin-bottom: 2px;
+    margin-top: 2px;
+    padding: 0;
+}
+body.lg div.wizard-body div.unexpectedValues div.warning ul.unexpectedValueList li input.unexpectedValue
+{
+    padding: 3px;
+    width: 96%;
+}
+body.lg div.wizard-body div.unexpectedValues div.warning ul.unexpectedValueList li input.unexpectedValue:focus
+{
+    background: none repeat scroll 0 0 #FFFFD3;
+}
+body.lg div.wizard-body div.unexpectedValues div.warning ul.unexpectedValueList li input.unexpectedValue:hover
+{
+    color: #0059FB;
+}
+body.lg div.wizard-body div.unexpectedValues p
+{
+    line-height: 1.3;
+    margin-left: 10px;
+    margin-right: 10px;
+    padding: 7px 15px;
+}
+body.lg div.wizard-body div.updateBG
+{
+    background: none repeat scroll 0 0 #BBCCFF;
+    margin: 0 -10px -10px;
+    padding: 5px 10px 5px 5px;
+    text-align: right;
+}
+body.lg div.wizard-body h2
+{
+    border-bottom: 1px solid #DDDDDD;
+    line-height: 30px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    padding-left: 0;
+    padding-top: 0px;
+    text-align: left;
+}
+body.lg div.wizard-body ol.steps
+{
+    margin: 0 15px 5px 35px;
+    padding: 0;
+    text-align: left;
+}
+body.lg div.wizard-body ol.steps li
+{
+    color: #000000;
+    margin-bottom: 5px;
+    padding: 0;
+}
+body.lg div.wizard-body span.wizardIcon
+{
+    display: inline;
+    float: right;
+    padding-left: 10px;
+}
+body.lg div.wizard-body span.wizardIcon img
+{
+}
+body.lg div.wizard-body ul.address-fragments li span.postcode
+{
+    display: none;
+}
+body.lg div.wizard-body ul.checkboxes
+{
+    float: left;
+    list-style-type: none;
+    margin: 0 0 5px;
+    padding: 0;
+}
+body.lg div.wizard-body ul.checkboxes input
+{
+    margin: 0;
+}
+body.lg div.wizard-body ul.checkboxes li
+{
+    margin-bottom: 5px;
+}
+body.lg div.wizard-body ul.date-checkboxes li span.colOptions div.duration-input
+{
+    display: none;
+    padding-bottom: 2px;
+}
+body.lg div.wizard-body ul.date-checkboxes li span.colOptions div.unseparated-input
+{
+    display: none;
+    padding-bottom: 2px;
+}
+body.lg div.wizard-body ul.date-checkboxes li span.colOptions div.unseparated-input select
+{
+    font-size: 10px;
+    width: auto;
+}
+body.lg div.wizard-body ul.date-checkboxes li span.colOptions.day input
+{
+    height: 10px;
+    margin-bottom: 2px;
+    margin-left: 6px;
+    margin-top: 2px;
+    width: 60px;
+}
+body.lg div.wizard-body ul.date-checkboxes li span.colOptions.day span,body.lg div.wizard-body ul.date-checkboxes li span.colOptions.year span
+{
+    padding-left: 5px;
+}
+body.lg div.wizard-body ul.date-checkboxes li span.colOptions.duration
+{
+    display: none;
+}
+body.lg div.wizard-body ul.date-checkboxes li span.colOptions.mb4d,body.lg div.wizard-body ul.date-checkboxes li span.colOptions.day,body.lg div.wizard-body ul.date-checkboxes li span.colOptions.year,body.lg div.wizard-body ul.date-checkboxes li span.colOptions.unseparated
+{
+    display: none;
+}
+body.lg div.wizard-body ul.date-checkboxes li span.colOptions.unseparated
+{
+    display: none;
+}
+body.lg div.wizard-body ul.date-checkboxes li span.colOptions.year input
+{
+    height: 10px;
+    margin-bottom: 2px;
+    margin-left: 6px;
+    margin-top: 2px;
+    width: 30px;
+}
+body.lg div.wizard-body ul.date-checkboxes li span.dateFrags input
+{
+    margin-left: 5px;
+}
+body.lg div.wizard-body ul.date-checkboxes li span.dateFrags span
+{
+    padding-left: 1%;
+    padding-right: 1%;
+}
+body.lg div.wizard-body ul.selected-columns li span.colOptions
+{
+    background-color: #F9F9F9;
+    border-top: 1px solid #EDEDED;
+    display: block;
+    float: none;
+    font-size: 11px;
+    margin-left: 0;
+    margin-top: 0;
+    padding-left: 0;
+    padding-right: 0;
+}
+body.lg div.wizard-body ul.selected-columns li span.colOptions input
+{
+    margin-left: 5px;
+}
+body.lg div.wizard-body ul.selected-columns li span.colOptions select,body.lg div.suggest-panel ul li span.colOptions select
+{
+    font-size: 12px;
+    height: 22px;
+    margin: 3px 0 2px 5px;
+    padding: 0;
+    width: 96%;
+}
+body.lg div.wizard-body ul.selected-columns li span.colOptions select.duration
+{
+    width: auto;
+}
+body.lg div.wizard-body ul.selected-columns li span.colOptions span
+{
+    padding-left: 3px;
+}
+body.lg div.wizard-body ul.selected-columns li.skip
+{
+    display: none;
+}
+body.lg div.wizard-panel
+{
+    padding-left: 0;
+    padding-top: 5px;
+}
+body.lg div.wizardProgressMessage
+{
+    bottom: 0;
+    display: none;
+    left: 305px;
+    position: fixed;
+    right: 0;
+    text-align: center;
+    top: 92px;
+}
+body.lg div.wizardProgressMessage div.overlay
+{
+    background-color: #AAAAAA;
+    bottom: 0;
+    left: 0;
+    opacity: 0.8;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+body.lg div.wizardProgressMessage p
+{
+    background: none repeat scroll 0 0 #FFFFFF;
+    border-radius: 10px 10px 10px 10px;
+    display: block;
+    font-size: 2em;
+    margin: auto;
+    opacity: 1;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    position: relative;
+    text-align: center;
+    top: 40%;
+    width: 225px;
+}
+body.lg div.wizardProgressMessage p img
+{
+    display: block;
+    margin: 10px auto auto;
+}
+body.lg div.wizards-panel-body
+{
+    padding: 0;
+}
+body.lg p.suggestinput
+{
+    display: none;
+    visibility: hidden;
+}
+body.lg p.suggestinput input.suggestbox
+{
+    background: none repeat scroll 0 0 #FBFAC9;
+    border: 1px inset #898989;
+    width: 96%;
+}
+body.lg table.data-header-table td.column-header,body.lg table.data-table td.column-header
+{
+    height: 45px;
+    vertical-align: bottom;
+}
+body.lg table.data-header-table td.column-header.bad
+{
+    background-color: #FFEDED;
+}
+body.lg table.data-header-table td.column-header.good
+{
+    background-color: #FCFEEB;
+}
+body.lg table.data-header-table td.column-header.great
+{
+    background-color: #EFFFEA;
+}
+body.lg table.data-header-table td.column-header.maybe
+{
+}
+body.lg table.data-header-table td.column-header.selected
+{
+    background-color: #DAF4DA;
+}
+body.lg table.data-header-table td.column-header.typed
+{
+    background-image: url("../images/rdf-small.png");
+    background-position: center 5px;
+    background-repeat: no-repeat;
+}
+body.lg table.data-header-table tr td.skip
+{
+    background-color: #F4F4F4;
+    opacity: 0.3;
+}
+body.lg table.data-table tr td.blankValueHighlight
+{
+    background-color: #FFFFAA;
+}
+body.lg table.data-table tr td.mask
+{
+    opacity: 0.4;
+}
+body.lg table.ui-selectable td.column-header:hover
+{
+}
+body.lg ul.date-checkboxes li input.date-checkbox
+{
+    padding: 0;
+}
+body.lg ul.date-checkboxes li span
+{
+}
+body.lg ul.lg-tabs
+{
+    background: none repeat scroll 0 0 #FFFFFF;
+    height: 25px;
+    list-style-type: none;
+    margin: 6px 0;
+    padding: 0 0 0;
+    width: 300px;
+}
+body.lg ul.lg-tabs li
+{
+    background: url("../images/breadcrumb.png") no-repeat scroll -1px center
+        #F2F5FF;
+    border-bottom: 1px solid #BBCCFF;
+    border-top: 1px solid #BBCCFF;
+    float: left;
+    height: 24px;
+    line-height: 25px;
+    margin-left: 0;
+    margin-right: 0;
+    text-align: center;
+    width: 93px;
+}
+body.lg ul.lg-tabs li a,body.lg ul.lg-tabs li a:hover
+{
+    color: #333333;
+    font-weight: bold;
+    font-weight: normal;
+    text-decoration: none;
+}
+body.lg ul.lg-tabs li a:focus
+{
+    outline: none;
+}
+body.lg ul.lg-tabs li.active
+{
+    background-color: #FFFFFF;
+    background-image: url("../images/breadcrumb-active.png");
+    border-bottom: medium none;
+}
+body.lg ul.lg-tabs li.active a
+{
+    font-weight: bold;
+}
+body.lg ul.lg-tabs li.first
+{
+    background-image: none !important;
+    padding-left: 1px;
+}
+body.lg ul.lg-tabs li.inactive
+{
+    background-image: url("../images/breadcrumb-inactive.png");
+}
+body.lg ul.lg-tabs li.last
+{
+    padding-left: 10px;
+}
+body.lg ul.lg-tabs li.second
+{
+    padding-left: 10px;
+    padding-right: 0;
+}
+body.lg ul.selected-columns li span.colOptions input.textbox
+{
+    background-color: #FFFFCC;
+    font-size: 14px;
+    margin-bottom: 0px;
+    margin-top: 5px;
+    width: 92%;
+}
+body.wizard-progress div.dialog-frame,body.wizard-progress div.dialog-overlay
+{
+    display: none !important;
+}
+div#beta
+{
+    background: -moz-linear-gradient(90deg, #718AD3 0%, #99BAFF 100%) repeat
+        scroll 0 0 #FEFEFE;
+    background: -webkit-gradient(linear, left bottom, left top, from(#718AD3),
+        to(#99BAFF) ) #FEFEFE;
+    border-radius: 6px;
+    box-shadow: 0 0 1px rgba(0, 0, 0, 0.2) inset, 0 2px 0
+        rgba(255, 255, 255, 0.2) inset, 0 1px 4px rgba(0, 0, 0, 0.4);
+    color: white !important;
+    moz-border-radius: 6px;
+    moz-box-shadow: 0 0 1px rgba(0, 0, 0, 0.2) inset, 0 2px 0
+        rgba(255, 255, 255, 0.2) inset, 0 1px 4px rgba(0, 0, 0, 0.4);
+    moz-transform: translateX(85px) translateY(-30px) rotate(42deg);
+    moz-transform-origin: top left;
+    padding: 7px 40px 10px 40px;
+    position: fixed;
+    right: -28px;
+    text-align: center;
+    text-decoration: none;
+    text-transform: none;
+    top: -25px;
+    webkit-border-radius: 6px;
+    webkit-box-shadow: 0 0 1px rgba(0, 0, 0, 0.2) inset, 0 2px 0
+        rgba(255, 255, 255, 0.2) inset, 0 1px 4px rgba(0, 0, 0, 0.4);
+    webkit-font-smoothing: antialiased;
+    webkit-transform: translateX(85px) translateY(-30px) rotate(42deg);
+    webkit-transform-origin: top left;
+    webkit-transform-origin-x: 0%;
+    webkit-transform-origin-y: 0%;
+    width: 150px;
+    z-index: 100;
+}
+div#beta p
+{
+    font-family: Tahoma;
+    font-size: 20px;
+    font-weight: inherit;
+    line-height: 1;
+    margin: 0;
+    padding: 0;
+    text-shadow: -1px 1px 0 rgba(38, 48, 85, 0.75);
+    text-transform: uppercase;
+}
+div#feedback-form
+{
+    min-height: 0;
+    width: auto;
+}
+div#feedback-form .ui-state-error
+{
+    background: none repeat scroll 0 0 #FFE6E6;
+    border: 1px solid #EAC0C0;
+}
+div#feedback-form .validateTips
+{
+    background: none repeat scroll 0 0 #FFE6E6;
+    border: 1px solid #EAC0C0;
+    display: none;
+    padding: 10px;
+}
+div#feedback-form fieldset
+{
+    border: 0;
+    margin-top: 25px;
+    padding: 0;
+}
+div#feedback-form h1
+{
+    font-size: 1.2em;
+    margin: .6em 0;
+}
+div#feedback-form input
+{
+    display: block;
+    margin-bottom: 10px;
+}
+div#feedback-form input.text
+{
+    padding: 5px;
+    width: 96%;
+}
+div#feedback-form label
+{
+    display: block;
+    margin-bottom: 5px;
+}
+div#feedback-form textarea
+{
+    height: 95px;
+    padding: 5px;
+    width: 96%;
+}
+div.column-overlay
+{
+    background-color: transparent;
+    cursor: pointer;
+    display: block;
+    opacity: 0.5;
+    position: fixed;
+}
+div.column-overlay:active
+{
+    background-color: #FFFFFF;
+    opacity: 0.4;
+}
+div.column-overlay:hover
+{
+    background-color: #BBCCFF;
+    opacity: 0.4;
+}
+div.duration-input input.duration-value
+{
+    font-size: 12px;
+    height: 10px;
+    width: 30px;
+}
+div.finish-message h3
+{
+    padding-bottom: 20px;
+}
+div.finish-message p
+{
+    padding-bottom: 20px;
+}
+div.ui-dialog
+{
+    z-index: 9999 !important;
+}
+div.ui-widget-overlay
+{
+    z-index: 9998 !important;
 }
