@@ -533,6 +533,8 @@ LG.setUpColumnOverlays = function(selectedCallback, deselectedCallback){
 
 	// Start index at 1 because of the "All" header
 	var index = 0;
+	
+	ui.dataTableView.render();
 
 	$("table.data-header-table tbody tr td.column-header").each(function(){
 
@@ -560,24 +562,26 @@ LG.setUpColumnOverlays = function(selectedCallback, deselectedCallback){
 
 			$("div.data-table-container").append(div);
 			
-			var lastScrollLeft = 0;
-			$("div.data-table-container").scroll(function() {
-			    var scrollDifference = $("div.data-table-container").scrollLeft();
-			    if (lastScrollLeft != scrollDifference) {
-			    	lastScrollLeft = scrollDifference;
-			    	LG.repositionColumnOverlays(scrollDifference);
-			    }
-			});
-			
-			self.vars.columnOverlays[colName] = {
-					div : div,
-					colIndex : Refine.columnNameToColumnIndex(colName),
-					colName : colName
-			};
+			//self.vars.columnOverlays[colName] = {
+			//		div : div,
+			//		colIndex : Refine.columnNameToColumnIndex(colName),
+			//		colName : colName
+			//};
 		}
 		
 		index++;
 	});
+
+	var lastScrollLeft = 0;
+	$("div.data-table-container").unbind("scroll").bind("scroll",function() {
+	    var scrollDifference = $("div.data-table-container").scrollLeft();
+	    if (lastScrollLeft != scrollDifference) {
+	    	lastScrollLeft = scrollDifference;
+	    	LG.repositionColumnOverlays(scrollDifference);
+	    }
+	});
+	
+	LG.repositionColumnOverlays(0);
 };
 
 /*
@@ -588,7 +592,10 @@ LG.setUpColumnOverlays = function(selectedCallback, deselectedCallback){
  */
 LG.repositionColumnOverlays = function(difference){
 		
+	$("table.data-header-table").css("left",-difference+"px");
+
 	$("div.column-overlay").each(function(){
+		
 		$(this).css("left",$(this).data("leftPosition")-difference+"px");
 		if(parseInt($(this).css("left")) < 300){
 			$(this).hide();

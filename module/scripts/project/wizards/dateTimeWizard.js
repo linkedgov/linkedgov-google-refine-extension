@@ -236,9 +236,6 @@ var LinkedGov_dateTimeWizard = {
 						cols.eq(i).children("span.unseparated").find('div.unseparated-input').find("select.duration2").val()+"-"+
 						cols.eq(i).children("span.unseparated").find('div.unseparated-input').find("select.duration3").val();
 
-					log("colObject.unseparatedOrder:");
-					log(colObject.unseparatedOrder);
-
 				}			
 
 				/*
@@ -309,8 +306,9 @@ var LinkedGov_dateTimeWizard = {
 						 */
 						if (colObjects[i].combi == frags[fragCount]) {
 							colArray.push(colObjects[i].name);
+							var monthBeforeDay = colObjects[i].monthBeforeDay;
 							fragCount++;
-							i = -1;
+							i--;
 							/*
 							 * If we have iterated through all of the fragments to be 
 							 * checked against, that means all the fragments we want are 
@@ -320,12 +318,12 @@ var LinkedGov_dateTimeWizard = {
 							if (fragCount == frags.length) {
 								// We have a year, month and day
 								log("We have year, month and day across three columns.");
-
+								
 								/*
 								 * Merge the multiple columns into one and create an
 								 * object for it in the colObjects array.
 								 */
-								self.createSingleColumnDate(colArray, "Y-M-D", callback);
+								self.createSingleColumnDate(colArray, "Y-M-D", monthBeforeDay, callback);
 
 							}
 						}
@@ -347,7 +345,7 @@ var LinkedGov_dateTimeWizard = {
 						if (colObjects[i].combi == frags[fragCount]) {
 							colArray.push(colObjects[i].name);
 							fragCount++;
-							i = -1;
+							i--;
 							if (fragCount == frags.length) {
 								// We have hours, minutes and seconds
 								log("We have hours, minutes and seconds across three columns");
@@ -355,7 +353,7 @@ var LinkedGov_dateTimeWizard = {
 								 * Create a new column with the combined date
 								 * fragments, then type it as a date within Refine.
 								 */
-								self.createSingleColumnDate(colArray, "h-m-s", callback);
+								self.createSingleColumnDate(colArray, "h-m-s", false, callback);
 							}
 						}
 					}
@@ -408,14 +406,15 @@ var LinkedGov_dateTimeWizard = {
 				for ( var i = 0; i < colObjects.length; i++) {
 					if (colObjects[i].combi == frags[fragCount]) {
 						colArray.push(colObjects[i].name);
+						var monthBeforeDay = colObjects[i].monthBeforeDay;
 						fragCount++;
-						i = -1;
+						i--;
 						if (fragCount == frags.length) {
 							// We have years, months, days, hours, minutes and
 							// seconds
 							log("We have a year, month, day, hours, minutes and seconds spread across six columns");
-
-							self.createSingleColumnDate(colArray, "Y-M-D-h-m-s", callback);
+							
+							self.createSingleColumnDate(colArray, "Y-M-D-h-m-s", monthBeforeDay, callback);
 						}
 					}
 				}
@@ -434,7 +433,7 @@ var LinkedGov_dateTimeWizard = {
 		 * the column object array, and insert the new column (and it's options)
 		 * into the column object array.
 		 */
-		createSingleColumnDate : function(cols, com, monthBeforeDay, callback) {
+		createSingleColumnDate : function(cols, combination, monthBeforeDay, callback) {
 
 			var self = this;
 			var expr = "";
@@ -450,21 +449,21 @@ var LinkedGov_dateTimeWizard = {
 			}
 
 			/*
-			 * Remove the tails of the strings
+			 * Remove the trailing part of the expression (+"-"+)
 			 */
 			expr = expr.substring(0, expr.length - 5);
 			newName = newName.substring(0, newName.length - 1);
 
 
 			/*
-			 * Remove the columns used to create the new column
+			 * Remove the column objects used to create the new combined
+			 * column object.
 			 */
 			for ( var i = 0; i < self.vars.colObjects.length; i++) {
 				for ( var j = 0; j < cols.length; j++) {
 					if (self.vars.colObjects[i].name == cols[j]) {
-						log("Removing '" + self.vars.colObjects[i].name + "' from the colObjects array");
 						self.vars.colObjects.splice(i, 1);
-						i = -1;
+						i--;
 						j = cols.length;
 					}
 				}
@@ -492,7 +491,7 @@ var LinkedGov_dateTimeWizard = {
 						 */
 						self.vars.colObjects.push({
 							name : newName,
-							combi : com,
+							combi : combination,
 							monthBeforeDay : monthBeforeDay
 						});
 
@@ -500,7 +499,9 @@ var LinkedGov_dateTimeWizard = {
 							LG.ops.removeColumn(cols[i]);
 							if(i == cols.length-1){
 								Refine.update({modelsChanged:true},function(){
-									callback();
+									if(callback){
+										callback();
+									}
 								});
 							}
 						}
@@ -508,7 +509,6 @@ var LinkedGov_dateTimeWizard = {
 					}
 				});
 			} catch (e) {
-				log("Error: dateTimeWizard: createNewColumn()");
 				log(e);
 				alert("A column already exists with the name "
 						+ newName
@@ -528,12 +528,13 @@ var LinkedGov_dateTimeWizard = {
 						 */
 						self.vars.colObjects.push({
 							name : newName + " (LG)",
-							combi : com,
+							combi : combination,
 							monthBeforeDay : monthBeforeDay
 						});
 
-						callback();
-
+						if(callback){
+							callback();
+						}
 					}
 				});
 			}
@@ -560,9 +561,6 @@ var LinkedGov_dateTimeWizard = {
 			 * date options.
 			 */
 			for ( var i = 0; i < colObjects.length; i++) {
-
-				//log("Name: "+colObjects[i].name);
-				//log("Combination: "+colObjects[i].combi);
 
 				if(colObjects[i].combi.length > 0) {
 					/*
@@ -610,7 +608,7 @@ var LinkedGov_dateTimeWizard = {
 					default:
 						/*
 						 * All other combinations have generic RDF produced using the Time vocabulary. 
-						 * Depending on whether the column has been specified as containing a duration, 
+						 * Depending on whether the column has been specified as containing a duration -  
 						 * a time:Interval or time:Instant is created.
 						 */
 						if(colObjects[i].combi == "h-m-s"){
@@ -793,7 +791,6 @@ var LinkedGov_dateTimeWizard = {
 
 				case "Y" :
 					fragName = "year";
-
 					break;
 				case "M" :
 					fragName = "month";
@@ -942,7 +939,7 @@ var LinkedGov_dateTimeWizard = {
 
 			var self = this;
 
-			log("makeXSDDateFragment");
+			//log("makeXSDDateFragment");
 
 			var colName = colObject.name;
 			var mb4d = colObject.monthBeforeDay;
@@ -980,7 +977,7 @@ var LinkedGov_dateTimeWizard = {
 
 			var self = this;
 
-			log("makeXSDDateTimeFragment");
+			//log("makeXSDDateTimeFragment");
 
 			var colName = colObject.name;
 			var mb4d = colObject.monthBeforeDay;
@@ -1015,7 +1012,7 @@ var LinkedGov_dateTimeWizard = {
 
 			var self = this;
 
-			log("makeXSDDateTimeInstantURIFragment");
+			//log("makeXSDDateTimeInstantURIFragment");
 
 			var colName = colObject.name;
 			var mb4d = colObject.monthBeforeDay;
@@ -1049,14 +1046,13 @@ var LinkedGov_dateTimeWizard = {
 
 			var self = this;
 
-			log("makeXSDDateTimeIntervalURIFragment");
+			//log("makeXSDDateTimeIntervalURIFragment");
 
 			var colName = colObject.name;
 			var mb4d = colObject.monthBeforeDay;
 			var camelColName = LG.camelize(colName);	
 			var unit = colObject.durationUnit;
 			var value = colObject.durationValue;
-
 
 			/*
 			 * Create the RDF object and the first part of the date-time's URI.
@@ -1106,6 +1102,7 @@ var LinkedGov_dateTimeWizard = {
 			default:
 				break;
 			}
+			
 			durationCode = "+\""+durationCode+"\"";
 			/*
 			 * Append the code to the expression for RDF object.

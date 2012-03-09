@@ -1284,39 +1284,96 @@ var LinkedGov_LinkingPanel = {
 							// Iterate through the results and begin to construct the HTML for the result panel
 							for(var i=0; i<self.results.length; i++){
 
-								var html = "";
+								//var html = "";
+								
+								var div = $("<div />").addClass("description").addClass("result");
+								
+								var header = $("<a />").addClass("col-name");
+								header.html(self.results[i].columnName);
+								header.data("serviceurl",self.results[i].service.serviceURL);
+								header.data("colName",self.results[i].columnName);
+								div.append(header);
+								
+								var resultBody = $("<div />").addClass("result-body");
+								div.append(resultBody);
+								
+								var type = $("<p />").addClass("value-type");
+								type.append("<span>Type</span>");
+								var typeLink = $("<a />")
+								.attr("href",self.results[i].service.resourceInfo.resourceURI)
+								.attr("target","_blank")
+								.html(self.results[i].service.serviceName);
+								type.append(typeLink);
+								
+								resultBody.append(type);
+								
+								var matches = $("<p />").addClass("matches").append("<span>Matches</span>");
+								var matched = $("<span />").addClass("matched").text(theProject.rowModel.total-self.results[i].numUnmatched);
+								var total = $("<span />").addClass("total").text(theProject.rowModel.total);
+								var percent = Math.round((((theProject.rowModel.total-self.results[i].numUnmatched)/theProject.rowModel.total)*100));
+								log(percent);
+								var percentage = $("<span />").addClass("percentage").text(" ("+percent+"%)");
+								matches.append(matched).append(" / ").append(total).append(percentage);
+								
+								resultBody.append(matches);
+								
+								var progressBar = $("<div />")
+								.addClass("matches-bar")
+								.addClass("ui-progressbar");
+								var progressBarValue = $("<div />").addClass("ui-progressbar-value");
+								progressBar.append(progressBarValue);
 
-								html += "<div class='description result'>";
+								resultBody.append(progressBar);
+								
+								if(self.results[i].numUnmatched > 0 || self.results[i].numMatched < theProject.rowModel.total){
+									
+									var notification1 = $("<p />")
+									.addClass("notification")
+									.html("There are some values that have not been matched due to possible differences in punctuation or spellings. Would you like to try to match these values yourself?")
+									
+									var notification2 = $("<p />")
+									.addClass("notification")
+									.append("<a class='yes button'>Yes</a>")
+									.append("<a class='ignore button'>Ignore</a>");
+									
+									resultBody.append(notification1);
+									resultBody.append(notification2);
+									
+								}
+								
+								$("div.linking-results").append(div);
+								
+								//html += "<div class='description result'>";
 								// We store the endpoint URL using the "data-" attribute so we can access this later
-								html += "<a class='col-name' data-serviceurl='"+self.results[i].service.serviceURL+"'>"+self.results[i].columnName+"</a>";
-								html += "<div class='result-body'>";
+								//html += "<a class='col-name' data-serviceurl='"+self.results[i].service.serviceURL+"'>"+self.results[i].columnName+"</a>";
+								//html += "<div class='result-body'>";
 
-								html += "<p class='value-type'>" +
-								"<span>Type</span>" +
-								"<a href='"+self.results[i].service.resourceInfo.resourceURI+"' target='_blank'>"+self.results[i].service.serviceName+"</a>" +
-								"</p>";
+								//html += "<p class='value-type'>" +
+								//"<span>Type</span>" +
+								//"<a href='"+self.results[i].service.resourceInfo.resourceURI+"' target='_blank'>"+self.results[i].service.serviceName+"</a>" +
+								//"</p>";
 
 								// Calculate the percentage of matched values
-								html += "<p class='matches'>" +
-								"<span>Matches</span>" +
-								"<span class='matched'>"+(theProject.rowModel.total-self.results[i].numUnmatched)+"</span> / " +
-								"<span class='total'>"+theProject.rowModel.total+"</span> (<span class='percentage'>"+
-								Math.round((((theProject.rowModel.total-self.results[i].numUnmatched)/theProject.rowModel.total)*100))+"</span>%)</p>";
+								//html += "<p class='matches'>" +
+								//"<span>Matches</span>" +
+								//"<span class='matched'>"+(theProject.rowModel.total-self.results[i].numUnmatched)+"</span> / " +
+								//"<span class='total'>"+theProject.rowModel.total+"</span> (<span class='percentage'>"+
+								//Math.round((((theProject.rowModel.total-self.results[i].numUnmatched)/theProject.rowModel.total)*100))+"</span>%)</p>";
 
 								// The progress bar HTML
-								html += '<div class="matches-bar ui-progressbar"><div class="ui-progressbar-value"></div></div>';
+								//html += '<div class="matches-bar ui-progressbar"><div class="ui-progressbar-value"></div></div>';
 
 								// Display the buttons "Yes" and "Ignore" depending on whether there are values that 
 								// haven't been matched
-								if(self.results[i].numUnmatched > 0 || self.results[i].numMatched < theProject.rowModel.total){
-									html += "<p class='notification'>There are some values that have not been matched due to possible differences in punctuation or spellings. Would you like to try to match these values yourself?</p>";
-									html += "<p class='notification'><a class='yes button'>Yes</a><a class='ignore button'>Ignore</a></p>";
-								}
+								//if(self.results[i].numUnmatched > 0 || self.results[i].numMatched < theProject.rowModel.total){
+								//	html += "<p class='notification'>There are some values that have not been matched due to possible differences in punctuation or spellings. Would you like to try to match these values yourself?</p>";
+								//	html += "<p class='notification'><a class='yes button'>Yes</a><a class='ignore button'>Ignore</a></p>";
+								//}
 
-								html += "</div><!-- end result-body -->";
-								html += "</div><!-- end result -->";
+								//html += "</div><!-- end result-body -->";
+								//html += "</div><!-- end result -->";
 
-								$("div.linking-results").append(html);
+								//$("div.linking-results").append(html);
 							}
 						} else {
 							log("displayReconciliationResult - shouldn't ever get here...");
@@ -1527,6 +1584,10 @@ var LinkedGov_LinkingPanel = {
 		 * 
 		 * TODO: This needs pagination / a cut-off point.
 		 * TODO: Store the result <div> inside the result's object as a bound variable
+		 * 
+		 * resultDiv - the HTML <div> to inject the HTML into
+		 * callback - the function to execute once this has finished. Called multiple times
+		 * within the loop
 		 */
 		makeListOfUnmatchedValues: function(resultDiv, callback){
 
@@ -1536,10 +1597,14 @@ var LinkedGov_LinkingPanel = {
 			// The expression used to produce a facet of values that haven't been
 			// reconciled.
 			var expression = "if(cell.recon.matched,blank,value)";
+			
 			// The column name
-			var colName = $(resultDiv).find("a.col-name").html();
+			log($(resultDiv).find("a.col-name").html());
+			var colName = $('<div/>').text($(resultDiv).find("a.col-name").html()).html();
+			log(colName);
+			
 			// The endpoint's URL
-			var serviceURL = $(resultDiv).find("a.col-name").attr("data-serviceurl");
+			var serviceURL = $('<div/>').text($(resultDiv).find("a.col-name").data("serviceurl")).html();
 			// The limit for the number of input boxes that will be created
 			// for searching
 			var inputElementLimit = 30;
@@ -1580,22 +1645,56 @@ var LinkedGov_LinkingPanel = {
 						}
 
 						// Construct the UL list of LI input elements
-						html = "<ul class='selected-columns text-input'>";
+						//html = "<ul class='selected-columns text-input'>";
+						var ul = $("<ul class='selected-columns text-input' />");
+						
+						log("Making list!");
+						
 						for(var i=0; i<arrayOfUnmatchedValues.length; i++){
 							// Make sure not to create more than the limit
 							if(i<inputElementLimit){
-								html += "<li>" +
-								"<span class='col'>"+arrayOfUnmatchedValues[i]+"</span>" +
-								"<span class='colOptions'><input type='text' class='suggestbox textbox' data-colname='"+colName+"' data-serviceurl='"+serviceURL+"'/></span>" +
-								"</li>";
+								
+								var li = $("<li />");
+								
+								log(li);
+								
+								var spanCol = $("<span class='col' />");								
+								spanCol.html(arrayOfUnmatchedValues[i]);
+								log(spanCol);
+
+								var spanColOptions = $("<span class='colOptions' />");
+								log(spanColOptions);
+								
+								var suggestBox = $("<input type='text' class='suggestbox textbox' />");
+								suggestBox.data("colName", colName);
+								suggestBox.data("serviceurl", serivceURL);
+								log(suggestBox);
+								//suggestBox.data("col-name", colName);
+								//suggestBox.data("serviceurl", serivceURL);
+								//log(suggestBox);	
+								
+								//html += "<li>" +
+								//"<span class='col'>"+arrayOfUnmatchedValues[i]+"</span>" +
+								//"<span class='colOptions'><input type='text' class='suggestbox textbox' data-colname='"+colName+"' data-serviceurl='"+serviceURL+"'/></span>" +
+								//"</li>";
+								
+								spanColOptions.append(suggestBox);
+								li.append(spanCol);
+								li.append(spanColOptions);
+								ul.append(li);
+								
 							} else {
 								i==arrayOfUnmatchedValues.length-1;
 							}
 						}
-						html += "</ul>";
+						
+						//html += "</ul>";
 
+						log("Finished building list...");
+						log(ul);
+						
 						// Insert the HTML into the correct result panel <div>
-						$(resultDiv).find("div.result-body").append(html);
+						$(resultDiv).find("div.result-body").append(ul);
 
 						// Create the suggest and preview panes for searching and previewing
 						// entities against the endpoints.
@@ -1610,7 +1709,7 @@ var LinkedGov_LinkingPanel = {
 						 */
 						$(resultDiv).find("div.result-body").find("ul.selected-columns").children("li").each(function(){
 							// We pass the input element, the unmatched value and the endpoints URL
-							self.setUpSearchBox($(this).find("input.suggestbox"), $(this).find("span.col").html(), serviceURL);
+							self.setUpSearchBox($(this).find("input.suggestbox"), $('<div/>').text($(this).find("span.col").html()).html(), serviceURL);
 						});
 
 						// Set up and build the suggestPane
@@ -1628,15 +1727,14 @@ var LinkedGov_LinkingPanel = {
 						// so we need to offer them an option to say they can't find the value - or they 
 						// are not 100% sure
 						self.suggestPane.find("div.options a").click(function(){
-							log("hereee");
 							var inputElement = self.suggestPane.data("inputElement");
 							log(inputElement);
 							// Replace the input element with it's unmatched value
-							inputElement.val(inputElement.parent().parent().find("span.col").html());
+							inputElement.val($('<div/>').text(inputElement.parent().parent().find("span.col").html()).html());
 							// Apply a greyed-out CSS style
 							inputElement.addClass("dontknow");
 							// We need to remove any reconciliation data for the unmatched value
-							self.discardReconValues(inputElement.attr("data-colname"), inputElement.val());
+							self.discardReconValues(inputElement.data("colname"), $('<div/>').text(inputElement.val()).html());
 							// Hide the suggest and preview panes
 							self.suggestPane.hide();
 							self.previewPane.hide();
@@ -2006,7 +2104,6 @@ var LinkedGov_LinkingPanel = {
 			self.previewPane.css("top",(li.offset().top)+"px");
 
 			// Check cache for request
-			// TODO: Duplication of code for cached/uncached
 			if(typeof self.previewCache[suggest.id] == 'undefined'){
 				// Begin the AJAX request, storing the XHR object in a global 
 				// varible so it can be aborted.
@@ -2078,14 +2175,11 @@ var LinkedGov_LinkingPanel = {
 		 */
 		matchCellsFromSearch:function(li, inputElement, localValue, callback){
 
-			log('matchCellsFromSearch');
+			//log('matchCellsFromSearch');
 
 			var self = this;
 
 			var match = li.data("suggest");
-
-			log(li);
-			log(li.data("suggest"));
 
 			if (match !== null) {
 
@@ -2159,6 +2253,8 @@ var LinkedGov_LinkingPanel = {
 		 * 
 		 * Given a column name, this will create and return 
 		 * an array of values from the column given the expression passed to it.
+		 * 
+		 * TODO: Check for duplicate code in LG.ops
 		 */
 		generateColumnFacet : function(colName, expression, callback){
 

@@ -867,9 +867,8 @@ var LinkedGov_WizardsPanel = {
 					 * Remove the column from the selected column list when it's 
 					 * column header is deselected.
 					 */
-					var hasEntry = false;
+					//var hasEntry = false;
 					$cols.children("li").children("span.col").each(function(){
-						log($(this).html() +"=="+ columnName)
 						if($(this).html() == columnName){
 							$(this).parent("li").remove();
 							if($cols.children("li").length < 1){
