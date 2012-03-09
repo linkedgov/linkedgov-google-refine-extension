@@ -243,9 +243,9 @@ LG.loadOperationScripts = function(){
 			});
 
 			/*
-			 * Overwrite Refine's data table "render" function, 
-			 * so we can include a couple of our functions that 
-			 * need to be called every time the table is updated.
+			 * Overwrite Refine's data-table "render" function, 
+			 * so we can include our functions that 
+			 * need to be called every time the table UI is updated.
 			 */
 			ui.dataTableView.render2 = ui.dataTableView.render;
 			ui.dataTableView.render = function(){
@@ -257,6 +257,8 @@ LG.loadOperationScripts = function(){
 				LG.rdfOps.applyTypeIcons.apply();
 				// as well as our hidden column classes.
 				LG.ops.keepHiddenColumnsHidden();
+				// Reposition the column overlays
+				LG.buildColumnOverlays();
 				// Perform an initial resize
 				$(window).resize();
 			}
@@ -416,7 +418,8 @@ LG.quickTools = function() {
 	 * TODO: Show & hide using CSS.
 	 */
 	$("td.column-header").live("hover",function() {
-		if (!$(this).hasClass("ui-selectee") && $(this).find("span.column-header-name").length > 0 && $(this).find("span.column-header-name").html() != "All") {
+		if (!$(this).hasClass("ui-selectee") && $(this).find("span.column-header-name").length > 0 
+				&& $(this).find("span.column-header-name").html() != "All") {
 			if ($(this).hasClass("show")) {
 				$(this).find(".quick-tool").hide();
 				$(this).addClass("hide").removeClass("show");
@@ -524,17 +527,12 @@ LG.quickTools = function() {
  * E.g. self.vars.columnOverlays["Address 1"].div would return 
  * the overlay for that column 
  */
-LG.setUpColumnOverlays = function(selectedCallback, deselectedCallback){
+LG.buildColumnOverlays = function(selectedCallback, deselectedCallback){
 
 	var self = this;
 
-	self.vars.selectedColumns = [];
-	self.vars.columnOverlays = [];
-
 	// Start index at 1 because of the "All" header
 	var index = 0;
-	
-	ui.dataTableView.render();
 
 	$("table.data-header-table tbody tr td.column-header").each(function(){
 
@@ -546,41 +544,61 @@ LG.setUpColumnOverlays = function(selectedCallback, deselectedCallback){
 			.addClass("column-overlay")
 			.data("col-name",colName)
 			.data("leftPosition",el.offset().left)
-			.height($("table.data-table").height()+el.height()+10)
 			.width(el.width()+10)
 			.css("left",el.offset().left+"px")
 			.css("top",el.offset().top+"px");
-			
+
+			if($("table.data-table")[0].scrollWidth > $("div#right-panel").width()
+					&& $("table.data-table")[0].scrollHeight > $("div.data-table-container").height()){			
+				// Both scroll bars present
+				div.height($("div.data-table-container").height()+el.height()-5);
+			} else {
+				div.height($("table.data-table").height()+el.height()+10);
+			}
+/*
+			if($("table.data-table")[0].scrollHeight > $("div.data-table-container").height()) {
+				// Vertical scroll bar present
+				var left=parseInt(div.css("left"));
+				var width=parseInt(div.css("width"));
+				var tableLeftPadding = parseInt($("div#right-panel").offset().left) + parseInt($("div#right-panel").css("padding-left"));
+				var edge = tableLeftPadding + parseInt($("div#right-panel").width());
+				var overlap = (width-(edge-left));			
+				if(overlap > 0){
+					div.css("background-color","red");
+					div.css("opacity","0.5");
+					div.css("width",(parseInt(div.css("width"))-Math.abs(overlap)-15)+"px");
+				}
+
+			} 
+*/
 			// Assign select and deselect listeners to the overylay div
 			div.toggle(function(){
 				el.addClass("selected");
-				selectedCallback($(this).data("col-name"));
+				if(selectedCallback){
+					selectedCallback($(this).data("col-name"));
+				}
 			},function(){
 				el.removeClass("selected");
-				deselectedCallback($(this).data("col-name"));
+				if(deselectedCallback){
+					deselectedCallback($(this).data("col-name"));
+				}
 			});
 
 			$("div.data-table-container").append(div);
-			
-			//self.vars.columnOverlays[colName] = {
-			//		div : div,
-			//		colIndex : Refine.columnNameToColumnIndex(colName),
-			//		colName : colName
-			//};
 		}
-		
+
 		index++;
 	});
 
 	var lastScrollLeft = 0;
 	$("div.data-table-container").unbind("scroll").bind("scroll",function() {
-	    var scrollDifference = $("div.data-table-container").scrollLeft();
-	    if (lastScrollLeft != scrollDifference) {
-	    	lastScrollLeft = scrollDifference;
-	    	LG.repositionColumnOverlays(scrollDifference);
-	    }
+		var scrollDifference = $("div.data-table-container").scrollLeft();
+		if (lastScrollLeft != scrollDifference) {
+			lastScrollLeft = scrollDifference;
+			LG.repositionColumnOverlays(scrollDifference);
+		}
 	});
-	
+
 	LG.repositionColumnOverlays(0);
 };
 
@@ -591,19 +609,46 @@ LG.setUpColumnOverlays = function(selectedCallback, deselectedCallback){
  * The only apparent workaround is to reposition the overlays with JS.
  */
 LG.repositionColumnOverlays = function(difference){
-		
+
+	// Scroll the colum headers as the user scrolls
+	// Note: Refine should be doing this, but fails
 	$("table.data-header-table").css("left",-difference+"px");
 
 	$("div.column-overlay").each(function(){
+
+		var div = $(this);
 		
+		if($("table.data-table")[0].scrollWidth > $("div#right-panel").width()
+				&& $("table.data-table")[0].scrollHeight > $("div.data-table-container").height()){			
+			// Both scroll bars present
+			$(this).height($("div.data-table-container").height()+$("table.data-header-table tbody tr td.column-header").eq(0).height()-5);
+		} else {
+			$(this).height($("table.data-table").height()+$("table.data-header-table tbody tr td.column-header").eq(0).height()+10);
+		}
+
+
+		// Hide any column overlays that are scrolled out of view
 		$(this).css("left",$(this).data("leftPosition")-difference+"px");
 		if(parseInt($(this).css("left")) < 300){
 			$(this).hide();
 		} else {
 			$(this).show();
 		}
+/*		
+		// Vertical scroll bar present
+		var left=parseInt(div.css("left"));
+		var width=parseInt(div.css("width"));
+		var tableLeftPadding = parseInt($("div#right-panel").offset().left) + parseInt($("div#right-panel").css("padding-left"));
+		var edge = tableLeftPadding + parseInt($("div#right-panel").width());
+		var overlap = (width-(edge-left));			
+		if(overlap > 0){
+			div.css("background-color","red");
+			div.css("opacity","0.5");
+			div.css("width",(parseInt(div.css("width"))-Math.abs(overlap)-15)+"px");
+		}
+*/		
 	});
-	
+
 };
 
 /*
@@ -673,38 +718,6 @@ LG.getColumnHeaderElement = function(colName){
 };
 
 /*
- * Adds the "mask" class to the column cells
- */
-LG.selectColumn = function(colName){
-
-	$("table.data-table tbody").children("tr").each(function(){
-		for(var i=0;i<$(this).children("td").length;i++){
-			if(i == Refine.columnNameToColumnIndex(colName)+3){
-				$(this).children("td").eq(i).removeClass("mask");
-			}
-		}
-	});
-
-	return false;
-};
-
-/*
- * Removes the "mask" class from the column cells
- */
-LG.deselectColumn = function(colName){
-
-	$("table.data-table tbody").children("tr").each(function(){
-		for(var i=0;i<$(this).children("td").length;i++){
-			if(i == Refine.columnNameToColumnIndex(colName)+3){
-				$(this).children("td").eq(i).addClass("mask");
-			}
-		}
-	});
-
-	return false;
-};
-
-/*
  * injectWizardProgressOverlay
  * 
  * Appends the wizard to the project page body,
@@ -747,6 +760,8 @@ LG.resizeAll_LG = function() {
 	 * Call the old resizeAll function - found in the core project.js file.
 	 */
 	resizeAll();
+	// Rebuild the column overlays
+	LG.repositionColumnOverlays(0);
 };
 
 /*

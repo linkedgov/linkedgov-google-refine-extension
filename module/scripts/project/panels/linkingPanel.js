@@ -128,13 +128,11 @@ var LinkedGov_LinkingPanel = {
 
 			var self = this;
 
-			var html = "";
+			var ul = $("div.list-of-services ul");
 
 			for(var i=0; i<LG.vars.reconServices.length; i++){
-				html+="<li>"+LG.vars.reconServices[i].serviceName+"</li>";
+				ul.append($("<li />").text(LG.vars.reconServices[i].serviceName));
 			}
-
-			$("div.list-of-services ul").html(html);
 
 			// When the user clicks the "Show available services" link,
 			// the list slides down
@@ -368,8 +366,7 @@ var LinkedGov_LinkingPanel = {
 			var self = this;
 
 			var columns = theProject.columnModel.columns;
-			var html = "";
-			var columnName = "";
+			var ul = $("div.existing-links").find("ul");			
 			var showList = false;
 			// If we don't have the service config for the existing reconciliation 
 			// data, then we list the existing linked service as missing.
@@ -394,8 +391,13 @@ var LinkedGov_LinkingPanel = {
 					}
 
 					// Add the existing link as an entry to the HTML list
-					html+="<li><span class='col'>"+columns[i].name+"</span><span class='remove'>X</span><span class='link'>"+serviceName+"</span></li>";
-
+					var li = $("<li />")
+					.append($("<span class='col' />").text(columns[i].name))
+					.append($("<span class='remove' />").text("X"))
+					.append($("<span class='link' />").text("serviceName"));
+					
+					ul.append(li);
+					
 					// Store the existing column-service link in an array.
 					// This is used to check against when suggesting links to the user,
 					// so we don't suggest to reconcile a column with existing reconciliation 
@@ -413,7 +415,7 @@ var LinkedGov_LinkingPanel = {
 			// Inject the HTML and make sure the containing elements are 
 			// visible if there actually are existing links
 			if(showList){
-				$("div.existing-links").find("ul").html(html).show();
+				ul.show();
 				$("div.existing-links").find("div.existing").show();
 				$("div.existing-links").show();
 				$("h3.existing-links").show();
@@ -482,10 +484,10 @@ var LinkedGov_LinkingPanel = {
 			var self = this;
 
 			// Interaction for result headers
-			$("div.result a.col-name").live("click",function(){
+			$("div.result a.colName").live("click",function(){
 
 				$("div.result div.result-body").slideUp()
-				$("div.result a.col-name").removeClass("expanded");
+				$("div.result a.colName").removeClass("expanded");
 				
 				if($(this).parent("div").find("div.result-body").css("display") == "none"){
 					$(this).parent("div").find("div.result-body").slideDown();
@@ -667,24 +669,26 @@ var LinkedGov_LinkingPanel = {
 		 */
 		buildProgressBars:function(callback){
 
-			log("buildProgressBars");
+			//log("buildProgressBars");
 
 			var self = this;
 
-			var html = "";
 			// Loop through the confirmed columns and create their own progress bar HTML
 			for(var i=0;i<self.confirmedLinks.length;i++){
+				
+				var div = $("<div class='progressDiv' />")
+				.append($("<p class='columnName' />")
+						.append($("<span class='name' />").text(self.confirmedLinks[i].columnName))
+						.append($("<span class='percentage' />").text("(0%)"))
+				)
+				.append($("<p class='service' />").text(self.confirmedLinks[i].service.serviceName))
+				.append($("<div class='recon-bar ui-progressbar' />")
+						.append($("<div class='ui-progressbar-value' />"))
+				);
 
-				html+= "<div class='progressDiv'>";
-				html+= "<p class='columnName'><span class='name'>"+self.confirmedLinks[i].columnName+"</span><span class='percentage'>(0%)</span></p>";
-				html+= "<p class='service'>"+self.confirmedLinks[i].service.serviceName+"</p>";
-				html+= "<div class='recon-bar ui-progressbar'><div class='ui-progressbar-value'></div></div>";
-				html+= "</div>";
-
+				// Inject the HTML into the loading panel
+				$("div.linking-loading").append(div);
 			}
-			
-			// Inject the HTML into the loading panel
-			$("div.linking-loading").html($("div.linking-loading").html()+html);
 
 			if(callback){
 				callback();
@@ -838,7 +842,6 @@ var LinkedGov_LinkingPanel = {
 				}
 			});
 			
-			//log("----------------------------")
 		},
 
 		/*
@@ -936,15 +939,20 @@ var LinkedGov_LinkingPanel = {
 
 			// Build and display a list of the suggested links
 			if(self.suggestedLinks.length > 0){
-				var html="";
 				for(var i=0;i<self.suggestedLinks.length;i++){
 					// The data-index property is used to record the index of the suggested link in the suggestedLinks array.
 					// When a user confirms the link, we copy the link at that index from the suggestedLinks array into the confirmedLinks array.
-					html+="<li data-index='"+i+"'><span class='col'>"+self.suggestedLinks[i].columnName+"</span><span class='remove'>X</span><span class='confirm'>C</span><span class='link'>"+self.suggestedLinks[i].service.serviceName+"</span></li>";
+					var li = $("<li />")
+					.append($("<span class='col' />").text(self.suggestedLinks[i].columnName))
+					.append($("<span class='remove' />").text("X"))
+					.append($("<span class='confirm' />").text("C"))
+					.append($("<span class='link' />").text(self.suggestedLinks[i].service.serviceName));
+					
+					$("div.suggest-links ul.selected-columns").append(li);
 				}
-				$("div.suggest-links ul.selected-columns").html(html).css("display","block");
+				$("div.suggest-links ul.selected-columns").css("display","block");
 			} else {
-				$("div.suggest-links ul.selected-columns").html("<li class='none'>None...</li>").css("display","block");
+				$("div.suggest-links ul.selected-columns").append($("<li class='none' />").text("None...")).css("display","block");
 			}
 
 			// Return the "Suggest links" button back to normal / remove it
@@ -1283,48 +1291,50 @@ var LinkedGov_LinkingPanel = {
 
 							// Iterate through the results and begin to construct the HTML for the result panel
 							for(var i=0; i<self.results.length; i++){
-
-								//var html = "";
 								
-								var div = $("<div />").addClass("description").addClass("result");
+								// Add the header of the result panel
+								var header = $("<a />").addClass("colName")
+								.text(self.results[i].columnName);
 								
-								var header = $("<a />").addClass("col-name");
-								header.html(self.results[i].columnName);
-								header.data("serviceurl",self.results[i].service.serviceURL);
-								header.data("colName",self.results[i].columnName);
-								div.append(header);
-								
-								var resultBody = $("<div />").addClass("result-body");
-								div.append(resultBody);
-								
-								var type = $("<p />").addClass("value-type");
-								type.append("<span>Type</span>");
+								// Add a link to the reconciled value type
+								var type = $("<p />").addClass("value-type")
+								.append("<span>Type</span>");								
 								var typeLink = $("<a />")
 								.attr("href",self.results[i].service.resourceInfo.resourceURI)
 								.attr("target","_blank")
-								.html(self.results[i].service.serviceName);
+								.text(self.results[i].service.serviceName);
 								type.append(typeLink);
 								
-								resultBody.append(type);
-								
-								var matches = $("<p />").addClass("matches").append("<span>Matches</span>");
-								var matched = $("<span />").addClass("matched").text(theProject.rowModel.total-self.results[i].numUnmatched);
-								var total = $("<span />").addClass("total").text(theProject.rowModel.total);
+								// Add the count and percentage
+								var matched = $("<span />").addClass("matched")
+								.text(theProject.rowModel.total-self.results[i].numUnmatched);								
+								var total = $("<span />").addClass("total")
+								.text(theProject.rowModel.total);								
 								var percent = Math.round((((theProject.rowModel.total-self.results[i].numUnmatched)/theProject.rowModel.total)*100));
-								log(percent);
-								var percentage = $("<span />").addClass("percentage").text(" ("+percent+"%)");
-								matches.append(matched).append(" / ").append(total).append(percentage);
+								var percentage = $("<span />").addClass("percentage")
+								.text(" ("+percent+"%)");
+								var matches = $("<p />").addClass("matches")
+								.append("<span>Matches</span>")
+								.append(matched)
+								.append(" / ")
+								.append(total)
+								.append(" ")
+								.append(percentage);
 								
-								resultBody.append(matches);
-								
-								var progressBar = $("<div />")
-								.addClass("matches-bar")
-								.addClass("ui-progressbar");
+								// Add the progress bar
 								var progressBarValue = $("<div />").addClass("ui-progressbar-value");
-								progressBar.append(progressBarValue);
+								var progressBar = $("<div />").addClass("matches-bar ui-progressbar")						
+								.append(progressBarValue);
 
-								resultBody.append(progressBar);
+								// Add the elements to the result body
+								var resultBody = $("<div />").addClass("result-body")
+								.append(type)
+								.append(matches)
+								.append(progressBar);
 								
+								// Add a message asking the user if they want to 
+								// try to manually search for the values if there are 
+								// some that are unmatched.
 								if(self.results[i].numUnmatched > 0 || self.results[i].numMatched < theProject.rowModel.total){
 									
 									var notification1 = $("<p />")
@@ -1340,47 +1350,22 @@ var LinkedGov_LinkingPanel = {
 									resultBody.append(notification2);
 									
 								}
+
+								// Add the header and body to the result div
+								var div = $("<div />").addClass("description").addClass("result")
+								.append(header)
+								.append(resultBody)
+								.data("serviceUrl", encodeURIComponent(self.results[i].service.serviceURL))
+								.data("colName", self.results[i].columnName);
 								
+								// Add the result to the results panel
 								$("div.linking-results").append(div);
 								
-								//html += "<div class='description result'>";
-								// We store the endpoint URL using the "data-" attribute so we can access this later
-								//html += "<a class='col-name' data-serviceurl='"+self.results[i].service.serviceURL+"'>"+self.results[i].columnName+"</a>";
-								//html += "<div class='result-body'>";
-
-								//html += "<p class='value-type'>" +
-								//"<span>Type</span>" +
-								//"<a href='"+self.results[i].service.resourceInfo.resourceURI+"' target='_blank'>"+self.results[i].service.serviceName+"</a>" +
-								//"</p>";
-
-								// Calculate the percentage of matched values
-								//html += "<p class='matches'>" +
-								//"<span>Matches</span>" +
-								//"<span class='matched'>"+(theProject.rowModel.total-self.results[i].numUnmatched)+"</span> / " +
-								//"<span class='total'>"+theProject.rowModel.total+"</span> (<span class='percentage'>"+
-								//Math.round((((theProject.rowModel.total-self.results[i].numUnmatched)/theProject.rowModel.total)*100))+"</span>%)</p>";
-
-								// The progress bar HTML
-								//html += '<div class="matches-bar ui-progressbar"><div class="ui-progressbar-value"></div></div>';
-
-								// Display the buttons "Yes" and "Ignore" depending on whether there are values that 
-								// haven't been matched
-								//if(self.results[i].numUnmatched > 0 || self.results[i].numMatched < theProject.rowModel.total){
-								//	html += "<p class='notification'>There are some values that have not been matched due to possible differences in punctuation or spellings. Would you like to try to match these values yourself?</p>";
-								//	html += "<p class='notification'><a class='yes button'>Yes</a><a class='ignore button'>Ignore</a></p>";
-								//}
-
-								//html += "</div><!-- end result-body -->";
-								//html += "</div><!-- end result -->";
-
-								//$("div.linking-results").append(html);
 							}
 						} else {
-							log("displayReconciliationResult - shouldn't ever get here...");
-							var html = "<div class='description'>";
-							html += "<p>No results!</p>";
-							html += "</div>";	
-							$("div.linking-results").append(html);
+							//log("displayReconciliationResult - shouldn't ever get here...");
+							var div = $("<div class='description' />").append($("<p>No results!</p>"));
+							$("div.linking-results").append(div);
 						}
 
 						/*
@@ -1422,40 +1407,8 @@ var LinkedGov_LinkingPanel = {
 						$("div.linking-loading").hide();
 						$("div.linking-results").show();
 
-						// Display the first result that was not an existing link
-						/*
-						$("div.linking-results div.result a.col-name").each(function(){
-							log("Showing result");
-							for(var i=0; i<self.results.length; i++){
-								if($(this).html() == self.results[i].columnName && !self.results[i].existingLink){
-									log("Showing first result that isn't an existing link");
-									$(this).click();
-									resultDisplayed = true;
-								}
-							}
-							if($(this)[0] == $("div.linking-results div.result a.col-name").eq($("div.linking-results div.result a.col-name").length-1)[0] && !resultDisplayed){
-									log("No existing links, showing first result");
-									$("div.linking-results div.result a.col-name").eq(0).click();
-
-							}
-						});*/
-/*
-						var resultDisplayed = false;
-						for(var i=0; i<self.results.length; i++){
-							$("div.linking-results div.result a.col-name").each(function(){
-								if(self.results[i].columnName == $(this).html() && typeof self.results[i].existingLink == 'undefined'){
-									log("Showing first result that isn't an existing link amongst existing links");
-									$(this).click();
-									resultDisplayed = true;
-								}
-							});
-							if(i==self.results.length-1 && !resultDisplayed){
-								log("All existing links - showing the first result");
-								$("div.linking-results div.result a.col-name").eq(0).click();
-							}
-						}
-*/
-						$("div.linking-results div.result a.col-name").eq(0).click();
+						// Display the first result
+						$("div.linking-results div.result a.colName").eq(0).click();
 
 						// Make sure the Typing panel is showing
 						$("div#left-panel div.refine-tabs").tabs('select', 1);
@@ -1503,7 +1456,7 @@ var LinkedGov_LinkingPanel = {
 			// Declare number of values matched as 0
 			var matched = 0;
 			// Store the column name
-			var colName = $(resultDiv).find("a.col-name").html();
+			var colName = $(resultDiv).data("colName");
 			// Store the expression used to create the facet - telling us
 			// how many values have been matched
 			var expression = 'forNonBlank(cell.recon.judgment, v, v, if(isNonBlank(value), "(unreconciled)", "(blank)"))';
@@ -1548,17 +1501,20 @@ var LinkedGov_LinkingPanel = {
 									// Create a percentage
 									var percentage = Math.round(((matched/total)*100));
 									// Update the HTML in the panel
-									$(resultDiv).find("p.matches").find("span.matched").html(matched);
-									$(resultDiv).find("p.matches").find("span.percentage").html(percentage);
-									$(resultDiv).find("div.matches-bar").find("div.ui-progressbar-value").css("width",percentage+"%");
-									$(resultDiv).find("div.matches-bar").find("div.ui-progressbar-value").removeClass("green").removeClass("yellow").removeClass("red");
+									$(resultDiv).find("p.matches").find("span.matched").text(matched);
+									$(resultDiv).find("p.matches").find("span.percentage").text(" ("+percentage+"%)");
+									
+									var progressBarValue = $(resultDiv).find("div.matches-bar").find("div.ui-progressbar-value");
+									progressBarValue.css("width",percentage+"%");
+									progressBarValue.removeClass("green").removeClass("yellow").removeClass("red");
+									
 									// Colour the progress bar accordingly
 									if(percentage > 66){
-										$(resultDiv).find("div.matches-bar").find("div.ui-progressbar-value").addClass("green");
+										progressBarValue.addClass("green");
 									} else if(percentage > 33){
-										$(resultDiv).find("div.matches-bar").find("div.ui-progressbar-value").addClass("yellow");
+										progressBarValue.addClass("yellow");
 									} else {
-										$(resultDiv).find("div.matches-bar").find("div.ui-progressbar-value").addClass("red");
+										progressBarValue.addClass("red");
 									}
 								}
 							}
@@ -1599,15 +1555,11 @@ var LinkedGov_LinkingPanel = {
 			var expression = "if(cell.recon.matched,blank,value)";
 			
 			// The column name
-			log($(resultDiv).find("a.col-name").html());
-			var colName = $('<div/>').text($(resultDiv).find("a.col-name").html()).html();
+			var colName = $(resultDiv).data("colName");
 			log(colName);
 			
 			// The endpoint's URL
-			var serviceURL = $('<div/>').text($(resultDiv).find("a.col-name").data("serviceurl")).html();
-			// The limit for the number of input boxes that will be created
-			// for searching
-			var inputElementLimit = 30;
+			var serviceURL = decodeURIComponent($(resultDiv).data("serviceUrl"));
 
 			// Call a generic function to compute a facet on a column given a particular 
 			// expression.
@@ -1645,61 +1597,52 @@ var LinkedGov_LinkingPanel = {
 						}
 
 						// Construct the UL list of LI input elements
-						//html = "<ul class='selected-columns text-input'>";
-						var ul = $("<ul class='selected-columns text-input' />");
-						
-						log("Making list!");
+						var ul = $("<ul />").addClass("selected-columns text-input");
+												
+						// The limit for the number of input boxes that will be created
+						// for searching
+						var inputElementLimit = 30;
 						
 						for(var i=0; i<arrayOfUnmatchedValues.length; i++){
 							// Make sure not to create more than the limit
-							if(i<inputElementLimit){
+							if(i < inputElementLimit){
+																
+								// We use "col" to inherit CSS styling, it's actually
+								// a cell value - not a column name
+								var spanCol = $("<span />").addClass("value col")
+								.data("value", arrayOfUnmatchedValues[i])
+								.text(arrayOfUnmatchedValues[i]);
 								
-								var li = $("<li />");
+								// We attach the column name to the input element
+								// so the click handler for the input box can pass on 
+								// the column name to Refine's reconcile-value process call
+								// as a parameter.
+								var suggestBox = $("<input />").addClass("suggestbox textbox")
+								.attr("type","text")
+								.data("colName", colName);
 								
-								log(li);
-								
-								var spanCol = $("<span class='col' />");								
-								spanCol.html(arrayOfUnmatchedValues[i]);
-								log(spanCol);
-
-								var spanColOptions = $("<span class='colOptions' />");
-								log(spanColOptions);
-								
-								var suggestBox = $("<input type='text' class='suggestbox textbox' />");
-								suggestBox.data("colName", colName);
-								suggestBox.data("serviceurl", serivceURL);
-								log(suggestBox);
-								//suggestBox.data("col-name", colName);
-								//suggestBox.data("serviceurl", serivceURL);
-								//log(suggestBox);	
-								
-								//html += "<li>" +
-								//"<span class='col'>"+arrayOfUnmatchedValues[i]+"</span>" +
-								//"<span class='colOptions'><input type='text' class='suggestbox textbox' data-colname='"+colName+"' data-serviceurl='"+serviceURL+"'/></span>" +
-								//"</li>";
-								
-								spanColOptions.append(suggestBox);
-								li.append(spanCol);
-								li.append(spanColOptions);
+								var spanColOptions = $("<span />").addClass("colOptions")
+								.append(suggestBox);
+																
+								var li = $("<li />")
+								.append(spanCol)
+								.append(spanColOptions);
+																
 								ul.append(li);
 								
 							} else {
-								i==arrayOfUnmatchedValues.length-1;
+								// We've created the maximum number of input boxes we want to
+								i == arrayOfUnmatchedValues.length-1;
 							}
 						}
-						
-						//html += "</ul>";
-
-						log("Finished building list...");
-						log(ul);
 						
 						// Insert the HTML into the correct result panel <div>
 						$(resultDiv).find("div.result-body").append(ul);
 
 						// Create the suggest and preview panes for searching and previewing
 						// entities against the endpoints.
-						self.suggestPane = $("<div>").attr("id","suggest-pane");
-						self.previewPane = $("<div>").attr("id","preview-pane");
+						self.suggestPane = $("<div />").attr("id","suggest-pane");
+						self.previewPane = $("<div />").attr("id","preview-pane");
 						$("body").append(self.suggestPane);
 						$("body").append(self.previewPane);
 
@@ -1709,7 +1652,7 @@ var LinkedGov_LinkingPanel = {
 						 */
 						$(resultDiv).find("div.result-body").find("ul.selected-columns").children("li").each(function(){
 							// We pass the input element, the unmatched value and the endpoints URL
-							self.setUpSearchBox($(this).find("input.suggestbox"), $('<div/>').text($(this).find("span.col").html()).html(), serviceURL);
+							self.setUpSearchBox($(this).find("input.suggestbox"), $(this).find("span.col").data("value"), serviceURL);
 						});
 
 						// Set up and build the suggestPane
@@ -1730,11 +1673,11 @@ var LinkedGov_LinkingPanel = {
 							var inputElement = self.suggestPane.data("inputElement");
 							log(inputElement);
 							// Replace the input element with it's unmatched value
-							inputElement.val($('<div/>').text(inputElement.parent().parent().find("span.col").html()).html());
+							inputElement.val(inputElement.parent().parent().find("span.col").data("value"));
 							// Apply a greyed-out CSS style
 							inputElement.addClass("dontknow");
 							// We need to remove any reconciliation data for the unmatched value
-							self.discardReconValues(inputElement.data("colname"), $('<div/>').text(inputElement.val()).html());
+							self.discardReconValues(inputElement.data("colName"), inputElement.val());
 							// Hide the suggest and preview panes
 							self.suggestPane.hide();
 							self.previewPane.hide();
@@ -1818,7 +1761,7 @@ var LinkedGov_LinkingPanel = {
 		 */
 		setUpSearchBox:function(inputElement, unmatchedValue, serviceURL){
 
-			log('setUpSearchBox');
+			//log('setUpSearchBox');
 
 			var self = this;
 
@@ -1852,9 +1795,9 @@ var LinkedGov_LinkingPanel = {
 			.bind("focus", function(){
 				// Reposition the suggest pane when a user clicks on 
 				// an input element
-				self.suggestPane.css("left",inputElement.offset().left+"px");
-				self.suggestPane.css("top",(inputElement.offset().top+25)+"px");
-				self.suggestPane.data("inputElement",$(this));
+				self.suggestPane.css("left", inputElement.offset().left + "px");
+				self.suggestPane.css("top", (inputElement.offset().top + 25) + "px");
+				self.suggestPane.data("inputElement", $(this));
 			})
 			.bind("keyup",function(){
 
@@ -2003,8 +1946,14 @@ var LinkedGov_LinkingPanel = {
 						self.previewPane.hide();
 						// Pass the suggestion <li> element, the input element and the original value
 						self.matchCellsFromSearch($(this), inputElement, unmatchedValue, function(li, inputElement){
+							
 							// Once the cells have been matched, style and update the value inside the input element
-							inputElement.val(li.data("suggest").name).removeClass("edited").removeClass("dontknow").addClass("matched");
+							inputElement
+							.val(li.data("suggest").name)
+							.removeClass("edited")
+							.removeClass("dontknow")
+							.addClass("matched");
+							
 							// Update the progress bar for each result
 							var resultDiv = inputElement.parent("span").parent("li").parent("ul").parent("div").parent("div");
 							self.updateMatches(resultDiv);
@@ -2190,7 +2139,7 @@ var LinkedGov_LinkingPanel = {
 						name: match.name,
 						types:"",
 						similarValue: localValue,
-						columnName: inputElement.attr("data-colname")
+						columnName: inputElement.data("colName")
 				};
 
 				Refine.postCoreProcess(

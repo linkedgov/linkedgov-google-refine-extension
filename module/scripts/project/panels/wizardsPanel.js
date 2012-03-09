@@ -669,6 +669,8 @@ var LinkedGov_WizardsPanel = {
 			 * select columns.
 			 */
 			if (!$(button).hasClass("selecting")) {
+				
+				$("body").addClass("selecting-columns");
 
 				/*
 				 * Exposes the column headers - 'true' to mask.
@@ -698,7 +700,8 @@ var LinkedGov_WizardsPanel = {
 				 */
 				$cols = $(button).parent().children("ul.selected-columns");
 
-				LG.setUpColumnOverlays(function(columnName){
+				
+				LG.buildColumnOverlays(function(columnName){
 					// What happens when the column is selected
 					/*
 					 * Assume it will be added to the list of selected columns
@@ -893,6 +896,7 @@ var LinkedGov_WizardsPanel = {
 				//$("table td a.data-table-cell-edit").css("cursor","pointer");
 				//$("table.data-header-table td.column-header, table.data-table td.column-header").css("cursor", "pointer");
 				
+				$("body").removeClass("selecting-columns");
 				LG.removeColumnOverlays();
 				self.destroyColumnSelector();
 			}	
