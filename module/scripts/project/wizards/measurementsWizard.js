@@ -25,9 +25,9 @@ var LinkedGov_measurementsWizard = {
 					curie : "fb",
 					uri : "http://rdf.freebase.com/rdf/"
 				},
-				lgMeasurement: {
-					curie: "lgMeasurement",
-					uri: "http://data.linkedgov.org/terms/measurement/"
+				lg:{
+					uri:LG.vars.projectURI,
+					curie:"lg"
 				}
 			}
 		},
@@ -88,9 +88,9 @@ var LinkedGov_measurementsWizard = {
 			var elmts = self.vars.elmts;
 			var array = [];
 			
-			$(elmts.measurementsColumns).find("span.col").each(function() {
+			$(elmts.measurementsColumns).children("li").each(function() {
 				array.push({
-					name : $(this).html(),
+					name : $(this).data("colName"),
 					measurement : elmts.unitInputField.val()
 				});
 			});
@@ -145,15 +145,15 @@ var LinkedGov_measurementsWizard = {
 				/*
 				 * Camel-case & trim whitespace to use as URI slug
 				 */
-				var camelColName = LG.camelize(colObjects[i].name);
+				var camelizedColumnName = LG.camelize(colObjects[i].name);
 
 				/*
 				 * Check to see if there's an existing mapping for the column name
 				 * already.
 				 */
 				for ( var j = 0; j < links.length; j++) {
-					if (links[j].uri.indexOf(camelColName) > -1) {
-						log("Found measurements RDF data for column: \""+ colObjects[i].name + "\", removing ...");
+					if (links[j].uri.indexOf(camelizedColumnName) > -1) {
+						//log("Found measurements RDF data for column: \""+ colObjects[i].name + "\", removing ...");
 						links.splice(j, 1);
 						j--;
 					}
@@ -178,7 +178,7 @@ var LinkedGov_measurementsWizard = {
 		            	  "curie" : curie,
 		            	  "target" : {
 		            		  "nodeType" : "cell-as-literal",
-		            		  "expression" : "value",
+		            		  "expression" : "escape(value,'xml')",
 		            		  "columnName" : colObjects[i].name,
 		            		  "isRowNumberCell" : false
 		            	  }
@@ -195,8 +195,8 @@ var LinkedGov_measurementsWizard = {
 				}
 
 				rootNode.links.push({
-					"uri" : self.vars.vocabs.lgMeasurement.uri+camelColName,
-					"curie" : self.vars.vocabs.lgMeasurement.curie + ":" + camelColName,
+					"uri" : self.vars.vocabs.lg.uri + camelizedColumnName,
+					"curie" : self.vars.vocabs.lg.curie + ":" + camelizedColumnName,
 					"target" : {
 						"nodeType" : "cell-as-blank",
 						"isRowNumberCell" : true,

@@ -33,6 +33,9 @@ LG.vars = {
 			cols : []
 		},
 		lgNameSpace: "http://data.linkedgov.org/",
+		projectURI:"http://data.linkedgov.org/dataset/"+theProject.id+"/",
+		lgClassURI: "http://data.linkedgov.org/terms/class/"+theProject.id+"/",
+		lgPropertyURI: "http://data.linkedgov.org/terms/property/"+theProject.id+"/",
 		hiddenColumns: "",
 		reconServices : []
 
@@ -63,12 +66,6 @@ LG.initialise = function() {
 	 */
 	this.injectWizardProgressOverlay();
 	this.injectFeedbackForm();
-
-	/*
-	 * Initialise misceallaneous functions
-	 */
-	this.addUnhideColumnButton();
-	this.quickTools();
 
 };
 
@@ -271,7 +268,13 @@ LG.loadOperationScripts = function(){
 			/*
 			 * Perform a generic update once everything has loaded
 			 */
-			Refine.update({everythingChanged:true});
+			Refine.update({everythingChanged:true}, function(){
+				/*
+				 * Initialise misceallaneous functions
+				 */
+				LG.addUnhideColumnButton();
+				LG.quickTools();
+			});
 
 		});
 	});
@@ -319,32 +322,79 @@ LG.injectFeedbackForm = function() {
  */
 LG.showFinishMessage = function(){
 
-	var finishMessage = DialogSystem.createDialog();
-	$(finishMessage).width(500);
-	var header = $('<div></div>').addClass("dialog-header").text("Thanks!").appendTo(finishMessage);
-	var body = $('<div></div>').addClass("dialog-body").addClass("finish-message").appendTo(finishMessage);
-	var footer = $('<div></div>').addClass("dialog-footer").appendTo(finishMessage);
+	var header = "Thanks!";
+	// Construct the HTML for the dialog body
+	var body = 
+		"<p>Well done! This data is much better than it was.</p>" + 
+		"<p>People and machines will be able to understand more from it and find it easier to access it regardless of " +
+		"their location in the world.</p>" + 
+		"<p>This data is now stored inside LinkedGov's database - and is available through the <a href='#'>Question site</a> and " +
+		"the <a href='#'>developer's search</a></p>" +
+		"<h3>What next?</h3>" +
+		"<p>If there are any errors, unexpected values - or work that still " +
+		"needs doing within the data - these will be used to create tasks for others " +
+		"to complete using their expertise and judgement.</p>" +
+		"<p>Depending on the tasks that have been completed, the data is now potentially linkable " +
+		"to other datasets and as a result - much more accessible to users searching for those particular data " +
+		"types.</p>" +
+		"<p><a href='#'>Bookmark</a> | <a href='#'>Tweet</a> | <a href='#'>Email</a></p>";
 
-	$(body).html(
-			"<p>Well done! This data is much better than it was.</p>" + 
-			"<p>People and machines will be able to understand more from it and find it easier to access it regardless of " +
-			"their location in the world.</p>" + 
-			"<p>This data is now stored inside LinkedGov's database - and is available through the <a href='#'>Question site</a> and " +
-			"the <a href='#'>developer's search</a></p>" +
-			"<h3>What next?</h3>" +
-			"<p>If there are any errors, unexpected values - or work that still " +
-			"needs doing within the data - these will be used to create tasks for others " +
-			"to complete using their expertise and judgement.</p>" +
-			"<p>Depending on the tasks that have been completed, the data is now potentially linkable " +
-			"to other datasets and as a result - much more accessible to users searching for those particular data " +
-			"types.</p>" +
-	"<p><a href='#'>Bookmark</a> | <a href='#'>Tweet</a> | <a href='#'>Email</a></p>");
-
-	$('<button></button>').addClass('button').html("&nbsp;&nbsp;OK&nbsp;&nbsp;").click(function() {
+	// Create some buttons
+	var footer = $('<button></button>').addClass('button').html("&nbsp;&nbsp;OK&nbsp;&nbsp;").click(function() {
 		DialogSystem.dismissAll();	
-	}).appendTo(footer);
+	});
 
-	DialogSystem.showDialog(finishMessage);
+	// Create the dialog itself
+	var dialog = LG.createDialog({
+		header:header,
+		body:body,
+		footer:footer,
+		className:"finish-message"
+	});
+
+	// Display the dialog
+	DialogSystem.showDialog(dialog);
+
+};
+
+/*
+ * createDialog
+ * 
+ * Takes an object containing:
+ * o.header = the header text for the dialog
+ * o.body = the body text for the dialog
+ * o.footer = the footer text 
+ * o.className = the className for custom styling
+ */
+LG.createDialog = function(o){
+
+	var dialog = DialogSystem.createDialog();
+	var header = $('<div></div>').addClass("dialog-header").append(o.header).appendTo(dialog);
+	var body = $('<div></div>').addClass("dialog-body "+o.className).append(o.body).appendTo(dialog);
+	var footer = $('<div></div>').addClass("dialog-footer").append(o.footer).appendTo(dialog);
+
+	if(o.cancel){
+		if(typeof o.cancel == "object"){
+			$('<button></button>').addClass('button').html("&nbsp;&nbsp;Cancel&nbsp;&nbsp;").click(o.cancel).appendTo(footer);		
+		} else {
+			$('<button></button>').addClass('button').html("&nbsp;&nbsp;Cancel&nbsp;&nbsp;").click(function(){
+				DialogSystem.dismissAll();
+			}).appendTo(footer);
+		}
+	}
+	if(o.ok){
+		if(typeof o.ok == "object"){
+			$('<button></button>').addClass('button').html("&nbsp;&nbsp;OK&nbsp;&nbsp;").click(o.ok).appendTo(footer);
+		} else {
+			$('<button></button>').addClass('button').html("&nbsp;&nbsp;OK&nbsp;&nbsp;").click(function(){
+				DialogSystem.dismissAll();
+			}).appendTo(footer);
+		}
+	}
+
+	$(dialog).width(500);
+
+	return dialog;
 
 };
 
@@ -417,6 +467,7 @@ LG.quickTools = function() {
 	 * 
 	 * TODO: Show & hide using CSS.
 	 */
+
 	$("td.column-header").live("hover",function() {
 		if (!$(this).hasClass("ui-selectee") && $(this).find("span.column-header-name").length > 0 
 				&& $(this).find("span.column-header-name").html() != "All") {
@@ -452,7 +503,7 @@ LG.quickTools = function() {
 	$("div.quick-tool").find("li").live("click", function(e) {
 
 		var td = e.target.parentNode.parentNode.parentNode;
-		var colName = $(td).find("span.column-header-name").html();
+		var colName = $(td).attr("title");
 
 		switch ($(this).attr("class")) {
 
@@ -539,48 +590,36 @@ LG.buildColumnOverlays = function(selectedCallback, deselectedCallback){
 		// Skip adding an overlay for the "All" column
 		if(index > 0){
 			var el = $(this);
-			var colName = $(this).find("span.column-header-name").html();
+			var colName = $(this).attr("title");
 			var div = $("<div/>")
 			.addClass("column-overlay")
-			.data("col-name",colName)
+			.data("colName",colName)
 			.data("leftPosition",el.offset().left)
+			.data("td", el)
 			.width(el.width()+10)
 			.css("left",el.offset().left+"px")
 			.css("top",el.offset().top+"px");
 
 			if($("table.data-table")[0].scrollWidth > $("div#right-panel").width()
-					&& $("table.data-table")[0].scrollHeight > $("div.data-table-container").height()){			
+					&& $("table.data-table")[0].scrollHeight > $("div.data-table-container").height()){
 				// Both scroll bars present
 				div.height($("div.data-table-container").height()+el.height()-5);
 			} else {
 				div.height($("table.data-table").height()+el.height()+10);
 			}
-/*
-			if($("table.data-table")[0].scrollHeight > $("div.data-table-container").height()) {
-				// Vertical scroll bar present
-				var left=parseInt(div.css("left"));
-				var width=parseInt(div.css("width"));
-				var tableLeftPadding = parseInt($("div#right-panel").offset().left) + parseInt($("div#right-panel").css("padding-left"));
-				var edge = tableLeftPadding + parseInt($("div#right-panel").width());
-				var overlap = (width-(edge-left));			
-				if(overlap > 0){
-					div.css("background-color","red");
-					div.css("opacity","0.5");
-					div.css("width",(parseInt(div.css("width"))-Math.abs(overlap)-15)+"px");
-				}
 
-			} 
-*/
 			// Assign select and deselect listeners to the overylay div
-			div.toggle(function(){
-				el.addClass("selected");
-				if(selectedCallback){
-					selectedCallback($(this).data("col-name"));
-				}
-			},function(){
-				el.removeClass("selected");
-				if(deselectedCallback){
-					deselectedCallback($(this).data("col-name"));
+			div.click(function(){
+				if(!$(this).data("td").hasClass("selected")){
+					el.addClass("selected");
+					if(selectedCallback){
+						selectedCallback($(this).data("colName"));
+					}
+				} else {
+					el.removeClass("selected");
+					if(deselectedCallback){
+						deselectedCallback($(this).data("colName"));
+					}
 				}
 			});
 
@@ -612,12 +651,12 @@ LG.repositionColumnOverlays = function(difference){
 
 	// Scroll the colum headers as the user scrolls
 	// Note: Refine should be doing this, but fails
-	$("table.data-header-table").css("left",-difference+"px");
+	$("table.data-header-table").css("left","-"+difference+"px");
 
 	$("div.column-overlay").each(function(){
 
 		var div = $(this);
-		
+
 		if($("table.data-table")[0].scrollWidth > $("div#right-panel").width()
 				&& $("table.data-table")[0].scrollHeight > $("div.data-table-container").height()){			
 			// Both scroll bars present
@@ -626,27 +665,15 @@ LG.repositionColumnOverlays = function(difference){
 			$(this).height($("table.data-table").height()+$("table.data-header-table tbody tr td.column-header").eq(0).height()+10);
 		}
 
-
 		// Hide any column overlays that are scrolled out of view
 		$(this).css("left",$(this).data("leftPosition")-difference+"px");
 		if(parseInt($(this).css("left")) < 300){
+			log("hiding "+$(this).data("colName"));
+			log(parseInt($(this).css("left")));
 			$(this).hide();
 		} else {
 			$(this).show();
 		}
-/*		
-		// Vertical scroll bar present
-		var left=parseInt(div.css("left"));
-		var width=parseInt(div.css("width"));
-		var tableLeftPadding = parseInt($("div#right-panel").offset().left) + parseInt($("div#right-panel").css("padding-left"));
-		var edge = tableLeftPadding + parseInt($("div#right-panel").width());
-		var overlap = (width-(edge-left));			
-		if(overlap > 0){
-			div.css("background-color","red");
-			div.css("opacity","0.5");
-			div.css("width",(parseInt(div.css("width"))-Math.abs(overlap)-15)+"px");
-		}
-*/		
 	});
 
 };
@@ -777,7 +804,19 @@ LG.resizeAll_LG = function() {
  */
 LG.handleJSError = function(message) {
 
-	alert("Oops! Something went wrong!\n\n("+message+")");
+	var dialog = LG.createDialog({
+		header:"Oops!",
+		body:"<p>Something went wrong!</p>" +
+		"<p class='error'>"+message+"</p>",
+		ok:function(){
+			log("Should log this error or send feedback...");
+			DialogSystem.dismissAll();
+		},
+		className:"jsError"
+	});
+
+	DialogSystem.showDialog(dialog);
+
 	// Make sure the "Wizard in progress" message is hidden
 	LG.showWizardProgress(false);
 	// Find the active tab that's open
@@ -1188,5 +1227,16 @@ $(document).ready(function() {
 	window.onerror = function(o) {
 		LG.handleJSError(o);
 	};
+
+	window.alert = function(s) {
+		var dialog = LG.createDialog({
+			header:"Oops!",
+			body:$("<p />").text(s),
+			ok:true,
+			className:"alert"
+		});
+		DialogSystem.showDialog(dialog);
+	};
+
 
 });

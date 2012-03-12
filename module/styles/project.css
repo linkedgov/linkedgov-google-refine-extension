@@ -242,7 +242,7 @@ body.lg a#unhide-columns-button
 }
 body.lg a.data-table-cell-edit
 {
-    display: none !important;
+    /*display: none !important;*/
 }
 body.lg a.data-table-recon-action
 {
@@ -1852,6 +1852,9 @@ body.lg div.wizard-body ul.selected-columns li span.colOptions
     padding-left: 0;
     padding-right: 0;
 }
+body.lg div.wizard-body ul.selected-columns li span.colOptions.postcode {
+	display:none;
+}
 body.lg div.wizard-body ul.selected-columns li span.colOptions input
 {
     margin-left: 5px;
@@ -2059,9 +2062,22 @@ body.lg ul.selected-columns li span.colOptions input.textbox
     margin-top: 5px;
     width: 92%;
 }
-body.wizard-progress div.dialog-frame,body.wizard-progress div.dialog-overlay
+body.wizard-progress div.dialog-frame, body.wizard-progress div.dialog-overlay
 {
     display: none !important;
+}
+body.lg div.dialog-frame div.jsError p {
+    margin-bottom:10px;
+}
+body.lg div.dialog-frame div.jsError p.error{
+    background: none repeat scroll 0 0 #FFD2D2;
+    border: 1px solid #DD9C9C;
+    padding: 10px;
+}
+body.lg div.dialog-frame div.jsError p.alert{
+    background: none repeat scroll 0 0 #FFD2D2;
+    border: 1px solid #DD9C9C;
+    padding: 10px;
 }
 div#beta
 {

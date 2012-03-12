@@ -437,12 +437,13 @@ var LinkedGov_generalOperations = {
 			var alreadyAdded = false;
 
 			// Hide the column header
-			$("td.column-header").each(function(){
-				if($(this).find("span.column-header-name").length > 0 && $(this).find("span.column-header-name").html() == colName){
-					$(this).addClass("hiddenCompletely");
+			var columnHeaders = ui.dataTableView._columnHeaderUIs;
+			for(var i=0;i<columnHeaders.length;i++){
+				if(columnHeaders[i]._column.name == colName){
+					$(columnHeaders[i]._td).addClass("hiddenCompletely");
 				}
-			});
-
+			}
+			
 			// Hide the column's cells
 			// +3 due to the "All" column
 			var columnIndex = Refine.columnNameToColumnIndex(colName) + 3;
@@ -515,11 +516,12 @@ var LinkedGov_generalOperations = {
 
 			
 			// Remove the hiddenCompletely class from the column header
-			$("td.column-header").each(function(){
-				if($(this).find("span.column-header-name").length > 0 && $(this).find("span.column-header-name").html() == colName){
-					$(this).removeClass("hiddenCompletely");
+			var columnHeaders = ui.dataTableView._columnHeaderUIs;
+			for(var i=0;i<columnHeaders.length;i++){
+				if(columnHeaders[i]._column.name == colName){
+					$(columnHeaders[i]._td).removeClass("hiddenCompletely");
 				}
-			});
+			}
 
 			// Remove the hiddenCompletely class from the column cells
 			// +3 due to the "All" column
@@ -655,11 +657,12 @@ var LinkedGov_generalOperations = {
 					if(columnIndex >= 3){
 
 						// Add the "hiddenCompletely" class to the column's table header element
-						$("td.column-header").each(function(){
-							if($(this).find("span.column-header-name").length > 0 && $(this).find("span.column-header-name").html() == cols[i]){
-								$(this).addClass("hiddenCompletely");
+						var columnHeaders = ui.dataTableView._columnHeaderUIs;
+						for(var j=0;j<columnHeaders.length;j++){
+							if(columnHeaders[j]._column.name == cols[i]){
+								$(columnHeaders[j]._td).addClass("hiddenCompletely");
 							}
-						});
+						}
 
 						// And add the "hiddenCompletely" class to all of the column's cells in the data table
 						$("table.data-table tr").each(function(){
@@ -912,6 +915,7 @@ var LinkedGov_generalOperations = {
 				var self = this;
 				alert("Column split failed.\n\n" + message);
 				self.vars.splitterHTML.find("input#splitCharacter").val("").focus();
+				LG.removeColumnOverlays();
 			},
 
 			/*
@@ -926,7 +930,7 @@ var LinkedGov_generalOperations = {
 					// Reset the splitting box
 					self.vars.splitterHTML.find("ul.selected-columns").html("").hide();
 					// Remove all traces of column selection
-					LG.panels.wizardsPanel.destroyColumnSelector();
+					LG.removeColumnOverlays();
 					self.vars.callback();
 				});
 

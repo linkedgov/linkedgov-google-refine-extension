@@ -717,7 +717,7 @@ var LinkedGov_WizardsPanel = {
 						 * If it already exists, assume the user is wanting to 
 						 * deselect the column.
 						 */
-						if($(this).html() == columnName){
+						if($(this).parent("li").data("colName") == columnName){
 
 							/*
 							 * Remove the column from the select columns list and remove the highlighted 
@@ -765,22 +765,27 @@ var LinkedGov_WizardsPanel = {
 					 */
 					if(addToList){
 
+						var li = $("<li />");
+						li.data("colName", columnName);
+						var spanCol = $("<span />").addClass("col");
+						var spanRemove = $("<span />").addClass("remove").text("X");
+						var spanConfirm = $("<span />").addClass("confirm").text("C");
+						
 						switch(mode){
 
 						case "default" :
 							/*
 							 * default - allows multiple columns to be added to the list.
 							 */
-							$cols.append( 
-									"<li>" +
-									"<span class='col'>" + 
-									columnName + 
-									"</span>" + 
-									"<span class='remove'>X</span>" +
-									self.getFragmentData($cols) +
-									"</li>"
-							)
-							.show();
+							
+							spanCol.text(columnName);
+							
+							li.append(spanCol)
+							.append(spanRemove)
+							.append(self.getFragmentData($cols));
+							
+							$cols.append(li).show();
+
 							break;
 
 						case "single-column" :
@@ -788,16 +793,15 @@ var LinkedGov_WizardsPanel = {
 							 * single-column - only allows one column to be selected - hence the use 
 							 * of html() instead of append().
 							 */
-							$cols.html( 
-									"<li>" +
-									"<span class='col'>" + 
-									columnName + 
-									"</span>" + 
-									"<span class='remove'>X</span>" +
-									self.getFragmentData($cols) +
-									"</li>"
-							)
-							.show();							
+							
+							spanCol.text(columnName);
+							
+							li.append(spanCol)
+							.append(spanRemove)
+							.append(self.getFragmentData($cols));
+							
+							$cols.html(li).show();
+				
 							break;
 
 						case "splitter" :
@@ -806,14 +810,14 @@ var LinkedGov_WizardsPanel = {
 							 * for any fragment data. Used in the address wizard to split columns 
 							 * containing multiple address parts.
 							 */
-							$cols.html(
-									"<li>" +
-									"<span class='col'>" + 
-									columnName + 
-									"</span>" + 
-									"<span class='remove'>X</span>" +
-							"</li>")
-							.show();	
+							
+							spanCol.text(columnName);
+							
+							li.append(spanCol)
+							.append(spanRemove);
+							
+							$cols.html(li).show();
+
 							break;
 
 						case "text-input" :
@@ -841,18 +845,16 @@ var LinkedGov_WizardsPanel = {
 							break;
 							
 						case "manual-reconciliation-links" :
+														
+							spanCol.text(columnName);
 							
-							$cols.append( 
-									"<li>" +
-									"<span class='col'>" + 
-									columnName + 
-									"</span>" + 
-									"<span class='confirm'>C</span>" +
-									"<span class='remove'>X</span>" +
-									self.getFragmentData($cols) +
-									"</li>"
-							)
-							.show();
+							li.append(spanCol)
+							.append(spanConfirm)
+							.append(spanRemove)
+							.append(self.getFragmentData($cols));
+							
+							$cols.append(li).show();
+
 							break;
 							
 						default:
@@ -914,19 +916,23 @@ var LinkedGov_WizardsPanel = {
 
 			callback = callback || function(){return false};
 
-			var columnHeaders = "";
-			var i = 0;
 			/*
 			 * Grab the column names from the data table and present 
 			 * them as <option> elements.
-			 * 
-			 * TODO: Perhaps grab the names from Refine's DOM object 
-			 * instead.
 			 */
 			var colHeaders = ui.dataTableView._columnHeaderUIs;
 			for(var i=0, len=colHeaders.length; i<len; i++){
 				if(!$(colHeaders[i]._td).hasClass("hiddenCompletely")){
-					columnHeaders += "<option data-id='" + i + "' value='" + colHeaders[i]._column.name + "'>" + colHeaders[i]._column.name + "</option>";
+					
+					// Add the option element to both select elements
+					divRange.children("select").each(function(){
+						var option = $("<option />")
+						.text(colHeaders[i]._column.name)
+						.attr("value",colHeaders[i]._column.name)
+						.data("id",i);
+						$(this).append(option);
+					});
+					
 				}
 			}
 
@@ -934,7 +940,6 @@ var LinkedGov_WizardsPanel = {
 			 * Populate the select inputs with the <option> elements.
 			 */
 			divRange.children("select").each(function () {
-				$(this).html(columnHeaders);
 				$(this).val($(this).find("option").eq(0).val());
 			});
 
@@ -976,7 +981,6 @@ var LinkedGov_WizardsPanel = {
 			 * column names), and two way-points for the range (i.e. a min and max)
 			 * that begin at 0 as no columns have been selected yet.
 			 */
-			var colsHTML = "";
 			var from = 0, to = 0;
 
 			/*
@@ -987,14 +991,16 @@ var LinkedGov_WizardsPanel = {
 				 * Use the "data-id" attribute of the option element as the column index.
 				 * The option "value" is the column name.
 				 */
-				from = parseInt($(select).find("option[value='" + $(select).val() + "']").attr("data-id"));
+				from = parseInt($(select).find("option[value='" + $(select).val() + "']").data("id"));
+				log(from);
+				
 				/*
 				 * Loop through the list of the other select inputs's options (the "To" select input)
 				 * and disable any option that has a "data-id" (column index) that's less than or equal
 				 * to the column that's been selected - otherwise enable it.
 				 */
 				$(select).parent().find("select.to").children("option").each(function() {
-					if (parseInt($(this).attr("data-id")) <= from) {
+					if (parseInt($(this).data("id")) <= from) {
 						$(this).attr("disabled", "true");
 					} else {
 						$(this).removeAttr("disabled");
@@ -1002,14 +1008,16 @@ var LinkedGov_WizardsPanel = {
 				});
 			} else if ($(select).hasClass("to")) {
 
-				to = parseInt($(select).find("option[value='" + $(select).val() + "']").attr("data-id"));
+				to = parseInt($(select).find("option[value='" + $(select).val() + "']").data("id"));
+				log(to);
+				
 				/*
 				 * Loop through the list of the other select inputs's options (the "From" select input)
 				 * and disable any option that has a "data-id" (column index) that's greater than or 
 				 * equal to the column that's been selected - otherwise enable it.
 				 */
 				$(select).parent().find("select.from").children("option").each(function () {
-					if (parseInt($(this).attr("data-id")) >= to) {
+					if (parseInt($(this).data("id")) >= to) {
 						$(this).attr("disabled", "true");
 					} else {
 						$(this).removeAttr("disabled");
@@ -1022,7 +1030,7 @@ var LinkedGov_WizardsPanel = {
 			 * 
 			 * Loop through the select input's options that has been changed
 			 */
-			$(select).find("option").each(function () {
+			$(select).find("option").each(function() {
 
 				/*
 				 * Cache the select inputs
@@ -1034,19 +1042,21 @@ var LinkedGov_WizardsPanel = {
 				 * if it's column index is in between the selected "from" column
 				 * and the selected "to" column
 				 */
-				if (parseInt($(this).attr("data-id")) >= 
-					parseInt(fromSelect.find("option[value='" + fromSelect.val() + "']").attr("data-id")) 
-					&& parseInt($(this).attr("data-id")) <= 
-						parseInt(toSelect.find("option[value='" + toSelect.val() + "']").attr("data-id"))) {
+				if (parseInt($(this).data("id")) >= 
+					parseInt(fromSelect.find("option[value='" + fromSelect.val() + "']").data("id")) 
+					&& parseInt($(this).data("id")) <= 
+						parseInt(toSelect.find("option[value='" + toSelect.val() + "']").data("id"))) {
+										
 					/*
 					 * Append the selected column HTML to the list.
 					 */
-					colsHTML += "<li>" +
-					"<span class='col'>" + $(this).val() + "</span>" +  
-					"<span class='remove'>X</span>" +
-					self.getFragmentData($cols) +
-					"</li>";
+					var li = $("<li />")
+					.data("colName", $(this).val())
+					.append($("<span />").addClass("col").text($(this).val()))
+					.append($("<span />").addClass("remove").text("X"))
+					.append(self.getFragmentData($cols));
 					
+					$cols.append(li);
 					/*
 					 * Add jQuery UI's "selected" styles to the column headers in the
 					 * data table.
@@ -1054,17 +1064,17 @@ var LinkedGov_WizardsPanel = {
 					$(LG.getColumnHeaderElement($(this).val())).addClass("selected");
 					//LG.selectColumn($(this).val());
 
+				} else {
+					$(LG.getColumnHeaderElement($(this).val())).removeClass("selected");
 				}
 			});
 
-			if(colsHTML == ""){
+			if($cols.children("li").length < 1){
 				// No columns have been selected
 			} else {
-				/*
-				 * Append the selected column list to the UL element in the wizard and 
-				 * show it.
-				 */
-				$cols.html(colsHTML).show();
+				// Append the selected column list to the UL element in the wizard and 
+				// show it.
+				$cols.show();
 			}
 
 		},
@@ -1540,6 +1550,7 @@ var LinkedGov_WizardsPanel = {
 			
 			//log("restoreWizardBody");
 			
+			LG.removeColumnOverlays();
 			$("div.unexpectedValues").remove();
 			$("div.wizard-panel").css("bottom","72px");
 			$("div.wizard-body").children().show();
@@ -1584,6 +1595,9 @@ var LinkedGov_WizardsPanel = {
 			$(wizardBody).find("ul.selected-columns").html("").hide();
 			// Clear text fields
 			$(wizardBody).find(":text").val("");
+			
+			// Remove the column overlays
+			LG.removeColumnOverlays();
 
 			// Make sure the wizard is displayed so the user can repeat the
 			// task if they wish
@@ -2029,7 +2043,12 @@ var LinkedGov_WizardsPanel = {
 									}
 								}
 								
-								self.finishUnexpectedValuesTest(callback);
+								//self.finishUnexpectedValuesTest(callback);
+								
+								// Move on to the next colObject by incrementing the index.
+								index = index+1;
+								// Recurse until we've processed each colObject.
+								self.displayUnexpectedValuesPanel(colObjects, index, wizardBody, callback);
 
 							});
 
@@ -2092,6 +2111,15 @@ var LinkedGov_WizardsPanel = {
 				}
 			} else {
 				// We have looped through the colObjects
+				// Remove the "error" facet / return the rows in the data table to normal
+				var facets = ui.browsingEngine._facets;
+				for(var i=0; i < facets.length; i++){
+					if(facets[i].facet._config.columnName == result.colName){
+						facets[i].facet._remove();
+					}
+				}
+
+				self.finishUnexpectedValuesTest(callback);
 			}
 
 		},
@@ -2159,10 +2187,9 @@ var LinkedGov_WizardsPanel = {
 		 */
 		populateUnexpectedValuePanelList : function(result){
 
-			
-			var html = '<p class="note">A maximum of ten values are shown</p>';
-			html += '<ul class="unexpectedValueList">';
-			
+			var ul = $("<ul />").addClass("unexpectedValueList");
+			var notice = $("<p />").addClass("note").text("A maximum of ten values are shown");
+						
 			var columns = theProject.columnModel.columns;
 			for(var i=0;i<columns.length;i++){
 				if(columns[i].name == result.colName){
@@ -2171,18 +2198,23 @@ var LinkedGov_WizardsPanel = {
 							// The input element needs to contain the cell index and row index 
 							// which we pass to the "edit-one-cell" process call in the "fixUnexpectedValues()" 
 							// function.
-							html += '<li><input class="unexpectedValue" type="text" data-cell="'+
-							columns[i].cellIndex+'" data-row="'+theProject.rowModel.rows[j].i+'" rel="'+
-							theProject.rowModel.rows[j].cells[columns[i].cellIndex].v+'" value="'+
-							theProject.rowModel.rows[j].cells[columns[i].cellIndex].v+'" /></li>';
+							var li = $("<li />")
+							var input = $("<input />")
+							.addClass("unexpectedValue")
+							.attr("type", "text")
+							.attr("rel", theProject.rowModel.rows[j].cells[columns[i].cellIndex].v)
+							.attr("value", theProject.rowModel.rows[j].cells[columns[i].cellIndex].v)
+							.data("cell", columns[i].cellIndex)
+							.data("row", theProject.rowModel.rows[j].i);
+							
+							li.append(input);
+							ul.append(li);
 						}
 					}
 				}
 			}
 
-			html += "</ul>";
-
-			$("div.unexpectedValues").find("div.buttons").before(html);
+			$("div.unexpectedValues").find("div.buttons").before(notice).before(ul);
 		},
 
 		/*
@@ -2199,8 +2231,8 @@ var LinkedGov_WizardsPanel = {
 
 				// Construct a parameter object
 				var data = {
-						cell : $(li).children("input").attr("data-cell"),
-						row : $(li).children("input").attr("data-row"),
+						cell : $(li).children("input").data("cell"),
+						row : $(li).children("input").data("row"),
 						value : $(li).children("input").val(),
 						engine : JSON.stringify(ui.browsingEngine.getJSON())
 				};

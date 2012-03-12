@@ -84,10 +84,10 @@ var LinkedGov_rowsToColumnsWizard = {
 
 				// Store the column containing the new column header values
 				self.vars.headersColName = $(elmts.rowsToColumnsColumns).children(
-				"li").eq(0).find("span.col").html();
+				"li").eq(0).data("colName");
 				// Store the column containing the values for the new columns
 				self.vars.valuesColName = $(elmts.rowsToColumnsColumns2).children(
-				"li").eq(0).find("span.col").html();
+				"li").eq(0).data("colName");
 
 				log(self.vars.headersColName + "," + self.vars.valuesColName);
 
@@ -96,15 +96,14 @@ var LinkedGov_rowsToColumnsWizard = {
 				 * column)
 				 */
 				$(elmts.rowsToColumnsColumns3).children("li").each(function() {
-					self.vars.colsToExclude.push($(this).find("span.col").html())
+					self.vars.colsToExclude.push($(this).data("colName"))
 				});
 
 				/*
 				 * Set blank cells to bull before starting the operation, call the
 				 * first wizard operation once complete.
 				 */
-				LG.ops.setBlanksToNulls(true, theProject.columnModel.columns, 0,
-						function() {
+				LG.ops.setBlanksToNulls(true, theProject.columnModel.columns, 0, function() {
 					self.findSortableColumnHeaders();
 				});
 			}
@@ -122,7 +121,7 @@ var LinkedGov_rowsToColumnsWizard = {
 		 */
 		findSortableColumnHeaders : function() {
 
-			log("findSortableColumnHeaders");
+			//log("findSortableColumnHeaders");
 
 			var self = this;
 
@@ -483,8 +482,7 @@ var LinkedGov_rowsToColumnsWizard = {
 								 * the newly transposed columns.
 								 */
 								for ( var i = 0; i < data.facets[h].choices.length; i++) {
-									self.vars.newHeaders
-									.push(data.facets[h].choices[i].v.l);
+									self.vars.newHeaders.push(data.facets[h].choices[i].v.l);
 								}
 							} else {
 								/*
@@ -583,8 +581,7 @@ var LinkedGov_rowsToColumnsWizard = {
 				// The first of the transposed columns will not have the same name
 				// as the value stored in the column we the user selected to
 				// transpose.
-				if (facets[i].facet._config.columnName == self.vars.valuesColName
-						+ " 1") {
+				if (facets[i].facet._config.columnName == self.vars.valuesColName + " 1") {
 
 					// Store the facet so we can remove it later
 					var blankFacet = facets[i].facet;
@@ -635,8 +632,7 @@ var LinkedGov_rowsToColumnsWizard = {
 																// multi-values
 																// are
 																// transposed.
-																self
-																.getNewColumnHeaders(
+																self.getNewColumnHeaders(
 																		blankFacet,
 																		true);
 															}

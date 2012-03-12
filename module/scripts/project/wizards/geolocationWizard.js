@@ -25,7 +25,7 @@ var LinkedGov_geolocationWizard = {
 				},
 				lg : {
 					curie: "lg",
-					uri: LG.vars.lgNameSpace
+					uri: LG.vars.projectURI
 				}
 			},
 			unexpectedValueRegex : 'grel:if(isBlank(value),"float",if(type(value) == "number",(if(value % 1 == 0,"int","float")),if(((type(value.match(/\\b\\d{4}[\\-]\\d{1,2}[\\-]\\d{1,2}\\b/))=="array")),"error","error"))))'
@@ -106,8 +106,8 @@ var LinkedGov_geolocationWizard = {
 					 */
 					if (!$(this).hasClass("skip")) {
 						array.push({
-							type : el.find("select").val(),
-							name : el.find("span.col").html()
+							name : el.data("colName"),
+							type : el.find("select").val()
 						});
 					}
 				});
@@ -200,7 +200,7 @@ var LinkedGov_geolocationWizard = {
 					"curie" : self.vars.vocabs.lg.curie+":"+LG.camelize(self.vars.coordinateName),
 					"target" : {
 						"nodeType" : "cell-as-resource",
-						"expression" : "value+\"#point\"",
+						"expression" : "value+\"#"+LG.camelize(self.vars.coordinateName)+"\"",
 						"isRowNumberCell" : true,
 						"rdfTypes" : [ {
 							"uri" : "http://www.w3.org/2003/01/geo/wgs84_pos#Point",
@@ -254,7 +254,7 @@ var LinkedGov_geolocationWizard = {
 						/*
 						 * Found existing RDF for the column, so remove it.
 						 */
-						log("Found geolocation RDF data for column: \"" + colObjects[i].name + "\", removing ...");
+						//log("Found geolocation RDF data for column: \"" + colObjects[i].name + "\", removing ...");
 						links.splice(j, 1);
 						j--;
 					}
@@ -363,7 +363,7 @@ var LinkedGov_geolocationWizard = {
 					"target" : {
 						"nodeType" : "cell-as-literal",
 						"valueType" : (uri.indexOf("spatialrelations") > 0 ? "http://www.w3.org/2001/XMLSchema#int" : "http://www.w3.org/2001/XMLSchema#float"),
-						"expression" : "value",
+						"expression" : "escape(value,'xml')",
 						"columnName" : colName,
 						"isRowNumberCell" : false
 					}

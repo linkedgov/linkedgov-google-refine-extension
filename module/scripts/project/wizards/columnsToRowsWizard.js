@@ -61,7 +61,7 @@ var LinkedGov_columnsToRowsWizard = {
 
 			if ($(elmts.columnsToRowsColumns).children("li").length > 0) {
 
-				log("Starting columnsToRowsWizard");
+				//log("Starting columnsToRowsWizard");
 
 				LG.showWizardProgress(true);
 
@@ -75,9 +75,9 @@ var LinkedGov_columnsToRowsWizard = {
 				 * Remove all RDF relating to the columns involved in the rotation 
 				 * operation as this will break their mappings.
 				 */
-				$(elmts.columnsToRowsColumns).children("li").find("span.col").each(function(){
+				$(elmts.columnsToRowsColumns).children("li").each(function(){
 					//log("Removing RDF for: "+$(this).html());
-					LG.rdfOps.removeColumnInRDF($(this).html());
+					LG.rdfOps.removeColumnInRDF($(this).data("colName"));
 				});
 				
 				/*
@@ -119,8 +119,8 @@ var LinkedGov_columnsToRowsWizard = {
 			var self = this;
 			var elmts = self.vars.elmts;
 
-			log("Before:");
-			log($(elmts.columnsToRowsColumns).children("li"));
+			//log("Before:");
+			//log($(elmts.columnsToRowsColumns).children("li"));
 
 			/*
 			 * Loop through the user's selected columns and trim any columns that
@@ -148,8 +148,8 @@ var LinkedGov_columnsToRowsWizard = {
 					i--;
 				}
 			}
-			log("After:");
-			log($(elmts.columnsToRowsColumns).children("li"));
+			//log("After:");
+			//log($(elmts.columnsToRowsColumns).children("li"));
 
 			/*
 			 * Once trimmed, the array should only contain columns to skip after and
@@ -158,7 +158,7 @@ var LinkedGov_columnsToRowsWizard = {
 			 */
 			for ( var j = 0, len = $(elmts.columnsToRowsColumns).children("li").length; j < len; j++) {
 				if ($($(elmts.columnsToRowsColumns).children("li")[j]).hasClass("skip")) {
-					self.vars.colsToSkip.push($($(elmts.columnsToRowsColumns).children("li")[j]).find("span.col").html());
+					self.vars.colsToSkip.push($($(elmts.columnsToRowsColumns).children("li")[j]).data("colName"));
 					self.vars.gapInRange = true;
 				}
 			}
@@ -169,7 +169,7 @@ var LinkedGov_columnsToRowsWizard = {
 			/*
 			 * Recalculate how many columns to transpose.
 			 */
-			self.vars.startColName = $(elmts.columnsToRowsColumns).children("li").eq(0).find("span.col").html();
+			self.vars.startColName = $(elmts.columnsToRowsColumns).children("li").eq(0).data("colName");
 			self.vars.colCount = $(elmts.columnsToRowsColumns).children("li").length  - self.vars.colsToSkip.length;
 			//self.vars.newColName = window.prompt("New column name:", "");
 		},
@@ -251,9 +251,9 @@ var LinkedGov_columnsToRowsWizard = {
 			 */
 			
 			var newColName = window.prompt("Enter a name for the new column that summarises these columns:","");
-			log(newColName);
+			//log(newColName);
 			var valColName = window.prompt("Now enter a name for the new column that will contain it's values:","");
-			log(valColName);
+			//log(valColName);
 			
 			LG.silentProcessCall({
 				type : "POST",

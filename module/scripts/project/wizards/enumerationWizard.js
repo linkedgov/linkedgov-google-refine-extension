@@ -54,7 +54,7 @@ var LinkedGov_enumerationWizard = {
 			self.vars.elmts.enumerationSymbols.children("li").each(function(){
 				if(!$(this).hasClass("skip") && $(this).find("input.textbox").val().length > 0){
 					self.vars.symbolList.push({
-						symbol:$(this).find("span.col").html(),
+						symbol:$(this).data("colName"),
 						enumVal:$(this).find("input.textbox").val()
 					});
 				}

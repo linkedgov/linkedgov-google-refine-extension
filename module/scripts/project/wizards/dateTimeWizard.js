@@ -33,7 +33,7 @@ var LinkedGov_dateTimeWizard = {
 				},
 				lg : {
 					curie: "lg",
-					uri : LG.vars.lgNameSpace
+					uri : LG.vars.projectURI
 				}
 			},
 			unexpectedValueRegex:'grel:if(isBlank(value),"date",if(type(value) == "date","date",if(isError(toDate(value).toString("HH:mm:ss")),"error","date")))'
@@ -188,7 +188,7 @@ var LinkedGov_dateTimeWizard = {
 
 				var colObject = {};
 
-				colObject.name = cols.eq(i).find('span.col').html();
+				colObject.name = cols.eq(i).data('colName');
 
 				/*
 				 * Loop through the fragment checkboxes and build a combination 
@@ -956,7 +956,7 @@ var LinkedGov_dateTimeWizard = {
 					"curie":self.vars.vocabs.lg.curie+":"+camelColName,
 					"target":{
 						"nodeType":"cell-as-literal",
-						"expression":"if(type(value)==\"date\",value.toDate("+mb4d+").toString(\"yyyy-MM-dd\"),value)",
+						"expression":"if(type(value)==\"date\",value.toDate("+mb4d+").toString(\"yyyy-MM-dd\"),escape(value,'xml'))",
 						"valueType":"http://www.w3.org/2001/XMLSchema#date",
 						"columnName":colName,
 						"isRowNumberCell":false
@@ -988,7 +988,7 @@ var LinkedGov_dateTimeWizard = {
 					"curie":self.vars.vocabs.lg.curie+":"+camelColName,
 					"target":{
 						"nodeType":"cell-as-literal",
-						"expression":"if(type(value)==\"date\",value.toDate("+mb4d+").toString(\"yyyy-MM-dd\")+\"T\"+value.toDate("+mb4d+").toString(\"HH:mm:ss\"),value)",
+						"expression":"if(type(value)==\"date\",value.toDate("+mb4d+").toString(\"yyyy-MM-dd\")+\"T\"+value.toDate("+mb4d+").toString(\"HH:mm:ss\"),escape(value,'xml'))",
 						"valueType":"http://www.w3.org/2001/XMLSchema#dateTime",
 						"columnName":colName,
 						"isRowNumberCell":false
@@ -1023,7 +1023,7 @@ var LinkedGov_dateTimeWizard = {
 					"curie":self.vars.vocabs.lg.curie+":"+camelColName,
 					"target":{
 						"nodeType":"cell-as-resource",
-						"expression":"if(type(value)==\"date\",\"http://reference.data.gov.uk/doc/gregorian-instant/\"+value.toDate("+mb4d+").toString(\"yyyy-MM-dd\")+\"T\"+value.toDate("+mb4d+").toString(\"HH:mm:ss\"),value)",
+						"expression":"if(type(value)==\"date\",\"http://reference.data.gov.uk/doc/gregorian-instant/\"+value.toDate("+mb4d+").toString(\"yyyy-MM-dd\")+\"T\"+value.toDate("+mb4d+").toString(\"HH:mm:ss\"),escape(value,'xml'))",
 						"columnName":colName,
 						"isRowNumberCell":false,
 						"rdfTypes":[],
@@ -1062,7 +1062,7 @@ var LinkedGov_dateTimeWizard = {
 					"curie":self.vars.vocabs.lg.curie+":"+camelColName,
 					"target":{
 						"nodeType":"cell-as-resource",
-						"expression":"if(type(value)==\"date\",\"http://reference.data.gov.uk/doc/gregorian-interval/\"+value.toDate("+mb4d+").toString(\"yyyy-MM-dd\")+\"T\"+value.toDate("+mb4d+").toString(\"HH:mm:ss\"),value)",
+						"expression":"if(type(value)==\"date\",\"http://reference.data.gov.uk/doc/gregorian-interval/\"+value.toDate("+mb4d+").toString(\"yyyy-MM-dd\")+\"T\"+value.toDate("+mb4d+").toString(\"HH:mm:ss\"),escape(value,'xml'))",
 						"columnName":colName,
 						"isRowNumberCell":false,
 						"rdfTypes":[],
@@ -1119,7 +1119,7 @@ var LinkedGov_dateTimeWizard = {
 		 */
 		saveRDF : function(rootNode, newRootNode) {
 
-			log("saveRDF");
+			//log("saveRDF");
 
 			var self = this;
 
@@ -1212,8 +1212,6 @@ var LinkedGov_dateTimeWizard = {
 				LG.panels.wizardsPanel.showUndoButton(self.vars.elmts.dateTimeBody);
 				// Hide the "wizard in progress" message
 				LG.showWizardProgress(false);
-
-
 			});
 
 		},

@@ -741,10 +741,6 @@ var LinkedGov_rdfOperations = {
 
 			vars : {
 				vocabs : {
-					lg : {
-						curie : "lg",
-						uri : "http://data.linkedgov.org/vocab/"
-					},
 					rdfs: {
 						curie: "rdfs",
 						uri: "http://www.w3.org/2000/01/rdf-schema#"
@@ -845,7 +841,7 @@ var LinkedGov_rdfOperations = {
 							curie : "owl:Class",
 							uri : self.vars.vocabs.owl.uri+"Class"
 						} ],
-						value : LG.vars.lgNameSpace + "terms/class/" + camelizedRowLabel
+						value : LG.vars.lgClassURI + camelizedRowLabel
 				};
 
 				/*
@@ -918,7 +914,7 @@ var LinkedGov_rdfOperations = {
 								curie : self.vars.vocabs.owl.curie+":ObjectProperty",
 								uri : self.vars.vocabs.owl.uri+"ObjectProperty"
 							} ],
-							value : LG.vars.lgNameSpace + "terms/property/" + LG.camelize(cols[i].label),
+							value : LG.vars.lgPropertyURI + LG.camelize(cols[i].label),
 							links : [ {
 								curie : self.vars.vocabs.rdfs.curie+":label",
 								target : {
@@ -978,7 +974,7 @@ var LinkedGov_rdfOperations = {
 			vars:{
 				vocabs:{
 					lg:{
-						uri:LG.vars.lgNameSpace,
+						uri:LG.vars.projectURI,
 						curie:"lg"
 					}
 				}
@@ -1038,31 +1034,23 @@ var LinkedGov_rdfOperations = {
 				 * node for the wizard column RDF.
 				 */
 
-				$("td.column-header").each(function() {
-					if ($(this).find("span.column-header-name").html() != "All" && !$(this).hasClass("typed") && ($.inArray($(this).find("span.column-header-name").html(), LG.vars.hiddenColumns.split(",")) < 0)) {
-
-						//log("\""+ $(this).find("span.column-header-name").html() + "\" has no RDF, generating generic RDF for it.");
-
-						var camelizedColumnName = LG.camelize($(this).find("span.column-header-name").html());
-
-						/*
-						 * Generic triple structure is: <row> <lg:columnName> "cell value"
-						 */
-
-						//log('LG.decodeHTMLEntity($(this).find("span.column-header-name").html()):');
-						//log(LG.decodeHTMLEntity($(this).find("span.column-header-name").html()));
-
+				var columnHeaders = ui.dataTableView._columnHeaderUIs;
+				for(var i=0; i<columnHeaders.length; i++){
+					if(!$(columnHeaders[i]._td).hasClass("typed") && ($.inArray(columnHeaders[i]._column.name, LG.vars.hiddenColumns.split(",")) < 0)){
+						
+						var camelizedColumnName = LG.camelize(columnHeaders[i]._column.name);
+						
 						var o = {
 								"uri" : self.vars.vocabs.lg.uri + camelizedColumnName,
 								"curie" : self.vars.vocabs.lg.curie + ":" + camelizedColumnName,
 								"target" : {
 									"nodeType" : "cell-as-literal",
 									"expression" : "value",
-									"columnName" : LG.decodeHTMLEntity($(this).find("span.column-header-name").html()),
+									"columnName" : columnHeaders[i]._column.name,
 									"isRowNumberCell" : false
 								}
 						};
-
+						
 						/*
 						 * Detect and specify types & language for the generic RDF about columns.
 						 * 
@@ -1070,51 +1058,26 @@ var LinkedGov_rdfOperations = {
 						 * in the data table, so we need to iterate through the column model and select each 
 						 * columns "cellIndex" instead.
 						 */
-						var columns = theProject.columnModel.columns;
-						for(var i=0; i<columns.length; i++){
-							if(columns[i].name == $(this).find("span.column-header-name").html()){
-
-								if(theProject.rowModel.rows[0].cells[columns[i].cellIndex] != null){
-
-									var expression = 'grel:if(type(value)=="number",if(value%1==0,"int","float"),if(not(isError(value.toNumber())),if(value.toNumber()%1==0,"int","float"),"string"))';
-
-
-									/*
-									 * Recursive function to compute a facet for each column to find 
-									 * the most frequently occuring value type (int, float, string...)
-									 */
-									var type = LG.ops.findHighestFacetValue(columns[i].name,expression);
-
-									//log("Finding type of generic column...");
-									//log("columns[i].name: "+columns[i].name);
-									//log("type: "+type);
-
-									if(type == "string"){
-										o.target.lang = "en";
-									} else if(type == "int"){
-										o.target.valueType = "http://www.w3.org/2001/XMLSchema#int";
-										//parseValueTypesInColumn("int",columns[i].name);
-									} else if(type == "float"){
-										o.target.valueType = "http://www.w3.org/2001/XMLSchema#float";
-										//parseValueTypesInColumn("float",columns[i].name);
-									} else if(type == "date"){
-										o.target.valueType = "http://www.w3.org/2001/XMLSchema#date";
-										//parseValueTypesInColumn("date",columns[i].name);
-									}
-
-								}
-
-								i = columns.length;
-							}
-
+						var expression = 'grel:if(type(value)=="number",if(value%1==0,"int","float"),if(not(isError(value.toNumber())),if(value.toNumber()%1==0,"int","float"),"string"))';
+						var type = LG.ops.findHighestFacetValue(columnHeaders[i]._column.name, expression);
+						
+						if(type == "string"){
+							o.target.lang = "en";
+						} else if(type == "int"){
+							o.target.valueType = "http://www.w3.org/2001/XMLSchema#int";
+							//parseValueTypesInColumn("int",columns[i].name);
+						} else if(type == "float"){
+							o.target.valueType = "http://www.w3.org/2001/XMLSchema#float";
+							//parseValueTypesInColumn("float",columns[i].name);
+						} else if(type == "date"){
+							o.target.valueType = "http://www.w3.org/2001/XMLSchema#date";
+							//parseValueTypesInColumn("date",columns[i].name);
 						}
 
-
 						rootNode.links.push(o);
-
 					}
-				});
-
+				}
+				
 				/*
 				 * Check to see if the root node needs to be added to the schema.
 				 */
@@ -1126,7 +1089,6 @@ var LinkedGov_rdfOperations = {
 					log("Adding first rootNode for generic column RDF...");
 					schema.rootNodes.push(rootNode);
 				}
-
 
 				/*
 				 * Save the RDF.
@@ -1235,26 +1197,24 @@ var LinkedGov_rdfOperations = {
 			recursiveFunction : function(key, val) {
 
 				var self = this;
-
+				var columnHeaders = ui.dataTableView._columnHeaderUIs;
+				
 				if (key == "columnName") {
 
-					$("td.column-header").each(function() {
-						if($(this).find("span.column-header-name").length > 0){
-							if ($(this).find("span.column-header-name").html().toLowerCase() == val.toLowerCase()) {
-								$(this).addClass("typed");
-							}
+					for(var i=0; i<columnHeaders.length; i++){
+						if(columnHeaders[i]._column.name.toLowerCase() == val.toLowerCase()){
+							$(columnHeaders[i]._td).addClass("typed");
 						}
-					});
+					}
+
 				} else if(key == "curie" && val != "vcard:Address"){
 
-					$("td.column-header").each(function() {		
-						if($(this).find("span.column-header-name").length > 0){
-
-							if (val.split(":")[1] == LG.camelize($(this).find("span.column-header-name").html().toLowerCase())) {
-								$(this).addClass("typed");
-							}
+					for(var i=0; i<columnHeaders.length; i++){
+						if (val.split(":")[1] == LG.camelize(columnHeaders[i]._column.name.toLowerCase())) {
+							$(columnHeaders[i]._td).addClass("typed");
 						}
-					});
+					}
+
 				}
 
 				if (val instanceof Object) {

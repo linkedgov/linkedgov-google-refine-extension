@@ -43,7 +43,7 @@ var LinkedGov_addressWizard = {
 				},
 				lg : {
 					curie: "lg",
-					uri: LG.vars.lgNameSpace
+					uri: LG.vars.projectURI
 				}
 			},
 			hiddenColumns : [],
@@ -77,7 +77,7 @@ var LinkedGov_addressWizard = {
 			// Construct a GREL expression to be used in the unexpected values panel for validating
 			// a postcode. Tests to see if the value is blank or if it's a valid postcode. If it's valid
 			// or blank, it returns the value "postcode", otherwise "error".
-			self.vars.unexpectedValueRegex = 'grel:if(isBlank(value),"postcode",if(isError(if(partition(value,'+self.vars.postCodeRegex+')[1].length() > 0,"postcode","error")),"error",if(partition(value,'+self.vars.postCodeRegex+')[1].length() > 0,"postcode",if(isBlank(cells["postcode"].value),"postcode","error"))))';
+			self.vars.unexpectedValueRegex = 'grel:if(isBlank(value),"postcode",if(isError(if(partition(value,'+self.vars.postCodeRegex+')[1].length() > 0,"postcode","error")),"error",if(partition(value,'+self.vars.postCodeRegex+')[1].length() > 0,"postcode",if(isBlank(cells["postcode"].value),"error","postcode"))))';
 
 			/*
 			 * Build an array of column objects with their options
@@ -179,7 +179,7 @@ var LinkedGov_addressWizard = {
 						 * a boolean for whether it contains a postcode.
 						 */
 						array.push({
-							name : el.find("span.col").html(),
+							name : el.data("colName"),
 							part : el.find("select").val(),
 							containsPostcode : el.find("input.postcode[type='checkbox']").attr("checked")
 						});
@@ -645,6 +645,8 @@ var LinkedGov_addressWizard = {
 		 */
 		makeOSPCFragment : function(colName, uri, curie, pcodeURI) {
 
+			//log("makeOSPCFragment");
+			
 			var self = this;
 
 			var o = {
@@ -652,7 +654,7 @@ var LinkedGov_addressWizard = {
 					"curie" : curie,
 					"target" : {
 						"nodeType" : "cell-as-resource",
-						"expression" : "\"" + pcodeURI + "\"+value",
+						"expression" : "escape(\"" + pcodeURI + "\"+value.replace(\" \",\"\"),'xml')",
 						"columnName" : colName,
 						"isRowNumberCell" : false,
 						"rdfTypes" : [
@@ -663,7 +665,7 @@ var LinkedGov_addressWizard = {
 						            	  "curie" : self.vars.vocabs.rdfs.curie+":label",
 						            	  "target" : {
 						            		  "nodeType" : "cell-as-literal",
-						            		  "expression" : "value",
+						            		  "expression" : "escape(value,'xml')",
 						            		  "columnName" : colName,
 						            		  "isRowNumberCell" : false
 						            	  }
