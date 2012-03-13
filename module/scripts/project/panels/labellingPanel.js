@@ -110,13 +110,15 @@ var LinkedGov_LabellingPanel = {
 				var liElement = $(this).parent();
 				// Store the input's value to access it inside the each function
 				var colName = liElement.find("input.column-label").val();
-				$("div.column-header-title span.column-header-name").each(function(){
-					if($(this).html() == colName){
+				
+				var colHeaders = ui.dataTableView._columnHeaderUIs;
+				for(var i=0; i<colHeaders.length; i++){
+					if(colHeaders[i]._column.name == colName){
 						// Add the inputs class to the column header in the table - this will 
 						// colour it accordingly.
-						$(this).parent("div").parent("td").addClass(liElement.attr("class"));
+						$(colHeaders[i]._td).addClass(liElement.attr("class"));
 					}
-				});
+				}
 			})
 			.live("keyup",function(){
 				// On every stroke, check the column label and description at once
@@ -128,12 +130,15 @@ var LinkedGov_LabellingPanel = {
 				var colName = $(this).parent("li").find("input.column-label").val();
 
 				// Remove the highlight from the column in the data table.
-				$("div.column-header-title span.column-header-name").each(function(){
-					if($(this).html() == colName){
-						$(this).parent("div").parent("td").removeClass("bad").removeClass("maybe").removeClass("good").removeClass("great");
+				var colHeaders = ui.dataTableView._columnHeaderUIs;
+				for(var i=0; i<colHeaders.length; i++){
+					if(colHeaders[i]._column.name == colName){
+						// Add the inputs class to the column header in the table - this will 
+						// colour it accordingly.
+						$(colHeaders[i]._td).removeClass("bad").removeClass("maybe").removeClass("good").removeClass("great");
 					}
-				});
-
+				}
+				
 				// Replace the holding text if the description wasn't filled out properly.
 				if($(this).is("textarea") && $(this).val() == ""){
 					$(this).val("Enter a description...");
@@ -245,9 +250,14 @@ var LinkedGov_LabellingPanel = {
 					"each label input as a precaution. The status of each input will then change depending on it's value.");
 				} else {
 					// Remove the highlights from the table headers
-					$("td.column-header").each(function(){
+					var colHeaders = ui.dataTableView._columnHeaderUIs;
+					for(var i=0; i<colHeaders.length; i++){
+							$(colHeaders[i]._td).removeClass("bad").removeClass("maybe").removeClass("good").removeClass("great");
+						
+					}
+					/*$("td.column-header").each(function(){
 						$(this).removeClass("bad").removeClass("maybe").removeClass("good").removeClass("great");
-					});
+					});*/
 					// Begin finalising the RDF
 					LG.rdfOps.saveLabelsToRDF.init();
 				}
@@ -297,13 +307,13 @@ var LinkedGov_LabellingPanel = {
 			// Hide the current list if it's showing
 			$("div.column-list").hide();
 
-			var html = "<ul>";
-
+			var ul = $("<ul />");
+			
 			// Iterate through each column using Refine's columnModel		
 			for(var i=0;i<theProject.columnModel.columns.length;i++){
 
 				// Convert HTML entities (e.g. "&amp;" to "&")
-				var colName = LG.decodeHTMLEntity(theProject.columnModel.columns[i].name);
+				var colName = theProject.columnModel.columns[i].name;
 				/*
 				 * Only create a label and description input for a column if it's not in the hidden 
 				 * columns list (because these columns aren't stored in the data)
@@ -360,20 +370,20 @@ var LinkedGov_LabellingPanel = {
 					}
 
 					// Create the HTML
-					html += "<li class='"+status+"'>" +
-					"<input class='column-label' value='"+colName+"' />" +
-					"<textarea class='column-description' value='"+description+"'>"+description+"</textarea>" + 
-					"</li>";
+					var li = $("<li />").addClass(status);
+					$("<input />").addClass("column-label").val(colName).appendTo(li);
+					$("<textarea />").addClass("column-description").val(description).text(description).appendTo(li);
 
+					ul.append(li);
+					
 					// Highlight the column header
 					$(LG.getColumnHeaderElement(colName)).addClass(status);
 				}
 			}
 
-			html += "</ul>";
-
 			// Replace/inject the HTML into the column-list div on the labelling panel
-			$("div.column-list").html(html);
+			$("div.column-list").html("");
+			$("div.column-list").append(ul);
 
 			// Assign each of the column names a safe-guard "original name" which will be used 
 			// to prevent saving a column name with a bad status.
@@ -650,16 +660,15 @@ var LinkedGov_LabellingPanel = {
 
 			/*
 			 * Highlight the column header
-			 * 
-			 * We use decodeHTMLEntity here because we are testing against the name from the  
-			 * table header which is a HTML element
-			 */
-			$("td.column-header span.column-header-name").each(function(){
-				if(LG.decodeHTMLEntity($(this).html()) == input.val()){
-					var el = $(this).parent().parent();
-					el.removeClass("bad").removeClass("maybe").removeClass("good").removeClass("great").addClass(status);
+			 */			
+			var colHeaders = ui.dataTableView._columnHeaderUIs;
+			for(var i=0; i<colHeaders.length; i++){
+				if(colHeaders[i]._column.name == input.val()){
+					// Add the inputs class to the column header in the table - this will 
+					// colour it accordingly.
+					$(colHeaders[i]._td).removeClass("bad").removeClass("maybe").removeClass("good").removeClass("great").addClass(status);
 				}
-			});
+			}
 		},
 
 		highlightColumns:function(){
@@ -668,7 +677,7 @@ var LinkedGov_LabellingPanel = {
 			for(var i=0;i<theProject.columnModel.columns.length;i++){
 
 				// Convert HTML entities (e.g. "&amp;" to "&")
-				var colName = LG.decodeHTMLEntity(theProject.columnModel.columns[i].name);
+				var colName = theProject.columnModel.columns[i].name;
 
 				/*
 				 * Column name status can be:

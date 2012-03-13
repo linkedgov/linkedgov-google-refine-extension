@@ -181,19 +181,17 @@ var LinkedGov_rdfOperations = {
 			var schema = self.getRDFSchema();
 
 			// Attempt to locate an existing metadata root node 
-			// and remove it before saving the metadata.
+			// and remove it before saving the metadata.	
 			for(var i=0; i<schema.rootNodes.length; i++){
 				for(var j=0; j<schema.rootNodes[i].links.length; j++){
 					if(schema.rootNodes[i].links[j].curie == "dct:title"){
 						// Splice the root node from the rootNodes array
 						schema.rootNodes.splice(i,1);
+						// Break from the loops
+						return;
 					}
 				}
 			}
-
-			// Destroy any hidden column data
-			// TODO: Why do we do this?
-			//LG.ops.eraseHiddenColumnData();
 
 			// Create a vocabulary config object storing the vocabulary details
 			// we need to use in order to save the metadata
@@ -216,12 +214,16 @@ var LinkedGov_rdfOperations = {
 
 			// Locate and remove any of these vocabularies before adding them
 			// to the prefixes array.
-			for(var h=0; h<vocabs.length;h++){
-				for (var i = 0; i < schema.prefixes.length; i++) {
+			for(var h=0; h<vocabs.length; h++){
+				for (var i=0; i<schema.prefixes.length; i++) {
 					if (schema.prefixes[i].name == vocabs[h].name) {
 						// log("Found existing RDF prefixes, removing...");
 						schema.prefixes.splice(i, 1);
-						i--;
+						if(schema.prefixes.length == 0){
+							return;
+						} else {
+							i--;
+						}
 					}
 				}
 
@@ -240,7 +242,7 @@ var LinkedGov_rdfOperations = {
 							"uri":"http://rdfs.org/ns/void#Dataset",
 							"curie":"void:Dataset"
 						}],
-						value : LG.vars.lgNameSpace + "dataset/" + theProject.id
+						value : LG.vars.projectURI
 				};
 
 				// Loop through the metadata key-values in the metadataObject
@@ -820,7 +822,7 @@ var LinkedGov_rdfOperations = {
 					}
 				}
 
-				var camelizedRowLabel = LG.camelize(LG.vars.labelsAndDescriptions.rowLabel);
+				var camelizedRowLabel = escape(LG.camelize(LG.vars.labelsAndDescriptions.rowLabel));
 
 				/*
 				 * Exists in the schema as it's own root node, so we create one here 
@@ -914,7 +916,7 @@ var LinkedGov_rdfOperations = {
 								curie : self.vars.vocabs.owl.curie+":ObjectProperty",
 								uri : self.vars.vocabs.owl.uri+"ObjectProperty"
 							} ],
-							value : LG.vars.lgPropertyURI + LG.camelize(cols[i].label),
+							value : LG.vars.lgPropertyURI + escape(LG.camelize(cols[i].label)),
 							links : [ {
 								curie : self.vars.vocabs.rdfs.curie+":label",
 								target : {
@@ -991,7 +993,7 @@ var LinkedGov_rdfOperations = {
 				 */
 				LG.rdfOps.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
 
-					var camelizedRowLabel = LG.camelize(LG.vars.labelsAndDescriptions.rowLabel);
+					var camelizedRowLabel = escape(LG.camelize(LG.vars.labelsAndDescriptions.rowLabel));
 
 					/*
 					 * Camelize the row label that's been entered and type the root node (each row) 
@@ -1038,7 +1040,7 @@ var LinkedGov_rdfOperations = {
 				for(var i=0; i<columnHeaders.length; i++){
 					if(!$(columnHeaders[i]._td).hasClass("typed") && ($.inArray(columnHeaders[i]._column.name, LG.vars.hiddenColumns.split(",")) < 0)){
 						
-						var camelizedColumnName = LG.camelize(columnHeaders[i]._column.name);
+						var camelizedColumnName = escape(LG.camelize(columnHeaders[i]._column.name));
 						
 						var o = {
 								"uri" : self.vars.vocabs.lg.uri + camelizedColumnName,
@@ -1210,7 +1212,7 @@ var LinkedGov_rdfOperations = {
 				} else if(key == "curie" && val != "vcard:Address"){
 
 					for(var i=0; i<columnHeaders.length; i++){
-						if (val.split(":")[1] == LG.camelize(columnHeaders[i]._column.name.toLowerCase())) {
+						if (val.split(":")[1] == escape(LG.camelize(columnHeaders[i]._column.name.toLowerCase()))) {
 							$(columnHeaders[i]._td).addClass("typed");
 						}
 					}

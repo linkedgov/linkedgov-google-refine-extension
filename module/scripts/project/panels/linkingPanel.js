@@ -394,7 +394,7 @@ var LinkedGov_LinkingPanel = {
 					var li = $("<li />")
 					.append($("<span class='col' />").text(columns[i].name))
 					.append($("<span class='remove' />").text("X"))
-					.append($("<span class='link' />").text("serviceName"));
+					.append($("<span class='link' />").text(serviceName));
 					
 					ul.append(li);
 					
@@ -2092,22 +2092,25 @@ var LinkedGov_LinkingPanel = {
 		buildPreviewHTML:function(data, suggest){
 
 			var self = this;
+			
+			self.previewPane.html("");
 
-			var html = "<p class='name'>"+suggest.name+"</p>";
-			var desc = $("<div />").html(data.html);
+			$("<p />").addClass("name").text(suggest.name).appendTo(self.previewPane);
+			
+			var desc = $("<div />").append(data.html);
 
 			// Depending on the description returned, we can 
 			// handle little or no information by displaying something appropriate
 			if(typeof suggest.description != 'undefined'){
-				html += "<p class='desc'>"+suggest.description+"</p>";
+				$("<p />").addClass("desc").text(suggest.description).appendTo(self.previewPane);
 			} else if(desc.find("div.resource_preview_description").length > 0){
-				html += "<p class='desc'>"+desc.find("div.resource_preview_description").html()+"</p>";
+				$("<p />").addClass("desc").text(desc.find("div.resource_preview_description").html()).appendTo(self.previewPane);
 			} else {
-				html += "<p class='desc'>No information available.</p>";
+				$("<p />").addClass("desc").text("No information available.").appendTo(self.previewPane);
 			}
 
 			// Inject the HTML and show the pane
-			self.previewPane.html(html);
+			//self.previewPane.html(html);
 			self.previewPane.show();
 			// Store the result in the cache and trim it
 			self.previewCache[suggest.id] = data;

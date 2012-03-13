@@ -591,7 +591,7 @@ LG.buildColumnOverlays = function(selectedCallback, deselectedCallback){
 		// Start index at 1 because of the "All" header
 		var index = 0;
 		var divs = $("<div />");
-			
+
 		$("table.data-header-table tbody tr td.column-header").each(function(){
 
 			// Skip adding an overlay for the "All" column
@@ -614,12 +614,12 @@ LG.buildColumnOverlays = function(selectedCallback, deselectedCallback){
 				} else {
 					div.height($("table.data-table").height()+el.height()+10);
 				}
-				
+
 				divs.append(div);
 			}
 			index++;
 		});
-		
+
 		$("body").append(divs.children());
 
 		var startPosition = $("div.data-table-container").scrollLeft();
@@ -1140,31 +1140,15 @@ LG.camelize = function(str) {
 	//log("Camelizing: ")
 	//log(str);
 
-	return escape($("<div/>").html(str).text()
-			.toLowerCase()
-			.replace(/\s(.)/g, function($1) { return $1.toUpperCase(); })
-			.replace(/\s/g, '')
-			.replace(/^(.)/, function($1) { return $1.toLowerCase(); })
-			.replace(/\)/g,"-")
-			.replace(/\(/g,"-")
-			//.replace(/=/g,"-equals-")
-			.replace(/&/g,"and")
-			//.replace(/:/g,"-")
-			//.replace(/</g,"-less than-")
-			//.replace(/>/g,"-more than-")
-			.replace(/_/g,"-"));
+	str = str.trim();
+	str = str.replace(/&/g,"And");
 
+	return str.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, function(match, index) {
+		if (+match === 0) return ""; // or if (/\s+/.test(match)) for white spaces
+		return index == 0 ? match.toLowerCase() : match.toUpperCase();
+	});
 };
 
-
-/*
- * DecodeHTMLEntity
- * 
- * Decodes HTML entities like &amp; and &apos; 
- */
-LG.decodeHTMLEntity = function(str){
-	return $("<div/>").html(str).text();
-};
 
 /*
  * restoreHistory
