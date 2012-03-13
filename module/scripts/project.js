@@ -21,6 +21,7 @@ LG.vars = {
 		separator : "<LG>",
 		nullValue : "<LG_NULL>",
 		blanksSetToNulls : false,
+		lastScrollLeft: 0,
 		rdfSchema : {
 			prefixes : [],
 			baseUri : "http://data.linkedgov.org/dataset/"+theProject.id+"/",
@@ -254,8 +255,6 @@ LG.loadOperationScripts = function(){
 				LG.rdfOps.applyTypeIcons.apply();
 				// as well as our hidden column classes.
 				LG.ops.keepHiddenColumnsHidden();
-				// Reposition the column overlays
-				LG.buildColumnOverlays();
 				// Perform an initial resize
 				$(window).resize();
 			}
@@ -364,6 +363,8 @@ LG.showFinishMessage = function(){
  * o.header = the header text for the dialog
  * o.body = the body text for the dialog
  * o.footer = the footer text 
+ * o.ok = callback for the ok button
+ * o.cancel = callback for the cancel button
  * o.className = the className for custom styling
  */
 LG.createDialog = function(o){
@@ -580,65 +581,84 @@ LG.quickTools = function() {
  */
 LG.buildColumnOverlays = function(selectedCallback, deselectedCallback){
 
-	var self = this;
+	// Remove any existing column overlays
+	LG.removeColumnOverlays();
 
-	// Start index at 1 because of the "All" header
-	var index = 0;
+	if($("body").hasClass("selecting-columns")){
 
-	$("table.data-header-table tbody tr td.column-header").each(function(){
+		var self = this;
 
-		// Skip adding an overlay for the "All" column
-		if(index > 0){
-			var el = $(this);
-			var colName = $(this).attr("title");
-			var div = $("<div/>")
-			.addClass("column-overlay")
-			.data("colName",colName)
-			.data("leftPosition",el.offset().left)
-			.data("td", el)
-			.width(el.width()+10)
-			.css("left",el.offset().left+"px")
-			.css("top",el.offset().top+"px");
+		// Start index at 1 because of the "All" header
+		var index = 0;
+		var divs = $("<div />");
+			
+		$("table.data-header-table tbody tr td.column-header").each(function(){
 
-			if($("table.data-table")[0].scrollWidth > $("div#right-panel").width()
-					&& $("table.data-table")[0].scrollHeight > $("div.data-table-container").height()){
-				// Both scroll bars present
-				div.height($("div.data-table-container").height()+el.height()-5);
-			} else {
-				div.height($("table.data-table").height()+el.height()+10);
+			// Skip adding an overlay for the "All" column
+			if(index > 0){
+				var el = $(this);
+				var colName = $(this).attr("title");
+				var div = $("<div/>")
+				.addClass("column-overlay")
+				.data("colName",colName)
+				.data("leftPosition",el.offset().left)
+				.data("td", el)
+				.width(el.width()+10+1)
+				.css("left",el.offset().left+"px")
+				.css("top",el.offset().top+"px");
+
+				if($("table.data-table")[0].scrollWidth > $("div#right-panel").width()
+						&& $("table.data-table")[0].scrollHeight > $("div.data-table-container").height()){
+					// Both scroll bars present
+					div.height($("div.data-table-container").height()+el.height()-5);
+				} else {
+					div.height($("table.data-table").height()+el.height()+10);
+				}
+				
+				divs.append(div);
+			}
+			index++;
+		});
+		
+		$("body").append(divs.children());
+
+		var startPosition = $("div.data-table-container").scrollLeft();
+
+		$("div.data-table-container").unbind("scroll").bind("scroll",function() {
+
+			var newPosition = $("div.data-table-container").scrollLeft();
+			var scrollDifference = newPosition - startPosition;
+			var headerTable = $("table.data-header-table");
+
+			headerTable.css("left",-newPosition+"px");
+
+			if($("body").hasClass("selecting-columns")){
+				LG.repositionColumnOverlays(scrollDifference);
 			}
 
-			// Assign select and deselect listeners to the overylay div
-			div.click(function(){
-				if(!$(this).data("td").hasClass("selected")){
-					el.addClass("selected");
-					if(selectedCallback){
-						selectedCallback($(this).data("colName"));
-					}
-				} else {
-					el.removeClass("selected");
-					if(deselectedCallback){
-						deselectedCallback($(this).data("colName"));
-					}
-				}
-			});
+		});
 
-			$("div.data-table-container").append(div);
-		}
+		LG.repositionColumnOverlays(0);
+	}
 
-		index++;
-	});
+	// We only reassign the click handlers for the column overlays 
+	// if the cabllacks have been passed. The only time they are not 
+	// passed is when the table is re-rendered or when the window is 
+	// resized.
+	if(selectedCallback && deselectedCallback){
+		// Assign select and deselect listeners to the overylay div
+		$("div.column-overlay").die("click").live("click", function(){
+			if(!$(this).data("td").hasClass("selected")){
+				$(this).data("td").addClass("selected");
+				selectedCallback($(this).data("colName"));
 
-	var lastScrollLeft = 0;
-	$("div.data-table-container").unbind("scroll").bind("scroll",function() {
-		var scrollDifference = $("div.data-table-container").scrollLeft();
-		if (lastScrollLeft != scrollDifference) {
-			lastScrollLeft = scrollDifference;
-			LG.repositionColumnOverlays(scrollDifference);
-		}
-	});
+			} else {
+				$(this).data("td").removeClass("selected");
+				deselectedCallback($(this).data("colName"));
 
-	LG.repositionColumnOverlays(0);
+			}
+		});
+	}
 };
 
 /*
@@ -651,28 +671,34 @@ LG.repositionColumnOverlays = function(difference){
 
 	// Scroll the colum headers as the user scrolls
 	// Note: Refine should be doing this, but fails
-	$("table.data-header-table").css("left","-"+difference+"px");
+
+	var table = $("table.data-table");
+	var tableContainerHeight = $("div.data-table-container").height();
+	var colHeaderTDHeight = $("table.data-header-table tbody tr td.column-header").eq(0).height();
+	var rightPanel = $("div#right-panel");
 
 	$("div.column-overlay").each(function(){
 
-		var div = $(this);
-
-		if($("table.data-table")[0].scrollWidth > $("div#right-panel").width()
-				&& $("table.data-table")[0].scrollHeight > $("div.data-table-container").height()){			
-			// Both scroll bars present
-			$(this).height($("div.data-table-container").height()+$("table.data-header-table tbody tr td.column-header").eq(0).height()-5);
-		} else {
-			$(this).height($("table.data-table").height()+$("table.data-header-table tbody tr td.column-header").eq(0).height()+10);
-		}
-
 		// Hide any column overlays that are scrolled out of view
 		$(this).css("left",$(this).data("leftPosition")-difference+"px");
+
+		var overlayEdge = $(this).width() + $(this).offset().left;
+		var screenEdge = $(window).width();
+
 		if(parseInt($(this).css("left")) < 300){
-			log("hiding "+$(this).data("colName"));
-			log(parseInt($(this).css("left")));
-			$(this).hide();
+			$(this).css("visibility","hidden");
+		} else if(overlayEdge > screenEdge-15){
+			$(this).css("visibility","hidden");
 		} else {
-			$(this).show();
+			$(this).css("visibility","visible");
+			if(table[0].scrollWidth > rightPanel.width()
+					&& table[0].scrollHeight > tableContainerHeight){	
+				// Both scroll bars present
+				// Decrease the height of the overlays so they don't obstruct the bottom scroll bar
+				$(this).height(tableContainerHeight+colHeaderTDHeight-5);
+			} else {
+				$(this).height(table.height()+colHeaderTDHeight+10);
+			}	
 		}
 	});
 
@@ -788,7 +814,7 @@ LG.resizeAll_LG = function() {
 	 */
 	resizeAll();
 	// Rebuild the column overlays
-	LG.repositionColumnOverlays(0);
+	LG.buildColumnOverlays();
 };
 
 /*

@@ -2173,15 +2173,15 @@ div#feedback-form textarea
     width: 96%;
 }
 body.lg.selecting-columns div.column-overlay {
-	display: block !important;
+	visibility: visible;
 }
 div.column-overlay
 {
     background-color: transparent;
     cursor: pointer;
-    display:none !important;
-    opacity: 0.5;
+    opacity: 0;
     position: fixed;
+    visibility: hidden;
 }
 div.column-overlay:active
 {
