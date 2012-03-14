@@ -284,8 +284,13 @@ var LinkedGov_LabellingPanel = {
 			this.els.actionBar.show();
 			// Show the "save" button
 			this.els.finishButton.css("display","inline-block");
+			// Setup and show the "back" button
+			this.els.returnButton.unbind("click").bind("click", function(){
+				$("ul.lg-tabs li a[rel='linking-panel']").click();
+				LG.panels.linkingPanel.displayPanel();
+			}).show();
 			// Show this panel
-			this.body.show();	
+			this.body.show();
 			// Scroll the panel to the top
 			$("div#labelling-panel").scrollTop(0);
 
@@ -310,7 +315,7 @@ var LinkedGov_LabellingPanel = {
 			var ul = $("<ul />");
 			
 			// Iterate through each column using Refine's columnModel		
-			for(var i=0;i<theProject.columnModel.columns.length;i++){
+			for(var i=0; i<theProject.columnModel.columns.length; i++){
 
 				// Convert HTML entities (e.g. "&amp;" to "&")
 				var colName = theProject.columnModel.columns[i].name;
@@ -451,7 +456,7 @@ var LinkedGov_LabellingPanel = {
 		 */
 		loadLabelsAndDescriptionFromRDF : function(callback) {
 
-			log("loadLabelsAndDescriptionFromRDF");
+			//log("loadLabelsAndDescriptionFromRDF");
 
 			var self = this;
 

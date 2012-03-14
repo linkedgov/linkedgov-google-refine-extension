@@ -44,6 +44,18 @@ var LinkedGov_LinkingPanel = {
 					"a":"b"					
 			};
 
+			// Set up the vocabularies we use to store the RDF
+			self.vocabs = {
+					lg:{
+						uri:LG.vars.projectURI,
+						curie:"lg"
+					},
+					rdfs:{
+						uri : "http://www.w3.org/2000/01/rdf-schema#",
+						curie : "rdfs"
+					}
+			};
+
 			/*
 			 * Unregister reconciliation services, then load the ones we want.
 			 * 
@@ -59,26 +71,26 @@ var LinkedGov_LinkingPanel = {
 			//ReconciliationManager.standardServices.length = 0;
 			//ReconciliationManager.customServices.length = 0;
 			//ReconciliationManager.save(function(){
-				// After removing and saving 0 services, we load our 
-				// array of our own services and store them in an object.
-				$.getScript("extension/linkedgov/scripts/project/reconciliationServices.js", function(data){
-					// After loading the reconciliation service configs, 
-					// we store them in the global LG.vars object.
-					LG.vars.reconServices = eval('(' + data + ')');
-					// As part of the callback, we then set up the 
-					// different panes of the linking panel
-					self.setupListOfServices();
-					self.setupSuggestLinks();
-					self.setupManualLinks();
-					self.setupConfirmedLinks();
-					self.setupExistingLinks();
-					self.setupResultPanel();
+			// After removing and saving 0 services, we load our 
+			// array of our own services and store them in an object.
+			$.getScript("extension/linkedgov/scripts/project/reconciliationServices.js", function(data){
+				// After loading the reconciliation service configs, 
+				// we store them in the global LG.vars object.
+				LG.vars.reconServices = eval('(' + data + ')');
+				// As part of the callback, we then set up the 
+				// different panes of the linking panel
+				self.setupListOfServices();
+				self.setupSuggestLinks();
+				self.setupManualLinks();
+				self.setupConfirmedLinks();
+				self.setupExistingLinks();
+				self.setupResultPanel();
 
-				});	
+			});	
 			//});
 
 			// Interaction for the "Link" button
-			self.els.linkButton.click(function(){
+			self.els.linkButton.unbind("click").bind("click", function(){
 				// If the user has selected at least one column and a service (as a confirmed link)
 				// and begin to reconcile
 				if(typeof self.confirmedLinks != 'undefined' && self.confirmedLinks.length > 0){
@@ -93,19 +105,10 @@ var LinkedGov_LinkingPanel = {
 
 				} else {
 					alert("You need to confirm which columns you want to link. Click the " +
-							"'Suggest links' button to see which columns might be linkable.");
+					"'Suggest links' button to see which columns might be linkable.");
 				}
 
 			});
-
-			// Set up a temporary vocabulary for reconciliation that lets
-			// us link together a reconciled value and a row in Refine.
-			self.vocabs = {
-					lgRecon:{
-						uri:"http://data.linkedgov.org/reconciliation/predicate/",
-						curie:"lgrecon"
-					}
-			};
 
 			// Interaction for the "Save" button
 			self.els.saveButton.click(function(){
@@ -115,6 +118,163 @@ var LinkedGov_LinkingPanel = {
 				});
 			});
 
+		},
+
+
+		/*
+		 * displayPanel
+		 * 
+		 * Hides the other Typing-panels and shows the appropriate 
+		 * elements when the linking panel tab is clicked on.
+		 */
+		displayPanel: function(){
+
+			var self = this;
+			// Hide the other panels
+			LG.panels.typingPanel.hidePanels();
+			// Hide the action buttons
+			this.els.actionButtons.hide();
+			// Show the collapse-expand button
+			this.els.collapseExpandButton.hide();
+			// Hide the "return to wizards" button
+			this.els.returnButton.hide();
+			// Show the action bar
+			this.els.actionBar.show();
+			// Show the finish button
+			this.els.finishButton.hide();
+			// Show this panel
+			this.body.show();
+			// Hide the back button
+			this.els.returnButton.hide();
+			/*
+			 * Show buttons depending on what panel is 
+			 * being shown
+			 */
+			if($("div.reconcile-panel").css("display") != "none"){
+				// Show the results panel
+				this.showResultPanel();
+			} else {
+				// Show the suggest panel
+				this.showSuggestPanel();
+			}
+		},
+
+		/*
+		 * showSuggestPanel
+		 * 
+		 * Shows the panel that suggests & asks the user to confirm 
+		 * links
+		 */
+		showSuggestPanel:function(){
+			var self = this;
+			// Hide the save button
+			this.els.saveButton.hide();
+			// Hide the cancel button
+			this.els.cancelButton.hide();			
+			// Show the suggest panel
+			this.els.suggestPanel.show();
+			// Hide the reconcile panel
+			this.els.reconcilePanel.hide();
+			// Hide the back button
+			this.els.returnButton.show();
+			// Setup and show the "back" button
+			this.els.returnButton.unbind("click").bind("click", function(){
+				$("ul.lg-tabs li a[rel='wizards-panel']").click();
+				LG.panels.wizardsPanel.displayPanel();
+			}).show();
+			// Show the "next" button
+			this.els.nextButton.unbind("click").bind("click", function(){
+				//LG.panels.labellingPanel.displayPanel();
+				$("ul.lg-tabs li a[rel='labelling-panel']").click();
+				LG.panels.labellingPanel.displayPanel();
+			}).show();
+		},
+
+		/*
+		 * showResultPanel
+		 * 
+		 * Shows the panel that displays the reconcilation results
+		 */
+		showResultPanel:function(){
+
+			var self = this;
+
+			// Hide the link button
+			this.els.linkButton.hide();
+
+			// Hide the suggest panel
+			this.els.suggestPanel.hide();
+
+			// Show the reconcile panel
+			this.els.reconcilePanel.show(0, function(){
+				// Begin reconciliation on the confirmed columns
+				self.buildResultObjects();					
+			});
+
+			// Show & set up the cancel button if the
+			// user has began reconciling a column
+			if(self.confirmedLinks.length > 0){
+				this.els.cancelButton.unbind("click").bind("click",function(){
+
+					// Alert the user they will lose their reconciliation results if they 
+					// press "Cancel".
+					var ans = window.confirm("Are you sure? You will lose any un-saved reconciliation data.");
+
+					if(ans){
+
+						self.cancelReconciliation(function(){
+							// After cancelling reconciliation, rollback the history to the saved 
+							// restore point.
+							LG.restoreHistory(self.historyRestoreID);
+
+							// Use an interval to test whether the expected facets have been created from 
+							// cancelling the reconciliation (2 per column)
+							var interval = setInterval(function(){
+
+								if(ui.browsingEngine._facets.length < (self.confirmedLinks.length*2)){
+									// Facets haven't been created yet
+								} else {
+									// Facets have been created which means reconciliation has been 
+									// finished cancelling.
+									//
+									// Remove each of the progress-bars for the columns
+									$("div.linking-loading div.progressDiv").each(function(){
+										$(this).remove();
+									});
+
+									// Reshow the facet panel children which were hidden at the start of 
+									// reconciliation
+									$("div#refine-tabs-facets").children().show();
+
+									// Make sure the Typing panel is still showing as Refine attempts 
+									// to switch to the facet panel when one is created
+									$("div#left-panel div.refine-tabs").tabs('select', 1);
+
+									// Show the initial "suggest panel"
+									self.showSuggestPanel();
+
+									// Hide the "wizard in progress" message
+									// LG.showWizardProgress(false);
+									try{ui.browsingEngine.remove();}catch(e){
+										log(e);
+									}
+
+									clearInterval(interval);
+								}
+							},100);
+
+						});
+					} else {
+						// Do nothing
+					}
+				})
+				.css("display","inline-block");
+			}
+
+			// Show the back button
+			this.els.returnButton.unbind("click").bind("click", function(){
+				self.showSuggestPanel();
+			}).show();
 		},
 
 		/*
@@ -166,8 +326,6 @@ var LinkedGov_LinkingPanel = {
 
 			// Interaction for the "Suggest links" button
 			$("div.suggest-links a.suggestButton").live("click",function(){
-				// Display the "Link" button
-				self.els.linkButton.show();
 				// Change the button's text to an "in-progress" message
 				$(this).html("Suggesting...").addClass("selecting");
 				// Add a loading icon
@@ -197,7 +355,7 @@ var LinkedGov_LinkingPanel = {
 			$("div.suggest-links span.confirm").live("click",function(){
 
 				// Add the confirmed suggestion to a new object containing only confirmations
-				self.confirmedLinks.push(self.suggestedLinks[parseInt($(this).parent().attr("data-index"))]);
+				self.confirmedLinks.push(self.suggestedLinks[parseInt($(this).parent().data("index"))]);
 
 				// Add column to confirmed list
 				$("div.confirmed-links ul.confirmed-columns").append('<li><span class="col">'+$(this).parent().find("span.col").html()+'</span><span class="link">'+$(this).parent().find("span.link").html()+'</span></li>').show();
@@ -220,6 +378,9 @@ var LinkedGov_LinkingPanel = {
 						ul.parent("div").find("a.suggestButton").show();
 					}
 				});
+
+				self.showLinkButton();
+
 			});
 
 			// Interaction for the remove icon for each suggested link
@@ -233,6 +394,8 @@ var LinkedGov_LinkingPanel = {
 						ul.hide();
 					}
 				});
+
+				self.showLinkButton();
 			});
 
 		},
@@ -303,6 +466,9 @@ var LinkedGov_LinkingPanel = {
 						}
 						$("div.confirmed-links ul.confirmed-columns li:last").slideDown(500);
 					});
+
+					self.showLinkButton();
+
 				} else {
 					alert("This column has already been confirmed or there is reconciliation data that exists for this column already");
 				}
@@ -320,6 +486,8 @@ var LinkedGov_LinkingPanel = {
 						ul.hide();
 					}
 				});
+
+				self.showLinkButton();
 			});
 
 		},
@@ -392,12 +560,13 @@ var LinkedGov_LinkingPanel = {
 
 					// Add the existing link as an entry to the HTML list
 					var li = $("<li />")
+					.data("colName",columns[i].name)
 					.append($("<span class='col' />").text(columns[i].name))
 					.append($("<span class='remove' />").text("X"))
 					.append($("<span class='link' />").text(serviceName));
-					
+
 					ul.append(li);
-					
+
 					// Store the existing column-service link in an array.
 					// This is used to check against when suggesting links to the user,
 					// so we don't suggest to reconcile a column with existing reconciliation 
@@ -427,7 +596,7 @@ var LinkedGov_LinkingPanel = {
 			// erasing it.
 			$("div.existing-links ul.existing-columns li span.remove").unbind("click").bind("click",function(){		
 				// Store the column name relating to the clicked remove sign
-				var columnName = $(this).parent().find("span.col").html();
+				var columnName = $(this).parent("li").data("colName");
 				// Make the user confirm that they want to delete all reconciliation data for the selected
 				// column				
 				var ans = window.confirm("Are you sure? This will delete the reconciliation data for the column \""+columnName+"\"");
@@ -462,14 +631,38 @@ var LinkedGov_LinkingPanel = {
 					// 4. Remove the columns reconciliation RDF data
 					LG.rdfOps.removeColumnReconciliationRDF(columnName);
 
+					self.showLinkButton();
+
 				}
 			});
 
 			// Set up interaction for the "View results" button
 			$("div.existing-links a.viewResults").unbind("click").bind("click",function(){
 				self.showResultPanel();
+				self.els.saveButton.show();
 			});
 
+		},
+
+
+		/*
+		 * Checks to see if the user has confirmed any links in which 
+		 * case we display the "Link" button.
+		 */
+		showLinkButton:function(){
+
+			var self = this;
+			log(self.confirmedLinks);
+
+			if(self.confirmedLinks.length > 0){
+				// show the link button
+				self.els.linkButton.show();
+				self.els.nextButton.hide();
+			} else {
+				// hide the link button
+				self.els.linkButton.hide();
+				self.els.nextButton.show();
+			}
 		},
 
 		/*
@@ -488,7 +681,7 @@ var LinkedGov_LinkingPanel = {
 
 				$("div.result div.result-body").slideUp()
 				$("div.result a.colName").removeClass("expanded");
-				
+
 				if($(this).parent("div").find("div.result-body").css("display") == "none"){
 					$(this).parent("div").find("div.result-body").slideDown();
 					$(this).addClass("expanded");
@@ -511,152 +704,6 @@ var LinkedGov_LinkingPanel = {
 		},
 
 		/*
-		 * displayPanel
-		 * 
-		 * Hides the other Typing-panels and shows the appropriate 
-		 * elements when the linking panel tab is clicked on.
-		 */
-		displayPanel: function(){
-
-			// Hide the other panels
-			LG.panels.typingPanel.hidePanels();
-			// Hide the action buttons
-			this.els.actionButtons.hide();
-			// Show the collapse-expand button
-			this.els.collapseExpandButton.hide();
-			// Hide the "return to wizards" button
-			this.els.returnButton.hide();
-			// Show the action bar
-			this.els.actionBar.show();
-			// Show the finish button
-			this.els.finishButton.hide();
-			// Show this panel
-			this.body.show();
-			// Hide the back button
-			this.els.returnButton.hide();
-			/*
-			 * Show buttons depending on what panel is 
-			 * being shown
-			 */
-			if($("div.reconcile-panel").css("display") != "none"){
-				// Show the save button
-				this.els.saveButton.show();
-				// Show the cancel button
-				this.els.cancelButton.css("display","inline-block");
-				// Hide the link button
-				this.els.linkButton.hide();
-			} else {
-				// Hide the save button
-				this.els.saveButton.hide();
-				// Hide the cancel button
-				this.els.cancelButton.hide();	
-				// Show the link button
-				this.els.linkButton.show();
-			}
-		},
-
-		/*
-		 * showSuggestPanel
-		 * 
-		 * Shows the panel that suggests & asks the user to confirm 
-		 * links
-		 */
-		showSuggestPanel:function(){
-			var self = this;
-			// Hide the save button
-			this.els.saveButton.hide();
-			// Hide the cancel button
-			this.els.cancelButton.hide();			
-			// Show the link button
-			this.els.linkButton.show();
-			// Show the suggest panel
-			this.els.suggestPanel.show();
-			// Hide the reconcile panel
-			this.els.reconcilePanel.hide();
-			// Hide the back button
-			this.els.returnButton.hide();
-		},
-
-		/*
-		 * showResultPanel
-		 * 
-		 * Shows the panel that displays the reconcilation results
-		 */
-		showResultPanel:function(){
-
-			var self = this;
-
-			// Hide the link button
-			this.els.linkButton.hide();
-
-			// Hide the suggest panel
-			this.els.suggestPanel.hide();
-
-			// Show the reconcile panel
-			this.els.reconcilePanel.show(0, function(){
-				// Begin reconciliation on the confirmed columns
-				self.buildResultObjects();					
-			});
-
-			// Show & set up the cancel button
-			this.els.cancelButton.unbind("click").bind("click",function(){
-
-				// Alert the user they will lose their reconciliation results if they 
-				// press "Cancel".
-				var ans = window.confirm("Are you sure? You will lose any un-saved reconciliation data.");
-
-				if(ans){
-
-					self.cancelReconciliation(function(){
-						// After cancelling reconciliation, rollback the history to the saved 
-						// restore point.
-						LG.restoreHistory(self.historyRestoreID);
-
-						// Use an interval to test whether the expected facets have been created from 
-						// cancelling the reconciliation (2 per column)
-						var interval = setInterval(function(){
-
-							if(ui.browsingEngine._facets.length < (self.confirmedLinks.length*2)){
-								// Facets haven't been created yet
-							} else {
-								// Facets have been created which means reconciliation has been 
-								// finished cancelling.
-								//
-								// Remove each of the progress-bars for the columns
-								$("div.linking-loading div.progressDiv").each(function(){
-									$(this).remove();
-								});
-
-								// Reshow the facet panel children which were hidden at the start of 
-								// reconciliation
-								$("div#refine-tabs-facets").children().show();
-
-								// Make sure the Typing panel is still showing as Refine attempts 
-								// to switch to the facet panel when one is created
-								$("div#left-panel div.refine-tabs").tabs('select', 1);
-
-								// Show the initial "suggest panel"
-								self.showSuggestPanel();
-
-								// Hide the "wizard in progress" message
-								// LG.showWizardProgress(false);
-								try{ui.browsingEngine.remove();}catch(e){
-									log(e);
-								}
-
-								clearInterval(interval);
-							}
-						},100);
-
-					});
-				} else {
-					// Do nothing
-				}
-			})
-			.css("display","inline-block");
-		},
-
-		/*
 		 * buildProgressBars
 		 * 
 		 * Creates and injects progress-bars in HTML for columns that have 
@@ -675,7 +722,7 @@ var LinkedGov_LinkingPanel = {
 
 			// Loop through the confirmed columns and create their own progress bar HTML
 			for(var i=0;i<self.confirmedLinks.length;i++){
-				
+
 				var div = $("<div class='progressDiv' />")
 				.append($("<p class='columnName' />")
 						.append($("<span class='name' />").text(self.confirmedLinks[i].columnName))
@@ -725,7 +772,7 @@ var LinkedGov_LinkingPanel = {
 				// our processesArray against the returned processes object
 				if(self.processesArray.length == 0){
 					//log("processesArray hasn't been created yet");
-					
+
 					for(var i=0; i<data.processes.length; i++){
 						//log("pushing process for column - "+data.processes[i].description.split("Reconcile cells in column ")[1].split(" to type")[0]);
 						//log("with progress - "+data.processes[i].progress);
@@ -767,9 +814,9 @@ var LinkedGov_LinkingPanel = {
 								} else {
 									self.processesArray[i].complete = true;
 								}
-								
+
 								if(i == self.processesArray.length-1){
-									
+
 									for(var k=0; k<self.processesArray.length; k++){
 										if(self.processesArray[k].complete){
 											self.updateProgressBar(self.processesArray[k].columnName, 100);
@@ -788,7 +835,7 @@ var LinkedGov_LinkingPanel = {
 									self.updateProgressBar(self.processesArray[i].columnName, 100);
 									log("Found it. Complete process on column - "+self.processesArray[i].columnName);
 									self.processesArray.splice(i,1);
-									*/
+									 */
 								}
 							}
 						}
@@ -826,13 +873,13 @@ var LinkedGov_LinkingPanel = {
 			//log("updateProgressBar - for "+columnName);
 
 			$("div.linking-loading").find("div.progressDiv").each(function(){
-				
+
 				//log("if "+$(this).find("p.columnName").find("span.name").html()+" == "+columnName);
-				
+
 				if($(this).find("p.columnName").find("span.name").html() == columnName){
-					
+
 					$(this).find("p.columnName").find("span.percentage").html("("+percentage+"%)");
-					
+
 					$(this).find("div.ui-progressbar-value").css("width",percentage+"%");
 					if(percentage == 100){
 						$(this).find("p.columnName").find("span.percentage").css("margin-right","0");
@@ -841,7 +888,7 @@ var LinkedGov_LinkingPanel = {
 					}
 				}
 			});
-			
+
 		},
 
 		/*
@@ -883,7 +930,7 @@ var LinkedGov_LinkingPanel = {
 
 						// Hide the confirmed links div
 						$("div.confirmed-links").hide();
-						
+
 						// callback
 						callback();
 					},
@@ -924,7 +971,7 @@ var LinkedGov_LinkingPanel = {
 
 					// Loop through the hint words of the service
 					for(var k=0; k<services[j].hints.length; k++){
-						
+
 						// Create a suggested link if the column name contains one of the service's
 						// hint words
 						if(self.checkColumnNameForHint(cols[i].name, services[j], services[j].hints[k])){
@@ -943,11 +990,12 @@ var LinkedGov_LinkingPanel = {
 					// The data-index property is used to record the index of the suggested link in the suggestedLinks array.
 					// When a user confirms the link, we copy the link at that index from the suggestedLinks array into the confirmedLinks array.
 					var li = $("<li />")
+					.data("index", i)
 					.append($("<span class='col' />").text(self.suggestedLinks[i].columnName))
 					.append($("<span class='remove' />").text("X"))
 					.append($("<span class='confirm' />").text("C"))
 					.append($("<span class='link' />").text(self.suggestedLinks[i].service.serviceName));
-					
+
 					$("div.suggest-links ul.selected-columns").append(li);
 				}
 				$("div.suggest-links ul.selected-columns").css("display","block");
@@ -963,16 +1011,16 @@ var LinkedGov_LinkingPanel = {
 			$("div.suggest-links span.column-selecting-icon").remove();
 
 		},
-		
+
 		/*
 		 * checkColumnNameForHint
 		 */
 		checkColumnNameForHint:function(colName, service, hint){
-			
+
 			//log("checkColumnNameForHint");
-			
+
 			var self = this;
-			
+
 			// Once we've looped through all of the existing links, 
 			// check the suggestLink boolean,
 			// lowercase the column header and check for an instance of each hint
@@ -1000,7 +1048,7 @@ var LinkedGov_LinkingPanel = {
 						}
 					}
 				}
-				
+
 				// If links have been confirmed already, we need to exclude the columns  
 				// from the suggestions
 				if(self.confirmedLinks.length > 0){
@@ -1028,13 +1076,13 @@ var LinkedGov_LinkingPanel = {
 						columnName:colName,
 						service:service
 					});
-					
+
 					return true;
 				} else {
 					return false;
 				}
 			}
-			
+
 		},
 
 
@@ -1055,7 +1103,7 @@ var LinkedGov_LinkingPanel = {
 		 * TODO: Needs some work.
 		 */
 		buildResultObjects:function(){
-			
+
 			//log("buildResultObjects");
 
 			var self = this;
@@ -1164,11 +1212,11 @@ var LinkedGov_LinkingPanel = {
 				 * of the confirmed links.
 				 */
 				for(var i=0; i<self.confirmedLinks.length; i++){
-					
+
 					LG.addReconciliationService(self.confirmedLinks[i].service, 0, function(service){
-						
+
 						for(var j=0; j<self.confirmedLinks.length; j++){
-							
+
 							if(service.serviceName == self.confirmedLinks[j].service.serviceName){
 
 								// Create a result - including the column name and it's 
@@ -1181,7 +1229,7 @@ var LinkedGov_LinkingPanel = {
 								// Remove the link from the confirmedLinks array
 								self.confirmedLinks.splice(j,1);
 								j--;
-								
+
 								// Add the result to the array of results
 								self.results.push(result);
 
@@ -1291,11 +1339,11 @@ var LinkedGov_LinkingPanel = {
 
 							// Iterate through the results and begin to construct the HTML for the result panel
 							for(var i=0; i<self.results.length; i++){
-								
+
 								// Add the header of the result panel
 								var header = $("<a />").addClass("colName")
 								.text(self.results[i].columnName);
-								
+
 								// Add a link to the reconciled value type
 								var type = $("<p />").addClass("value-type")
 								.append("<span>Type</span>");								
@@ -1304,7 +1352,7 @@ var LinkedGov_LinkingPanel = {
 								.attr("target","_blank")
 								.text(self.results[i].service.serviceName);
 								type.append(typeLink);
-								
+
 								// Add the count and percentage
 								var matched = $("<span />").addClass("matched")
 								.text(theProject.rowModel.total-self.results[i].numUnmatched);								
@@ -1320,7 +1368,7 @@ var LinkedGov_LinkingPanel = {
 								.append(total)
 								.append(" ")
 								.append(percentage);
-								
+
 								// Add the progress bar
 								var progressBarValue = $("<div />").addClass("ui-progressbar-value");
 								var progressBar = $("<div />").addClass("matches-bar ui-progressbar")						
@@ -1331,24 +1379,24 @@ var LinkedGov_LinkingPanel = {
 								.append(type)
 								.append(matches)
 								.append(progressBar);
-								
+
 								// Add a message asking the user if they want to 
 								// try to manually search for the values if there are 
 								// some that are unmatched.
 								if(self.results[i].numUnmatched > 0 || self.results[i].numMatched < theProject.rowModel.total){
-									
+
 									var notification1 = $("<p />")
 									.addClass("notification")
 									.html("There are some values that have not been matched due to possible differences in punctuation or spellings. Would you like to try to match these values yourself?")
-									
+
 									var notification2 = $("<p />")
 									.addClass("notification")
 									.append("<a class='yes button'>Yes</a>")
 									.append("<a class='ignore button'>Ignore</a>");
-									
+
 									resultBody.append(notification1);
 									resultBody.append(notification2);
-									
+
 								}
 
 								// Add the header and body to the result div
@@ -1357,10 +1405,10 @@ var LinkedGov_LinkingPanel = {
 								.append(resultBody)
 								.data("serviceUrl", encodeURIComponent(self.results[i].service.serviceURL))
 								.data("colName", self.results[i].columnName);
-								
+
 								// Add the result to the results panel
 								$("div.linking-results").append(div);
-								
+
 							}
 						} else {
 							//log("displayReconciliationResult - shouldn't ever get here...");
@@ -1503,11 +1551,11 @@ var LinkedGov_LinkingPanel = {
 									// Update the HTML in the panel
 									$(resultDiv).find("p.matches").find("span.matched").text(matched);
 									$(resultDiv).find("p.matches").find("span.percentage").text(" ("+percentage+"%)");
-									
+
 									var progressBarValue = $(resultDiv).find("div.matches-bar").find("div.ui-progressbar-value");
 									progressBarValue.css("width",percentage+"%");
 									progressBarValue.removeClass("green").removeClass("yellow").removeClass("red");
-									
+
 									// Colour the progress bar accordingly
 									if(percentage > 66){
 										progressBarValue.addClass("green");
@@ -1553,11 +1601,10 @@ var LinkedGov_LinkingPanel = {
 			// The expression used to produce a facet of values that haven't been
 			// reconciled.
 			var expression = "if(cell.recon.matched,blank,value)";
-			
+
 			// The column name
 			var colName = $(resultDiv).data("colName");
-			log(colName);
-			
+
 			// The endpoint's URL
 			var serviceURL = decodeURIComponent($(resultDiv).data("serviceUrl"));
 
@@ -1598,21 +1645,21 @@ var LinkedGov_LinkingPanel = {
 
 						// Construct the UL list of LI input elements
 						var ul = $("<ul />").addClass("selected-columns text-input");
-												
+
 						// The limit for the number of input boxes that will be created
 						// for searching
 						var inputElementLimit = 30;
-						
+
 						for(var i=0; i<arrayOfUnmatchedValues.length; i++){
 							// Make sure not to create more than the limit
 							if(i < inputElementLimit){
-																
+
 								// We use "col" to inherit CSS styling, it's actually
 								// a cell value - not a column name
 								var spanCol = $("<span />").addClass("value col")
 								.data("value", arrayOfUnmatchedValues[i])
 								.text(arrayOfUnmatchedValues[i]);
-								
+
 								// We attach the column name to the input element
 								// so the click handler for the input box can pass on 
 								// the column name to Refine's reconcile-value process call
@@ -1620,22 +1667,22 @@ var LinkedGov_LinkingPanel = {
 								var suggestBox = $("<input />").addClass("suggestbox textbox")
 								.attr("type","text")
 								.data("colName", colName);
-								
+
 								var spanColOptions = $("<span />").addClass("colOptions")
 								.append(suggestBox);
-																
+
 								var li = $("<li />")
 								.append(spanCol)
 								.append(spanColOptions);
-																
+
 								ul.append(li);
-								
+
 							} else {
 								// We've created the maximum number of input boxes we want to
 								i == arrayOfUnmatchedValues.length-1;
 							}
 						}
-						
+
 						// Insert the HTML into the correct result panel <div>
 						$(resultDiv).find("div.result-body").append(ul);
 
@@ -1946,14 +1993,14 @@ var LinkedGov_LinkingPanel = {
 						self.previewPane.hide();
 						// Pass the suggestion <li> element, the input element and the original value
 						self.matchCellsFromSearch($(this), inputElement, unmatchedValue, function(li, inputElement){
-							
+
 							// Once the cells have been matched, style and update the value inside the input element
 							inputElement
 							.val(li.data("suggest").name)
 							.removeClass("edited")
 							.removeClass("dontknow")
 							.addClass("matched");
-							
+
 							// Update the progress bar for each result
 							var resultDiv = inputElement.parent("span").parent("li").parent("ul").parent("div").parent("div");
 							self.updateMatches(resultDiv);
@@ -2092,11 +2139,11 @@ var LinkedGov_LinkingPanel = {
 		buildPreviewHTML:function(data, suggest){
 
 			var self = this;
-			
+
 			self.previewPane.html("");
 
 			$("<p />").addClass("name").text(suggest.name).appendTo(self.previewPane);
-			
+
 			var desc = $("<div />").append(data.html);
 
 			// Depending on the description returned, we can 
@@ -2311,11 +2358,6 @@ var LinkedGov_LinkingPanel = {
 		 * 
 		 * Gathers the URIs and CURIEs from the reconciliation service configuration object, 
 		 * and uses them to build a fragment of RDF that we use to store the reconciled URI.
-		 * 
-		 * Each reconcilation service config object contains information about the resources 
-		 * predicate usage - if this isn't present in the config file, then we use a temporary 
-		 * vocabulary "lgRecon" (http://data.linkedgov.org/vocabs/recon/) that was declared in the 
-		 * initialise() function before calling saveRDF().
 		 */
 		buildColumnReconciliationRDF:function(result){
 
@@ -2327,19 +2369,19 @@ var LinkedGov_LinkingPanel = {
 			var resourceInfo = result.service.resourceInfo;
 
 			var resourceURI = resourceInfo.resourceURI;
-			var resourceCURIE = resourceInfo.resourceCURIE;
+			var resourceCURIE = escape(resourceInfo.resourceCURIE);
 			var predicateURI = resourceInfo.predicateURI;
-			var predicateCURIE = resourceInfo.predicateCURIE;
+			var predicateCURIE = escape(resourceInfo.predicateCURIE);
 			var vocabURI = resourceInfo.vocabURI;
 			var vocabCURIE = resourceInfo.vocabCURIE;
 
 			// Check to see if there is any predicate information, 
-			// if there isn't, use the lgRecon vocabulary as a temporary
-			// relationship to the reconciled URI (e.g. lgRecon:Department
-			// instead of an official gov:hasDepartment).
+			// if there isn't, use the default project URI as a temporary
+			// relationship to the reconciled URI (e.g. lg:columnName
+			// instead of something like gov:hasDepartment).
 			if(predicateURI.length < 1){
-				predicateURI = self.vocabs.lgRecon.uri+LG.camelize(resourceCURIE);
-				predicateCURIE = self.vocabs.lgRecon.curie+":"+LG.camelize(resourceCURIE);
+				predicateURI = self.vocabs.lg.uri+escape(LG.camelize(resourceCURIE));
+				predicateCURIE = self.vocabs.lg.curie+":"+escape(LG.camelize(resourceCURIE));
 			}
 
 			// The RDF fragment makes use of a GREL expression to access the cells reconciled URI.
@@ -2359,11 +2401,11 @@ var LinkedGov_LinkingPanel = {
 						            ],
 						            "links":[
 						                     {
-						                    	 "uri":"http://www.w3.org/2000/01/rdf-schema#label",
-						                    	 "curie":"rdfs:label",
+						                    	 "uri":self.vocabs.rdfs.uri+"label",
+						                    	 "curie":self.vocabs.rdfs.curie+":label",
 						                    	 "target":{
 						                    		 "nodeType":"cell-as-literal",
-						                    		 "expression":"value",
+						                    		 "expression":"escape(value,'xml')",
 						                    		 "columnName":result.columnName,
 						                    		 "isRowNumberCell":false
 						                    	 }

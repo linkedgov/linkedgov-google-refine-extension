@@ -204,14 +204,6 @@ var LinkedGov_WizardsPanel = {
 					$(this).data("hasBeenClicked",false);
 				}
 			});
-
-			/*
-			 * Interaction for "Back" button.
-			 */
-			self.els.returnButton.click(function(){
-				self.destroyColumnSelector();
-				self.showQuestions();
-			});
 			
 			/*
 			 * Interaction for "example" links in wizards that show/hide 
@@ -311,11 +303,6 @@ var LinkedGov_WizardsPanel = {
 				$(this).next("span").hide();
 			});
 
-			// Interaction for "Next" button.
-			self.els.nextButton.click(function(){
-				$("ul.lg-tabs li a[rel='linking-panel']").click();
-			});
-
 			// Set up more user interaction but slightly more specific to each wizard.
 			self.setupWizardInteraction();
 
@@ -328,6 +315,7 @@ var LinkedGov_WizardsPanel = {
 		 * shown in the Typing panel
 		 */
 		displayPanel: function(){
+			
 			var self = this;
 			// Hide the other panels
 			LG.panels.typingPanel.hidePanels();
@@ -335,9 +323,12 @@ var LinkedGov_WizardsPanel = {
 			this.body.show();
 			// Show the action bar
 			this.els.actionBar.show();
-
-			// Make sure the panel's showing the right thing
-
+			
+			// Interaction for "Next" button.
+			self.els.nextButton.click(function(){
+				$("ul.lg-tabs li a[rel='linking-panel']").click();
+			});
+			
 			// Show buttons depending on what panel is 
 			// being shown
 			if($("div.questions").css("display") != "none"){
@@ -410,11 +401,15 @@ var LinkedGov_WizardsPanel = {
 					$(this).scrollTop(0);
 				}
 			});
-			//this.body.find("div.wizard-bodies").find("div.wizard-body").show()
+			
+			// Interaction for "Back" button.
+			self.els.returnButton.click(function(){
+				self.destroyColumnSelector();
+				self.showQuestions();
+			}).show();
+			
 			// Hide the question collapse button
 			self.els.collapseExpandButton.hide();
-			// Show the "back" button
-			self.els.returnButton.show();
 			// Show the "Update" button
 			self.els.updateButton.show();
 			// Hide the finish button
@@ -428,8 +423,8 @@ var LinkedGov_WizardsPanel = {
 			// Hide the undo button
 			self.els.undoButton.hide();
 			
-			//LG.panels.typingPanel._el.actionBar.find("div.action-buttons").find("a.update").attr("bind",$("div.wizard-body").find("a.update").attr("bind"));
-
+			// Depending on the wizard being show, 
+			// perform some custom setups
 			switch(wizardName){
 
 			case "measurementsWizard" : 

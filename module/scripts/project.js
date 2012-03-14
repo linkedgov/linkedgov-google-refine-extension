@@ -143,7 +143,7 @@ LG.loadPanelScripts = function() {
 				$.getScript("extension/linkedgov/scripts/project/panels/wizardsPanel.js",function(){
 					LG.panels.wizardsPanel = LinkedGov_WizardsPanel;
 					LG.panels.wizardsPanel.initialise();
-					//LG.panels.wizardsPanel.loadHTML();
+					LG.panels.wizardsPanel.displayPanel();
 
 				});
 
@@ -468,43 +468,53 @@ LG.quickTools = function() {
 	 * 
 	 * TODO: Show & hide using CSS.
 	 */
+	
+	var div = $("<div />").addClass("quick-tool");	
+	var ul = $("<ul />"); 
 
-	$("td.column-header").live("hover",function() {
-		if (!$(this).hasClass("ui-selectee") && $(this).find("span.column-header-name").length > 0 
+	$("<li />").addClass("rename").text("Rename").appendTo(ul);
+	$("<li />").addClass("remove").text("Remove").appendTo(ul);
+	$("<li />").addClass("move-left").text("Move left").appendTo(ul);
+	$("<li />").addClass("move-right").text("Move right").appendTo(ul);
+	$("<li />").addClass("hide").text("Hide").appendTo(ul);
+	$("<li />").addClass("delete-rdf").text("Delete RDF").appendTo(ul);
+
+	ul.appendTo(div);
+	$("body").append(div);
+	
+	$("td.column-header").live("hover", function() {
+		
+		if ($(this).find("span.column-header-name").html().length > 0 
 				&& $(this).find("span.column-header-name").html() != "All") {
+
+			//log("Hovering over column "+$(this).find("span.column-header-name").html());
+			
+			$("div.quick-tool").data("colName", $(this).attr("title"));
+						
 			if ($(this).hasClass("show")) {
-				$(this).find(".quick-tool").hide();
+				//$(".quick-tool").hide();
 				$(this).addClass("hide").removeClass("show");
-			} else if ($(this).hasClass("hide")) {
-				$(this).find(".quick-tool").show();
-				$(this).addClass("show").removeClass("hide");
 			} else {
-
-				var html = "<div class='quick-tool'>" + "<ul>"
-				+ "<li class='rename'>Rename</li>"
-				+ "<li class='remove'>Remove</li>"
-				+ "<li class='move-left'>Move left</li>"
-				+ "<li class='move-right'>Move right</li>"
-				+ "<li class='hide'>Hide</li>"
-				+ "<li class='delete-rdf'>Delete RDF</li>"
-				+ "</ul>" + "</div>";
-
-				$(this).append(html);
-				$(this).find(".quick-tool").show();
-				$(this).addClass("qt").addClass("show");
+				$("div.quick-tool").css("left", ($(this).offset().left+5)+"px").css("top", ($(this).offset().top+$(this).height()+3)+"px");
+				$(".quick-tool").show();
+				$(this).addClass("show").removeClass("hide");
 			}
 		}
 	});
-
+	
+	$("div.quick-tool").live("mouseleave", function(){
+		$(this).hide();
+	});
+	
 	/*
 	 * Interaction for the quick tool options
 	 * 
 	 * Use the event object returned by jQUery to get the column name
 	 */
-	$("div.quick-tool").find("li").live("click", function(e) {
+	$("div.quick-tool li").live("click", function(e) {
 
-		var td = e.target.parentNode.parentNode.parentNode;
-		var colName = $(td).attr("title");
+		//var td = e.target.parentNode.parentNode.parentNode;
+		var colName = $(this).parent("ul").parent("div").data("colName");
 
 		switch ($(this).attr("class")) {
 
@@ -562,6 +572,8 @@ LG.quickTools = function() {
 			break;
 
 		}
+		
+		$("div.quick-tool").hide();
 
 	});
 
