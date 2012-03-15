@@ -637,6 +637,10 @@ body.lg div#refine-tabs-typing div.linking-results div.description p.notificatio
 {
     background: none repeat scroll 0 0 #FFFFDC;
 }
+body.lg div#refine-tabs-typing div.linking-results div.description p.clearReconData
+{
+    background: none repeat scroll 0 0 #FFDDDD;
+}
 body.lg div#refine-tabs-typing div.linking-results div.description p.notification a
 {
     display: inline-block;
@@ -1290,7 +1294,7 @@ body.lg div.quick-tool
     padding: 1px;
     position: absolute;
     width: 80px !important;
-    z-index: 9999;
+    z-index: 1;
 }
 body.lg div.quick-tool ul
 {

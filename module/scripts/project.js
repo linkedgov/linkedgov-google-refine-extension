@@ -484,7 +484,7 @@ LG.quickTools = function() {
 	
 	$("td.column-header").live("hover", function() {
 		
-		if ($(this).find("span.column-header-name").html().length > 0 
+		if ($(this).find("span.column-header-name").length > 0 
 				&& $(this).find("span.column-header-name").html() != "All") {
 
 			//log("Hovering over column "+$(this).find("span.column-header-name").html());

@@ -28,6 +28,7 @@ var LinkedGov_LinkingPanel = {
 			// Declare the suggested links, confirmed links and result arrays
 			self.suggestedLinks = [];
 			self.confirmedLinks = [];
+			self.existingLinks = [];
 			self.results = [];
 
 			// Initialise the suggest and preview pane
@@ -205,6 +206,10 @@ var LinkedGov_LinkingPanel = {
 			// Hide the suggest panel
 			this.els.suggestPanel.hide();
 
+			// Remove any existing results
+			$("div.linking-results div.result").remove();
+			$("<p />").addClass("loader").append($("<img />").attr("src","images/small-spinner.gif")).appendTo($("div.linking-results"));
+
 			// Show the reconcile panel
 			this.els.reconcilePanel.show(0, function(){
 				// Begin reconciliation on the confirmed columns
@@ -269,11 +274,22 @@ var LinkedGov_LinkingPanel = {
 					}
 				})
 				.css("display","inline-block");
+			} else {
+
 			}
 
 			// Show the back button
 			this.els.returnButton.unbind("click").bind("click", function(){
+				// Reset the confirmed links
+				self.confirmedLinks = [];
+				$("div.confirmed-links ul.confirmed-columns").html("").hide();
+				// Hide the confirmed links <div>
+				$("div.confirmed-links").hide();
+				// Hide the confirmed links header
+				$("div.suggest-panel h3.confirmed").hide();
 				self.showSuggestPanel();
+				// Repopulate the existing links list
+				self.setupExistingLinks();
 			}).show();
 		},
 
@@ -534,7 +550,7 @@ var LinkedGov_LinkingPanel = {
 			var self = this;
 
 			var columns = theProject.columnModel.columns;
-			var ul = $("div.existing-links").find("ul");			
+			var ul = $("div.existing-links").find("ul").html("");
 			var showList = false;
 			// If we don't have the service config for the existing reconciliation 
 			// data, then we list the existing linked service as missing.
@@ -545,7 +561,11 @@ var LinkedGov_LinkingPanel = {
 			// Loop through the column model to find columns with reconciliation objects
 			for(var i=0; i<columns.length; i++){
 
-				if(typeof columns[i].reconConfig != 'undefined' && typeof columns[i].reconStats != 'undefined'){
+				// Check that the column also has at least one matched topic
+				if(typeof columns[i].reconConfig != 'undefined' 
+					&& typeof columns[i].reconStats != 'undefined'
+						&& columns[i].reconStats.matchedTopics > 0){
+
 					// This column has reconciliation data
 
 					// Find the service name by looping through the 
@@ -574,7 +594,8 @@ var LinkedGov_LinkingPanel = {
 					self.existingLinks.push({
 						columnName:columns[i].name,
 						serviceName:serviceName,
-						service:service
+						service:service,
+						_li:li
 					});
 
 					showList = true;
@@ -652,7 +673,6 @@ var LinkedGov_LinkingPanel = {
 		showLinkButton:function(){
 
 			var self = this;
-			log(self.confirmedLinks);
 
 			if(self.confirmedLinks.length > 0){
 				// show the link button
@@ -720,6 +740,9 @@ var LinkedGov_LinkingPanel = {
 
 			var self = this;
 
+			// Wipe any existing progress bars from the panel
+			$("div.linking-loading div.progressDiv").remove();
+
 			// Loop through the confirmed columns and create their own progress bar HTML
 			for(var i=0;i<self.confirmedLinks.length;i++){
 
@@ -736,6 +759,11 @@ var LinkedGov_LinkingPanel = {
 				// Inject the HTML into the loading panel
 				$("div.linking-loading").append(div);
 			}
+
+			// If we're building progress bars then we can reset the results panel
+			$("div.linking-results div.result").remove();
+			$("div.linking-results").hide();
+			$("div.linking-loading").show();
 
 			if(callback){
 				callback();
@@ -1128,6 +1156,7 @@ var LinkedGov_LinkingPanel = {
 			 */
 			self.results = [];
 
+			// Add the existing links to the results
 			if(self.existingLinks.length > 0){
 
 				/*
@@ -1203,6 +1232,7 @@ var LinkedGov_LinkingPanel = {
 				}
 			}
 
+			// Add the newly confirmed links to the results
 			if(self.confirmedLinks.length > 0){
 
 				/*
@@ -1337,76 +1367,92 @@ var LinkedGov_LinkingPanel = {
 						// continuing
 						if(self.results.length > 0){
 
+							// Reset the existing links
+							self.existingLinks = [];
+
+							// Hide the loading gif
+							$("p.loader").hide();
+
 							// Iterate through the results and begin to construct the HTML for the result panel
 							for(var i=0; i<self.results.length; i++){
+
+								// Add the header and body to the result div
+								var div = $("<div />").addClass("description result")
+								.data("serviceUrl", encodeURIComponent(self.results[i].service.serviceURL))
+								.data("colName", self.results[i].columnName);								
 
 								// Add the header of the result panel
 								var header = $("<a />").addClass("colName")
 								.text(self.results[i].columnName);
 
+								var resultBody = $("<div />").addClass("result-body");
+
 								// Add a link to the reconciled value type
 								var type = $("<p />").addClass("value-type")
-								.append("<span>Type</span>");								
-								var typeLink = $("<a />")
+								.append("<span>Type</span>");
+
+								$("<a />")
 								.attr("href",self.results[i].service.resourceInfo.resourceURI)
 								.attr("target","_blank")
-								.text(self.results[i].service.serviceName);
-								type.append(typeLink);
+								.text(self.results[i].service.serviceName)
+								.appendTo(type);
 
-								// Add the count and percentage
-								var matched = $("<span />").addClass("matched")
-								.text(theProject.rowModel.total-self.results[i].numUnmatched);								
-								var total = $("<span />").addClass("total")
-								.text(theProject.rowModel.total);								
-								var percent = Math.round((((theProject.rowModel.total-self.results[i].numUnmatched)/theProject.rowModel.total)*100));
-								var percentage = $("<span />").addClass("percentage")
-								.text(" ("+percent+"%)");
+								// Add the count and percentage statistics
 								var matches = $("<p />").addClass("matches")
-								.append("<span>Matches</span>")
-								.append(matched)
-								.append(" / ")
-								.append(total)
-								.append(" ")
-								.append(percentage);
+								.appendTo(resultBody);
+
+								matches.append("<span>Matches</span>");
+
+								$("<span />").addClass("matched")
+								.text(theProject.rowModel.total-self.results[i].numUnmatched)
+								.appendTo(matches);
+
+								matches.append(" / ");
+
+								$("<span />").addClass("total")
+								.text(theProject.rowModel.total)
+								.appendTo(matches);
+
+								var percent = Math.round((((theProject.rowModel.total-self.results[i].numUnmatched)/theProject.rowModel.total)*100));
+								$("<span />").addClass("percentage")
+								.text(" ("+percent+"%)")
+								.appendTo(matches);
 
 								// Add the progress bar
 								var progressBarValue = $("<div />").addClass("ui-progressbar-value");
-								var progressBar = $("<div />").addClass("matches-bar ui-progressbar")						
-								.append(progressBarValue);
-
-								// Add the elements to the result body
-								var resultBody = $("<div />").addClass("result-body")
-								.append(type)
-								.append(matches)
-								.append(progressBar);
+								$("<div />").addClass("matches-bar ui-progressbar")						
+								.append(progressBarValue)
+								.appendTo(resultBody);
 
 								// Add a message asking the user if they want to 
 								// try to manually search for the values if there are 
 								// some that are unmatched.
 								if(self.results[i].numUnmatched > 0 || self.results[i].numMatched < theProject.rowModel.total){
 
-									var notification1 = $("<p />")
-									.addClass("notification")
-									.html("There are some values that have not been matched due to possible differences in punctuation or spellings. Would you like to try to match these values yourself?")
+									$("<p />")
+									.addClass("notification note")
+									.html("There are some values that have not been matched due to possible differences " +
+									"in punctuation or spellings. Would you like to try to match these values yourself?")
+									.appendTo(resultBody);
 
-									var notification2 = $("<p />")
-									.addClass("notification")
+									$("<p />")
+									.addClass("notification options")
 									.append("<a class='yes button'>Yes</a>")
-									.append("<a class='ignore button'>Ignore</a>");
-
-									resultBody.append(notification1);
-									resultBody.append(notification2);
+									.append("<a class='ignore button'>Ignore</a>")
+									.appendTo(resultBody);
 
 								}
 
-								// Add the header and body to the result div
-								var div = $("<div />").addClass("description").addClass("result")
-								.append(header)
-								.append(resultBody)
-								.data("serviceUrl", encodeURIComponent(self.results[i].service.serviceURL))
-								.data("colName", self.results[i].columnName);
+								// Add the "Clear reconciliation data" button
+								$("<p />")
+								.addClass("notification clearReconData")
+								.append("<a class='clear button'>Clear reconciliation data</a>")
+								.appendTo(resultBody);
 
 								// Add the result to the results panel
+								div.append(header);
+								div.append(resultBody);
+								self.results[i]._div = div;
 								$("div.linking-results").append(div);
 
 							}
@@ -1423,17 +1469,72 @@ var LinkedGov_LinkingPanel = {
 						$("div.result div.result-body p a.yes").click(function(){
 
 							var resultDiv = $(this).parent("p").parent("div").parent('div');
-							resultDiv.find("p.notification").hide();
+							resultDiv.find("p.note, p.options").hide();
 							resultDiv.find("p.suggestinput").css("visibility","visible");
 
 							// Build a list of inputs containing unmatched values for the user to manually 
 							// search for each of their reconcilable values. Finally display the list as the 
 							// callback.
-							self.makeListOfUnmatchedValues(resultDiv,function(){
+							self.makeListOfUnmatchedValues(resultDiv, function(){
 								// Show the list
-								$("div.linking-results div.result ul.selected-columns").show();
-								$("div.linking-results div.result").show();
+								resultDiv.find("ul.selected-columns").show();
 							});
+						});
+
+						/*
+						 * Interaction for the "yes" button when a result contains 
+						 * unmatched values
+						 */
+						$("div.result div.result-body p.clearReconData a.clear").click(function(){
+
+							var resultDiv = $(this).parent("p").parent("div").parent('div');
+							var colName = resultDiv.data("colName");
+
+							self.removeColumnReconciliation(colName, function(){
+
+
+								// 2. Remove the column from the existing links if it exists
+								for(var i=0; i<self.existingLinks.length; i++){
+									if(self.existingLinks[i].columnName == colName){
+										self.existingLinks[i]._li.remove();
+										self.existingLinks.splice(i, 1);
+										i--;
+									}
+								}
+
+								// 3. Remove the column from the results if it exists
+								for(var j=0; j<self.results.length; j++){
+
+									log(self.results[j].columnName +" == "+colName);
+
+									if(self.results[j].columnName == colName){
+										self.results[j]._div.remove();
+										self.results.splice(j, 1);
+										j--;
+										//
+										//self.results[j]._div.slideUp(500, function(){
+										//self.results[j]._div.remove();
+										//self.results.splice(j,1);
+										//j=self.results.length+1;
+										//});
+									}
+								}
+
+								if(self.results.length == 0){
+									// Reset the confirmed links
+									self.confirmedLinks = [];
+									$("div.confirmed-links ul.confirmed-columns").html("").hide();
+									// Hide the confirmed links <div>
+									$("div.confirmed-links").hide();
+									// Hide the confirmed links header
+									$("div.suggest-panel h3.confirmed").hide();
+									// Show the suggest panel
+									self.showSuggestPanel();
+									self.setupExistingLinks();
+								}
+
+							});
+
 						});
 
 						/*
@@ -1442,7 +1543,7 @@ var LinkedGov_LinkingPanel = {
 						 */
 						$("div.result div.result-body p a.ignore").click(function(){
 							var resultDiv = $(this).parent("p").parent("div").parent('div');
-							resultDiv.find("p.notification").hide();
+							resultDiv.find("p.note, p.options").hide();
 						});
 
 						// Hide the "linking" loading message
@@ -1483,6 +1584,34 @@ var LinkedGov_LinkingPanel = {
 					$("div#left-panel div.refine-tabs").tabs('select', 1);
 				}
 			},500);
+		},
+
+		/*
+		 * removeColumnReconciliation
+		 */
+		removeColumnReconciliation:function(columnName, callback){
+
+			var self = this;
+
+			var ans = window.confirm("Are you sure? This will delete the reconciliation data for the column \""+columnName+"\"");
+			// On confirmation
+			if(ans){
+
+				// 1. Delete the reconciliation data for the column
+				Refine.postCoreProcess(
+						"recon-discard-judgments",
+						{ columnName: columnName, clearData: true },
+						null,
+						{ cellsChanged: true, columnStatsChanged: true }
+				);
+
+				// 4. Remove the columns reconciliation RDF data
+				LG.rdfOps.removeColumnReconciliationRDF(columnName);
+
+				// 5. Perform any UI clean up
+				callback(columnName);
+			}
+
 		},
 
 		/*

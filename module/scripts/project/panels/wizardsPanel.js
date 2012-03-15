@@ -911,6 +911,12 @@ var LinkedGov_WizardsPanel = {
 
 			callback = callback || function(){return false};
 
+			// Wipe the current <option> elements from the 
+			// select boxes
+			divRange.children("select").each(function() {
+				$(this).children().remove();
+			});
+			
 			/*
 			 * Grab the column names from the data table and present 
 			 * them as <option> elements.
