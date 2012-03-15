@@ -491,26 +491,41 @@ LG.quickTools = function() {
 			
 			$("div.quick-tool").data("colName", $(this).attr("title"));
 						
-			if ($(this).hasClass("show")) {
+			//if ($(this).hasClass("show")) {
 				//$(".quick-tool").hide();
-				$(this).addClass("hide").removeClass("show");
-			} else {
+			//	$(this).addClass("hide").removeClass("show");
+			//} else {
 				$("div.quick-tool").css("left", ($(this).offset().left+5)+"px").css("top", ($(this).offset().top+$(this).height()+3)+"px");
-				$(".quick-tool").show();
-				$(this).addClass("show").removeClass("hide");
-			}
+				if($(this).offset().left >= 300){
+					$(".quick-tool").show();
+				} else {
+					$(".quick-tool").hide();
+				}
+				//$(this).addClass("show").removeClass("hide");
+			//}
 		}
 	});
 	
+	// When the user moves the cursor off the quick-tool, 
+	// we want to hide it
 	$("div.quick-tool").live("mouseleave", function(){
 		$(this).hide();
 	});
 	
-	/*
-	 * Interaction for the quick tool options
-	 * 
-	 * Use the event object returned by jQUery to get the column name
-	 */
+	// If the user hovers on the table, we want to hide the quick tool
+	$("table.data-table").die("mouseenter").live("mouseenter", function(){
+		$("div.quick-tool").hide();
+	});
+	
+	// If the user clicks the column headers menu icon, we want to hide
+	// the quick tool
+	$("div.column-header-title").die("click").live("click", function(){
+		$("div.quick-tool").hide();
+	});
+	
+	
+	// Interaction for the quick tool options
+	// Use the event object returned by jQUery to get the column name
 	$("div.quick-tool li").live("click", function(e) {
 
 		//var td = e.target.parentNode.parentNode.parentNode;

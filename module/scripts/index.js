@@ -80,6 +80,7 @@ var LG = {
 					Refine.actionAreas[i].bodyElmt.remove();
 				}
 			}
+			
 			openProjectArea.bodyElmt.append(div);
 			openProjectArea.bodyElmt.css("visibility","visible");
 			openProjectArea.bodyElmt.show();
@@ -106,6 +107,35 @@ var LG = {
 				if(typeof Refine.actionAreas[i] != 'undefined' && Refine.actionAreas[i].id == "create-project"){
 					createProjectArea = Refine.actionAreas[i];
 					createProjectArea.bodyElmt.css("z-index","100");
+					
+					/*
+					 * Loop through the import source UI objects and remove the 
+					 * "clipboard" area.
+					 * 
+					 * The "Google Data" area is a separate plug-in and so is not 
+					 * contained in the list of UI objects. It must physically be 
+					 * removed from the project file structure or some undesirable CSS styles 
+					 * could be applied.
+					 */
+					var sources = Refine.actionAreas[i].ui._sourceSelectionUIs;
+					for(var j=0; j<sources.length; j++){						
+						try{
+							switch(sources[j].id) {		
+							case "gdata-source" :
+								sources[j]._divBody.remove();
+								sources[j]._divHeader.remove();
+								break;
+							case "clipboard" :
+								sources[j]._divBody.remove();
+								sources[j]._divHeader.remove();
+								break;
+							default:
+								break;
+							}
+						} catch(e){
+							log(e);
+						}
+					}
 				} else {
 					Refine.actionAreas[i].bodyElmt.remove();
 				}
@@ -114,31 +144,6 @@ var LG = {
 			// Make sure the create-project area is visible
 			createProjectArea.bodyElmt.css("visibility","visible");
 			createProjectArea.bodyElmt.show();
-
-			/*
-			 * Loop through the import source UI objects and remove the 
-			 * "clipboard" area.
-			 * 
-			 * The "Google Data" area is a separate plug-in and so is not 
-			 * contained in the list of UI objects. It must physically be 
-			 * removed from the project file structure or some undesirable CSS styles 
-			 * could be applied.
-			 */
-			var sources = Refine.DefaultImportingController.sources;
-			for(var j=0; j<sources.length; j++){				
-				try{
-					switch(sources[j].id) {		
-					case "clipboard" :
-						sources[j]._divBody.remove();
-						sources[j]._divHeader.remove();
-						break;
-					default:
-						break;
-					}
-				} catch(e){
-					log(e);
-				}
-			}
 
 			// Add our own window.resize function that needs to resize the metadata form panel
 			$(window).bind("resize",function(){
