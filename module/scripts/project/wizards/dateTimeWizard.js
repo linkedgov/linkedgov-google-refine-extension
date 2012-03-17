@@ -107,6 +107,8 @@ var LinkedGov_dateTimeWizard = {
 					 * Store the column names and their options
 					 */
 					self.vars.colObjects = self.buildColumnObjects();
+					log(self.vars.colObjects);
+					
 
 					/*
 					 * Begin a series of operations and finally save the RDF.
@@ -154,16 +156,18 @@ var LinkedGov_dateTimeWizard = {
 		 * combinations, options and RDF.
 		 *  
 		 * E.g { name: col1, 
-		 * 		 combi: "h-m-s", 
+		 * 		 combination: "h-m-s", 
 		 * 		 durationRDF:{...} 
 		 *     },{ 
 		 *     	 name:col2,
-		 * 		 combi:"DD-MM-YYYY", 
+		 * 		 combination:"DD-MM-YYYY", 
 		 * 		 dateTimeRDF:{...} 
 		 *	   }
 		 */
 		buildColumnObjects : function() {
 
+			log("buildColumnObjects");
+			
 			/*
 			 * Loop through each selected column and check for date fragments
 			 * starting with the largest fragment first (i.e. Y,M,D,h,m,s).
@@ -194,12 +198,12 @@ var LinkedGov_dateTimeWizard = {
 				 * Loop through the fragment checkboxes and build a combination 
 				 * string for each column e.g. "Y-M-D".
 				 */
-				colObject.combi = "";
+				colObject.combination = "";
 				var checkedInputs = cols.eq(i).children("span.dateFrags").children('input:checked');
 				for ( var j = 0; j < checkedInputs.length; j++) {
-					colObject.combi += checkedInputs.eq(j).val() + "-";
+					colObject.combination += checkedInputs.eq(j).val() + "-";
 				}
-				colObject.combi = colObject.combi.substring(0, colObject.combi.length - 1);
+				colObject.combination = colObject.combination.substring(0, colObject.combination.length - 1);
 
 				/*
 				 * Store the month before day value
@@ -241,14 +245,14 @@ var LinkedGov_dateTimeWizard = {
 				/*
 				 * Store the particular year value
 				 */
-				if (colObject.combi.indexOf("Y") < 0
+				if (colObject.combination.indexOf("Y") < 0
 						&& cols.eq(i).children("span.year").find('input.year').val().length > 0) {
 					colObject.year = cols.eq(i).children("span.year").find('input.year').val();
 				}
 				/*
 				 * Store the particular day value
 				 */
-				if (colObject.combi.indexOf("D") < 0
+				if (colObject.combination.indexOf("D") < 0
 						&& cols.eq(i).children("span.day").find('input.day').val().length > 0) {
 					colObject.day = cols.eq(i).children("span.day").find('input.day').val();
 				}
@@ -291,7 +295,7 @@ var LinkedGov_dateTimeWizard = {
 				 * To see if all the fragments are present we use an array containing the 
 				 * fragments we want.
 				 */
-				if (colObjects[0].combi == "Y" || colObjects[0].combi == "M" || colObjects[0].combi == "D") {
+				if (colObjects[0].combination == "Y" || colObjects[0].combination == "M" || colObjects[0].combination == "D") {
 					var fragCount = 0;
 					var frags = [ 'D', 'M', 'Y' ];
 					var colArray = [];
@@ -304,7 +308,7 @@ var LinkedGov_dateTimeWizard = {
 						 * which gets passed to the 'create new column' function and increment 
 						 * the array index for the fragment array that's being checked against.
 						 */
-						if (colObjects[i].combi == frags[fragCount]) {
+						if (colObjects[i].combination == frags[fragCount]) {
 							colArray.push(colObjects[i].name);
 							var monthBeforeDay = colObjects[i].monthBeforeDay;
 							fragCount++;
@@ -328,7 +332,7 @@ var LinkedGov_dateTimeWizard = {
 							}
 						}
 					}
-				} else {
+				} else if (colObjects[0].combination == "h" || colObjects[0].combination == "m" || colObjects[0].combination == "s") {
 					/*
 					 * Another 3-column date-time.
 					 * 
@@ -342,7 +346,7 @@ var LinkedGov_dateTimeWizard = {
 						 * TODO: need to loop through the frags here as the h-m-s
 						 * could be in any order in the column list.
 						 */
-						if (colObjects[i].combi == frags[fragCount]) {
+						if (colObjects[i].combination == frags[fragCount]) {
 							colArray.push(colObjects[i].name);
 							fragCount++;
 							i--;
@@ -357,6 +361,8 @@ var LinkedGov_dateTimeWizard = {
 							}
 						}
 					}
+				} else {
+					callback();
 				}
 			} else if (colObjects.length == 2) {
 
@@ -366,7 +372,7 @@ var LinkedGov_dateTimeWizard = {
 				 * If we have Y-M-D selected, check if we have h-m or h-m-s selected
 				 */
 				for ( var a = 0; a < colObjects.length; a++) {
-					if (colObjects[a].combi == "Y-M-D" && (colObjects[(a == 0 ? 1 : 0)].combi == "h-m" || colObjects[(a == 0 ? 1 : 0)].combi == "h-m-s")) {
+					if (colObjects[a].combination == "Y-M-D" && (colObjects[(a == 0 ? 1 : 0)].combination == "h-m" || colObjects[(a == 0 ? 1 : 0)].combination == "h-m-s")) {
 
 						var monthBeforeDay = colObjects[a].monthBeforeDay;
 						/*
@@ -379,11 +385,11 @@ var LinkedGov_dateTimeWizard = {
 						 */
 						for ( var i = 0; i < colObjects.length; i++) {
 
-							if (colObjects[i].combi == "h-m") {
+							if (colObjects[i].combination == "h-m") {
 								colArray.push(colObjects[i].name);
 								log("We have a year, month, day, hours and minutes spread across two columns");
 								self.createSingleColumnDate(colArray, "Y-M-D-h-m", monthBeforeDay, callback);
-							} else if (colObjects[i].combi == "h-m-s") {
+							} else if (colObjects[i].combination == "h-m-s") {
 								colArray.push(colObjects[i].name);
 								log("We have a year, month, day, hours, minutes and seconds spread across two columns");
 								self.createSingleColumnDate(colArray, "Y-M-D-h-m-s", monthBeforeDay, callback);
@@ -404,7 +410,7 @@ var LinkedGov_dateTimeWizard = {
 				var frags = [ 'D', 'M', 'Y', 'h', 'm', 's' ];
 				var colArray = [];
 				for ( var i = 0; i < colObjects.length; i++) {
-					if (colObjects[i].combi == frags[fragCount]) {
+					if (colObjects[i].combination == frags[fragCount]) {
 						colArray.push(colObjects[i].name);
 						var monthBeforeDay = colObjects[i].monthBeforeDay;
 						fragCount++;
@@ -491,7 +497,7 @@ var LinkedGov_dateTimeWizard = {
 						 */
 						self.vars.colObjects.push({
 							name : newName,
-							combi : combination,
+							combination : combination,
 							monthBeforeDay : monthBeforeDay
 						});
 
@@ -528,7 +534,7 @@ var LinkedGov_dateTimeWizard = {
 						 */
 						self.vars.colObjects.push({
 							name : newName + " (LG)",
-							combi : combination,
+							combination : combination,
 							monthBeforeDay : monthBeforeDay
 						});
 
@@ -562,12 +568,12 @@ var LinkedGov_dateTimeWizard = {
 			 */
 			for ( var i = 0; i < colObjects.length; i++) {
 
-				if(colObjects[i].combi.length > 0) {
+				if(colObjects[i].combination.length > 0) {
 					/*
 					 * Any date/time that includes a year, day and month can be typed
 					 * within Refine as a date.
 					 */
-					switch (colObjects[i].combi) {
+					switch (colObjects[i].combination) {
 
 					case "Y-M-D":
 						// Format and type as an XSD date
@@ -611,19 +617,19 @@ var LinkedGov_dateTimeWizard = {
 						 * Depending on whether the column has been specified as containing a duration -  
 						 * a time:Interval or time:Instant is created.
 						 */
-						if(colObjects[i].combi == "h-m-s"){
+						if(colObjects[i].combination == "h-m-s"){
 							self.vars.expectedValue = "time";
 						} else {
 							self.vars.expectedValue = "fragment";
 						}
 
-					if(typeof colObjects[i].durationValue != 'undefined') {
-						colObjects[i].rdf = self.makeIntervalFragment(colObjects[i]);
-					} else {
-						colObjects[i].rdf = self.makeInstantFragment(colObjects[i]);
-					}	
-
-					break;
+						if(typeof colObjects[i].durationValue != 'undefined') {
+							colObjects[i].rdf = self.makeIntervalFragment(colObjects[i]);
+						} else {
+							colObjects[i].rdf = self.makeInstantFragment(colObjects[i]);
+						}	
+		
+						break;
 
 					} // end switch
 
@@ -754,7 +760,7 @@ var LinkedGov_dateTimeWizard = {
 			var self = this;
 
 			var colName = colObject.name;
-			var combi = colObject.combi;
+			var combi = colObject.combination;
 			var camelColName = LG.camelize(colName);
 
 			/*
@@ -856,7 +862,7 @@ var LinkedGov_dateTimeWizard = {
 			var self = this;
 
 			var colName = colObject.name;
-			var combi = colObject.combi;
+			var combi = colObject.combination;
 			var camelColName = LG.camelize(colName);
 
 			var o = {
@@ -1119,7 +1125,7 @@ var LinkedGov_dateTimeWizard = {
 		 */
 		saveRDF : function(rootNode, newRootNode) {
 
-			//log("saveRDF");
+			log("saveRDF");
 
 			var self = this;
 

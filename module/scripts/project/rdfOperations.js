@@ -500,7 +500,7 @@ var LinkedGov_rdfOperations = {
 		 * 
 		 * TODO: Change approach?
 		 */
-		removeColumnInRDF : function(colName,callback) {
+		removeColumnInRDF : function(colName, callback) {
 
 			//log("removeColumnInRDF");
 			var self = this;

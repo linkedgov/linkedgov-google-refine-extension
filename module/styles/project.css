@@ -1292,7 +1292,7 @@ body.lg div.quick-tool
     margin-left: 0;
     margin-top: 1px;
     padding: 1px;
-    position: absolute;
+    position: fixed;
     width: 80px !important;
     z-index: 1;
 }
@@ -1932,22 +1932,41 @@ body.lg div.wizardProgressMessage div.overlay
 body.lg div.wizardProgressMessage p
 {
     background: none repeat scroll 0 0 #FFFFFF;
-    border-radius: 10px 10px 10px 10px;
+    border: 3px solid #BBCCFF;
     display: block;
-    font-size: 2em;
+    font-size: 18px;
     margin: auto;
     opacity: 1;
     padding-bottom: 10px;
     padding-top: 10px;
     position: relative;
     text-align: center;
+    text-shadow: 1px 1px #CCCCCC;
     top: 40%;
     width: 225px;
+}
+body.lg div.wizardProgressMessage p span.cancel {
+    display: block;
+    font-size: 14px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+    text-align: center;
+    text-shadow: none;
+    width: 90%;
+}
+body.lg div.wizardProgressMessage p span.cancel a {
+    cursor: pointer;
+    display: block;
+    font-size: 14px;
+    margin-top: 10px;
+    text-decoration: none;
 }
 body.lg div.wizardProgressMessage p img
 {
     display: block;
     margin: 10px auto auto;
+    width: 20px;
 }
 body.lg div.wizards-panel-body
 {

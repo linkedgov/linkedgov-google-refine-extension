@@ -287,6 +287,7 @@ var LinkedGov_LabellingPanel = {
 			// Setup and show the "back" button
 			this.els.returnButton.unbind("click").bind("click", function(){
 				$("ul.lg-tabs li a[rel='linking-panel']").click();
+				LG.panels.linkingPanel.setupExistingLinks();
 				LG.panels.linkingPanel.displayPanel();
 			}).show();
 			// Show this panel

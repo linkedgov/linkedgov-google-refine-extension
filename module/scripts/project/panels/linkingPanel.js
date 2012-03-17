@@ -208,6 +208,7 @@ var LinkedGov_LinkingPanel = {
 
 			// Remove any existing results
 			$("div.linking-results div.result").remove();
+			$("div.linking-results p.loader").remove();
 			$("<p />").addClass("loader").append($("<img />").attr("src","images/small-spinner.gif")).appendTo($("div.linking-results"));
 
 			// Show the reconcile panel
@@ -609,6 +610,11 @@ var LinkedGov_LinkingPanel = {
 				$("div.existing-links").find("div.existing").show();
 				$("div.existing-links").show();
 				$("h3.existing-links").show();
+			} else {
+				ul.hide();
+				$("div.existing-links").find("div.existing").hide();
+				$("div.existing-links").hide();
+				$("h3.existing-links").hide();				
 			}
 
 			// Set up interaction for the remove button for each link in the list.
@@ -623,37 +629,28 @@ var LinkedGov_LinkingPanel = {
 				var ans = window.confirm("Are you sure? This will delete the reconciliation data for the column \""+columnName+"\"");
 				// On confirmation
 				if(ans){
-
+					
 					// 1. Slide and hide the entry from the list
 					$(this).parent().slideUp(function(){
+						
 						$(this).remove();
+						
 						if($("ul.existing-columns li").length < 1){
 							$("div.existing").hide();
 							$("h3.existing-links").hide();
 							$("div.existing-links").hide();
 						}
+						
+						self.removeColumnReconciliation(columnName, function(){
+							// 3. Remove the link from the existingLinks array
+							for(var i=0; i<self.existingLinks.length; i++){
+								if(self.existingLinks[i].columnName == columnName){
+									self.existingLinks.splice(i,1);
+								}
+							}
+							self.showLinkButton();
+						});
 					});
-
-					// 2. Delete the reconciliation data for the column
-					Refine.postCoreProcess(
-							"recon-discard-judgments",
-							{ columnName: columnName, clearData: true },
-							null,
-							{ cellsChanged: true, columnStatsChanged: true }
-					);
-
-					// 3. Remove the link from the existingLinks array
-					for(var i=0; i<self.existingLinks.length; i++){
-						if(self.existingLinks[i].columnName == columnName){
-							self.existingLinks.splice(i,1);
-						}
-					}
-
-					// 4. Remove the columns reconciliation RDF data
-					LG.rdfOps.removeColumnReconciliationRDF(columnName);
-
-					self.showLinkButton();
-
 				}
 			});
 
@@ -1363,10 +1360,15 @@ var LinkedGov_LinkingPanel = {
 					 */
 					self.checkFacetMatchCounts(function(){
 
+						sortArrayOfObjectsByKey(self.results, "columnName");
+						
 						// Make sure we have at least one result before 
 						// continuing
 						if(self.results.length > 0){
 
+							// Remove any results in the panel
+							$("div.linking-results div.result").remove();
+							
 							// Reset the existing links
 							self.existingLinks = [];
 
@@ -1504,19 +1506,11 @@ var LinkedGov_LinkingPanel = {
 
 								// 3. Remove the column from the results if it exists
 								for(var j=0; j<self.results.length; j++){
-
-									log(self.results[j].columnName +" == "+colName);
-
+									
 									if(self.results[j].columnName == colName){
 										self.results[j]._div.remove();
 										self.results.splice(j, 1);
 										j--;
-										//
-										//self.results[j]._div.slideUp(500, function(){
-										//self.results[j]._div.remove();
-										//self.results.splice(j,1);
-										//j=self.results.length+1;
-										//});
 									}
 								}
 
@@ -1531,6 +1525,9 @@ var LinkedGov_LinkingPanel = {
 									// Show the suggest panel
 									self.showSuggestPanel();
 									self.setupExistingLinks();
+								} else {
+									// Display the first result
+									$("div.linking-results div.result a.colName").eq(0).click();
 								}
 
 							});
@@ -1546,31 +1543,28 @@ var LinkedGov_LinkingPanel = {
 							resultDiv.find("p.note, p.options").hide();
 						});
 
-						// Hide the "linking" loading message
-						$("div#refine-tabs-facets").children().show();
+						Refine.update({modelsChanged:true}, function(){
+							
+							// Hide the "linking" loading message
+							$("div#refine-tabs-facets").children().show();
 
-						//LG.showWizardProgress(false);
+							//LG.showWizardProgress(false);
 
-						// Once the lists of unmatched values are built and on show,
-						// we can hide the loading panel and show the results panel.
-						$("div.linking-loading").hide();
-						$("div.linking-results").show();
+							// Once the lists of unmatched values are built and on show,
+							// we can hide the loading panel and show the results panel.
+							$("div.linking-loading").hide();
+							$("div.linking-results").show();
 
-						// Display the first result
-						$("div.linking-results div.result a.colName").eq(0).click();
+							// Display the first result
+							$("div.linking-results div.result a.colName").eq(0).click();
 
-						// Make sure the Typing panel is showing
-						$("div#left-panel div.refine-tabs").tabs('select', 1);
-						// Show the save button
-						self.els.saveButton.show();
-						// Show and set up the Back button so the user can return 
-						// to the Suggest panel
-						//self.els.returnButton.unbind("click").bind("click",function(){
-						//	self.cancelReconciliation(function(){
-						//		self.setupExistingLinks();
-						//		self.showSuggestPanel();
-						//	});
-						//}).show();
+							// Make sure the Typing panel is showing
+							$("div#left-panel div.refine-tabs").tabs('select', 1);
+							// Show the save button
+							self.els.saveButton.show();
+
+						});
+
 
 					});
 
@@ -1606,10 +1600,13 @@ var LinkedGov_LinkingPanel = {
 				);
 
 				// 4. Remove the columns reconciliation RDF data
-				LG.rdfOps.removeColumnReconciliationRDF(columnName);
+				LG.rdfOps.removeColumnInRDF(columnName);
 
 				// 5. Perform any UI clean up
-				callback(columnName);
+				Refine.update({modelsChanged:true}, function(){
+					callback(columnName);
+				});
+				
 			}
 
 		},
@@ -2451,12 +2448,17 @@ var LinkedGov_LinkingPanel = {
 					if(rootNode.links[j].target.columnName == self.results[i].columnName 
 							&& typeof rootNode.links[j].target.expression != 'undefined'
 								&& rootNode.links[j].target.expression == "if(isError(cell.recon.match.id),value,cell.recon.match.id)"){
+						
+						log("Found reconciliation RDF for column "+rootNode.links[j].target.columnName);
+						log("Deleting...");
+						
 						rootNode.links.splice(j,1);
 					}
 				}
 
 				// Push the resulting RDF into the RDF schema 
 				rootNode.links.push(self.results[i].rdf);
+				log("Added recon RDF for column "+self.results[i].columnName);
 
 			}
 
@@ -2509,8 +2511,8 @@ var LinkedGov_LinkingPanel = {
 			// relationship to the reconciled URI (e.g. lg:columnName
 			// instead of something like gov:hasDepartment).
 			if(predicateURI.length < 1){
-				predicateURI = self.vocabs.lg.uri+escape(LG.camelize(resourceCURIE));
-				predicateCURIE = self.vocabs.lg.curie+":"+escape(LG.camelize(resourceCURIE));
+				predicateURI = self.vocabs.lg.uri+escape(LG.camelize(result.columnName));
+				predicateCURIE = self.vocabs.lg.curie+":"+escape(LG.camelize(result.columnName));
 			}
 
 			// The RDF fragment makes use of a GREL expression to access the cells reconciled URI.

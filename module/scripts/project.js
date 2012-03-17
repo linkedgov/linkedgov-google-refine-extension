@@ -363,6 +363,7 @@ LG.showFinishMessage = function(){
  * o.header = the header text for the dialog
  * o.body = the body text for the dialog
  * o.footer = the footer text 
+ * o.buttons = a list names and callbacks to create buttons
  * o.ok = callback for the ok button
  * o.cancel = callback for the cancel button
  * o.className = the className for custom styling
@@ -374,6 +375,16 @@ LG.createDialog = function(o){
 	var body = $('<div></div>').addClass("dialog-body "+o.className).append(o.body).appendTo(dialog);
 	var footer = $('<div></div>').addClass("dialog-footer").append(o.footer).appendTo(dialog);
 
+
+	if(o.ok){
+		if(typeof o.ok == "object"){
+			$('<button></button>').addClass('button').html("&nbsp;&nbsp;OK&nbsp;&nbsp;").click(o.ok).appendTo(footer);
+		} else {
+			$('<button></button>').addClass('button').html("&nbsp;&nbsp;OK&nbsp;&nbsp;").click(function(){
+				DialogSystem.dismissAll();
+			}).appendTo(footer);
+		}
+	}	
 	if(o.cancel){
 		if(typeof o.cancel == "object"){
 			$('<button></button>').addClass('button').html("&nbsp;&nbsp;Cancel&nbsp;&nbsp;").click(o.cancel).appendTo(footer);		
@@ -383,14 +394,10 @@ LG.createDialog = function(o){
 			}).appendTo(footer);
 		}
 	}
-	if(o.ok){
-		if(typeof o.ok == "object"){
-			$('<button></button>').addClass('button').html("&nbsp;&nbsp;OK&nbsp;&nbsp;").click(o.ok).appendTo(footer);
-		} else {
-			$('<button></button>').addClass('button').html("&nbsp;&nbsp;OK&nbsp;&nbsp;").click(function(){
-				DialogSystem.dismissAll();
-			}).appendTo(footer);
-		}
+	if(o.buttons){
+		$.each(o.buttons, function(buttonName, callback){
+			$('<button></button>').addClass('button').html("&nbsp;&nbsp;"+buttonName+"&nbsp;&nbsp;").click(callback).appendTo(footer);					
+		});
 	}
 
 	$(dialog).width(500);
@@ -468,7 +475,7 @@ LG.quickTools = function() {
 	 * 
 	 * TODO: Show & hide using CSS.
 	 */
-	
+
 	var div = $("<div />").addClass("quick-tool");	
 	var ul = $("<ul />"); 
 
@@ -480,50 +487,42 @@ LG.quickTools = function() {
 	$("<li />").addClass("delete-rdf").text("Delete RDF").appendTo(ul);
 
 	ul.appendTo(div);
-	$("body").append(div);
-	
+
+	$("div.data-header-table-container").append(div);
+
 	$("td.column-header").live("hover", function() {
-		
+
 		if ($(this).find("span.column-header-name").length > 0 
 				&& $(this).find("span.column-header-name").html() != "All") {
 
-			//log("Hovering over column "+$(this).find("span.column-header-name").html());
-			
 			$("div.quick-tool").data("colName", $(this).attr("title"));
-						
-			//if ($(this).hasClass("show")) {
-				//$(".quick-tool").hide();
-			//	$(this).addClass("hide").removeClass("show");
-			//} else {
-				$("div.quick-tool").css("left", ($(this).offset().left+5)+"px").css("top", ($(this).offset().top+$(this).height()+3)+"px");
-				if($(this).offset().left >= 300){
-					$(".quick-tool").show();
-				} else {
-					$(".quick-tool").hide();
-				}
-				//$(this).addClass("show").removeClass("hide");
-			//}
+
+			$("div.quick-tool").css("left", ($(this).offset().left+5)+"px").css("top", ($(this).offset().top+$(this).height()+3)+"px");
+			if($(this).offset().left >= 300){
+				$(".quick-tool").show();
+			} else {
+				$(".quick-tool").hide();
+			}
 		}
 	});
-	
+
 	// When the user moves the cursor off the quick-tool, 
 	// we want to hide it
 	$("div.quick-tool").live("mouseleave", function(){
 		$(this).hide();
 	});
-	
-	// If the user hovers on the table, we want to hide the quick tool
-	$("table.data-table").die("mouseenter").live("mouseenter", function(){
+
+	$("div.data-header-table-container").live("mouseleave", function(){
 		$("div.quick-tool").hide();
 	});
-	
+
 	// If the user clicks the column headers menu icon, we want to hide
 	// the quick tool
-	$("div.column-header-title").die("click").live("click", function(){
+	$("div.column-header-title").live("click", function(){
 		$("div.quick-tool").hide();
 	});
-	
-	
+
+
 	// Interaction for the quick tool options
 	// Use the event object returned by jQUery to get the column name
 	$("div.quick-tool li").live("click", function(e) {
@@ -587,7 +586,7 @@ LG.quickTools = function() {
 			break;
 
 		}
-		
+
 		$("div.quick-tool").hide();
 
 	});
@@ -711,10 +710,10 @@ LG.repositionColumnOverlays = function(difference){
 
 		var overlayEdge = $(this).width() + $(this).offset().left;
 		var screenEdge = $(window).width();
-
+		
 		if(parseInt($(this).css("left")) < 300){
 			$(this).css("visibility","hidden");
-		} else if(overlayEdge > screenEdge-15){
+		} else if(overlayEdge > (screenEdge+15)){
 			$(this).css("visibility","hidden");
 		} else {
 			$(this).css("visibility","visible");
@@ -806,7 +805,7 @@ LG.injectWizardProgressOverlay = function() {
 	$("body").append(
 			"<div class='wizardProgressMessage'>" +
 			"<div class='overlay'><!-- --></div>" +
-			"<p>Wizard in progress...<img src='images/large-spinner.gif' /></p>" +
+			"<p>Updating...<img src='images/large-spinner.gif' /></p>" +
 	"</div>");
 };
 
@@ -816,12 +815,34 @@ LG.injectWizardProgressOverlay = function() {
  * Shows or hides the wizard progress message.
  */
 LG.showWizardProgress = function(show) {
+	// Create a timeout incase a 
+	var timeout = undefined;
+
 	if (show) {
+
 		$('div.wizardProgressMessage').show();
 		$("body").addClass("wizard-progress");
+
+		clearTimeout(timeout);
+
+		timeout = setTimeout(function(){
+			$('div.wizardProgressMessage p')
+			.append($("<span />").addClass("cancel").text("Hmmm...something might be wrong!")
+					.append($("<a />").text("Cancel").click(function(){
+						LG.showWizardProgress(false);
+						//window.location.href = window.location.href;
+					})
+					)
+			);
+
+		},10000);
+
 	} else {
 		$('div.wizardProgressMessage').hide();
 		$("body").removeClass("wizard-progress");
+		$('div.wizardProgressMessage p').find("span.cancel").remove();
+		clearTimeout(timeout);
+
 	}
 };
 
@@ -861,9 +882,14 @@ LG.handleJSError = function(message) {
 		header:"Oops!",
 		body:"<p>Something went wrong!</p>" +
 		"<p class='error'>"+message+"</p>",
-		ok:function(){
-			log("Should log this error or send feedback...");
-			DialogSystem.dismissAll();
+		buttons:{
+			"OK":function(){
+				log("Should log this error or send feedback...");
+				DialogSystem.dismissAll();
+			},
+			"Refresh page": function(){
+				window.location = window.location;
+			}
 		},
 		className:"jsError"
 	});
@@ -1244,6 +1270,15 @@ $.fn.generateId = function() {
 		this.id = $.generateId();
 	});
 };
+
+function sortArrayOfObjectsByKey(object, key){
+	return object.sort(function(a, b){
+		var obj1key = a[key].toLowerCase();
+		var obj2key = b[key].toLowerCase(); 
+		return ((obj1key < obj2key) ? -1 : ((obj1key > obj2key) ? 1 : 0));
+	});
+}
+
 
 
 /*
