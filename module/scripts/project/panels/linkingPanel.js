@@ -69,9 +69,6 @@ var LinkedGov_LinkingPanel = {
 			 * Have commented out the resetting of recon services as we can now
 			 * make use of the services if they are already added in Refine.
 			 */
-			//ReconciliationManager.standardServices.length = 0;
-			//ReconciliationManager.customServices.length = 0;
-			//ReconciliationManager.save(function(){
 			// After removing and saving 0 services, we load our 
 			// array of our own services and store them in an object.
 			$.getScript("extension/linkedgov/scripts/project/reconciliationServices.js", function(data){
@@ -622,36 +619,84 @@ var LinkedGov_LinkingPanel = {
 			// panel - it asks them to confirm if they want to erase the reconciliation data before
 			// erasing it.
 			$("div.existing-links ul.existing-columns li span.remove").unbind("click").bind("click",function(){		
+
+				var el = $(this);
 				// Store the column name relating to the clicked remove sign
 				var columnName = $(this).parent("li").data("colName");
 				// Make the user confirm that they want to delete all reconciliation data for the selected
 				// column				
-				var ans = window.confirm("Are you sure? This will delete the reconciliation data for the column \""+columnName+"\"");
+				//var ans = window.confirm("Are you sure? This will delete the reconciliation data for the column \""+columnName+"\"");
+
+				// Create the dialog itself
+				var dialog = LG.createDialog({
+					header:"Are you sure?",
+					body:"This will delete the reconciliation data for the column \""+columnName+"\"",
+					ok:function(){
+						log("OK clicked");
+
+						LG.vars.confirmDialog.answered = true;
+						LG.vars.confirmDialog.confirmed = true;
+						DialogSystem.dismissAll();	
+					},
+					cancel:function(){
+						log("Cancel clicked");
+
+						LG.vars.confirmDialog.answered = true;
+						LG.vars.confirmDialog.confirmed = false;
+						DialogSystem.dismissAll();	
+					},
+					className:"confirm"
+				});
+
+				// Display the dialog
+				DialogSystem.showDialog(dialog);
+
 				// On confirmation
-				if(ans){
-					
-					// 1. Slide and hide the entry from the list
-					$(this).parent().slideUp(function(){
-						
-						$(this).remove();
-						
-						if($("ul.existing-columns li").length < 1){
-							$("div.existing").hide();
-							$("h3.existing-links").hide();
-							$("div.existing-links").hide();
-						}
-						
-						self.removeColumnReconciliation(columnName, function(){
-							// 3. Remove the link from the existingLinks array
-							for(var i=0; i<self.existingLinks.length; i++){
-								if(self.existingLinks[i].columnName == columnName){
-									self.existingLinks.splice(i,1);
+				var interval = setInterval(function(){
+
+					log("Waiting for user to confirm...");
+					log(LG.vars.confirmDialog.answered);
+
+					if(LG.vars.confirmDialog.answered){
+						if(LG.vars.confirmDialog.confirmed){
+
+							log("User has confirmed");
+
+							LG.vars.confirmDialog.answered = false;
+
+							log(el);
+
+							// 1. Slide and hide the entry from the list
+							el.parent().slideUp(function(){
+
+								el.parent().remove();
+
+								if($("ul.existing-columns li").length < 1){
+									$("div.existing").hide();
+									$("h3.existing-links").hide();
+									$("div.existing-links").hide();
 								}
-							}
-							self.showLinkButton();
-						});
-					});
-				}
+
+								self.removeColumnReconciliation(columnName, function(){
+									// 3. Remove the link from the existingLinks array
+									for(var i=0; i<self.existingLinks.length; i++){
+										if(self.existingLinks[i].columnName == columnName){
+											self.existingLinks.splice(i,1);
+										}
+									}
+									self.showLinkButton();
+								});
+							});
+
+
+						} else {
+							// User cancelled
+							log("User cancelled");
+						}
+
+						clearInterval(interval);
+					} 
+				}, 100);
 			});
 
 			// Set up interaction for the "View results" button
@@ -1361,14 +1406,14 @@ var LinkedGov_LinkingPanel = {
 					self.checkFacetMatchCounts(function(){
 
 						sortArrayOfObjectsByKey(self.results, "columnName");
-						
+
 						// Make sure we have at least one result before 
 						// continuing
 						if(self.results.length > 0){
 
 							// Remove any results in the panel
 							$("div.linking-results div.result").remove();
-							
+
 							// Reset the existing links
 							self.existingLinks = [];
 
@@ -1492,45 +1537,85 @@ var LinkedGov_LinkingPanel = {
 							var resultDiv = $(this).parent("p").parent("div").parent('div');
 							var colName = resultDiv.data("colName");
 
-							self.removeColumnReconciliation(colName, function(){
+							// Create the dialog itself
+							var dialog = LG.createDialog({
+								header:"Are you sure?",
+								body:"This will delete the reconciliation data for the column \""+colName+"\"",
+								ok:function(){
+									log("OK clicked");
 
+									LG.vars.confirmDialog.answered = true;
+									LG.vars.confirmDialog.confirmed = true;
+									DialogSystem.dismissAll();	
+								},
+								cancel:function(){
+									log("Cancel clicked");
 
-								// 2. Remove the column from the existing links if it exists
-								for(var i=0; i<self.existingLinks.length; i++){
-									if(self.existingLinks[i].columnName == colName){
-										self.existingLinks[i]._li.remove();
-										self.existingLinks.splice(i, 1);
-										i--;
-									}
-								}
-
-								// 3. Remove the column from the results if it exists
-								for(var j=0; j<self.results.length; j++){
-									
-									if(self.results[j].columnName == colName){
-										self.results[j]._div.remove();
-										self.results.splice(j, 1);
-										j--;
-									}
-								}
-
-								if(self.results.length == 0){
-									// Reset the confirmed links
-									self.confirmedLinks = [];
-									$("div.confirmed-links ul.confirmed-columns").html("").hide();
-									// Hide the confirmed links <div>
-									$("div.confirmed-links").hide();
-									// Hide the confirmed links header
-									$("div.suggest-panel h3.confirmed").hide();
-									// Show the suggest panel
-									self.showSuggestPanel();
-									self.setupExistingLinks();
-								} else {
-									// Display the first result
-									$("div.linking-results div.result a.colName").eq(0).click();
-								}
-
+									LG.vars.confirmDialog.answered = true;
+									LG.vars.confirmDialog.confirmed = false;
+									DialogSystem.dismissAll();	
+								},
+								className:"confirm"
 							});
+
+							// Display the dialog
+							DialogSystem.showDialog(dialog);
+
+							// On confirmation
+							var interval = setInterval(function(){
+
+								if(LG.vars.confirmDialog.answered){
+									if(LG.vars.confirmDialog.confirmed){
+
+										LG.vars.confirmDialog.answered = false;
+
+										self.removeColumnReconciliation(colName, function(){
+
+											// 2. Remove the column from the existing links if it exists
+											for(var i=0; i<self.existingLinks.length; i++){
+												if(self.existingLinks[i].columnName == colName){
+													self.existingLinks[i]._li.remove();
+													self.existingLinks.splice(i, 1);
+													i--;
+												}
+											}
+
+											// 3. Remove the column from the results if it exists
+											for(var j=0; j<self.results.length; j++){
+
+												if(self.results[j].columnName == colName){
+													self.results[j]._div.remove();
+													self.results.splice(j, 1);
+													j--;
+												}
+											}
+
+											if(self.results.length == 0){
+												// Reset the confirmed links
+												self.confirmedLinks = [];
+												$("div.confirmed-links ul.confirmed-columns").html("").hide();
+												// Hide the confirmed links <div>
+												$("div.confirmed-links").hide();
+												// Hide the confirmed links header
+												$("div.suggest-panel h3.confirmed").hide();
+												// Show the suggest panel
+												self.showSuggestPanel();
+												self.setupExistingLinks();
+											} else {
+												// Display the first result
+												$("div.linking-results div.result a.colName").eq(0).click();
+											}
+
+										});
+
+									} else {
+										// User cancelled
+										//log("User cancelled");
+									}
+
+									clearInterval(interval);
+								} 
+							}, 100);
 
 						});
 
@@ -1544,7 +1629,7 @@ var LinkedGov_LinkingPanel = {
 						});
 
 						Refine.update({modelsChanged:true}, function(){
-							
+
 							// Hide the "linking" loading message
 							$("div#refine-tabs-facets").children().show();
 
@@ -1587,27 +1672,21 @@ var LinkedGov_LinkingPanel = {
 
 			var self = this;
 
-			var ans = window.confirm("Are you sure? This will delete the reconciliation data for the column \""+columnName+"\"");
-			// On confirmation
-			if(ans){
+			// 1. Delete the reconciliation data for the column
+			Refine.postCoreProcess(
+					"recon-discard-judgments",
+					{ columnName: columnName, clearData: true },
+					null,
+					{ cellsChanged: true, columnStatsChanged: true }
+			);
 
-				// 1. Delete the reconciliation data for the column
-				Refine.postCoreProcess(
-						"recon-discard-judgments",
-						{ columnName: columnName, clearData: true },
-						null,
-						{ cellsChanged: true, columnStatsChanged: true }
-				);
+			// 4. Remove the columns reconciliation RDF data
+			LG.rdfOps.removeColumnInRDF(columnName);
 
-				// 4. Remove the columns reconciliation RDF data
-				LG.rdfOps.removeColumnInRDF(columnName);
-
-				// 5. Perform any UI clean up
-				Refine.update({modelsChanged:true}, function(){
-					callback(columnName);
-				});
-				
-			}
+			// 5. Perform any UI clean up
+			Refine.update({modelsChanged:true}, function(){
+				callback(columnName);
+			});
 
 		},
 
@@ -2448,10 +2527,10 @@ var LinkedGov_LinkingPanel = {
 					if(rootNode.links[j].target.columnName == self.results[i].columnName 
 							&& typeof rootNode.links[j].target.expression != 'undefined'
 								&& rootNode.links[j].target.expression == "if(isError(cell.recon.match.id),value,cell.recon.match.id)"){
-						
+
 						log("Found reconciliation RDF for column "+rootNode.links[j].target.columnName);
 						log("Deleting...");
-						
+
 						rootNode.links.splice(j,1);
 					}
 				}

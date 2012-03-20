@@ -114,7 +114,6 @@ var LinkedGov_geolocationWizard = {
 
 				return array;
 			} else {
-				self.onFail("One or more columns need to be selected in order to proceed with the wizard.");
 				return array;
 			}
 		},
@@ -402,7 +401,7 @@ var LinkedGov_geolocationWizard = {
 		 */
 		onFail : function(message) {
 			var self = this;
-			alert("Geolocation wizard failed.\n\n" + message);
+			alert("Geolocation wizard failed. " + message);
 			self.vars.coordinateName = "";
 			LG.panels.wizardsPanel.resetWizard(self.vars.elmts.geolocationBody);
 			LG.showWizardProgress(false);

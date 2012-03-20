@@ -297,7 +297,7 @@ var LinkedGov_columnsToRowsWizard = {
 			 * Reset any null cells to blanks again, using the "false" flag
 			 */
 			LG.ops.setBlanksToNulls(false, theProject.columnModel.columns, 0,function() {
-				log("Columns to rows wizard failed.\n\n" + message);
+				//log("Columns to rows wizard failed.\n\n" + message);
 				Refine.update({everythingChanged : true});
 				LG.panels.wizardsPanel.resetWizard(self.vars.elmts.columnsToRowsBody);
 				LG.showWizardProgress(false);
@@ -318,7 +318,7 @@ var LinkedGov_columnsToRowsWizard = {
 			 */
 			LG.ops.setBlanksToNulls(false, theProject.columnModel.columns, 0, function() {
 				
-				log("Columns to rows wizard complete");
+				//log("Columns to rows wizard complete");
 				Refine.update({everythingChanged:true},function(){
 					// Refresh the content of the select inputs
 					LG.panels.wizardsPanel.rangeSelector($(self.vars.elmts.columnsToRowsBody).find("div.range").find("select").eq(0));

@@ -20,9 +20,6 @@ public class NorthingEastingToLatLong implements Function {
 
     public Object call(Properties bindings, Object[] args) {
         if (args.length == 2) {
-			for (int i =0;i<args.length; i++) {
-				System.out.println("****"+i+"="+args[i]);
-			}
 			if (!(args[0] instanceof Number)) {
 				return new EvalError(ControlFunctionRegistry.getFunctionName(this) + " expects its first argument to be a number (java double easting)");
 			}

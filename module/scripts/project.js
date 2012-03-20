@@ -38,7 +38,11 @@ LG.vars = {
 		lgClassURI: "http://data.linkedgov.org/terms/class/"+theProject.id+"/",
 		lgPropertyURI: "http://data.linkedgov.org/terms/property/"+theProject.id+"/",
 		hiddenColumns: "",
-		reconServices : []
+		reconServices : [],
+		confirmDialog:{
+			answered:false,
+			confirmed:false
+		}
 };
 
 
@@ -67,7 +71,39 @@ LG.initialise = function() {
 	this.injectWizardProgressOverlay();
 	this.injectFeedbackForm();
 	this.setupModeButton();
+	
+	/*
+	window.onerror = function(o) {
+		LG.handleJSError(o);
+	};
+	*/
 
+	/*
+	window.alert = function(s) {
+		var dialog = LG.createDialog({
+			header:"Oops!",
+			body:$("<p />").text(s),
+			ok:true,
+			className:"alert"
+		});
+		DialogSystem.showDialog(dialog);
+	};
+	*/
+
+};
+
+onerror = function(o) {
+	LG.handleJSError(o);
+};
+
+alert = function(s) {
+	var dialog = LG.createDialog({
+		header:"Oops!",
+		body:$("<p />").text(s),
+		ok:true,
+		className:"alert"
+	});
+	DialogSystem.showDialog(dialog);
 };
 
 /*
@@ -481,10 +517,10 @@ LG.createDialog = function(o){
 	var header = $('<div></div>').addClass("dialog-header").append(o.header).appendTo(dialog);
 	var body = $('<div></div>').addClass("dialog-body "+o.className).append(o.body).appendTo(dialog);
 	var footer = $('<div></div>').addClass("dialog-footer").append(o.footer).appendTo(dialog);
-
-
+	
 	if(o.ok){
-		if(typeof o.ok == "object"){
+		if(typeof o.ok == "function"){
+			log("Creating ok button with custom callback");
 			$('<button></button>').addClass('button').html("&nbsp;&nbsp;OK&nbsp;&nbsp;").click(o.ok).appendTo(footer);
 		} else {
 			$('<button></button>').addClass('button').html("&nbsp;&nbsp;OK&nbsp;&nbsp;").click(function(){
@@ -493,7 +529,7 @@ LG.createDialog = function(o){
 		}
 	}	
 	if(o.cancel){
-		if(typeof o.cancel == "object"){
+		if(typeof o.cancel == "function"){
 			$('<button></button>').addClass('button').html("&nbsp;&nbsp;Cancel&nbsp;&nbsp;").click(o.cancel).appendTo(footer);		
 		} else {
 			$('<button></button>').addClass('button').html("&nbsp;&nbsp;Cancel&nbsp;&nbsp;").click(function(){
@@ -1407,20 +1443,5 @@ function log(str) {
 $(document).ready(function() {
 
 	LG.initialise();
-
-	window.onerror = function(o) {
-		LG.handleJSError(o);
-	};
-
-	window.alert = function(s) {
-		var dialog = LG.createDialog({
-			header:"Oops!",
-			body:$("<p />").text(s),
-			ok:true,
-			className:"alert"
-		});
-		DialogSystem.showDialog(dialog);
-	};
-
-
+	
 });

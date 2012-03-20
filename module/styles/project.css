@@ -2104,6 +2104,9 @@ body.lg ul.selected-columns li span.colOptions input.textbox
     margin-top: 5px;
     width: 92%;
 }
+body.lg div.dialog-container {
+	/*top:40% !important;*/
+}
 body.wizard-progress div.dialog-frame, body.wizard-progress div.dialog-overlay
 {
     display: none !important;

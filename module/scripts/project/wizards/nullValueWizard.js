@@ -22,7 +22,13 @@ var LinkedGov_nullValueWizard = {
 		initialise : function(elmts) {
 
 			var self = this;
-			self.vars.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
+			
+			try{
+				self.vars.historyRestoreID = ui.historyPanel._data.past[ui.historyPanel._data.past.length-1].id;
+			}catch(e){
+				self.vars.historyRestoreID = 0;
+			}
+			
 			self.vars.elmts = elmts;
 
 			if (elmts.nullValueInputField.val().length > 0) {
