@@ -1536,7 +1536,7 @@ var LinkedGov_WizardsPanel = {
 		 * to rollback their actions.
 		 */
 		showUndoButton : function(wizardBody) {
-			$(wizardBody).parent().find("div.action-buttons a.undo").css("display","inline-block");
+			$("div.action-buttons a.undo").css("display","inline-block");
 		},
 		
 
