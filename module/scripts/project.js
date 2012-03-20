@@ -426,7 +426,7 @@ LG.switchMode = function(mode){
 		// Basic mode settings
 		h2Top = "60px";
 		typingPanelBodyTop = "37px";
-		columnHeaderNameMarginLeft = "2px";
+		columnHeaderNameMarginLeft = "0px";
 		display = "none";
 		buttonText = "Expert mode";
 		buttonTitle = "Switch to expert mode";
@@ -447,6 +447,8 @@ LG.switchMode = function(mode){
 	$("div#project-controls a").css("display", display);
 	$("div#project-controls a#send-feedback").css("display", "inline-block");
 	$("div#project-controls a#expert-mode").css("display", "inline-block");
+	$("div#project-controls a#unhide-columns-button").css("display", "none");
+	
 	// Show extension buttons
 	$("div#extension-bar").css("display", display);
 	// Show edit link in cells	

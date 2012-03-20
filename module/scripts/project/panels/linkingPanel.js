@@ -198,83 +198,74 @@ var LinkedGov_LinkingPanel = {
 			var self = this;
 
 			// Hide the link button
-			this.els.linkButton.hide();
+			self.els.linkButton.hide();
 
 			// Hide the suggest panel
-			this.els.suggestPanel.hide();
+			self.els.suggestPanel.hide();
 
 			// Remove any existing results
 			$("div.linking-results div.result").remove();
 			$("div.linking-results p.loader").remove();
 			$("<p />").addClass("loader").append($("<img />").attr("src","images/small-spinner.gif")).appendTo($("div.linking-results"));
 
+			// Show & set up the cancel button if the
+			// user has began reconciling a column
+			if(self.confirmedLinks.length > 0){
+								
+				self.els.cancelButton.unbind("click").bind("click",function(){
+
+					// Create the dialog itself
+					var dialog = LG.createDialog({
+						header: "Are you sure?",
+						body: "Any values that have been reconciled will be lost.",
+						ok:function(){
+							log("Ok clicked");
+							LG.vars.confirmDialog.answered = true;
+							LG.vars.confirmDialog.confirmed = true;
+							DialogSystem.dismissAll();	
+						},
+						cancel:function(){
+							LG.vars.confirmDialog.answered = true;
+							LG.vars.confirmDialog.confirmed = false;
+							DialogSystem.dismissAll();	
+						},
+						className:"confirm"
+					});
+
+					// Display the dialog
+					DialogSystem.showDialog(dialog);
+
+					// On confirmation
+					var interval = setInterval(function(){
+						
+						log(LG.vars.confirmDialog.answered);
+						
+						if(LG.vars.confirmDialog.answered){
+							
+							if(LG.vars.confirmDialog.confirmed){
+
+								LG.vars.confirmDialog.answered = false;
+								
+								self.cancelAndReset();
+								
+							}
+							
+							clearInterval(interval);
+						}
+					}, 100);
+				});
+				
+				self.els.cancelButton.css("display","inline-block");
+				
+			} else {
+
+			}
+
 			// Show the reconcile panel
 			this.els.reconcilePanel.show(0, function(){
 				// Begin reconciliation on the confirmed columns
 				self.buildResultObjects();					
 			});
-
-			// Show & set up the cancel button if the
-			// user has began reconciling a column
-			if(self.confirmedLinks.length > 0){
-				this.els.cancelButton.unbind("click").bind("click",function(){
-
-					// Alert the user they will lose their reconciliation results if they 
-					// press "Cancel".
-					var ans = window.confirm("Are you sure? You will lose any un-saved reconciliation data.");
-
-					if(ans){
-
-						self.cancelReconciliation(function(){
-							// After cancelling reconciliation, rollback the history to the saved 
-							// restore point.
-							LG.restoreHistory(self.historyRestoreID);
-
-							// Use an interval to test whether the expected facets have been created from 
-							// cancelling the reconciliation (2 per column)
-							var interval = setInterval(function(){
-
-								if(ui.browsingEngine._facets.length < (self.confirmedLinks.length*2)){
-									// Facets haven't been created yet
-								} else {
-									// Facets have been created which means reconciliation has been 
-									// finished cancelling.
-									//
-									// Remove each of the progress-bars for the columns
-									$("div.linking-loading div.progressDiv").each(function(){
-										$(this).remove();
-									});
-
-									// Reshow the facet panel children which were hidden at the start of 
-									// reconciliation
-									$("div#refine-tabs-facets").children().show();
-
-									// Make sure the Typing panel is still showing as Refine attempts 
-									// to switch to the facet panel when one is created
-									$("div#left-panel div.refine-tabs").tabs('select', 1);
-
-									// Show the initial "suggest panel"
-									self.showSuggestPanel();
-
-									// Hide the "wizard in progress" message
-									// LG.showWizardProgress(false);
-									try{ui.browsingEngine.remove();}catch(e){
-										log(e);
-									}
-
-									clearInterval(interval);
-								}
-							},100);
-
-						});
-					} else {
-						// Do nothing
-					}
-				})
-				.css("display","inline-block");
-			} else {
-
-			}
 
 			// Show the back button
 			this.els.returnButton.unbind("click").bind("click", function(){
@@ -653,18 +644,11 @@ var LinkedGov_LinkingPanel = {
 
 				// On confirmation
 				var interval = setInterval(function(){
-
-					log("Waiting for user to confirm...");
-					log(LG.vars.confirmDialog.answered);
-
+					
 					if(LG.vars.confirmDialog.answered){
 						if(LG.vars.confirmDialog.confirmed){
 
-							log("User has confirmed");
-
 							LG.vars.confirmDialog.answered = false;
-
-							log(el);
 
 							// 1. Slide and hide the entry from the list
 							el.parent().slideUp(function(){
@@ -691,7 +675,6 @@ var LinkedGov_LinkingPanel = {
 
 						} else {
 							// User cancelled
-							log("User cancelled");
 						}
 
 						clearInterval(interval);
@@ -832,20 +815,14 @@ var LinkedGov_LinkingPanel = {
 
 			$.get("/command/core/get-processes?" + $.param({ project: theProject.id }), null, function(data) {
 
-				//log("data.processes.length "+data.processes.length);
 
-				//log("before "+self.numberOfRunningProcesses);
 				self.numberOfRunningProcesses = data.processes.length;
-				//log("after "+self.numberOfRunningProcesses)
 
 				// Check to see if any processes have completed by testing the length of 
 				// our processesArray against the returned processes object
 				if(self.processesArray.length == 0){
-					//log("processesArray hasn't been created yet");
 
 					for(var i=0; i<data.processes.length; i++){
-						//log("pushing process for column - "+data.processes[i].description.split("Reconcile cells in column ")[1].split(" to type")[0]);
-						//log("with progress - "+data.processes[i].progress);
 						self.processesArray.push({
 							columnName : data.processes[i].description.split("Reconcile cells in column ")[1].split(" to type")[0],
 							progress : data.processes[i].progress,
@@ -856,7 +833,6 @@ var LinkedGov_LinkingPanel = {
 
 				// If our process list has more processes than Refine's process list
 				if(self.processesArray.length > data.processes.length){
-					//log("A process has completed...");
 					// A process has completed
 					// Boolean to signal we've found our process
 					var found = false;
@@ -876,11 +852,8 @@ var LinkedGov_LinkingPanel = {
 								// Check to see if this process exists in our list already
 								if(self.processesArray[i].columnName == columnName){
 									// Yes it does - so this one hasn't completed yet
-									//log("It's not for column "+columnName);
-									//found = false;
 									self.processesArray[i].complete = false;
 									// Skip the rest
-									//j = data.processes.length-1;
 								} else {
 									self.processesArray[i].complete = true;
 								}
@@ -890,28 +863,17 @@ var LinkedGov_LinkingPanel = {
 									for(var k=0; k<self.processesArray.length; k++){
 										if(self.processesArray[k].complete){
 											self.updateProgressBar(self.processesArray[k].columnName, 100);
-											//log("Found it. Complete process on column - "+self.processesArray[k].columnName);
 											self.processesArray.splice(k,1);
 											j=data.processes.length-1;
 											k=self.processesArray.length-1;
 											i--;
 										}
 									}
-									/*
-									// If we've iterated through Refine's process list without
-									// finding our process. This is the missing one.
-									found = true;
-									//self.processesArray[i].complete = true;
-									self.updateProgressBar(self.processesArray[i].columnName, 100);
-									log("Found it. Complete process on column - "+self.processesArray[i].columnName);
-									self.processesArray.splice(i,1);
-									 */
 								}
 							}
 						}
 					}
 				} else {
-					//log("Updating progress bars as normal...")
 					// Loop through our process list
 					for(var i=0; i<self.processesArray.length; i++){
 						// Loop through Refine's process list
@@ -969,7 +931,7 @@ var LinkedGov_LinkingPanel = {
 		 */
 		cancelReconciliation:function(callback){
 
-			//log("cancelReconciliation");
+			log("cancelReconciliation");
 
 			var self = this;
 
@@ -1372,6 +1334,63 @@ var LinkedGov_LinkingPanel = {
 				}
 			}
 		},
+		
+		/*
+		 * Cancels reconciliation and resets the linking panel
+		 */
+		cancelAndReset: function(){
+			
+			log("cancelAndReset");
+			
+			var self = this;
+			
+			self.cancelReconciliation(function(){
+				
+				log("Callback for cancelReconciliation");
+				
+				// After cancelling reconciliation, rollback the history to the saved 
+				// restore point.
+				LG.restoreHistory(self.historyRestoreID);
+
+				// Use an interval to test whether the expected facets have been created from 
+				// cancelling the reconciliation (2 per column)
+				var interval2 = setInterval(function(){
+
+					if(ui.browsingEngine._facets.length < (self.confirmedLinks.length*2)){
+						// Facets haven't been created yet
+					} else {
+						// Facets have been created which means reconciliation has been 
+						// finished cancelling.
+						//
+						// Remove each of the progress-bars for the columns
+						$("div.linking-loading div.progressDiv").each(function(){
+							$(this).remove();
+						});
+
+						// Reshow the facet panel children which were hidden at the start of 
+						// reconciliation
+						$("div#refine-tabs-facets").children().show();
+
+						// Make sure the Typing panel is still showing as Refine attempts 
+						// to switch to the facet panel when one is created
+						$("div#left-panel div.refine-tabs").tabs('select', 1);
+
+						// Show the initial "suggest panel"
+						self.showSuggestPanel();
+
+						// Hide the "wizard in progress" message
+						// LG.showWizardProgress(false);
+						try{ui.browsingEngine.remove();}catch(e){
+							log(e);
+						}
+
+						clearInterval(interval2);
+					}
+				},100);
+
+			});
+			
+		},
 
 		/*
 		 * displayReconciliationResult
@@ -1393,8 +1412,14 @@ var LinkedGov_LinkingPanel = {
 
 			var interval = setInterval(function(){
 
-				// Update the progress bars while we wait for the reconciliation to finish
-				self.pollReconciliationJobs();
+				try{
+					// Update the progress bars while we wait for the reconciliation to finish
+					self.pollReconciliationJobs();
+				} catch(e){
+					log(e);
+					self.cancelAndReset();
+					clearInterval(interval);
+				}
 
 				// Once all processes have finished
 				if(self.numberOfRunningProcesses == 0){
@@ -1667,6 +1692,9 @@ var LinkedGov_LinkingPanel = {
 
 		/*
 		 * removeColumnReconciliation
+		 * 
+		 * Clears the reconciliation data from the cells in Refine, 
+		 * as well as removing the column's RDF.
 		 */
 		removeColumnReconciliation:function(columnName, callback){
 

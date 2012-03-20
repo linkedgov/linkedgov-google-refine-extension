@@ -86,6 +86,9 @@ body.lg div#project-controls a#expert-mode {
 	float:left;
     margin-right: 4px;
 }
+div#project-controls a#unhide-columns-button {
+    margin-right:4px;	
+}
 body.lg #slogan
 {
     color: #444444;
