@@ -116,6 +116,9 @@ var LinkedGov_dateTimeWizard = {
 					self.checkForMultiColumnDateTimes(function() {
 						self.checkCombinations(function() {
 							
+							log("self.vars.expectedValue");
+
+							log(self.vars.expectedValue);
 							/*
 							 * We are able to test that the columns involved in the wizards operations have 
 							 * resulted in being typed as a date or not.
@@ -132,6 +135,11 @@ var LinkedGov_dateTimeWizard = {
 										//log("About to save RDF...");
 										self.saveRDF(rootNode, foundRootNode);
 									});
+								});
+							} else {
+								LG.rdfOps.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
+									//log("About to save RDF...");
+									self.saveRDF(rootNode, foundRootNode);
 								});
 							}
 							

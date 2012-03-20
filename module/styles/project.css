@@ -82,6 +82,10 @@ body.lg #project-title,#project-controls
     position: absolute;
     top: 18px;
 }
+body.lg div#project-controls a#expert-mode {
+	float:left;
+    margin-right: 4px;
+}
 body.lg #slogan
 {
     color: #444444;
@@ -726,6 +730,11 @@ body.lg div#refine-tabs-typing div.linking-results div.result span.colOptions in
     margin-top: 0;
     width: 96%;
 }
+body.lg div#refine-tabs-typing div.linking-results div.result span.colOptions input.edited
+{
+    background-color: #FFFFFF;
+    background-image: none;
+}
 body.lg div#refine-tabs-typing div.linking-results div.result span.colOptions input.dontknow
 {
     background-color: #F5F5F5;
@@ -733,11 +742,6 @@ body.lg div#refine-tabs-typing div.linking-results div.result span.colOptions in
     background-position: 5px 3px;
     background-repeat: no-repeat;
     text-indent: 23px;
-}
-body.lg div#refine-tabs-typing div.linking-results div.result span.colOptions input.edited
-{
-    background-color: #FFFFFF;
-    background-image: none;
 }
 body.lg div#refine-tabs-typing div.linking-results div.result span.colOptions input.matched
 {
@@ -1380,7 +1384,8 @@ body.lg div.typing-panel-body
     overflow-y: auto;
     padding: 7px;
     position: absolute;
-    top: 70px;
+    top: 37px;
+    /* top: 70px; */
     width: 286px;
 }
 body.lg div.typing-panel-body p.loader
@@ -1524,6 +1529,7 @@ body.lg div.wizard-body div.split
 body.lg div.wizard-body div.split input.splitCharacter
 {
     background-color: #FFFFCC;
+    margin-left: 5px;
     margin-top: 5px;
     text-align: center;
     width: 15px;
@@ -1534,7 +1540,6 @@ body.lg div.wizard-body div.split label
     margin-bottom: 5px;
     margin-top: 0px;
     padding-left: 0;
-    width: 219px;
 }
 body.lg div.wizard-body div.unexpectedValues
 {
@@ -1745,15 +1750,6 @@ body.lg div.wizard-body div.updateBG {
     text-align: right;
 }
 body.lg div.typing-panel-body h2 {
-	/*
-    border-bottom: 1px solid #DDDDDD;
-    line-height: 30px;
-    margin-bottom: 10px;
-    padding-bottom: 10px;
-    padding-left: 0;
-    padding-top: 0px;
-    text-align: left;
-    */
     background: -moz-linear-gradient(center top, #F7F9FF, #D9E2FF) repeat
         scroll 0 0 transparent;
     background: -webkit-gradient(linear, left bottom, left top, from(#D9E2FF),
@@ -1767,9 +1763,10 @@ body.lg div.typing-panel-body h2 {
     position: fixed;
     text-align: justify;
     text-shadow: 1px 1px #FFFFFF;
-    top: 92px;
+    top: 60px;
+    /* top: 92px; */
     width: 280px;
-}
+}    
 body.lg div.wizard-body ol.steps
 {
     margin: 0 15px 5px 35px;

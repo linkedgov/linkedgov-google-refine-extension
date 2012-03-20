@@ -39,7 +39,6 @@ LG.vars = {
 		lgPropertyURI: "http://data.linkedgov.org/terms/property/"+theProject.id+"/",
 		hiddenColumns: "",
 		reconServices : []
-
 };
 
 
@@ -67,6 +66,7 @@ LG.initialise = function() {
 	 */
 	this.injectWizardProgressOverlay();
 	this.injectFeedbackForm();
+	this.setupModeButton();
 
 };
 
@@ -247,15 +247,18 @@ LG.loadOperationScripts = function(){
 			 */
 			ui.dataTableView.render2 = ui.dataTableView.render;
 			ui.dataTableView.render = function(){
-
-				//log("Rendered table");
+				// Let Refine re-render the table
 				ui.dataTableView.render2();
 				// Whenever Refine updates the data table, it removes the classes from the table 
 				// header - which destroys our RDF symbols
 				LG.rdfOps.applyTypeIcons.apply();
 				// as well as our hidden column classes.
 				LG.ops.keepHiddenColumnsHidden();
-				// Perform an initial resize
+				// Reinject column quick-tool
+				LG.injectQuickTool();
+				// Keep certain buttons and tabs hidden if we're in basic mode
+				LG.applyMode();
+				// Perform a window resize
 				$(window).resize();
 			}
 
@@ -272,7 +275,7 @@ LG.loadOperationScripts = function(){
 				 * Initialise misceallaneous functions
 				 */
 				LG.addUnhideColumnButton();
-				LG.quickTools();
+				LG.setupQuickTool();
 			});
 
 		});
@@ -307,11 +310,115 @@ LG.restyle = function() {
 LG.injectFeedbackForm = function() {
 
 	$.get("/extension/linkedgov/scripts/feedback.js",function(){
-		$("div#project-controls").append('<a class="button" id="send-feedback" href="#" title="Send feedback">Feedback</a>');				
+		var button = $("<a />")
+		.addClass("button")
+		.attr("id","send-feedback")
+		.attr("href","#")
+		.attr("title", "Send feedback")
+		.text("Feedback");
+		
+		$("div#project-controls").prepend(button);
 	});
 
 };
 
+/*
+ * setupExpertButton
+ * 
+ * Hides/shows various buttons and tabs to create 
+ * "basic" and "expert" modes for Google Refine.
+ */
+LG.setupModeButton = function(){
+	
+	// Create the toggle button
+	var button = $("<a />")
+	.addClass("button")
+	.attr("id","expert-mode")
+	.attr("href","#")
+	.attr("title", "Switch to expert mode")
+	.text("Expert mode");
+	
+	button.toggle(function(){	
+		// Enter EXPERT mode
+		LG.switchMode("expert");
+	}, function(){
+		// Enter BASIC mode
+		LG.switchMode("basic");
+	});
+	
+	// Add the button to the project controls area in the 
+	// top right
+	$("div#project-controls").prepend(button);
+	
+	// Initially hide the buttons and tabs 
+	// to enter "basic" mode.
+	LG.switchMode("basic");	
+};
+
+LG.applyMode = function(){
+	
+	var display = "inline-block";
+	var columnHeaderNameMarginLeft = "20px";
+	
+	if(LG.vars.mode == "basic"){
+		display = "none";
+		columnHeaderNameMarginLeft = "2px";
+	}
+	
+	// Show/hide the column menu buttons
+	$("a.column-header-menu").css("display", display);
+	$("span.column-header-name").css("margin-left", columnHeaderNameMarginLeft);
+	
+	// Show/hide edit link in cells	
+	$("a.data-table-cell-edit").css("display", display);
+	
+};
+
+LG.switchMode = function(mode){
+
+	LG.vars.mode = mode;
+		
+	// Expert mode settings
+	var h2Top = "92px";
+	var typingPanelBodyTop = "70px";
+	var columnHeaderNameMarginLeft = "20px";
+	var display = "inline-block";
+	var buttonText = "Basic mode";
+	var buttonTitle = "Switch to basic mode";
+	
+	if(mode == "basic"){
+		// Basic mode settings
+		h2Top = "60px";
+		typingPanelBodyTop = "37px";
+		columnHeaderNameMarginLeft = "2px";
+		display = "none";
+		buttonText = "Expert mode";
+		buttonTitle = "Switch to expert mode";
+	}
+	
+	// Make sure the Typing panel is showing before we switch
+	$("a[href='#refine-tabs-typing']").click();
+
+	// Show left pane tabs & bodies
+	$("div.typing-panel-body h2").css("top", h2Top);
+	$("div.typing-panel-body").css("top", typingPanelBodyTop);
+	
+	// Show the column menu buttons
+	$("a.column-header-menu").css("display", display);
+	$("span.column-header-name").css("margin-left", columnHeaderNameMarginLeft);
+	
+	// Show Control buttons
+	$("div#project-controls a").css("display", display);
+	$("div#project-controls a#send-feedback").css("display", "inline-block");
+	$("div#project-controls a#expert-mode").css("display", "inline-block");
+	// Show extension buttons
+	$("div#extension-bar").css("display", display);
+	// Show edit link in cells	
+	$("a.data-table-cell-edit").css("display", display);
+	// Change button text
+	$("a#expert-mode").text(buttonText).attr("title", buttonTitle);
+	
+};
 
 /*
  * showFinishMessage
@@ -457,25 +564,18 @@ LG.updateUnhideColumnButton = function(count){
 	}
 };
 
-
 /*
- * quickTools
+ * injectQuickTool
  * 
- * Initialises the quick tools for column headings.
+ * Each time the table re-renders, we lose our quick tool 
+ * as we need to inject it into the HTML that gets re-injected by 
+ * Refine.
+ * 
+ * We neeed to re-inject the quick tool each time the table is 
+ * re-rendered.
  */
-LG.quickTools = function() {
-
-	/*
-	 * Quick tools 
-	 * 
-	 * As long as the user is not being asked to select a column,
-	 * append a DIV element containing the column quick tools.
-	 * 
-	 * If a column header already has the quick tool, then show or hide it.
-	 * 
-	 * TODO: Show & hide using CSS.
-	 */
-
+LG.injectQuickTool = function(){
+	
 	var div = $("<div />").addClass("quick-tool");	
 	var ul = $("<ul />"); 
 
@@ -489,6 +589,15 @@ LG.quickTools = function() {
 	ul.appendTo(div);
 
 	$("div.data-header-table-container").append(div);
+	
+};
+
+/*
+ * quickTools
+ * 
+ * Sets up interaction for the quick-tool pane
+ */
+LG.setupQuickTool = function() {
 
 	$("td.column-header").live("hover", function() {
 
@@ -590,6 +699,9 @@ LG.quickTools = function() {
 		$("div.quick-tool").hide();
 
 	});
+	
+	// Inject the quick tool HTML element into the table
+	LG.injectQuickTool();
 
 };
 
@@ -817,6 +929,8 @@ LG.injectWizardProgressOverlay = function() {
 LG.showWizardProgress = function(show) {
 	// Create a timeout incase a 
 	var timeout = undefined;
+	
+	$('div.wizardProgressMessage p').find("span.cancel").remove();
 
 	if (show) {
 
@@ -840,9 +954,7 @@ LG.showWizardProgress = function(show) {
 	} else {
 		$('div.wizardProgressMessage').hide();
 		$("body").removeClass("wizard-progress");
-		$('div.wizardProgressMessage p').find("span.cancel").remove();
 		clearTimeout(timeout);
-
 	}
 };
 

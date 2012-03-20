@@ -1646,7 +1646,7 @@ var LinkedGov_WizardsPanel = {
 				 */
 				if(typeof colObjects[i].unexpectedValueParams != 'undefined'){
 					
-					log("colObjects[i].unexpectedValueParams != 'undefined'");
+					//log("colObjects[i].unexpectedValueParams != 'undefined'");
 
 					// Set a flag for detecting unmatched values
 					var unexpectedValuesPresent = false;
@@ -1674,12 +1674,15 @@ var LinkedGov_WizardsPanel = {
 						// on whether there are unexpected values in any of the columns.
 						if(unexpectedValuesPresent){
 							
+							log("unexpectedValuesPresent");
+							
 							// Unexpected values present - display the panel
 							// and pass the colObjects array, starting at index "0" (as it's a recursive 
 							// function) and the wizard's body
 							self.displayUnexpectedValuesPanel(colObjects, 0, wizardBody, callback);
 							
 						} else {
+							log("NO unexpectedValuesPresent");
 							// No unexpected values present - do not display the panel
 							// Hide the unexpected values panel
 							self.finishUnexpectedValuesTest(callback);
@@ -1880,6 +1883,7 @@ var LinkedGov_WizardsPanel = {
 		 */
 		displayUnexpectedValuesPanel : function(colObjects, index, wizardBody, callback){
 
+			log("displayUnexpectedValuesPanel");
 			var self = this;
 			
 			// Hide the Back button - the user needs to pick the buttons 
