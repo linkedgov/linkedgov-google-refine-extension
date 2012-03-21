@@ -22,7 +22,7 @@ Address wizard
 http://www.iconfinder.com/icondetails/37591/128/16_addressbook_icon
 
 Enumeration wizard
-Colorful stickers icon set
+http://dryicons.com/free-icons/preview/colorful-stickers-icons-set/
 
 Labelling panel - keys
-Colorful stickets icon set
+http://dryicons.com/free-icons/preview/colorful-stickers-icons-set/

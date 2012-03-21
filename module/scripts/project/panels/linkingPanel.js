@@ -2109,7 +2109,7 @@ var LinkedGov_LinkingPanel = {
 					self.suggestXHR.abort();
 
 					// Check the suggest cache for the request
-					if(typeof self.suggestCache[inputElement.val()] == 'undefined'){
+					if(typeof self.suggestCache[inputElement.val().toLowerCase()] == 'undefined'){
 
 						// Given there's no cache entry, call the suggest entity service 
 						// using the service's local "flyout" paths (e.g. /suggest/entity/my-service-1/)
@@ -2118,7 +2118,7 @@ var LinkedGov_LinkingPanel = {
 							url : suggestOptions.service_url+suggestOptions.service_path+"?callback=?",
 							data : {
 								all_types:false,
-								prefix: inputElement.val(),
+								prefix: inputElement.val().toLowerCase(),
 								type:"",
 								type_strict:"all"
 							},
@@ -2132,7 +2132,7 @@ var LinkedGov_LinkingPanel = {
 								} else {
 									// If we're not returned anything from the suggest AJAX call
 									//self.suggestPane.html('<div class="options"><span class="text">Only select a match if you are 100% sure it is correct.</span><a class="button">I&apos;m not sure</a><p>No results...</p></div>').show();
-									log("We have no suggestions");
+									//log("We have no suggestions");
 									// Display a "no results" message with the "I'm not sure" button
 									self.suggestPane.find("ul").hide();
 									self.suggestPane.find("div.options").show();
@@ -2143,7 +2143,7 @@ var LinkedGov_LinkingPanel = {
 
 								// Store the returned data in the cache using the query term as a 
 								// key.
-								self.suggestCache[inputElement.val()] = data;
+								self.suggestCache[inputElement.val().toLowerCase()] = data;
 								// Keep the cache size down.
 								LG.ops.trimObject(self.suggestCache, 100);
 
@@ -2162,7 +2162,7 @@ var LinkedGov_LinkingPanel = {
 					} else {
 						// If we have a cached result, pass the cached result to the list-building function 
 						// instead of the AJAX returned data.
-						var data = self.suggestCache[inputElement.val()];
+						var data = self.suggestCache[inputElement.val().toLowerCase()];
 						self.buildSuggestionList(data, inputElement, unmatchedValue, serviceURL, suggestOptions);
 					}
 				} else {
@@ -2206,11 +2206,16 @@ var LinkedGov_LinkingPanel = {
 					// Highlight the query letters within the returned result's name 
 					// when displaying it in the list
 					var name = data.result[i].name;
+
 					if(name.indexOf(inputElement.val()) > -1){
 						name = data.result[i].name.replace(inputElement.val(),"<strong>"+inputElement.val()+"</strong>");
 					} else if(name.indexOf(inputElement.val().toLowerCase()) > -1){
 						name = data.result[i].name.replace(inputElement.val().toLowerCase(),"<strong>"+inputElement.val().toLowerCase()+"</strong>");
+					} else if(name.toLowerCase().indexOf(inputElement.val().toLowerCase()) > -1){
+						//name = data.result[i].name.replace(inputElement.val().toLowerCase(),"<strong>"+inputElement.val().toLowerCase()+"</strong>");
+						name = data.result[i].name.replace( /(^|\s)([a-z])/g , function(m,p1,p2){ return p1+p2.toUpperCase(); } ).replace(inputElement.val().toLowerCase().replace( /(^|\s)([a-z])/g , function(m,p1,p2){ return p1+p2.toUpperCase(); } ),"<strong>"+inputElement.val().toLowerCase().replace( /(^|\s)([a-z])/g , function(m,p1,p2){ return p1+p2.toUpperCase(); } )+"</strong>");
 					}
+					
 					li.html('<div class="fbs-item-name"><label>'+name+'</label></div>');
 
 					// Attach the suggestion data to the list element

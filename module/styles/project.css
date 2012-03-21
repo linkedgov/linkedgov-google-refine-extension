@@ -99,11 +99,26 @@ body.lg #project-title, body.lg #project-controls
     top: 18px;
 }
 body.lg div#project-controls a#expert-mode {
-	float:left;
+    background: -moz-linear-gradient(center top , #B3B3B3, #545454) repeat scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#545454), to(#B3B3B3) ) #DDDDDD;
+    color: #FFFFFF;
+    float: left;
     margin-right: 4px;
+    text-shadow: 1px 1px #000000;
 }
 div#project-controls a#unhide-columns-button {
-    margin-right:4px;	
+    background: -moz-linear-gradient(center top , #FFFFB0, #B2B878) repeat scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#B2B878), to(#FFFFB0) ) #DDDDDD;
+    margin-right: 4px;
+    text-shadow: 1px 1px #F8F8F2;	
+}
+body.lg div#project-controls a#expert-mode:active {
+    background: -moz-linear-gradient(center top , #545454, #B3B3B3) repeat scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#B3B3B3), to(#545454) ) #DDDDDD;
+}
+div#project-controls a#unhide-columns-button:active {
+    background: -moz-linear-gradient(center top , #B2B878, #FFFFB0) repeat scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left bottom, left top, from(#FFFFB0), to(#B2B878) ) #DDDDDD;
 }
 body.lg #slogan
 {

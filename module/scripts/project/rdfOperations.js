@@ -21,8 +21,6 @@ var LinkedGov_rdfOperations = {
 		 */
 		saveBaseUri:function(newBaseUri){
 
-			log("saveBaseUri");
-
 			$.post("/command/rdf-extension/save-baseURI?" + $.param({
 				project: theProject.id,
 				baseURI: newBaseUri

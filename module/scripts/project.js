@@ -297,6 +297,8 @@ LG.loadOperationScripts = function(){
 
 			/*
 			 * Perform a generic update once everything has loaded
+			 * so that the table doesn't get re-rendered, which in turn 
+			 * destroys anything we've added to the data table.
 			 */
 			Refine.update({everythingChanged:true}, function(){
 				/*
@@ -581,18 +583,25 @@ LG.addUnhideColumnButton = function() {
 
 	var self = this;
 
-	$("div#project-controls").prepend('<a id="unhide-columns-button" title="Unhide '+LG.vars.hiddenColumns.split(",").length+' columns" class="button">Unhide '+LG.vars.hiddenColumns.split(",").length+' columns</a>');
-
-	if(LG.vars.hiddenColumns.split(",").length > 0){
+	log("LG.vars.hiddenColumns.length "+LG.vars.hiddenColumns.length);
+	
+	if(LG.vars.hiddenColumns.length < 1){
+		$("div#project-controls").prepend('<a id="unhide-columns-button" title="Unhide '+LG.vars.hiddenColumns.split(",").length+' columns" class="button">Unhide columns</a>');
+	} else {
+		$("div#project-controls").prepend('<a id="unhide-columns-button" title="Unhide '+LG.vars.hiddenColumns.split(",").length+' columns" class="button">Unhide '+LG.vars.hiddenColumns.split(",").length+' columns</a>');		
 		$("a#unhide-columns-button").css("display","inline-block");
 	}
-	
+
 	$("a#unhide-columns-button").live("click",function(){
 		LG.vars.hiddenColumns = "";
 		LG.ops.eraseHiddenColumnData();
 		LG.ops.keepHiddenColumnsHidden();
 		Refine.update({modelsChanged:true});
-		LG.showHideUnhideColumnButton("hide");
+		log("clicked unhide columns button, hidden cols = "+LG.vars.hiddenColumns);
+		// It's important the text reverts back to "Unhide columns" 
+		// once all columns have been unhidden as the switchMode function
+		// uses the button text to decide whether to show it or not.
+		$(this).text("Unhide columns").hide();
 	});
 
 	/*
