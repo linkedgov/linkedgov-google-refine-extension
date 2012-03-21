@@ -71,12 +71,12 @@ LG.initialise = function() {
 	this.injectWizardProgressOverlay();
 	this.injectFeedbackForm();
 	this.setupModeButton();
-	
+
 	/*
 	window.onerror = function(o) {
 		LG.handleJSError(o);
 	};
-	*/
+	 */
 
 	/*
 	window.alert = function(s) {
@@ -88,7 +88,7 @@ LG.initialise = function() {
 		});
 		DialogSystem.showDialog(dialog);
 	};
-	*/
+	 */
 
 };
 
@@ -295,7 +295,11 @@ LG.loadOperationScripts = function(){
 				// Keep certain buttons and tabs hidden if we're in basic mode
 				LG.applyMode();
 				// Perform a window resize
-				$(window).resize();
+				try {
+					$(window).resize();
+				} catch (e) {
+					log(e);
+				}
 			}
 
 			/*
@@ -352,7 +356,7 @@ LG.injectFeedbackForm = function() {
 		.attr("href","#")
 		.attr("title", "Send feedback")
 		.text("Feedback");
-		
+
 		$("div#project-controls").prepend(button);
 	});
 
@@ -365,7 +369,7 @@ LG.injectFeedbackForm = function() {
  * "basic" and "expert" modes for Google Refine.
  */
 LG.setupModeButton = function(){
-	
+
 	// Create the toggle button
 	var button = $("<a />")
 	.addClass("button")
@@ -373,7 +377,7 @@ LG.setupModeButton = function(){
 	.attr("href","#")
 	.attr("title", "Switch to expert mode")
 	.text("Expert mode");
-	
+
 	button.toggle(function(){	
 		// Enter EXPERT mode
 		LG.switchMode("expert");
@@ -381,39 +385,39 @@ LG.setupModeButton = function(){
 		// Enter BASIC mode
 		LG.switchMode("basic");
 	});
-	
+
 	// Add the button to the project controls area in the 
 	// top right
 	$("div#project-controls").prepend(button);
-	
+
 	// Initially hide the buttons and tabs 
 	// to enter "basic" mode.
 	LG.switchMode("basic");	
 };
 
 LG.applyMode = function(){
-	
+
 	var display = "inline-block";
 	var columnHeaderNameMarginLeft = "20px";
-	
+
 	if(LG.vars.mode == "basic"){
 		display = "none";
 		columnHeaderNameMarginLeft = "2px";
 	}
-	
+
 	// Show/hide the column menu buttons
 	$("a.column-header-menu").css("display", display);
 	$("span.column-header-name").css("margin-left", columnHeaderNameMarginLeft);
-	
+
 	// Show/hide edit link in cells	
 	$("a.data-table-cell-edit").css("display", display);
-	
+
 };
 
 LG.switchMode = function(mode){
 
 	LG.vars.mode = mode;
-		
+
 	// Expert mode settings
 	var h2Top = "92px";
 	var typingPanelBodyTop = "70px";
@@ -421,7 +425,7 @@ LG.switchMode = function(mode){
 	var display = "inline-block";
 	var buttonText = "Basic mode";
 	var buttonTitle = "Switch to basic mode";
-	
+
 	if(mode == "basic"){
 		// Basic mode settings
 		h2Top = "60px";
@@ -431,31 +435,38 @@ LG.switchMode = function(mode){
 		buttonText = "Expert mode";
 		buttonTitle = "Switch to expert mode";
 	}
-	
-	// Make sure the Typing panel is showing before we switch
-	$("a[href='#refine-tabs-typing']").click();
+
+	// Sometimes Refine hasn't created the tabs 
+	// at the point that we do this. So we can catch
+	// that JS error
+	try{
+		// Make sure the Typing panel is showing before we switch
+		$("a[href='#refine-tabs-typing']").click();
+	} catch(e){
+		log(e);
+	}
 
 	// Show left pane tabs & bodies
 	$("div.typing-panel-body h2").css("top", h2Top);
 	$("div.typing-panel-body").css("top", typingPanelBodyTop);
-	
+
 	// Show the column menu buttons
 	$("a.column-header-menu").css("display", display);
 	$("span.column-header-name").css("margin-left", columnHeaderNameMarginLeft);
-	
+
 	// Show Control buttons
 	$("div#project-controls a").css("display", display);
 	$("div#project-controls a#send-feedback").css("display", "inline-block");
 	$("div#project-controls a#expert-mode").css("display", "inline-block");
 	$("div#project-controls a#unhide-columns-button").css("display", "none");
-	
+
 	// Show extension buttons
 	$("div#extension-bar").css("display", display);
 	// Show edit link in cells	
 	$("a.data-table-cell-edit").css("display", display);
 	// Change button text
 	$("a#expert-mode").text(buttonText).attr("title", buttonTitle);
-	
+
 };
 
 /*
@@ -519,7 +530,7 @@ LG.createDialog = function(o){
 	var header = $('<div></div>').addClass("dialog-header").append(o.header).appendTo(dialog);
 	var body = $('<div></div>').addClass("dialog-body "+o.className).append(o.body).appendTo(dialog);
 	var footer = $('<div></div>').addClass("dialog-footer").append(o.footer).appendTo(dialog);
-	
+
 	if(o.ok){
 		if(typeof o.ok == "function"){
 			log("Creating ok button with custom callback");
@@ -613,7 +624,7 @@ LG.updateUnhideColumnButton = function(count){
  * re-rendered.
  */
 LG.injectQuickTool = function(){
-	
+
 	var div = $("<div />").addClass("quick-tool");	
 	var ul = $("<ul />"); 
 
@@ -627,7 +638,7 @@ LG.injectQuickTool = function(){
 	ul.appendTo(div);
 
 	$("div.data-header-table-container").append(div);
-	
+
 };
 
 /*
@@ -737,7 +748,7 @@ LG.setupQuickTool = function() {
 		$("div.quick-tool").hide();
 
 	});
-	
+
 	// Inject the quick tool HTML element into the table
 	LG.injectQuickTool();
 
@@ -860,20 +871,24 @@ LG.repositionColumnOverlays = function(difference){
 
 		var overlayEdge = $(this).width() + $(this).offset().left;
 		var screenEdge = $(window).width();
-		
+
 		if(parseInt($(this).css("left")) < 300){
 			$(this).css("visibility","hidden");
-		} else if(overlayEdge > (screenEdge+15)){
+		} else if(overlayEdge > (screenEdge)){
 			$(this).css("visibility","hidden");
 		} else {
-			$(this).css("visibility","visible");
-			if(table[0].scrollWidth > rightPanel.width()
+			if(overlayEdge > (screenEdge-15) && table[0].scrollWidth > rightPanel.width()
+					&& table[0].scrollHeight > tableContainerHeight){
+				$(this).css("visibility","hidden");
+			} else if(table[0].scrollWidth > rightPanel.width()
 					&& table[0].scrollHeight > tableContainerHeight){	
 				// Both scroll bars present
 				// Decrease the height of the overlays so they don't obstruct the bottom scroll bar
 				$(this).height(tableContainerHeight+colHeaderTDHeight-5);
+				$(this).css("visibility","visible");
 			} else {
 				$(this).height(table.height()+colHeaderTDHeight+10);
+				$(this).css("visibility","visible");
 			}	
 		}
 	});
@@ -967,7 +982,7 @@ LG.injectWizardProgressOverlay = function() {
 LG.showWizardProgress = function(show) {
 	// Create a timeout incase a 
 	var timeout = undefined;
-	
+
 	$('div.wizardProgressMessage p').find("span.cancel").remove();
 
 	if (show) {
@@ -1445,5 +1460,5 @@ function log(str) {
 $(document).ready(function() {
 
 	LG.initialise();
-	
+
 });

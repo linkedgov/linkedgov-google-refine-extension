@@ -74,7 +74,7 @@ body.lg #project-title
     padding: 0;
     top: 19px;
 }
-body.lg #project-title,#project-controls
+body.lg #project-title, body.lg #project-controls
 {
     display: none;
     margin-left: 5px;
@@ -2005,7 +2005,7 @@ body.lg table.data-header-table td.column-header.maybe
 }
 body.lg table.data-header-table td.column-header.selected
 {
-    background-color: #DAF4DA;
+    background-color: #FFFFFF;
 }
 body.lg table.data-header-table td.column-header.typed
 {
@@ -2225,11 +2225,16 @@ body.lg.selecting-columns div.column-overlay {
 }
 div.column-overlay
 {
-    background-color: transparent;
+    background-color: #86F785;
     cursor: pointer;
-    opacity: 0;
+    opacity: 0.1;
     position: fixed;
     visibility: hidden;
+}
+div.column-overlay.selected
+{
+    background-color: #FFFFFF;
+    opacity: 0.5;
 }
 div.column-overlay:active
 {
