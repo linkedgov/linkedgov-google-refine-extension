@@ -1179,6 +1179,7 @@ var LinkedGov_WizardsPanel = {
 		 * is started/finished.
 		 */
 		destroyColumnSelector : function() {
+			LG.removeColumnOverlays();
 			$("div.selector a.selectColumn").html("Pick column");
 			$("div.selector a.selectColumn").removeClass("selecting");
 			$("table.data-header-table").selectable("destroy");
@@ -1550,7 +1551,7 @@ var LinkedGov_WizardsPanel = {
 		restoreWizardBody : function(){
 			
 			//log("restoreWizardBody");
-			
+			var self = this;
 			LG.removeColumnOverlays();
 			$("div.unexpectedValues").remove();
 			$("div.wizard-panel").css("bottom","72px");
@@ -1558,6 +1559,7 @@ var LinkedGov_WizardsPanel = {
 			$("div.wizard-body").find("span.note").hide();
 			$("div.wizard-body").find("div.split").hide();
 			$("div.action-buttons").show();
+			self.els.returnButton.show();
 			return false;
 		},
 

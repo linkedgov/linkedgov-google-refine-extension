@@ -70,7 +70,6 @@ LG.initialise = function() {
 	 */
 	this.injectWizardProgressOverlay();
 	this.injectFeedbackForm();
-	this.setupModeButton();
 
 	/*
 	window.onerror = function(o) {
@@ -268,15 +267,6 @@ LG.loadOperationScripts = function(){
 			LG.rdfOps.applyTypeIcons.apply();		
 
 			/*
-			 * Load the project's hidden columns from the 
-			 * metadata file - hide any columns if there are 
-			 * some present.
-			 */
-			LG.ops.getHiddenColumnMetadata(function(){
-				LG.ops.keepHiddenColumnsHidden();
-			});
-
-			/*
 			 * Overwrite Refine's data-table "render" function, 
 			 * so we can include our functions that 
 			 * need to be called every time the table UI is updated.
@@ -287,14 +277,12 @@ LG.loadOperationScripts = function(){
 				ui.dataTableView.render2();
 				// Whenever Refine updates the data table, it removes the classes from the table 
 				// header - which destroys our RDF symbols
-				LG.rdfOps.applyTypeIcons.apply();
-				// as well as our hidden column classes.
-				LG.ops.keepHiddenColumnsHidden();
+				LG.rdfOps.applyTypeIcons.apply();				
 				// Reinject column quick-tool
 				LG.injectQuickTool();
-				// Keep certain buttons and tabs hidden if we're in basic mode
-				LG.applyMode();
 				// Perform a window resize
+				// Sometimes, Refine hasn't loaded fully at this point, 
+				// so we can catch a resize-related JS error here
 				try {
 					$(window).resize();
 				} catch (e) {
@@ -312,10 +300,21 @@ LG.loadOperationScripts = function(){
 			 */
 			Refine.update({everythingChanged:true}, function(){
 				/*
-				 * Initialise misceallaneous functions
+				 * These functions need to be called once everything has rendered
 				 */
-				LG.addUnhideColumnButton();
+				
+				/*
+				 * Load the project's hidden columns from the 
+				 * metadata file - hide any columns if there are 
+				 * some present and add the button to unhide the columns.
+				 */
+				LG.ops.getHiddenColumnMetadata(function(){
+					LG.ops.keepHiddenColumnsHidden();
+					LG.addUnhideColumnButton();
+				});
 				LG.setupQuickTool();
+				LG.setupModeButton();
+				$("div.loading-message").hide();
 			});
 
 		});
@@ -425,12 +424,14 @@ LG.switchMode = function(mode){
 	var display = "inline-block";
 	var buttonText = "Basic mode";
 	var buttonTitle = "Switch to basic mode";
+	var pageSizeLeft = "180px";
 
 	if(mode == "basic"){
 		// Basic mode settings
 		h2Top = "60px";
 		typingPanelBodyTop = "37px";
 		columnHeaderNameMarginLeft = "0px";
+		pageSizeLeft = "7px";
 		display = "none";
 		buttonText = "Expert mode";
 		buttonTitle = "Switch to expert mode";
@@ -458,8 +459,17 @@ LG.switchMode = function(mode){
 	$("div#project-controls a").css("display", display);
 	$("div#project-controls a#send-feedback").css("display", "inline-block");
 	$("div#project-controls a#expert-mode").css("display", "inline-block");
-	$("div#project-controls a#unhide-columns-button").css("display", "none");
-
+	
+	if($("div#project-controls a#unhide-columns-button").text() != "Unhide columns"){
+		$("div#project-controls a#unhide-columns-button").css("display", "inline-block");
+	} else {
+		$("div#project-controls a#unhide-columns-button").css("display", "none");
+	}
+	
+	// Hide "Show records" link
+	$("div.viewpanel-rowrecord").css("display", (display == "inline-block" ? "block" : "none"));
+	$("div.viewpanel-pagesize").css("left", pageSizeLeft);
+	
 	// Show extension buttons
 	$("div#extension-bar").css("display", display);
 	// Show edit link in cells	
@@ -571,7 +581,12 @@ LG.addUnhideColumnButton = function() {
 
 	var self = this;
 
-	$("div#project-controls").prepend('<a id="unhide-columns-button" title="Unhide columns" class="button">Unhide columns</a>');
+	$("div#project-controls").prepend('<a id="unhide-columns-button" title="Unhide '+LG.vars.hiddenColumns.split(",").length+' columns" class="button">Unhide '+LG.vars.hiddenColumns.split(",").length+' columns</a>');
+
+	if(LG.vars.hiddenColumns.split(",").length > 0){
+		$("a#unhide-columns-button").css("display","inline-block");
+	}
+	
 	$("a#unhide-columns-button").live("click",function(){
 		LG.vars.hiddenColumns = "";
 		LG.ops.eraseHiddenColumnData();
@@ -1052,7 +1067,7 @@ LG.handleJSError = function(message) {
 				log("Should log this error or send feedback...");
 				DialogSystem.dismissAll();
 			},
-			"Refresh page": function(){
+			"Refresh": function(){
 				window.location = window.location;
 			}
 		},
@@ -1458,6 +1473,9 @@ function log(str) {
  * Initialise our code once the page has fully loaded.
  */
 $(document).ready(function() {
+
+	$("body").append("<div class='loading-message'><p>Loading...</p><p><img src='../images/small-spinner.gif' /></p></div>");
+	$("body").find("div.loading-message").css("padding-top",($(window).height()/2)-100+"px");
 
 	LG.initialise();
 

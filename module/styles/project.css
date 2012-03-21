@@ -17,6 +17,22 @@
 {
     display: none !important;
 }
+body.lg div#loading-message {
+	display:none !important;
+}
+body.lg div.loading-message {
+    background: none repeat scroll 0 0 #FFFFFF;
+    height: 100%;
+    padding-top: 12%;
+    position: fixed;
+    text-align: center;
+    width: 100%;
+    z-index: 99;
+}
+body.lg div.loading-message p {
+    font-size: 14px;
+    padding-bottom: 10px;
+}
 body.lg #header
 {
     border-bottom: 3px solid #DDDDDD;
@@ -2225,7 +2241,7 @@ body.lg.selecting-columns div.column-overlay {
 }
 div.column-overlay
 {
-    background-color: #86F785;
+    background-color: #C3FFC2;
     cursor: pointer;
     opacity: 0.1;
     position: fixed;

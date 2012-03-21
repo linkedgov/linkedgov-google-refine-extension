@@ -119,6 +119,8 @@ var LinkedGov_addressWizard = {
 					 */
 					if(self.vars.postcodePresent){
 
+						// If one of the columns contains a postcode, 
+						// we can run an "unexpected values" test on it.
 						var colObjects = self.prepareColumnObjectsForValueTest();
 						LG.panels.wizardsPanel.checkForUnexpectedValues(colObjects, self.vars.elmts.addressBody, function(){
 
@@ -140,6 +142,28 @@ var LinkedGov_addressWizard = {
 
 								})
 							});
+						});
+					} else {
+						
+						// If there are no postcodes present then there isn't 
+						// really any validation tests when can run
+						/*
+						 * Build the address fragments RDF
+						 */
+						self.makeAddressFragments(function(){
+							/*
+							 * Create a new column containing the parts of the address
+							 * the user specified and collapse the other columns.
+							 */
+							self.createAddressColumn(function(){
+								/*
+								 * Save the RDF
+								 */
+								LG.rdfOps.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
+									self.saveRDF(rootNode, foundRootNode);
+								});
+
+							})
 						});
 					}
 				});
