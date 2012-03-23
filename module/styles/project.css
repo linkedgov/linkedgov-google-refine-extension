@@ -136,12 +136,12 @@ body.lg #suggest-pane
 {
     background: none repeat scroll 0 0 #FFFFFF;
     border: 1px solid #CCCCCC;
-    box-shadow: 5px 5px 5px #D3D3D3;
-    display: none;
+    box-shadow: 0 8px 9px #777777;
     font-size: 12px;
     margin-top: 1px;
     position: fixed;
-    width: 240px;
+    width: 257px;
+    display:none;
 }
 body.lg #suggest-pane div.noresults
 {
@@ -152,13 +152,13 @@ body.lg #suggest-pane div.noresults
 }
 body.lg #suggest-pane div.options
 {
-    background: none repeat scroll 0 0 #E7EEFF;
+    background: none repeat scroll 0 0 #FFFFE8;
     border-bottom: 1px solid #CCCCCC;
     float: none;
     padding-bottom: 1px;
     padding-top: 0;
     text-align: center;
-    width: 240px;
+    width: 257px;
 }
 body.lg #suggest-pane div.options a
 {
@@ -200,7 +200,7 @@ body.lg #suggest-pane ul.fbs-list
     overflow-x: hidden;
     overflow-y: auto;
     padding-top: 0;
-    width: 240px;
+    width: 257px;
 }
 body.lg #suggest-pane ul.fbs-list li.fbs-item
 {
@@ -208,7 +208,7 @@ body.lg #suggest-pane ul.fbs-list li.fbs-item
     cursor: pointer;
     list-style-type: none;
     margin: 1px;
-    padding: 2px 8px 1px 3px;
+    padding: 2px 4px 1px 3px;
 }
 body.lg #suggest-pane ul.fbs-list li.fbs-item .fbs-item-name
 {
@@ -701,19 +701,32 @@ body.lg div#refine-tabs-typing div.linking-results div.result div.result-body di
 }
 body.lg div#refine-tabs-typing div.linking-results div.result div.result-body ul.selected-columns
 {
-    border: medium none;
-    padding: 10px;
+    -moz-border-bottom-colors: none;
+    -moz-border-image: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    border-style: solid none none;
+    border-width: 1px medium medium;
+    margin: 0;
+    padding: 0;
 }
 body.lg div#refine-tabs-typing div.linking-results div.result div.result-body ul.selected-columns li
 {
-    background: none repeat scroll 0 0 #FFFFFF;
-    border: medium none;
+    background: none repeat scroll 0 0 #EBEEF8;
+    border-color: -moz-use-text-color -moz-use-text-color #B2BDDE;
+    border-style: none none solid;
+    border-width: medium medium 1px;
     color: #333333;
     list-style-type: none;
-    margin-bottom: 10px;
+    margin-bottom: 1px;
     margin-top: 0;
     overflow: hidden;
-    padding-left: 0;
+    padding: 5px 5px 10px;
+}
+body.lg div#refine-tabs-typing div.linking-results div.result div.result-body ul.selected-columns li.last {
+	border-bottom:none;
+	margin-bottom:0px;
 }
 body.lg div#refine-tabs-typing div.linking-results div.result div.result-body,body.lg div#refine-tabs-typing div.reconcile-panel div.linking-results div.result div.result-body.collapsed
 {
@@ -750,9 +763,10 @@ body.lg div#refine-tabs-typing div.linking-results div.result div.ui-progressbar
 }
 body.lg div#refine-tabs-typing div.linking-results div.result span.col
 {
-    background: none repeat scroll 0 0 #F2F5FF;
+    background: none repeat scroll 0 0 transparent;
     display: block;
     float: left;
+    font-size: 12px;
     padding: 4px 0 4px 3px;
     width: 98%;
 }
@@ -762,7 +776,7 @@ body.lg div#refine-tabs-typing div.linking-results div.result span.colOptions in
     background-image: none;
     font-size: 14px;
     margin-top: 0;
-    width: 96%;
+    width: 97%;
 }
 body.lg div#refine-tabs-typing div.linking-results div.result span.colOptions input.edited
 {

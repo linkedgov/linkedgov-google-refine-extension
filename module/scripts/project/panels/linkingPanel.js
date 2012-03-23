@@ -628,7 +628,7 @@ var LinkedGov_LinkingPanel = {
 				// Create the dialog itself
 				var dialog = LG.createDialog({
 					header:"Are you sure?",
-					body:"This will delete the reconciliation data for the column \""+columnName+"\"",
+					body:"This will delete the reconciliation data for the column \""+columnName+"\".",
 					ok:function(){
 						log("OK clicked");
 
@@ -1450,8 +1450,6 @@ var LinkedGov_LinkingPanel = {
 				// Once all processes have finished
 				if(self.numberOfRunningProcesses == 0 && !self.hasBeenCancelled){
 					
-					log("Actually displaying results...");
-
 					/*
 					 * Checks that the facets have been created once reconciliation 
 					 * has finished, so we can access the scores to display on the panel.
@@ -1902,11 +1900,17 @@ var LinkedGov_LinkingPanel = {
 								// Add the chosen value to the front of the array
 								// because it occurs more frequently than the previous
 								// value.
-								arrayOfUnmatchedValues.splice(0,0,choices[j].v.l);
+								arrayOfUnmatchedValues.splice(0,0,{
+									name:choices[j].v.l,
+									count:choices[j].c
+								});
 								highest = choices[j].c;
 							} else {
 								// Add the value to the end of the array.
-								arrayOfUnmatchedValues.push(choices[j].v.l);
+								arrayOfUnmatchedValues.push({
+									name:choices[j].v.l,
+									count:choices[j].c
+								});
 							}
 						}
 
@@ -1924,8 +1928,8 @@ var LinkedGov_LinkingPanel = {
 								// We use "col" to inherit CSS styling, it's actually
 								// a cell value - not a column name
 								var spanCol = $("<span />").addClass("value col")
-								.data("value", arrayOfUnmatchedValues[i])
-								.text(arrayOfUnmatchedValues[i]);
+								.data("value", arrayOfUnmatchedValues[i].name)
+								.text(arrayOfUnmatchedValues[i].name+" ("+arrayOfUnmatchedValues[i].count+")");
 
 								// We attach the column name to the input element
 								// so the click handler for the input box can pass on 
@@ -1950,6 +1954,8 @@ var LinkedGov_LinkingPanel = {
 							}
 						}
 
+						ul.children("li").eq(ul.children("li").length-1).addClass("last");
+						
 						// Insert the HTML into the correct result panel <div>
 						$(resultDiv).find("div.result-body").append(ul);
 
