@@ -261,63 +261,79 @@ LG.loadOperationScripts = function(){
 		 * successfully loaded
 		 */
 		$.getScript("extension/linkedgov/scripts/project/rdfOperations.js",function(){
+						
 			LG.rdfOps = LinkedGov_rdfOperations;
 
 			LG.rdfOps.applyTypeIcons.init();
 			LG.rdfOps.applyTypeIcons.apply();		
-
+			
 			/*
 			 * Overwrite Refine's data-table "render" function, 
 			 * so we can include our functions that 
 			 * need to be called every time the table UI is updated.
 			 */
-			ui.dataTableView.render2 = ui.dataTableView.render;
-			ui.dataTableView.render = function(){
-				// Let Refine re-render the table
-				ui.dataTableView.render2();
-				// Whenever Refine updates the data table, it removes the classes from the table 
-				// header - which destroys our RDF symbols
-				LG.rdfOps.applyTypeIcons.apply();				
-				// Reinject column quick-tool
-				LG.injectQuickTool();
-				// Perform a window resize
-				// Sometimes, Refine hasn't loaded fully at this point, 
-				// so we can catch a resize-related JS error here
-				try {
-					$(window).resize();
-				} catch (e) {
-					log(e);
-				}
-			}
-
-			/*
-			 * Save the base URI for the project
-			 */
-			LG.rdfOps.saveBaseUri(LG.vars.rdfSchema.baseUri);
-
-			/*
-			 * Perform a generic update once everything has loaded
-			 * so that the table doesn't get re-rendered, which in turn 
-			 * destroys anything we've added to the data table.
-			 */
-			Refine.update({everythingChanged:true}, function(){
-				/*
-				 * These functions need to be called once everything has rendered
-				 */
+			var interval = setInterval(function(){
 				
-				/*
-				 * Load the project's hidden columns from the 
-				 * metadata file - hide any columns if there are 
-				 * some present and add the button to unhide the columns.
-				 */
-				LG.ops.getHiddenColumnMetadata(function(){
-					LG.ops.keepHiddenColumnsHidden();
-					LG.addUnhideColumnButton();
-				});
-				LG.setupQuickTool();
-				LG.setupModeButton();
-				$("div.loading-message").hide();
-			});
+				if(typeof ui.dataTableView != 'undefined'){
+					
+					ui.dataTableView.render2 = ui.dataTableView.render;
+					ui.dataTableView.render = function(){
+						// Let Refine re-render the table
+						ui.dataTableView.render2();
+						// Whenever Refine updates the data table, it removes the classes from the table 
+						// header - which destroys our RDF symbols
+						LG.rdfOps.applyTypeIcons.apply();				
+						// Reinject column quick-tool
+						LG.injectQuickTool();
+						// Perform a window resize
+						// Sometimes, Refine hasn't loaded fully at this point, 
+						// so we can catch a resize-related JS error here
+						LG.applyMode();
+						try {
+							$(window).resize();
+						} catch (e) {
+							log(e);
+						}
+					}
+
+					/*
+					 * Save the base URI for the project
+					 */
+					LG.rdfOps.saveBaseUri(LG.vars.rdfSchema.baseUri);
+					
+					/*
+					 * Perform a generic update once everything has loaded
+					 * so that the table doesn't get re-rendered, which in turn 
+					 * destroys anything we've added to the data table.
+					 */
+					Refine.update({everythingChanged:true}, function(){
+						/*
+						 * These functions need to be called once everything has rendered
+						 */
+						
+						/*
+						 * Load the project's hidden columns from the 
+						 * metadata file - hide any columns if there are 
+						 * some present and add the button to unhide the columns.
+						 */
+						LG.ops.getHiddenColumnMetadata(function(){
+							LG.ops.keepHiddenColumnsHidden();
+							LG.addUnhideColumnButton();
+							LG.setupQuickTool();
+							LG.setupModeButton();
+							$("div.loading-message").hide();
+						});
+
+					});
+					
+					clearInterval(interval);
+					
+				} else {
+					log("ui.dataTableView not ready");
+				}
+				
+			},100);
+			
 
 		});
 	});
@@ -400,16 +416,22 @@ LG.applyMode = function(){
 
 	var display = "inline-block";
 	var columnHeaderNameMarginLeft = "20px";
+	var pageSizeLeft = "180px";
 
 	if(LG.vars.mode == "basic"){
 		display = "none";
 		columnHeaderNameMarginLeft = "2px";
+		pageSizeLeft = "7px";
 	}
 
 	// Show/hide the column menu buttons
 	$("a.column-header-menu").css("display", display);
 	$("span.column-header-name").css("margin-left", columnHeaderNameMarginLeft);
 
+	// Hide "Show records" link
+	$("div.viewpanel-rowrecord").css("display", (display == "inline-block" ? "block" : "none"));
+	$("div.viewpanel-pagesize").css("left", pageSizeLeft);
+	
 	// Show/hide edit link in cells	
 	$("a.data-table-cell-edit").css("display", display);
 
@@ -531,17 +553,21 @@ LG.showFinishMessage = function(){
  * o.header = the header text for the dialog
  * o.body = the body text for the dialog
  * o.footer = the footer text 
- * o.buttons = a list names and callbacks to create buttons
+ * o.buttons = a list of names and callbacks to create buttons
  * o.ok = callback for the ok button
  * o.cancel = callback for the cancel button
  * o.className = the className for custom styling
  */
 LG.createDialog = function(o){
 
+	if(!o.header || !o.body){
+		return false;
+	}
+	
 	var dialog = DialogSystem.createDialog();
 	var header = $('<div></div>').addClass("dialog-header").append(o.header).appendTo(dialog);
-	var body = $('<div></div>').addClass("dialog-body "+o.className).append(o.body).appendTo(dialog);
-	var footer = $('<div></div>').addClass("dialog-footer").append(o.footer).appendTo(dialog);
+	var body = $('<div></div>').addClass("dialog-body "+(o.className ? o.className : "")).append(o.body).appendTo(dialog);
+	var footer = $('<div></div>').addClass("dialog-footer").append((o.footer ? o.footer : "")).appendTo(dialog);
 
 	if(o.ok){
 		if(typeof o.ok == "function"){
@@ -582,8 +608,6 @@ LG.createDialog = function(o){
 LG.addUnhideColumnButton = function() {
 
 	var self = this;
-
-	log("LG.vars.hiddenColumns.length "+LG.vars.hiddenColumns.length);
 	
 	if(LG.vars.hiddenColumns.length < 1){
 		$("div#project-controls").prepend('<a id="unhide-columns-button" title="Unhide '+LG.vars.hiddenColumns.split(",").length+' columns" class="button">Unhide columns</a>');

@@ -516,7 +516,7 @@ var LinkedGov_LabellingPanel = {
 											// so it's safe to add the "good" status
 											$(this).removeClass("maybe").addClass("good");																						
 											$(LG.getColumnHeaderElement(schema.rootNodes[i].links[j].target.value)).addClass("good");
-											status = "good";
+											colStatus = "good";
 
 											// We don't need to populate the label input as it's the same, 
 											// but do it anyway
@@ -540,7 +540,7 @@ var LinkedGov_LabellingPanel = {
 													// Highlight the input & column header
 													$(this).removeClass("good").addClass("great");											
 													$(LG.getColumnHeaderElement(schema.rootNodes[i].links[j].target.value)).addClass("great");
-													status = "great";
+													colStatus = "great";
 												}
 											} else {
 												// Column only has a label and no description

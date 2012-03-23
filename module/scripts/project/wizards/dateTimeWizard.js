@@ -99,53 +99,57 @@ var LinkedGov_dateTimeWizard = {
 				if (!error) {
 
 					/*
-					 * Display the "working..." sign
-					 */
-					LG.showWizardProgress(true);
-
-					/*
 					 * Store the column names and their options
 					 */
 					self.vars.colObjects = self.buildColumnObjects();
-					log(self.vars.colObjects);
-					
-
+										
 					/*
-					 * Begin a series of operations and finally save the RDF.
+					 * Check whether a column that's said to contain a day and month 
+					 * have had their order specified correctly (i.e. month before day).
 					 */
-					self.checkForMultiColumnDateTimes(function() {
-						self.checkCombinations(function() {
-							
-							log("self.vars.expectedValue");
-
-							log(self.vars.expectedValue);
-							/*
-							 * We are able to test that the columns involved in the wizards operations have 
-							 * resulted in being typed as a date or not.
-							 */
-							if(self.vars.expectedValue == "date" || self.vars.expectedValue == "time" || self.vars.expectedValue == "date-time"){
-								// We populate the colObjects with the variables needed to perform these 
-								// tests
-								var colObjects = self.prepareColumnObjectsForValueTest();
-								// Then initiate the test, passing the colObjects and the wizard's body
-								LG.panels.wizardsPanel.checkForUnexpectedValues(colObjects, self.vars.elmts.dateTimeBody, function(){
-									
-									//log("Checking schema...");
+					self.checkOrderOfMonthAndDay(function(){
+						
+						/*
+						 * Display the "working..." sign
+						 */
+						LG.showWizardProgress(true);
+						
+						/*
+						 * Begin a series of operations and finally save the RDF.
+						 */
+						self.checkForMultiColumnDateTimes(function() {
+							self.checkCombinations(function() {
+								
+								/*
+								 * We are able to test that the columns involved in the wizards operations have 
+								 * resulted in being typed as a date or not.
+								 */
+								if(self.vars.expectedValue == "date" || self.vars.expectedValue == "time" || self.vars.expectedValue == "date-time"){
+									// We populate the colObjects with the variables needed to perform these 
+									// tests
+									var colObjects = self.prepareColumnObjectsForValueTest();
+									// Then initiate the test, passing the colObjects and the wizard's body
+									LG.panels.wizardsPanel.checkForUnexpectedValues(colObjects, self.vars.elmts.dateTimeBody, function(){
+										
+										//log("Checking schema...");
+										LG.rdfOps.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
+											//log("About to save RDF...");
+											self.saveRDF(rootNode, foundRootNode);
+										});
+									});
+								} else {
 									LG.rdfOps.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
 										//log("About to save RDF...");
 										self.saveRDF(rootNode, foundRootNode);
 									});
-								});
-							} else {
-								LG.rdfOps.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
-									//log("About to save RDF...");
-									self.saveRDF(rootNode, foundRootNode);
-								});
-							}
-							
+								}
+								
 
+							});
 						});
+						
 					});
+					
 
 				} else {
 					return false;
@@ -174,7 +178,7 @@ var LinkedGov_dateTimeWizard = {
 		 */
 		buildColumnObjects : function() {
 
-			log("buildColumnObjects");
+			//log("buildColumnObjects");
 			
 			/*
 			 * Loop through each selected column and check for date fragments
@@ -272,6 +276,151 @@ var LinkedGov_dateTimeWizard = {
 			return colObjects;
 
 		},
+		
+		/*
+		 * checkOrderOfMonthAndDay
+		 */
+		checkOrderOfMonthAndDay : function(callback){
+			
+			//log("checkOrderOfMonthAndDay");
+			
+			var self = this;
+						
+			for(var i=0; i<self.vars.colObjects.length; i++){
+								
+				if(self.vars.colObjects[i].combination.indexOf("M-D") >= 0){
+					// Column contains a day and month
+					// Store the user's monthBeforeDay preference
+					var monthBeforeDay = self.vars.colObjects[i].monthBeforeDay;
+					
+					// Create a facet for the column testing the monthBeforeDay value
+					// is correctly specified as true or false
+					// The return result is the number of 
+					self.checkNumberOfMonthBeforeDayValues(self.vars.colObjects[i].name, function(){
+						self.checkNumberOfDayBeforeMonthValues(self.vars.colObjects[i].name, function(){							
+							if(self.vars.colObjects[i].monthBeforeDayResult > self.vars.colObjects[i].dayBeforeMonthResult && !monthBeforeDay){
+								// More month-before-day values
+								self.showMonthBeforeDayDialog(self.vars.colObjects[i].name, true, callback);
+							} else if(self.vars.colObjects[i].monthBeforeDayResult < self.vars.colObjects[i].dayBeforeMonthResult && monthBeforeDay){
+								// More day-before-month values
+								self.showMonthBeforeDayDialog(self.vars.colObjects[i].name, false, callback);
+							} else {
+								// Equal number of values
+								callback();
+							}							
+						});
+					});
+				}
+			}
+			
+		},
+
+		/*
+		 * checkNumberOfMonthBeforeDayValues
+		 * 
+		 * Returns the number of assumed date values that have the month
+		 * appearing before the day.
+		 */
+		checkNumberOfMonthBeforeDayValues : function(columnName, callback){
+			
+			//log("checkNumberOfMonthBeforeDayValues");
+			var self = this;
+			
+			var mb4dExpression = "forEachIndex(filter(value.split(/[.,\\/ -]/), part, part.length() < 3), i, v,if(and(toNumber(v) > 12, i == 0), false, if(and(toNumber(v) > 12, i == 1), true, true)))[0]";
+			
+			LG.ops.computeColumnFacet(columnName, mb4dExpression, function(data) {
+				
+				for(var i=0; i<data.facets.length; i++){
+					if(data.facets[i].columnName == columnName){						
+						for(var j=0; j<data.facets[i].choices.length; j++){
+							if(data.facets[i].choices[j].v.v == true){																
+								for(var k=0; k<self.vars.colObjects.length; k++){
+									if(self.vars.colObjects[k].name == columnName){
+										self.vars.colObjects[k].monthBeforeDayResult = data.facets[i].choices[j].c;	
+									}
+								}
+							}
+						}
+					} else if(i==data.facets.length-1) {
+						alert("checkNumberOfMonthBeforeDayValues() - Failed to compute facet for column \""+columnName+"\"");
+						return 0;
+					}
+				}
+				
+				callback();
+				
+			});
+			
+		},
+		
+		/*
+		 * checkNumberOfDayBeforeMonthValues
+		 * 
+		 * Returns the number of assumed date values that have the day 
+		 * appearing before the month.
+		 */
+		checkNumberOfDayBeforeMonthValues : function(columnName, callback){
+			
+			//log("checkNumberOfDayBeforeMonthValues");
+			var self = this;
+			
+			var db4mExpression = "forEachIndex(filter(value.split(/[.,\\/ -]/), part, part.length() < 3), i, v,if(and(toNumber(v) > 12, i == 0), true, if(and(toNumber(v) > 12, i == 1), false, true)))[1]";
+			
+			LG.ops.computeColumnFacet(columnName, db4mExpression, function(data) {
+				
+				for(var i=0; i<data.facets.length; i++){
+					if(data.facets[i].columnName == columnName){
+						for(var j=0; j<data.facets[i].choices.length; j++){
+							if(data.facets[i].choices[j].v.v == true){								
+								for(var k=0; k<self.vars.colObjects.length; k++){
+									if(self.vars.colObjects[k].name == columnName){
+										self.vars.colObjects[k].dayBeforeMonthResult = data.facets[i].choices[j].c;
+									}
+								}
+							}
+						}
+					} else if(i==data.facets.length-1) {
+						alert("checkNumberOfDayBeforeMonthValues() - Failed to compute facet for column \""+columnName+"\"");
+					}
+				}
+				
+				callback();
+				
+			});
+			
+		},
+		
+		
+		/*
+		 * Creates and shows a dialog for the user to confirm
+		 * they have correctly specified the correct order of
+		 * the day and month
+		 */
+		showMonthBeforeDayDialog: function(columnName, monthBeforeDay, callback){
+			
+			//log("showMonthBeforeDayDialog");
+			
+			var dialog = LG.createDialog({
+				header:"Are you sure?",
+				body:"We have detected that the "+(monthBeforeDay ? "month appears before the day " +
+						"more often than the day appears before the month" : "day appears before the month " +
+								"more often than the month appears before the day")+" for the values in the \""+columnName+"\" column.",
+				buttons:{
+					"Yes I'm sure": function(){
+						DialogSystem.dismissAll();
+						callback();
+					},
+					"I'm not sure": function(){
+						DialogSystem.dismissAll();
+						LG.showWizardProgress(false);
+					}
+				}
+			});
+						
+			DialogSystem.showDialog(dialog);
+			
+		},
+		
 
 		/*
 		 * checkForMultiColumnDateTimes
@@ -282,9 +431,11 @@ var LinkedGov_dateTimeWizard = {
 		 */
 		checkForMultiColumnDateTimes : function(callback) {
 
+			//log("checkForMultiColumnDateTimes");
+			
 			var self = this;
 			var colObjects = self.vars.colObjects;
-
+			
 			/*
 			 * Check for the 3 simplest combinations that have every fragment in a
 			 * different column:
@@ -329,7 +480,7 @@ var LinkedGov_dateTimeWizard = {
 							 */
 							if (fragCount == frags.length) {
 								// We have a year, month and day
-								log("We have year, month and day across three columns.");
+								//log("We have year, month and day across three columns.");
 								
 								/*
 								 * Merge the multiple columns into one and create an
@@ -360,7 +511,7 @@ var LinkedGov_dateTimeWizard = {
 							i--;
 							if (fragCount == frags.length) {
 								// We have hours, minutes and seconds
-								log("We have hours, minutes and seconds across three columns");
+								//log("We have hours, minutes and seconds across three columns");
 								/*
 								 * Create a new column with the combined date
 								 * fragments, then type it as a date within Refine.
@@ -395,16 +546,16 @@ var LinkedGov_dateTimeWizard = {
 
 							if (colObjects[i].combination == "h-m") {
 								colArray.push(colObjects[i].name);
-								log("We have a year, month, day, hours and minutes spread across two columns");
+								//log("We have a year, month, day, hours and minutes spread across two columns");
 								self.createSingleColumnDate(colArray, "Y-M-D-h-m", monthBeforeDay, callback);
 							} else if (colObjects[i].combination == "h-m-s") {
 								colArray.push(colObjects[i].name);
-								log("We have a year, month, day, hours, minutes and seconds spread across two columns");
+								//log("We have a year, month, day, hours, minutes and seconds spread across two columns");
 								self.createSingleColumnDate(colArray, "Y-M-D-h-m-s", monthBeforeDay, callback);
 							}
 
 						}
-					} else {
+					} else if(a == colObjects.length-1){
 						callback();
 					}
 				}
@@ -426,7 +577,7 @@ var LinkedGov_dateTimeWizard = {
 						if (fragCount == frags.length) {
 							// We have years, months, days, hours, minutes and
 							// seconds
-							log("We have a year, month, day, hours, minutes and seconds spread across six columns");
+							//log("We have a year, month, day, hours, minutes and seconds spread across six columns");
 							
 							self.createSingleColumnDate(colArray, "Y-M-D-h-m-s", monthBeforeDay, callback);
 						}

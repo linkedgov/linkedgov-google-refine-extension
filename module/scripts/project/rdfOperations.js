@@ -644,9 +644,13 @@ var LinkedGov_rdfOperations = {
 		 * renameColumnInRDF
 		 * 
 		 * Called whenever a column-rename operation occurs. If a column is renamed in 
-		 * Refine *after* RDF has been produced for it, it's old name remains in the RDF.
+		 * Refine *after* RDF has been produced for it, it's old name must be changed in the RDF
+		 * schema.
 		 * This function traverses the RDF schema and finds the column name that has 
 		 * been changed and changes it to it's new name.
+		 * 
+		 * Sometimes the column name is camelized - so we need to check for those 
+		 * variations too.
 		 */
 		renameColumnInRDF : {
 
@@ -710,6 +714,31 @@ var LinkedGov_rdfOperations = {
 				var self = this;
 
 				if (val instanceof Object) {
+					
+					if(typeof val.curie != 'undefined' 
+						&& typeof val.uri != 'undefined' 
+							&& typeof val.target != 'undefined'){
+						// This is a column mapping
+						// Check for the camlized version of the column names in the CURIE & URI properties
+						var camelizedOldColumnName = LG.camelize(self.vars.oldName);
+						
+						if(val.curie.split(":")[1] == camelizedOldColumnName){
+							// This CURIE needs to be changed
+							// A CURIE will look like "lg:columnName"
+							var newCURIE = val.curie.split(":")[0]+":"+LG.camelize(self.vars.newName);
+							val.curie = newCURIE;
+						}
+						
+						if(val.uri.split("/")[val.uri.split("/").length-1] == camelizedOldColumnName){
+							// This URI needs to be changed
+							// A URI will look like "http://data.linkedgov.org/dataset/1234567989/columnName"
+							var uriArray = val.uri.split("/");
+							uriArray.length = uriArray.length-1;
+							uriArray.push(LG.camelize(self.vars.newName));
+							var newURI = uriArray.join("/");
+							val.uri = newURI;
+						}
+					}
 
 					if (typeof val.columnName != 'undefined') {			
 						if (val.columnName == self.vars.oldName) {
