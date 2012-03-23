@@ -211,23 +211,26 @@ var LinkedGov_LinkingPanel = {
 			// Show & set up the cancel button if the
 			// user has began reconciling a column
 			if(self.confirmedLinks.length > 0){
-								
-				self.els.cancelButton.unbind("click").bind("click",function(){
+					
+				self.els.cancelButton
+				.css("display","inline-block")
+				.unbind("click").bind("click",function(){
 
 					// Create the dialog itself
 					var dialog = LG.createDialog({
 						header: "Are you sure?",
 						body: "Any values that have been reconciled will be lost.",
 						ok:function(){
-							log("Ok clicked");
-							LG.vars.confirmDialog.answered = true;
-							LG.vars.confirmDialog.confirmed = true;
+							//LG.vars.confirmDialog.answered = true;
+							//LG.vars.confirmDialog.confirmed = true;
 							DialogSystem.dismissAll();	
+							self.cancelAndReset();
 						},
 						cancel:function(){
-							LG.vars.confirmDialog.answered = true;
-							LG.vars.confirmDialog.confirmed = false;
-							DialogSystem.dismissAll();	
+							//LG.vars.confirmDialog.answered = true;
+							//LG.vars.confirmDialog.confirmed = false;
+							DialogSystem.dismissAll();
+							
 						},
 						className:"confirm"
 					});
@@ -236,7 +239,7 @@ var LinkedGov_LinkingPanel = {
 					DialogSystem.showDialog(dialog);
 
 					// On confirmation
-					var interval = setInterval(function(){
+					/*var interval = setInterval(function(){
 						
 						log(LG.vars.confirmDialog.answered);
 						
@@ -253,12 +256,12 @@ var LinkedGov_LinkingPanel = {
 							clearInterval(interval);
 						}
 					}, 100);
+					*/
 				});
 				
-				self.els.cancelButton.css("display","inline-block");
 				
 			} else {
-
+				// Show result panel without any confirmed links?
 			}
 
 			// Show the reconcile panel
@@ -516,6 +519,10 @@ var LinkedGov_LinkingPanel = {
 				$("div.suggest-panel h3.confirmed").hide();
 				// Reset the confirmed-links array
 				self.confirmedLinks = [];
+				// Hide the "Save" button
+				self.els.linkButton.hide();
+				// Show the "Next" button
+				self.els.nextButton.show();
 			});
 
 		},
@@ -686,6 +693,7 @@ var LinkedGov_LinkingPanel = {
 			$("div.existing-links a.viewResults").unbind("click").bind("click",function(){
 				self.showResultPanel();
 				self.els.saveButton.show();
+				self.els.nextButton.hide();
 			});
 
 		},
@@ -922,34 +930,43 @@ var LinkedGov_LinkingPanel = {
 			});
 
 		},
-
+		
+		
 		/*
-		 * cancelReconciliation
-		 * 
-		 * Cancels the reconciliation processes by calling Refine's "cancel-processes"
-		 * in the same way the "Cancel" link does in Refine's notification.
+		 * Cancels reconciliation and resets the linking panel
 		 */
-		cancelReconciliation:function(callback){
-
-			log("cancelReconciliation");
-
+		cancelAndReset: function(){
+			
+			//log("cancelAndReset");
+			
 			var self = this;
+			
+			self.cancelReconciliation(function(){
+				
+				//log("Callback for cancelReconciliation");
+				
+				// Use an interval to test whether the expected facets have been created from 
+				// cancelling the reconciliation (2 per column)
+				var interval2 = setInterval(function(){
+					
+					if(ui.browsingEngine._facets.length < (self.results.length*2)){
+						// Facets haven't been created yet
+						log("Waiting for reconciliation facets to be created...")
+					} else {
+						
+						clearInterval(interval2);
 
-			$.post(
-					"/command/core/cancel-processes?" + $.param({ project: theProject.id }), 
-					null,
-					function(o) {
 						// After cancelling the processes, reset the arrays that were populated 
 						// for the last reconciliation job.
 						self.results = [];
 						self.confirmedLinks = [];
 						self.suggestedLinks = [];
-
+						
 						// Blank out & hide the result panel
 						$("div.linking-results").hide();
 						$("div.linking-results").html('<h3>Results</h3>');
 						// Show the loading panel
-						$("div.linking-loading").show();
+						//$("div.linking-loading").show();
 
 						// Make sure the suggested columns are cleared
 						$("div.suggest-links a.clearButton").click();
@@ -962,8 +979,71 @@ var LinkedGov_LinkingPanel = {
 
 						// Hide the confirmed links div
 						$("div.confirmed-links").hide();
+						
+						// Hide the "save" button
+						self.els.linkButton.hide();
+						// Hide the "save" button
+						self.els.saveButton.hide();
+						// Show the "next" button
+						self.els.nextButton.show();
+						
+						// Facets have been created which means reconciliation has been 
+						// finished cancelling.
+						//
+						// Remove each of the progress-bars for the columns
+						$("div.linking-loading div.progressDiv").each(function(){
+							$(this).remove();
+						});
 
-						// callback
+						// Hide the "wizard in progress" message
+						// LG.showWizardProgress(false);
+						
+						try{
+						//	ui.browsingEngine.remove();							
+						}catch(e){
+							log(e);
+						}
+						
+						// Reshow the facet panel children which were hidden at the start of 
+						// reconciliation
+						//$("div#refine-tabs-facets").children().show();
+
+						// Show the initial "suggest panel"
+						self.showSuggestPanel();
+						
+						// Make sure the Typing panel is still showing as Refine attempts 
+						// to switch to the facet panel when one is created
+						$("div#left-panel div.refine-tabs").tabs('select', 1);
+						
+						// After cancelling reconciliation, rollback the history to the saved 
+						// restore point.
+						//LG.restoreHistory(self.historyRestoreID);
+						
+					}
+				}, 500);
+
+			});
+			
+		},
+
+
+		/*
+		 * cancelReconciliation
+		 * 
+		 * Cancels the reconciliation processes by calling Refine's "cancel-processes"
+		 * in the same way the "Cancel" link does in Refine's notification.
+		 */
+		cancelReconciliation:function(callback){
+
+			//log("cancelReconciliation");
+
+			var self = this;
+			self.hasBeenCancelled = true;
+
+			$.post(
+					"/command/core/cancel-processes?" + $.param({ project: theProject.id }), 
+					null,
+					function(o) {
 						callback();
 					},
 					"json"
@@ -1334,63 +1414,6 @@ var LinkedGov_LinkingPanel = {
 				}
 			}
 		},
-		
-		/*
-		 * Cancels reconciliation and resets the linking panel
-		 */
-		cancelAndReset: function(){
-			
-			log("cancelAndReset");
-			
-			var self = this;
-			
-			self.cancelReconciliation(function(){
-				
-				log("Callback for cancelReconciliation");
-				
-				// After cancelling reconciliation, rollback the history to the saved 
-				// restore point.
-				LG.restoreHistory(self.historyRestoreID);
-
-				// Use an interval to test whether the expected facets have been created from 
-				// cancelling the reconciliation (2 per column)
-				var interval2 = setInterval(function(){
-
-					if(ui.browsingEngine._facets.length < (self.confirmedLinks.length*2)){
-						// Facets haven't been created yet
-					} else {
-						// Facets have been created which means reconciliation has been 
-						// finished cancelling.
-						//
-						// Remove each of the progress-bars for the columns
-						$("div.linking-loading div.progressDiv").each(function(){
-							$(this).remove();
-						});
-
-						// Reshow the facet panel children which were hidden at the start of 
-						// reconciliation
-						$("div#refine-tabs-facets").children().show();
-
-						// Make sure the Typing panel is still showing as Refine attempts 
-						// to switch to the facet panel when one is created
-						$("div#left-panel div.refine-tabs").tabs('select', 1);
-
-						// Show the initial "suggest panel"
-						self.showSuggestPanel();
-
-						// Hide the "wizard in progress" message
-						// LG.showWizardProgress(false);
-						try{ui.browsingEngine.remove();}catch(e){
-							log(e);
-						}
-
-						clearInterval(interval2);
-					}
-				},100);
-
-			});
-			
-		},
 
 		/*
 		 * displayReconciliationResult
@@ -1401,9 +1424,12 @@ var LinkedGov_LinkingPanel = {
 		displayReconciliationResult: function(){
 
 			//log("displayReconciliationResult");
-
+			
 			var self = this;
-
+			
+			// Boolean flag to avoid display results
+			self.hasBeenCancelled = false;
+			
 			$("div#refine-tabs-facets").children().hide();
 
 			// Initialise the number of running processes to 1
@@ -1422,7 +1448,9 @@ var LinkedGov_LinkingPanel = {
 				}
 
 				// Once all processes have finished
-				if(self.numberOfRunningProcesses == 0){
+				if(self.numberOfRunningProcesses == 0 && !self.hasBeenCancelled){
+					
+					log("Actually displaying results...");
 
 					/*
 					 * Checks that the facets have been created once reconciliation 
@@ -1670,6 +1698,9 @@ var LinkedGov_LinkingPanel = {
 
 							// Make sure the Typing panel is showing
 							$("div#left-panel div.refine-tabs").tabs('select', 1);
+							
+							log("Here for some reason");
+							
 							// Show the save button
 							self.els.saveButton.show();
 
@@ -1680,6 +1711,9 @@ var LinkedGov_LinkingPanel = {
 
 					clearInterval(interval);
 
+				} else if(self.hasBeenCancelled){
+					// Cancellation has already begun
+					clearInterval(interval);
 				} else {
 					/*
 					 * Make sure the Typing panel is showing as Refine will try to 

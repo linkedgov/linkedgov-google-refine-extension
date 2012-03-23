@@ -458,9 +458,8 @@ var LinkedGov_dateTimeWizard = {
 					var fragCount = 0;
 					var frags = [ 'D', 'M', 'Y' ];
 					var colArray = [];
-					/*
-					 * Loop through the column objects, checking each combination
-					 */
+					
+					// Loop through the column objects, checking each combination
 					for ( var i = 0; i < colObjects.length; i++) {
 						/*
 						 * If there's a match, store the name of the column in an array
@@ -472,6 +471,7 @@ var LinkedGov_dateTimeWizard = {
 							var monthBeforeDay = colObjects[i].monthBeforeDay;
 							fragCount++;
 							i--;
+							
 							/*
 							 * If we have iterated through all of the fragments to be 
 							 * checked against, that means all the fragments we want are 

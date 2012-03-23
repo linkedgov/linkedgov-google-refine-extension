@@ -144,7 +144,7 @@ var LinkedGov_addressWizard = {
 							});
 						});
 					} else {
-						
+
 						// If there are no postcodes present then there isn't 
 						// really any validation tests when can run
 						/*
@@ -265,7 +265,7 @@ var LinkedGov_addressWizard = {
 						{
 							baseColumnName : colObjects[i].name,
 							expression : "if(partition(value,"+self.vars.postCodeRegex+")[1].length() > 0,toUppercase(partition(value,"+self.vars.postCodeRegex+")[1].replace(' ','')),trim(value))",
-							newColumnName : colObjects[i].name + " Postcode (LG)",
+							newColumnName : colObjects[i].name + " Postcode (LinkedGov)",
 							columnInsertIndex : Refine.columnNameToColumnIndex(colObjects[i].name) + 1,
 							onError : "keep-original"
 						},
@@ -290,7 +290,7 @@ var LinkedGov_addressWizard = {
 									 * column that has just been created.
 									 */
 									colObjects.splice(colObjects.length, 0, {
-										name : colObjects[i].name + " Postcode (LG)",
+										name : colObjects[i].name + " Postcode (LinkedGov)",
 										part : "postcode",
 										containsPostcode : true
 									});
@@ -328,7 +328,7 @@ var LinkedGov_addressWizard = {
 												type : "POST",
 												url : "/command/" + "core" + "/" + "rename-column",
 												data : {
-													oldColumnName : colObjects[i].name + " Postcode (LG)",
+													oldColumnName : colObjects[i].name + " Postcode (LinkedGov)",
 													newColumnName : colObjects[i].name
 												},
 												success : function() {
@@ -353,7 +353,7 @@ var LinkedGov_addressWizard = {
 												error : function() {
 													self.onFail("A problem was encountered when renaming the column: \""
 															+ colObjects[i].name
-															+ " Postcode (LG)\".");
+															+ " Postcode (LinkedGov)\".");
 												}
 											});
 										},
@@ -417,7 +417,9 @@ var LinkedGov_addressWizard = {
 					// TODO: What to store if mixed address?
 					//log("mixed fragment");
 					//log(colObjects[i]);
-
+					uri = vocabs.vcard.uri + "Label";
+					curie = vocabs.vcard.curie + ":" + "Label";
+					colObjects[i].rdf = self.makeVCardFragment(colObjects[i].name, uri, curie);
 					break;
 
 				case "postcode":
@@ -469,71 +471,88 @@ var LinkedGov_addressWizard = {
 		 */
 		createAddressColumn:function(callback){
 
-			//log("createAddressColumn");
+			log("createAddressColumn");
 
 			var self = this;
 			var colObjects = self.vars.colObjects;
 
-			/*
-			 * Build the expression used to join the various 
-			 * address parts together as a string.
-			 * 
-			 * TODO: Missing the "mixed" part here.
-			 */
-			var expression = "";
-			var addressParts = ["street-address","extended-address","locality","region","country-name","postcode"];
-			var lastCol = "";
+			log(colObjects[0].part);
+			
+			if(colObjects.length == 1 && colObjects[0].part == "mixed"){
+				// A new column doesn't need to be created if only a mixed 
+				// address column is specified.
+				callback();
+			} else if(colObjects.length == 2 && colObjects[0].part == "mixed" && colObjects[1].part == "postcode") {
+				// A new column doesn't need to be created if only a mixed 
+				// address column is specified.
+				LG.ops.hideColumnCompletely(colObjects[1].name);
+				self.vars.hiddenColumns.push(colObjects[1].name);
+				callback();				
+			} else if(colObjects.length == 2 && colObjects[0].part == "postcode" && colObjects[1].part == "mixed"){
+				// A new column doesn't need to be created if only a mixed 
+				// address column is specified.
+				LG.ops.hideColumnCompletely(colObjects[0].name);
+				self.vars.hiddenColumns.push(colObjects[0].name);
+				callback();
+			} else {
+				/*
+				 * Build the expression used to join the various 
+				 * address parts together as a string.
+				 */
+				var expression = "";
+				var addressParts = ["street-address","extended-address","locality","region","country-name","postcode"];
+				var lastCol = "";
 
-			// Build an expression that concatenates the columns in question in the order described 
-			// by the addressParts array above.
-			for(var h=0; h<addressParts.length;h++){
-				for(var i=0; i<colObjects.length; i++){
-					if(colObjects[i].part == addressParts[h]){
-						expression += 'if(isError(cells["' + colObjects[i].name + '"].value),"",if(isBlank(cells["' + colObjects[i].name + '"].value),"",cells["' + colObjects[i].name + '"].value+", "))+';
-						lastCol = colObjects[i].name;
-					}
-				}
-			}
-
-			// Remove the ", " from the end of our expression using chomp()
-			expression = 'chomp('+expression.substring(0,expression.length-1)+',", ")';
-
-			//log(expression);
-
-
-			// Adds a new column containing a concatenation of the values specified 
-			// in each of the columns specified by the user for the wizard.
-			Refine.postCoreProcess(
-					"add-column",
-					{
-						baseColumnName : colObjects[0].name,
-						expression : expression,
-						newColumnName : self.vars.addressName,
-						columnInsertIndex : Refine.columnNameToColumnIndex(lastCol) + 1,
-						onError : "keep-original"
-					},
-					null,
-					{
-						modelsChanged : true
-					},
-					{
-						onDone : function() {
-
-							for(var i=0; i<colObjects.length; i++){
-								LG.ops.hideColumnCompletely(colObjects[i].name);
-								self.vars.hiddenColumns.push(colObjects[i].name);
-							}
-
-							self.vars.colObjects.push({
-								name:self.vars.addressName
-							});
-
-							callback();
-
+				// Build an expression that concatenates the columns in question in the order described 
+				// by the addressParts array above.
+				for(var h=0; h<addressParts.length;h++){
+					for(var i=0; i<colObjects.length; i++){
+						if(colObjects[i].part == addressParts[h]){
+							expression += 'if(isError(cells["' + colObjects[i].name + '"].value),"",if(isBlank(cells["' + colObjects[i].name + '"].value),"",cells["' + colObjects[i].name + '"].value+", "))+';
+							lastCol = colObjects[i].name;
 						}
 					}
-			);
+				}
 
+				// Remove the ", " from the end of our expression using chomp()
+				expression = 'chomp('+expression.substring(0,expression.length-1)+',", ")';
+
+				//log(expression);
+
+
+				// Adds a new column containing a concatenation of the values specified 
+				// in each of the columns specified by the user for the wizard.
+				Refine.postCoreProcess(
+						"add-column",
+						{
+							baseColumnName : colObjects[0].name,
+							expression : expression,
+							newColumnName : self.vars.addressName,
+							columnInsertIndex : Refine.columnNameToColumnIndex(lastCol) + 1,
+							onError : "keep-original"
+						},
+						null,
+						{
+							modelsChanged : true
+						},
+						{
+							onDone : function() {
+
+								for(var i=0; i<colObjects.length; i++){
+									LG.ops.hideColumnCompletely(colObjects[i].name);
+									self.vars.hiddenColumns.push(colObjects[i].name);
+								}
+
+								self.vars.colObjects.push({
+									name:self.vars.addressName
+								});
+
+								callback();
+
+							}
+						}
+				);
+			}
 
 		},
 
@@ -670,7 +689,7 @@ var LinkedGov_addressWizard = {
 		makeOSPCFragment : function(colName, uri, curie, pcodeURI) {
 
 			//log("makeOSPCFragment");
-			
+
 			var self = this;
 
 			var o = {

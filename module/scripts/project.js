@@ -423,7 +423,10 @@ LG.applyMode = function(){
 		columnHeaderNameMarginLeft = "2px";
 		pageSizeLeft = "7px";
 	}
-
+	
+	// Show/hide the column quick tool
+	$("div.quick-tool").css("visibility", (display == "none" ? "hidden" : "visible"));
+	
 	// Show/hide the column menu buttons
 	$("a.column-header-menu").css("display", display);
 	$("span.column-header-name").css("margin-left", columnHeaderNameMarginLeft);
@@ -470,6 +473,9 @@ LG.switchMode = function(mode){
 	} catch(e){
 		log(e);
 	}
+	
+	// Show/hide the column quick tool
+	$("div.quick-tool").css("visibility", (display == "none" ? "hidden" : "visible"));
 
 	// Show left pane tabs & bodies
 	$("div.typing-panel-body h2").css("top", h2Top);
