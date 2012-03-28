@@ -1087,7 +1087,7 @@ var LinkedGov_rdfOperations = {
 						 * in the data table, so we need to iterate through the column model and select each 
 						 * columns "cellIndex" instead.
 						 */
-						var expression = 'grel:if(type(value)=="number",if(value%1==0,"int","float"),if(not(isError(value.toNumber())),if(value.toNumber()%1==0,"int","float"),"string"))';
+						var expression = 'grel:if(type(value)=="number",if(value%1==0,"int","float"),if(not(isError(value.toNumber())),if(value.toNumber()%1==0,"int","float"), if(value.startsWith("http://"),"url","string")))';
 						var type = LG.ops.findHighestFacetValue(columnHeaders[i]._column.name, expression);
 						
 						if(type == "string"){
@@ -1101,6 +1101,9 @@ var LinkedGov_rdfOperations = {
 						} else if(type == "date"){
 							o.target.valueType = "http://www.w3.org/2001/XMLSchema#date";
 							//parseValueTypesInColumn("date",columns[i].name);
+						} else if(type == "url"){
+							o.target.nodeType = "cell-as-resource";
+							o.target.expression = "value";
 						}
 
 						rootNode.links.push(o);
