@@ -414,9 +414,10 @@ var LinkedGov_addressWizard = {
 
 				case "mixed":
 
-					// TODO: What to store if mixed address?
-					//log("mixed fragment");
-					//log(colObjects[i]);
+					/*
+					 * Mixed addresses (i.e. a multi-part address as a single string) are 
+					 * stored using the vCard:Label property.
+					 */
 					uri = vocabs.vcard.uri + "Label";
 					curie = vocabs.vcard.curie + ":" + "Label";
 					colObjects[i].rdf = self.makeVCardFragment(colObjects[i].name, uri, curie);
@@ -471,7 +472,7 @@ var LinkedGov_addressWizard = {
 		 */
 		createAddressColumn:function(callback){
 
-			log("createAddressColumn");
+			//log("createAddressColumn");
 
 			var self = this;
 			var colObjects = self.vars.colObjects;
@@ -743,9 +744,10 @@ var LinkedGov_addressWizard = {
 			Refine.update({
 				modelsChanged : true
 			}, function() {
-				log("Finished address wizard");
+				//log("Finished address wizard");
 				LG.panels.wizardsPanel.resetWizard(self.vars.elmts.addressBody);
 				LG.panels.wizardsPanel.showUndoButton(self.vars.elmts.addressBody);
+				$(window).resize();
 				LG.showWizardProgress(false);
 				self.vars.addressName = "";
 			});

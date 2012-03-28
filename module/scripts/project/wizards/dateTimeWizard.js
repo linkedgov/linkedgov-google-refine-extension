@@ -108,7 +108,7 @@ var LinkedGov_dateTimeWizard = {
 					 * have had their order specified correctly (i.e. month before day).
 					 */
 					self.checkOrderOfMonthAndDay(function(){
-						
+												
 						/*
 						 * Display the "working..." sign
 						 */
@@ -310,6 +310,8 @@ var LinkedGov_dateTimeWizard = {
 							}							
 						});
 					});
+				} else if(i==self.vars.colObjects.length-1){
+					callback();
 				}
 			}
 			

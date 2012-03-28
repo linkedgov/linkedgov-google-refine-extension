@@ -182,9 +182,19 @@ var LinkedGov_LinkingPanel = {
 			}).show();
 			// Show the "next" button
 			this.els.nextButton.unbind("click").bind("click", function(){
-				//LG.panels.labellingPanel.displayPanel();
-				$("ul.lg-tabs li a[rel='labelling-panel']").click();
-				LG.panels.labellingPanel.displayPanel();
+				if($("ul.selected-columns li[class!='none']").length > 0){
+					DialogSystem.showDialog(
+							LG.createDialog({
+								header:"Hang on!",
+								body:"<p>There appear to be columns that have been suggested or picked by you that haven't been confirmed yet!</p><p>If you want to reconcile these columns, you must click on the green tick icon to confirm them.</p>",
+								ok:true
+							})
+					);
+				} else {
+					//LG.panels.labellingPanel.displayPanel();
+					$("ul.lg-tabs li a[rel='labelling-panel']").click();
+					LG.panels.labellingPanel.displayPanel();
+				}
 			}).show();
 		},
 
@@ -1232,7 +1242,7 @@ var LinkedGov_LinkingPanel = {
 			 * Remove all facets as we use the number of facets to calculate
 			 * what stage we're at when reconciling.
 			 */
-			ui.browsingEngine.remove();
+			//ui.browsingEngine.remove();
 
 			/*
 			 * Display a new panel that shows the results / scores of 
@@ -1263,6 +1273,7 @@ var LinkedGov_LinkingPanel = {
 
 							var result = {
 									columnName:self.existingLinks[k].columnName,
+									columnIndex:Refine.columnNameToColumnIndex(self.existingLinks[k].columnName),
 									service:LG.vars.reconServices[l],
 									existingLink:true
 							};
@@ -1293,6 +1304,7 @@ var LinkedGov_LinkingPanel = {
 										// matched service.
 										var result = {
 												columnName:self.existingLinks[m].columnName,
+												columnIndex:Refine.columnNameToColumnIndex(self.existingLinks[m].columnName),
 												service:service,
 												existingLink:true
 										};
@@ -1337,6 +1349,7 @@ var LinkedGov_LinkingPanel = {
 								// matched service.
 								var result = {
 										columnName:self.confirmedLinks[j].columnName,
+										columnIndex:Refine.columnNameToColumnIndex(self.confirmedLinks[j].columnName),
 										service:service
 								};
 
@@ -1456,7 +1469,7 @@ var LinkedGov_LinkingPanel = {
 					 */
 					self.checkFacetMatchCounts(function(){
 
-						sortArrayOfObjectsByKey(self.results, "columnName");
+						self.sortResultsByColumnIndex();
 
 						// Make sure we have at least one result before 
 						// continuing
@@ -1696,9 +1709,7 @@ var LinkedGov_LinkingPanel = {
 
 							// Make sure the Typing panel is showing
 							$("div#left-panel div.refine-tabs").tabs('select', 1);
-							
-							log("Here for some reason");
-							
+														
 							// Show the save button
 							self.els.saveButton.show();
 
@@ -1748,6 +1759,15 @@ var LinkedGov_LinkingPanel = {
 				callback(columnName);
 			});
 
+		},
+		
+		sortResultsByColumnIndex: function(){
+			var self = this;
+			return self.results.sort(function(a, b){
+				var obj1key = a["columnIndex"];
+				var obj2key = b["columnIndex"]; 
+				return ((obj1key < obj2key) ? -1 : ((obj1key > obj2key) ? 1 : 0));
+			});
 		},
 
 		/*

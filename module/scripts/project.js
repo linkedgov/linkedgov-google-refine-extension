@@ -43,6 +43,7 @@ LG.vars = {
 			answered:false,
 			confirmed:false
 		}
+
 };
 
 
@@ -70,24 +71,6 @@ LG.initialise = function() {
 	 */
 	this.injectWizardProgressOverlay();
 	this.injectFeedbackForm();
-
-	/*
-	window.onerror = function(o) {
-		LG.handleJSError(o);
-	};
-	 */
-
-	/*
-	window.alert = function(s) {
-		var dialog = LG.createDialog({
-			header:"Oops!",
-			body:$("<p />").text(s),
-			ok:true,
-			className:"alert"
-		});
-		DialogSystem.showDialog(dialog);
-	};
-	 */
 
 };
 
@@ -261,25 +244,27 @@ LG.loadOperationScripts = function(){
 		 * successfully loaded
 		 */
 		$.getScript("extension/linkedgov/scripts/project/rdfOperations.js",function(){
-						
+
 			LG.rdfOps = LinkedGov_rdfOperations;
 
 			LG.rdfOps.applyTypeIcons.init();
 			LG.rdfOps.applyTypeIcons.apply();		
-			
+
 			/*
 			 * Overwrite Refine's data-table "render" function, 
 			 * so we can include our functions that 
 			 * need to be called every time the table UI is updated.
 			 */
 			var interval = setInterval(function(){
-				
+
 				if(typeof ui.dataTableView != 'undefined'){
-					
+
 					ui.dataTableView.render2 = ui.dataTableView.render;
 					ui.dataTableView.render = function(){
 						// Let Refine re-render the table
 						ui.dataTableView.render2();
+						// Keep any hidden columns hidden
+						LG.ops.keepHiddenColumnsHidden();
 						// Whenever Refine updates the data table, it removes the classes from the table 
 						// header - which destroys our RDF symbols
 						LG.rdfOps.applyTypeIcons.apply();				
@@ -300,7 +285,7 @@ LG.loadOperationScripts = function(){
 					 * Save the base URI for the project
 					 */
 					LG.rdfOps.saveBaseUri(LG.vars.rdfSchema.baseUri);
-					
+
 					/*
 					 * Perform a generic update once everything has loaded
 					 * so that the table doesn't get re-rendered, which in turn 
@@ -310,7 +295,7 @@ LG.loadOperationScripts = function(){
 						/*
 						 * These functions need to be called once everything has rendered
 						 */
-						
+
 						/*
 						 * Load the project's hidden columns from the 
 						 * metadata file - hide any columns if there are 
@@ -322,18 +307,19 @@ LG.loadOperationScripts = function(){
 							LG.setupQuickTool();
 							LG.setupModeButton();
 							$("div.loading-message").hide();
+							$(window).resize();
 						});
 
 					});
-					
+
 					clearInterval(interval);
-					
+
 				} else {
 					log("ui.dataTableView not ready");
 				}
-				
+
 			},100);
-			
+
 
 		});
 	});
@@ -423,10 +409,10 @@ LG.applyMode = function(){
 		columnHeaderNameMarginLeft = "2px";
 		pageSizeLeft = "7px";
 	}
-	
+
 	// Show/hide the column quick tool
 	$("div.quick-tool").css("visibility", (display == "none" ? "hidden" : "visible"));
-	
+
 	// Show/hide the column menu buttons
 	$("a.column-header-menu").css("display", display);
 	$("span.column-header-name").css("margin-left", columnHeaderNameMarginLeft);
@@ -434,7 +420,7 @@ LG.applyMode = function(){
 	// Hide "Show records" link
 	$("div.viewpanel-rowrecord").css("display", (display == "inline-block" ? "block" : "none"));
 	$("div.viewpanel-pagesize").css("left", pageSizeLeft);
-	
+
 	// Show/hide edit link in cells	
 	$("a.data-table-cell-edit").css("display", display);
 
@@ -473,7 +459,7 @@ LG.switchMode = function(mode){
 	} catch(e){
 		log(e);
 	}
-	
+
 	// Show/hide the column quick tool
 	$("div.quick-tool").css("visibility", (display == "none" ? "hidden" : "visible"));
 
@@ -489,17 +475,17 @@ LG.switchMode = function(mode){
 	$("div#project-controls a").css("display", display);
 	$("div#project-controls a#send-feedback").css("display", "inline-block");
 	$("div#project-controls a#expert-mode").css("display", "inline-block");
-	
+
 	if($("div#project-controls a#unhide-columns-button").text() != "Unhide columns"){
 		$("div#project-controls a#unhide-columns-button").css("display", "inline-block");
 	} else {
 		$("div#project-controls a#unhide-columns-button").css("display", "none");
 	}
-	
+
 	// Hide "Show records" link
 	$("div.viewpanel-rowrecord").css("display", (display == "inline-block" ? "block" : "none"));
 	$("div.viewpanel-pagesize").css("left", pageSizeLeft);
-	
+
 	// Show extension buttons
 	$("div#extension-bar").css("display", display);
 	// Show edit link in cells	
@@ -569,7 +555,7 @@ LG.createDialog = function(o){
 	if(!o.header || !o.body){
 		return false;
 	}
-	
+
 	var dialog = DialogSystem.createDialog();
 	var header = $('<div></div>').addClass("dialog-header").append(o.header).appendTo(dialog);
 	var body = $('<div></div>').addClass("dialog-body "+(o.className ? o.className : "")).append(o.body).appendTo(dialog);
@@ -614,7 +600,7 @@ LG.createDialog = function(o){
 LG.addUnhideColumnButton = function() {
 
 	var self = this;
-	
+
 	if(LG.vars.hiddenColumns.length < 1){
 		$("div#project-controls").prepend('<a id="unhide-columns-button" title="Unhide '+LG.vars.hiddenColumns.split(",").length+' columns" class="button">Unhide columns</a>');
 	} else {
@@ -1034,35 +1020,35 @@ LG.injectWizardProgressOverlay = function() {
  * Shows or hides the wizard progress message.
  */
 LG.showWizardProgress = function(show) {
-	// Create a timeout incase a 
-	var timeout = undefined;
-
-	$('div.wizardProgressMessage p').find("span.cancel").remove();
 
 	if (show) {
 
+		$('div.wizardProgressMessage p').find("span.cancel").remove();
 		$('div.wizardProgressMessage').show();
 		$("body").addClass("wizard-progress");
 
-		clearTimeout(timeout);
+		try{
+			clearTimeout(LG.vars.progressTimeout);
+		}catch(e){log(e)};
 
-		timeout = setTimeout(function(){
+		LG.vars.progressTimeout = setTimeout(function(){
 			$('div.wizardProgressMessage p')
-			.append($("<span />").addClass("cancel").text("Hmmm...something might be wrong!")
+			.append($("<span />").addClass("cancel").text("Something might be wrong...")
 					.append($("<a />").text("Cancel").click(function(){
 						LG.showWizardProgress(false);
 						//window.location.href = window.location.href;
 					})
 					)
 			);
-
 		},10000);
 
 	} else {
+		$('div.wizardProgressMessage p').find("span.cancel").remove();
 		$('div.wizardProgressMessage').hide();
 		$("body").removeClass("wizard-progress");
-		clearTimeout(timeout);
+		clearTimeout(LG.vars.progressTimeout);
 	}
+
 };
 
 /*
@@ -1412,7 +1398,7 @@ LG.camelize = function(str) {
 	//log("Camelizing: ")
 	//log(str);
 
-	str = str.trim();
+	str = str.toLowerCase().trim();
 	str = str.replace(/&/g,"And");
 
 	return str.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, function(match, index) {

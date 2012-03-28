@@ -647,7 +647,7 @@ body.lg div#refine-tabs-typing div.linking-results div.description a.colName.exp
 }
 body.lg div#refine-tabs-typing div.linking-results div.description a.colName:hover
 {
-    background-color: #CCDDFF;
+    background-color: #BBCCFF;
 }
 body.lg div#refine-tabs-typing div.linking-results div.description p
 {
@@ -2148,7 +2148,7 @@ body.lg ul.selected-columns li span.colOptions input.textbox
 {
     background-color: #FFFFCC;
     font-size: 14px;
-    margin-bottom: 0px;
+    margin-bottom: 5px;
     margin-top: 5px;
     width: 92%;
 }

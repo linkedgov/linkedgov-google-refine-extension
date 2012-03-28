@@ -240,7 +240,7 @@ var LinkedGov_columnsToRowsWizard = {
 		 */
 		transposeColumns : function() {
 
-			log("transposeColumns");
+			//log("transposeColumns");
 
 			var self = this;
 
@@ -249,11 +249,10 @@ var LinkedGov_columnsToRowsWizard = {
 			 * process as a more silent "AJAX" call without the default UI update
 			 * callbacks.
 			 */
-			
+			LG.showWizardProgress(false);
 			var newColName = window.prompt("Enter a name for the new column that summarises these columns:","");
-			//log(newColName);
 			var valColName = window.prompt("Now enter a name for the new column that will contain it's values:","");
-			//log(valColName);
+			LG.showWizardProgress(true);
 			
 			LG.silentProcessCall({
 				type : "POST",
@@ -271,10 +270,14 @@ var LinkedGov_columnsToRowsWizard = {
 					 * Perform a silent UI update before calling the next
 					 * operation.
 					 */
-					Refine.reinitializeProjectData(function() {
-						ui.dataTableView.update(function() {
-							ui.browsingEngine.update(self.onComplete());
-						});
+					//Refine.reinitializeProjectData(function() {
+					//	ui.dataTableView.update(function() {
+					//		ui.browsingEngine.update(self.onComplete());
+					//	});
+					//});
+					
+					Refine.update({modelsChanged:true}, function(){
+						self.onComplete();
 					});
 					
 				},

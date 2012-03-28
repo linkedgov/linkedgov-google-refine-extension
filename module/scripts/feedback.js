@@ -5,19 +5,10 @@ $("a#send-feedback").live("click",function(){
 		var feedbackForm = DialogSystem.createDialog();
 		$(feedbackForm).width(400);
 		var header = $('<div></div>').addClass("dialog-header").text("Feedback").appendTo(feedbackForm);
-		var body = $('<div></div>').addClass("dialog-body").appendTo(feedbackForm);
+		var body = $('<div></div>').addClass("dialog-body").appendTo(feedbackForm).append("<p>Please enter your name, email address and your feedback in the boxes below.</p>");
 		var footer = $('<div></div>').addClass("dialog-footer").appendTo(feedbackForm);
 		
-		$(body).html(data);
-/*
-		var name = $( "#name" ),
-		email = $( "#email" ),
-		comment = $( "#comment" ),
-		allFields = $( [] ).add( name ).add( email ).add( comment ),
-		tips = $( ".validateTips" );
-*/
-		//var tips = $( ".validateTips" );
-		//console.log(name, email, comment, tips);
+		$(body).append(data);
 		
 		function updateTips( t ) {
 			$( ".validateTips" )

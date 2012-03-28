@@ -817,24 +817,39 @@ var LinkedGov_WizardsPanel = {
 
 						case "text-input" :
 
+							$cols.children().remove();
+							
 							/*
 							 * generateColumnFacet returns a list of the 10 most frequently 
 							 * occurring <li> elements.
-							 */
-							self.generateColumnFacet(columnName,10,function(html){
-								$cols.html(html);
-								$cols.data("colName",columnName);
-								$cols.children("li").each(function(){
-									$(this).html(
-											"<span class='col'>" +
-											$(this).html() +
-											"</span>" +
-											"<span class='remove'>X</span>" +
-											"<span class='colOptions'>" +
-											"<input type='text' class='textbox "+$(this).html()+"' />" +
-									"</span>");
-								});	
-								$cols.show();
+							 */							
+							self.generateColumnFacet(columnName, 10, function(arrayOfValues){
+								
+								for(var i=0; i<arrayOfValues.length; i++){
+									
+									var spanCol = $("<span />").addClass("col")
+									.text(arrayOfValues[i]);
+	
+									var input = $("<input />")
+									.attr("type","text")
+									.addClass("textbox")
+									.val(arrayOfValues[i]);	
+									
+									var colOptions = $("<span />").addClass("colOptions");
+									colOptions.append(input);
+									
+									var spanRemove = $("<span />").addClass("remove").text("X");
+									
+									var li = $("<li />")
+									.data("symbol", arrayOfValues[i])
+									.append(spanRemove)
+									.append(spanCol)
+									.append(colOptions);
+									
+									$cols.append(li);
+								}
+								
+								$cols.data("colName", columnName).show();
 							});
 
 							break;
@@ -1084,12 +1099,10 @@ var LinkedGov_WizardsPanel = {
 		/*
 		 * generateColumnFacet
 		 * 
-		 * Given a column name and a number (count), this will generate an unordered 
-		 * list of the (count)-most occuring values in that column
+		 * Given a column name and a number (count), this will return an unordered 
+		 * array of the (count)-most occuring values in that column
 		 */
 		generateColumnFacet : function(colName, count, callback){
-
-			var html = "";
 
 			/*
 			 * Build a parameter object using the first of the column names.
@@ -1154,15 +1167,7 @@ var LinkedGov_WizardsPanel = {
 								choicesArray.length = count;
 							}
 
-							for(var k=0;k<choicesArray.length;k++){
-								html += "<li>"+choicesArray[k]+"</li>";
-							}
-
-							i=data.facets.length;
-
-							log(html);
-
-							callback(html);
+							callback(choicesArray);
 
 						}
 					}
