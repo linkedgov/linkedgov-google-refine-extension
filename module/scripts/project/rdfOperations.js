@@ -849,7 +849,7 @@ var LinkedGov_rdfOperations = {
 					}
 				}
 
-				var camelizedRowLabel = escape(LG.camelize(LG.vars.labelsAndDescriptions.rowLabel));
+				var camelizedRowLabel = LG.urlifyColumnName(LG.vars.labelsAndDescriptions.rowLabel);
 
 				/*
 				 * Exists in the schema as it's own root node, so we create one here 
@@ -943,7 +943,7 @@ var LinkedGov_rdfOperations = {
 								curie : self.vars.vocabs.owl.curie+":ObjectProperty",
 								uri : self.vars.vocabs.owl.uri+"ObjectProperty"
 							} ],
-							value : LG.vars.lgPropertyURI + escape(LG.camelize(cols[i].label)),
+							value : LG.vars.lgPropertyURI + LG.urlifyColumnName(cols[i].label),
 							links : [ {
 								curie : self.vars.vocabs.rdfs.curie+":label",
 								target : {
@@ -1020,7 +1020,7 @@ var LinkedGov_rdfOperations = {
 				 */
 				LG.rdfOps.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
 
-					var camelizedRowLabel = escape(LG.camelize(LG.vars.labelsAndDescriptions.rowLabel));
+					var camelizedRowLabel = LG.urlifyColumnName(LG.vars.labelsAndDescriptions.rowLabel);
 
 					/*
 					 * Camelize the row label that's been entered and type the root node (each row) 
@@ -1067,7 +1067,7 @@ var LinkedGov_rdfOperations = {
 				for(var i=0; i<columnHeaders.length; i++){
 					if(!$(columnHeaders[i]._td).hasClass("typed") && ($.inArray(columnHeaders[i]._column.name, LG.vars.hiddenColumns.split(",")) < 0)){
 						
-						var camelizedColumnName = escape(LG.camelize(columnHeaders[i]._column.name));
+						var camelizedColumnName = LG.urlifyColumnName(columnHeaders[i]._column.name);
 						
 						var o = {
 								"uri" : self.vars.vocabs.lg.uri + camelizedColumnName,
@@ -1086,8 +1086,10 @@ var LinkedGov_rdfOperations = {
 						 * The row model isn't an exact replication of the order of the columns (and therefore cells)
 						 * in the data table, so we need to iterate through the column model and select each 
 						 * columns "cellIndex" instead.
+						 * 
+						 * Values can be detected as int, float, string, url
 						 */
-						var expression = 'grel:if(type(value)=="number",if(value%1==0,"int","float"),if(not(isError(value.toNumber())),if(value.toNumber()%1==0,"int","float"), if(value.startsWith("http://"),"url","string")))';
+						var expression = 'grel:if(type(value)=="number",if(value%1==0,"int","float"),if(not(isError(value.toNumber())),if(isNull(value),null,if(value.toNumber()%1==0,"int","float")), if(value.startsWith("http://"),"url","string"))))';
 						var type = LG.ops.findHighestFacetValue(columnHeaders[i]._column.name, expression);
 						
 						if(type == "string"){
@@ -1242,7 +1244,7 @@ var LinkedGov_rdfOperations = {
 				} else if(key == "curie" && val != "vcard:Address"){
 
 					for(var i=0; i<columnHeaders.length; i++){
-						if (val.split(":")[1] == escape(LG.camelize(columnHeaders[i]._column.name.toLowerCase()))) {
+						if (val.split(":")[1] == LG.urlifyColumnName(columnHeaders[i]._column.name.toLowerCase())) {
 							$(columnHeaders[i]._td).addClass("typed");
 						}
 					}

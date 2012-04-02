@@ -195,11 +195,11 @@ var LinkedGov_geolocationWizard = {
 			var self = this;
 
 			var obj = {
-					"uri" : self.vars.vocabs.lg.uri+LG.camelize(self.vars.coordinateName),
-					"curie" : self.vars.vocabs.lg.curie+":"+LG.camelize(self.vars.coordinateName),
+					"uri" : self.vars.vocabs.lg.uri+LG.urlifyColumnName(self.vars.coordinateName),
+					"curie" : self.vars.vocabs.lg.curie+":"+LG.urlifyColumnName(self.vars.coordinateName),
 					"target" : {
 						"nodeType" : "cell-as-resource",
-						"expression" : "value+\"#"+LG.camelize(self.vars.coordinateName)+"\"",
+						"expression" : "value+\"#"+LG.urlifyColumnName(self.vars.coordinateName)+"\"",
 						"isRowNumberCell" : true,
 						"rdfTypes" : [ {
 							"uri" : "http://www.w3.org/2003/01/geo/wgs84_pos#Point",

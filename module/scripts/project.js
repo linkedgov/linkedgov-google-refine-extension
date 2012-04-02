@@ -246,9 +246,9 @@ LG.loadOperationScripts = function(){
 		$.getScript("extension/linkedgov/scripts/project/rdfOperations.js",function(){
 
 			LG.rdfOps = LinkedGov_rdfOperations;
-
 			LG.rdfOps.applyTypeIcons.init();
 			LG.rdfOps.applyTypeIcons.apply();		
+			LG.detectColumnsOfNumbers();
 
 			/*
 			 * Overwrite Refine's data-table "render" function, 
@@ -325,6 +325,90 @@ LG.loadOperationScripts = function(){
 	});
 
 
+};
+
+
+/*
+ * detectColumnsOfNumbers
+ * 
+ * Scans the columns to see if any of them contain 
+ * numbers that are falsely being stored as strings.
+ * This often happens when figures are imported with commas
+ * in (e.g 3,241).
+ * 
+ */
+LG.detectColumnsOfNumbers = function(callback){
+		
+	var columnsContainingNumbers = [];
+	
+	// Loop through the columns and compute facets using a regex
+	var columns = theProject.columnModel.columns;
+	var expression = "if(not(isNull(value.match(/^(((\\d{1,3})(,\\d{3})*)|(\\d+))(.\\d+)?$/)[0])),'number','string')";
+	for(var i=0; i<columns.length; i++){
+		LG.ops.computeColumnFacet(columns[i].name, expression, function(data){
+			// Loop through the facets
+			for ( var j = 0; j < data.facets.length; j++) {
+
+				// If the facet matches the column name,
+				// is not either of the reconciliation facets - 
+				// and has choices returned
+				if (data.facets[j].columnName == columns[i].name 
+						&& typeof data.facets[j].choices != 'undefined') {
+					
+					// Check to see that the "number" value occurs at least 90% of the time
+					var safetyPoint = theProject.rowModel.total * 0.9;
+					
+					for(var k=0; k<data.facets[j].choices.length ;k++){
+						if(data.facets[j].choices[k].v.l == "number" && data.facets[j].choices[k].c >= safetyPoint){
+							columnsContainingNumbers.push(columns[i].name);
+						}
+					}	
+				}
+			}
+			
+			if(i == columns.length-1){
+				LG.transformColumnsToNumber(columnsContainingNumbers, callback);
+			}
+		});
+	}
+};
+
+/*
+ * transformColumnsToNumber
+ * 
+ * Once it's found a column that passes the test (a facet count of 
+ * a regex test), we transform the values in the cells and type 
+ * the column toNumber().
+ */
+LG.transformColumnsToNumber = function(columnNames, callback){
+		
+	for(var i=0; i<columnNames.length; i++){
+		
+		// Transform the column values by stripping out any commas
+		// and converting them toNumber() using a single GREL expression
+
+		LG.silentProcessCall({
+			type: "POST",
+			url : "/command/" + "core" + "/" + "text-transform",
+			data:{
+				columnName: columnNames[i],
+				expression: 'grel:value.replace(",","").toNumber()',
+				onError: "keep-original",
+				repeat: false,
+				repeatCount: 10
+			},
+			success:function(data){
+				//
+				if(i == columnNames.length-1){
+					callback();
+				}
+			},
+			error:function(){
+				alert("A problem was encountered when performing a text-transform on the column: \"" + columnNames[i] + "\".");
+			}
+		})		
+	}
+	
 };
 
 /*
@@ -1407,6 +1491,9 @@ LG.camelize = function(str) {
 	});
 };
 
+LG.urlifyColumnName = function(str){
+	return escape(encodeURIComponent(LG.camelize(str)));
+}
 
 /*
  * restoreHistory

@@ -922,7 +922,7 @@ var LinkedGov_dateTimeWizard = {
 
 			var colName = colObject.name;
 			var combi = colObject.combination;
-			var camelColName = LG.camelize(colName);
+			var camelColName = LG.urlifyColumnName(colName);
 
 			/*
 			 * Create the time:Instant object - using the column name 
@@ -1024,7 +1024,7 @@ var LinkedGov_dateTimeWizard = {
 
 			var colName = colObject.name;
 			var combi = colObject.combination;
-			var camelColName = LG.camelize(colName);
+			var camelColName = LG.urlifyColumnName(colName);
 
 			var o = {
 					"uri":self.vars.vocabs.lg.uri+camelColName,
@@ -1110,7 +1110,7 @@ var LinkedGov_dateTimeWizard = {
 
 			var colName = colObject.name;
 			var mb4d = colObject.monthBeforeDay;
-			var camelColName = LG.camelize(colName);
+			var camelColName = LG.urlifyColumnName(colName);
 
 			/*
 			 * To make sure we have the date format needed to type it as 
@@ -1148,7 +1148,7 @@ var LinkedGov_dateTimeWizard = {
 
 			var colName = colObject.name;
 			var mb4d = colObject.monthBeforeDay;
-			var camelColName = LG.camelize(colName);
+			var camelColName = LG.urlifyColumnName(colName);
 
 			var o = {
 					"uri":self.vars.vocabs.lg.uri+camelColName,
@@ -1183,7 +1183,7 @@ var LinkedGov_dateTimeWizard = {
 
 			var colName = colObject.name;
 			var mb4d = colObject.monthBeforeDay;
-			var camelColName = LG.camelize(colName);
+			var camelColName = LG.urlifyColumnName(colName);
 
 			var o = {
 					"uri":self.vars.vocabs.lg.uri+camelColName,
@@ -1217,7 +1217,7 @@ var LinkedGov_dateTimeWizard = {
 
 			var colName = colObject.name;
 			var mb4d = colObject.monthBeforeDay;
-			var camelColName = LG.camelize(colName);	
+			var camelColName = LG.urlifyColumnName(colName);	
 			var unit = colObject.durationUnit;
 			var value = colObject.durationValue;
 

@@ -24,8 +24,8 @@
 		uriPath:"http://data.ordnancesurvey.co.uk/id/",
 		resourceURI:"http://data.ordnancesurvey.co.uk/ontology/admingeo/LondonBoroughWard",
 		resourceCURIE:"LondonBoroughWard",
-		predicateURI:"http://data.ordnancesurvey.co.uk/ontology/admingeo/ward",
-		predicateCURIE:"ward",
+		predicateURI:"",
+		predicateCURIE:"",
 		vocabURI:"http://data.ordnancesurvey.co.uk/ontology/admingeo/",
 		vocabCURIE:"admingeo"
 	}
@@ -41,7 +41,7 @@
 		resourceURI:"http://data.ordnancesurvey.co.uk/ontology/admingeo/CivilParish",
 		resourceCURIE:"CivilParish",
 		predicateURI:"http://data.ordnancesurvey.co.uk/ontology/admingeo/parish",
-		predicateCURIE:"parish",
+		predicateCURIE:"admingeo:parish",
 		vocabURI:"http://data.ordnancesurvey.co.uk/ontology/admingeo/",
 		vocabCURIE:"admingeo"
 	}	
@@ -56,7 +56,7 @@
 		resourceURI:"http://data.ordnancesurvey.co.uk/ontology/admingeo/County",
 		resourceCURIE:"County",
 		predicateURI:"http://data.ordnancesurvey.co.uk/ontology/admingeo/county",
-		predicateCURIE:"county",
+		predicateCURIE:"admingeo:county",
 		vocabURI:"http://data.ordnancesurvey.co.uk/ontology/admingeo/",
 		vocabCURIE:"admingeo"
 	}	

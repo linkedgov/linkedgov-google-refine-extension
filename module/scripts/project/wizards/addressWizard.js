@@ -575,7 +575,7 @@ var LinkedGov_addressWizard = {
 			 * Any address data will always be the child of a vCard:Address node, 
 			 * which are identified using the hash ID "#columnName".
 			 */
-			var camelizedLocationName = LG.camelize(self.vars.addressName);
+			var addressName = LG.urlifyColumnName(self.vars.addressName);
 
 			/*
 			 * The vcard Address template:
@@ -602,11 +602,11 @@ var LinkedGov_addressWizard = {
 			 * vcard:postcode "SW1H9HP" .
 			 */
 			var vcardObj = {
-					"uri" : self.vars.vocabs.lg.uri+camelizedLocationName,
-					"curie" : self.vars.vocabs.lg.curie+":"+camelizedLocationName,
+					"uri" : self.vars.vocabs.lg.uri+addressName,
+					"curie" : self.vars.vocabs.lg.curie+":"+addressName,
 					"target" : {
 						"nodeType" : "cell-as-resource",
-						"expression" : "value+\"#"+camelizedLocationName+"\"",
+						"expression" : "value+\"#"+addressName+"\"",
 						"isRowNumberCell" : true,
 						"rdfTypes" : [ {
 							"uri" : "http://www.w3.org/2006/vcard/ns#Address",

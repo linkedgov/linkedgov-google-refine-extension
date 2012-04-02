@@ -180,22 +180,31 @@ var LinkedGov_LinkingPanel = {
 				$("ul.lg-tabs li a[rel='wizards-panel']").click();
 				LG.panels.wizardsPanel.displayPanel();
 			}).show();
-			// Show the "next" button
-			this.els.nextButton.unbind("click").bind("click", function(){
-				if($("ul.selected-columns li[class!='none']").length > 0){
-					DialogSystem.showDialog(
-							LG.createDialog({
-								header:"Hang on!",
-								body:"<p>There appear to be columns that have been suggested or picked by you that haven't been confirmed yet!</p><p>If you want to reconcile these columns, you must click on the green tick icon to confirm them.</p>",
-								ok:true
-							})
-					);
-				} else {
-					//LG.panels.labellingPanel.displayPanel();
-					$("ul.lg-tabs li a[rel='labelling-panel']").click();
-					LG.panels.labellingPanel.displayPanel();
-				}
-			}).show();
+			
+			// Check to see if there are any confirmed columns already on the panel
+			if($("div.confirmed-links ul.confirmed-columns li").length > 0){
+				// Show the link button
+				this.els.linkButton.show();
+			} else {
+				
+				// Show the "next" button
+				this.els.nextButton.unbind("click").bind("click", function(){
+					if($("div.suggest-panel ul.selected-columns li[class!='none']").length > 0){
+						DialogSystem.showDialog(
+								LG.createDialog({
+									header:"Hang on!",
+									body:"<p>There appear to be columns that have been suggested or picked by you that haven't been confirmed yet!</p><p>If you want to reconcile these columns, you must click on the green tick icon to confirm them.</p>",
+									ok:true
+								})
+						);
+					} else {
+						//LG.panels.labellingPanel.displayPanel();
+						$("ul.lg-tabs li a[rel='labelling-panel']").click();
+						LG.panels.labellingPanel.displayPanel();
+					}
+				}).show();				
+			}
+
 		},
 
 		/*
@@ -569,8 +578,10 @@ var LinkedGov_LinkingPanel = {
 
 				// Check that the column also has at least one matched topic
 				if(typeof columns[i].reconConfig != 'undefined' 
-					&& typeof columns[i].reconStats != 'undefined'
-						&& columns[i].reconStats.matchedTopics > 0){
+					&& typeof columns[i].reconStats != 'undefined'){
+					// (This line has been taken out as it's possible to reconcile 
+					// a column with no matches
+					//	&& columns[i].reconStats.matchedTopics > 0){
 
 					// This column has reconciliation data
 
@@ -2683,8 +2694,8 @@ var LinkedGov_LinkingPanel = {
 			// relationship to the reconciled URI (e.g. lg:columnName
 			// instead of something like gov:hasDepartment).
 			if(predicateURI.length < 1){
-				predicateURI = self.vocabs.lg.uri+escape(LG.camelize(result.columnName));
-				predicateCURIE = self.vocabs.lg.curie+":"+escape(LG.camelize(result.columnName));
+				predicateURI = self.vocabs.lg.uri+LG.urlifyColumnName(result.columnName);
+				predicateCURIE = self.vocabs.lg.curie+":"+LG.urlifyColumnName(result.columnName);
 			}
 
 			// The RDF fragment makes use of a GREL expression to access the cells reconciled URI.

@@ -145,7 +145,7 @@ var LinkedGov_measurementsWizard = {
 				/*
 				 * Camel-case & trim whitespace to use as URI slug
 				 */
-				var camelizedColumnName = LG.camelize(colObjects[i].name);
+				var camelizedColumnName = LG.urlifyColumnName(colObjects[i].name);
 
 				/*
 				 * Check to see if there's an existing mapping for the column name
