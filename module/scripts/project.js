@@ -340,10 +340,10 @@ LG.loadOperationScripts = function(){
 LG.detectColumnsOfNumbers = function(callback){
 		
 	var columnsContainingNumbers = [];
-	
+
 	// Loop through the columns and compute facets using a regex
 	var columns = theProject.columnModel.columns;
-	var expression = "if(value.match(/^-?(?!0)(?:\\d+|\\d{1,3}(?:\\,\\d{3})+)$/).type() == 'array', 'number', 'string')";
+	var expression = "if(not(isNull(value.match(/^\\$?\\-?([1-9]{1}[0-9]{0,2}(\\,\\d{3})*(\\.\\d{0,2})?|[1-9]{1}\\d{0,}(\\.\\d{0,2})?|0(\\.\\d{0,2})?|(\\.\\d{1,2}))$|^\\-?\\$?([1-9]{1}\\d{0,2}(\\,\\d{3})*(\\.\\d{0,2})?|[1-9]{1}\\d{0,}(\\.\\d{0,2})?|0(\\.\\d{0,2})?|(\\.\\d{1,2}))$|^\\(\\$?([1-9]{1}\\d{0,2}(\\,\\d{3})*(\\.\\d{0,2})?|[1-9]{1}\\d{0,}(\\.\\d{0,2})?|0(\\.\\d{0,2})?|(\\.\\d{1,2}))\\)$/)[0])),'number','string')";
 	for(var i=0; i<columns.length; i++){
 		LG.ops.computeColumnFacet(columns[i].name, expression, function(data){
 			// Loop through the facets
@@ -364,10 +364,10 @@ LG.detectColumnsOfNumbers = function(callback){
 						}
 					}	
 				}
-			}
-			
-			if(i == columns.length-1){
-				LG.transformColumnsToNumber(columnsContainingNumbers, callback);
+				
+				if(j == data.facets.length-1 && i == columns.length-1){
+					LG.transformColumnsToNumber(columnsContainingNumbers, callback);
+				}
 			}
 		});
 	}
@@ -383,7 +383,7 @@ LG.detectColumnsOfNumbers = function(callback){
 LG.transformColumnsToNumber = function(columnNames, callback){
 		
 	for(var i=0; i<columnNames.length; i++){
-		
+				
 		// Transform the column values by stripping out any commas
 		// and converting them toNumber() using a single GREL expression
 
