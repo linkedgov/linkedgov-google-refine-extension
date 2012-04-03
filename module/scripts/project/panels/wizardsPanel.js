@@ -1495,8 +1495,10 @@ var LinkedGov_WizardsPanel = {
 						"<select class='geolocation-select'>" + 
 						"<option value='lat'>Latitude</option>" + 
 						"<option value='long'>Longitude</option>" +
-						"<option value='northing'>Northing</option>" + 
-						"<option value='easting'>Easting</option>" + 
+						"<option value='latlong'>Latitude, longitude</option>" +
+						"<option value='easting'>Eastings</option>" + 
+						"<option value='northing'>Northings</option>" + 
+						"<option value='eastingnorthing'>Eastings, northings</option>" +
 						"</select>";	
 	
 					fragmentHTML += "</span>";
@@ -1695,6 +1697,8 @@ var LinkedGov_WizardsPanel = {
 							self.finishUnexpectedValuesTest(callback);
 						}
 					}
+				} else if(i == colObjects.length-1){
+					callback();
 				}
 			}
 

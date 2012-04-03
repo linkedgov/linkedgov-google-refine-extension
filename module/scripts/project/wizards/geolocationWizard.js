@@ -100,6 +100,8 @@ var LinkedGov_geolocationWizard = {
 			 */
 			if ($(self.vars.elmts.geolocationColumns).children("li").length > 0) {
 				$(self.vars.elmts.geolocationColumns).children("li").each(function() {
+
+					// Single parts
 					var el = $(this);
 					/*
 					 * Skip any columns that have been removed
@@ -110,6 +112,7 @@ var LinkedGov_geolocationWizard = {
 							type : el.find("select").val()
 						});
 					}
+
 				});
 
 				return array;
@@ -140,7 +143,7 @@ var LinkedGov_geolocationWizard = {
 				},
 				success : function() {
 
-					if(index==self.vars.colObjects.length-1){
+					if(index == self.vars.colObjects.length-1){
 						if(callback){
 							Refine.update({cellsChanged : true},callback);
 						} else {
@@ -269,6 +272,12 @@ var LinkedGov_geolocationWizard = {
 				var uri, curie = "";
 
 				switch (colObjects[i].type) {
+				case "latlong":					
+					obj.target.links = self.makeCombinedLatLongRDF(colObjects[i].name);
+					break;
+				case "eastingnorthing":
+					obj.target.links = self.makeCombinedEastingNorthingRDF(colObjects[i].name);
+					break;
 				case "long":
 					/*
 					 * Create the longitude RDF
@@ -349,6 +358,77 @@ var LinkedGov_geolocationWizard = {
 				}
 			});
 
+		},
+
+		makeCombinedLatLongRDF : function(colName){
+			
+			var self = this;
+
+			var lat = {
+					"uri" : self.vars.vocabs.geo.uri + "lat",
+					"curie" : self.vars.vocabs.geo.curie + ":" + "lat",
+					"target" : {
+						"nodeType" : "cell-as-literal",
+						"valueType" : "http://www.w3.org/2001/XMLSchema#float",
+						"expression" : "escape(value.match(/^(\\-?\\d+(\\.\\d+)?),\\s*(\\-?\\d+(\\.\\d+)?)/)[0],'xml')",
+						"columnName" : colName,
+						"isRowNumberCell" : false
+					}
+			};
+
+			var long = {
+					"uri" : self.vars.vocabs.geo.uri + "long",
+					"curie" : self.vars.vocabs.geo.curie + ":" + "long",
+					"target" : {
+						"nodeType" : "cell-as-literal",
+						"valueType" : "http://www.w3.org/2001/XMLSchema#float",
+						"expression" : "escape(value.match(/^(\\-?\\d+(\\.\\d+)?),\\s*(\\-?\\d+(\\.\\d+)?)/)[2],'xml')",
+						"columnName" : colName,
+						"isRowNumberCell" : false
+					}
+			};
+
+			var latlong = [];
+			latlong.push(lat);
+			latlong.push(long);
+			
+			return latlong;
+
+		},
+
+		makeCombinedEastingNorthingRDF : function(colName){
+			
+			var self = this;
+
+			var easting = {
+					"uri" : self.vars.vocabs.spatialrelations.uri + "easting",
+					"curie" : self.vars.vocabs.spatialrelations.curie + ":" + "easting",
+					"target" : {
+						"nodeType" : "cell-as-literal",
+						"valueType" : "http://www.w3.org/2001/XMLSchema#int",
+						"expression" : "escape(value.match(/^(\\-?\\d+(\\.\\d+)?),\\s*(\\-?\\d+(\\.\\d+)?)/)[0],'xml')",
+						"columnName" : colName,
+						"isRowNumberCell" : false
+					}
+			};
+
+			var northing = {
+					"uri" : self.vars.vocabs.spatialrelations.uri + "northing",
+					"curie" : self.vars.vocabs.spatialrelations.curie + ":" + "northing",
+					"target" : {
+						"nodeType" : "cell-as-literal",
+						"valueType" : "http://www.w3.org/2001/XMLSchema#int",
+						"expression" : "escape(value.match(/^(\\-?\\d+(\\.\\d+)?),\\s*(\\-?\\d+(\\.\\d+)?)/)[2],'xml')",
+						"columnName" : colName,
+						"isRowNumberCell" : false
+					}
+			};
+			
+			var eastingnorthing = [];
+			eastingnorthing.push(easting);
+			eastingnorthing.push(northing);
+			
+			return eastingnorthing;
 		},
 
 		/*
@@ -444,7 +524,7 @@ var LinkedGov_geolocationWizard = {
 
 			var colObjects = self.vars.colObjects;
 
-			for(var i=0;i<colObjects.length;i++){
+			for(var i=0; i<colObjects.length; i++){
 
 				colObjects[i].unexpectedValueParams = {
 						expression:self.vars.unexpectedValueRegex,
@@ -460,6 +540,8 @@ var LinkedGov_geolocationWizard = {
 				} else if(colObjects[i].type == "northing" || colObjects[i].type == "easting"){
 					colObjects[i].unexpectedValueParams.expectedType = "int";
 					colObjects[i].unexpectedValueParams.exampleValue = "499082";
+				} else {
+					delete colObjects[i].unexpectedValueParams;
 				}
 			}
 

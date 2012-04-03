@@ -343,7 +343,7 @@ LG.detectColumnsOfNumbers = function(callback){
 	
 	// Loop through the columns and compute facets using a regex
 	var columns = theProject.columnModel.columns;
-	var expression = "if(not(isNull(value.match(/^(((\\d{1,3})(,\\d{3})*)|(\\d+))(.\\d+)?$/)[0])),'number','string')";
+	var expression = "if(value.match(/^-?(?!0)(?:\\d+|\\d{1,3}(?:\\,\\d{3})+)$/).type() == 'array', 'number', 'string')";
 	for(var i=0; i<columns.length; i++){
 		LG.ops.computeColumnFacet(columns[i].name, expression, function(data){
 			// Loop through the facets
@@ -998,10 +998,10 @@ LG.repositionColumnOverlays = function(difference){
 
 		if(parseInt($(this).css("left")) < 300){
 			$(this).css("visibility","hidden");
-		} else if(overlayEdge > (screenEdge)){
+		} else if(overlayEdge > (screenEdge+10)){
 			$(this).css("visibility","hidden");
 		} else {
-			if(overlayEdge > (screenEdge-15) && table[0].scrollWidth > rightPanel.width()
+			if(overlayEdge > (screenEdge-10) && table[0].scrollWidth > rightPanel.width()
 					&& table[0].scrollHeight > tableContainerHeight){
 				$(this).css("visibility","hidden");
 			} else if(table[0].scrollWidth > rightPanel.width()
