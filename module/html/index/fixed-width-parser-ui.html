@@ -1,0 +1,68 @@
+<div class="grid-layout layout-full parser-panel">
+
+	<div class="fixed-width-details">
+	<p>The file that has been uploaded has been detected as a fixed-width data file.</p>
+	<p>We've tried to guess the location of the columns in the data, but you may need to manually hover over the data and splice it into columns yourself.</p>
+			
+      <ul>
+        <li><span>Column widths:</span> <input bind="columnWidthsInput" /><span class="note">comma separated numbers</span></li>
+        <li><span>Column names:</span> <input bind="columnNamesInput" /><span class="note">optional, comma separated</span></li>
+    </ul>      
+	</div>
+
+	<a class="question">Has the correct encoding been used?</a>
+	<div class="grid-layout layout-tightest question-input encoding">
+	      <ul>
+            <li><span>Character encoding</span> <input bind="encodingInput"></input></li>
+        </ul>
+	</div>
+
+	<a class="question">Have the correct number of rows been captured?</a>
+	<div class="grid-layout layout-tightest question-input">
+
+		<ul>
+			<li><input type="checkbox" bind="ignoreCheckbox" /><span>Ignore
+					first</span> <input bind="ignoreInput" type="text" class="lightweight"
+				size="2" value="0" /><span>line(s) at beginning of file</span></li>
+			<li><input type="checkbox" bind="headerLinesCheckbox" /><span>Parse
+					next</span> <input bind="headerLinesInput" type="text" class="lightweight"
+				size="2" value="1" /><span>line(s) as column headers</span></li>
+			<li><input type="checkbox" bind="skipCheckbox" /><span>Discard
+					initial</span> <input bind="skipInput" type="text" class="lightweight"
+				size="2" value="0" /><span>row(s) of data</span></li>
+			<li><input type="checkbox" bind="limitCheckbox" /><span>Load
+					at most</span> <input bind="limitInput" type="text" class="lightweight"
+				size="2" value="0" /><span>row(s) of data</span></li>
+		</ul>
+
+	</div>
+
+	<a class="question">Have value types (i.e. numbers and dates) been
+		detected correctly?</a>
+	<div class="grid-layout layout-tightest question-input">
+		<ul>
+			<li><input type="checkbox" bind="guessCellValueTypesCheckbox" /><span>Parse
+					cell text into numbers, dates, ...</span></li>
+		</ul>
+	</div>
+
+	<a class="question">Other</a>
+	<div class="grid-layout layout-tightest question-input">
+		<ul>
+			<li><input type="checkbox" bind="storeBlankRowsCheckbox" /><span>Store
+					blank rows</span></li>
+			<li><input type="checkbox" bind="storeBlankCellsAsNullsCheckbox" /><span>Store
+					blank cells as nulls</span></li>
+			<li><input type="checkbox" bind="includeFileSourcesCheckbox" /><span>Store
+					file source (file names, URLs) in each row</span></li>
+		</ul>
+	</div>
+
+</div>
+
+<div class="primary-buttons">
+	<button class="button" bind="previewButton">Update&nbsp;Preview</button>
+	<button class="button create-project">
+		<strong>Create Project &raquo;</strong>
+	</button>
+</div>

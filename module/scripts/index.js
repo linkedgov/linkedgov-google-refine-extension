@@ -551,6 +551,11 @@ var LG = {
 
 				$.getScript(ModuleWirings["linkedgov"] + 'scripts/index/'+pageName+'.js');		
 				break;
+				
+			case 'fixed-width-parser-ui' :
+
+				$.getScript(ModuleWirings["linkedgov"] + 'scripts/index/'+pageName+'.js');		
+				break;
 
 			case 'feedback-form' :
 				//$.getScript(ModuleWirings["linkedgov"] + 'scripts/feedback.js');	
@@ -585,6 +590,9 @@ DOM.loadHTML = function(module, path) {
 	} else if(path == "scripts/index/parser-interfaces/separator-based-parser-ui.html"){
 		module = "linkedgov";
 		path = "html/index/separator-based-parser-ui.html";		
+	} else if(path == "scripts/index/parser-interfaces/fixed-width-parser-ui.html"){
+		module = "linkedgov";
+		path = "html/index/fixed-width-parser-ui.html";		
 	}
 
 	var fullPath = ModuleWirings[module] + path;
@@ -656,17 +664,7 @@ Refine.CreateProjectUI.prototype.pollImportJob = function(start, jobID, timerID,
 		 */
 		if(typeof job.config.projectID != 'undefined'){
 			
-			log("jobID = "+jobID);
-			
-			log("job.config.projectID = "+job.config.projectID);
-			
-			
-			
 			LG.saveMetadata(jobID, job.config.projectID, function(jobID, projectID){
-				
-				log("jobID 2 = "+jobID);
-				
-				log("projectID = "+projectID);
 				
 				Refine.CreateProjectUI.cancelImportingJob(jobID);
 				document.location = "project?project=" + projectID;

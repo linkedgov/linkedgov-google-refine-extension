@@ -473,7 +473,51 @@ body.lg td.default-importing-parsing-control-panel-options-panel div.parser-pane
     border:1px solid #444444;
 }
 
-
+body.lg td.default-importing-parsing-control-panel-options-panel div.parser-panel div.fixed-width-details {
+	background-color:#EBEEF8;
+	border: 1px solid #BBCCFF;
+	color: #444444;
+    margin-right: 5px;
+    margin-top: 5px;
+    padding: 10px;
+}
+body.lg td.default-importing-parsing-control-panel-options-panel div.parser-panel div.fixed-width-details p {
+    margin-bottom:10px;
+}
+body.lg td.default-importing-parsing-control-panel-options-panel div.parser-panel div.fixed-width-details ul li {
+    margin-left: 0;
+    width: 100%;
+}
+body.lg td.default-importing-parsing-control-panel-options-panel div.parser-panel div.fixed-width-details ul li input {
+    float: none;
+    margin: 0;
+    width: 98%;
+}
+body.lg td.default-importing-parsing-control-panel-options-panel div.parser-panel div.fixed-width-details ul li span {
+    display: block;
+    margin-bottom: 3px;
+}
+body.lg td.default-importing-parsing-control-panel-options-panel div.parser-panel div.fixed-width-details ul li span.note {
+    color: #6A6A6A;
+    float: right;
+    font-size: 11px;
+    font-style: italic;
+    margin-bottom: 0px;
+}
+body.lg td.default-importing-parsing-control-panel-options-panel div.parser-panel div.encoding ul li {
+	margin-left: 0;
+    width: 100%;
+}
+body.lg td.default-importing-parsing-control-panel-options-panel div.parser-panel div.encoding ul li span {
+    display: block;
+    margin-bottom: 3px;
+}
+body.lg td.default-importing-parsing-control-panel-options-panel div.parser-panel div.encoding ul li input {
+    float: none;
+    margin: 0;
+    width: 98%;
+}
+    
 /**** Feedback form ****/
 
 body.lg #header #send-feedback {
