@@ -1089,7 +1089,7 @@ var LinkedGov_rdfOperations = {
 						 * 
 						 * Values can be detected as int, float, string, url
 						 */
-						var expression = 'grel:if(type(value)=="number",if(value%1==0,"int","float"),if(not(isError(value.toNumber())),if(isNull(value),null,if(value.toNumber()%1==0,"int","float")), if(value.startsWith("http://"),"url","string"))))';
+						var expression = 'grel:if(type(value)=="number",if(value%1==0,"int","float"),if(not(isError(value.toNumber())),if(isNull(value),null,if(value.toNumber()%1==0,"int","float")), if(value.startsWith("http://"),"url", if(isBlank(value),"date",if(type(value) == "date","date",if(isError(toDate(value).toString("HH:mm:ss")),"string","date")))))))';
 						var type = LG.ops.findHighestFacetValue(columnHeaders[i]._column.name, expression);
 						
 						if(type == "string"){
@@ -1102,6 +1102,7 @@ var LinkedGov_rdfOperations = {
 							//parseValueTypesInColumn("float",columns[i].name);
 						} else if(type == "date"){
 							o.target.valueType = "http://www.w3.org/2001/XMLSchema#date";
+							o.target.expression = "value.toDate().toString('yyyy-MM-dd')";
 							//parseValueTypesInColumn("date",columns[i].name);
 						} else if(type == "url"){
 							o.target.nodeType = "cell-as-resource";

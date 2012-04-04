@@ -816,14 +816,14 @@ LG.setupQuickTool = function() {
 
 		case "rename":
 			var name = window.prompt("Name:", colName) || "";
-			if (name.trim().length > 0) {
+			if (name.trim().length > 2) {
 				LG.ops.renameColumn(colName, name, function() {
 					Refine.update({
 						modelsChanged : true
 					});
 				});
-			} else {
-				alert("Not a valid column name.");
+			} else if(name.trim().length > 0){
+				alert("Column headers must be at least 3 characters long.");
 			}
 			break;
 		case "remove":

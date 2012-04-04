@@ -134,6 +134,8 @@ var LinkedGov_generalOperations = {
 							var highest = 0;
 							var value = "";
 							var length = data.facets[i].choices.length;
+							var intsPresent = false;
+							var floatsPresent = false;
 
 							for(var j=0; j<length; j++){
 
@@ -141,11 +143,21 @@ var LinkedGov_generalOperations = {
 									value = data.facets[i].choices[j].v.l;
 									highest = data.facets[i].choices[j].c;
 								}
+								
+								if(data.facets[i].choices[j].v.l == "int"){
+									intsPresent = true;
+								} else if(data.facets[i].choices[j].v.l == "float"){
+									floatsPresent = true;
+								}
 							}
 
 							i=data.facets.length;
 
-							result = value;
+							if(intsPresent && floatsPresent){
+								result = "float";
+							} else {
+								result = value;
+							}
 
 						}
 					}
