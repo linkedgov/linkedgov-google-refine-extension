@@ -1492,7 +1492,7 @@ LG.camelize = function(str) {
 };
 
 LG.urlifyColumnName = function(str){
-	return escape(encodeURIComponent(LG.camelize(str)));
+	return escape(LG.camelize(str.replace(/\//g,"Or")));
 }
 
 /*

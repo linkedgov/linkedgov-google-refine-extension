@@ -1,10 +1,3 @@
-/*
- * Copyright 2011
- * LinkedGov
- * Author: Dan Smith
- * 
- */
-
 var ClientSideResourceManager = Packages.com.google.refine.ClientSideResourceManager;
 
 /*
