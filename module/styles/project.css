@@ -1318,6 +1318,23 @@ body.lg div.labelling-panel ul.key li
 body.lg div.labelling-panel,body.lg div#linking-panel
 {
 }
+body.lg div.labelling-panel ul.illegal-chars {
+    color: #000000;
+    display:none;
+    height: 67px;
+    list-style-type: none;
+    margin: 0 24px 5px;
+    padding: 0 0;
+}
+body.lg div.labelling-panel ul.illegal-chars li {
+    background: none repeat scroll 0 0 #FFD0D0;
+    border: 1px solid #EA9494;
+    float: left;
+    height: 18px;
+    margin: 1px;
+    text-align: center;
+    width: 18px;
+}
 body.lg div.next-button
 {
     background: none repeat scroll 0 0 #BBCCFF;

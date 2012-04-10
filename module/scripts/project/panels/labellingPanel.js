@@ -31,12 +31,19 @@ var LinkedGov_LabellingPanel = {
 
 			// Store the illegal characters for column names
 			// Note: Unused for now as percentage encoding is being used.
-			self.illegalChars = [ "*", "@", "%", ":", "=", "&", "<", ">", "/", "\\", "."];
+			self.illegalCharsRegex = /[!\"#\$£%&'\(\)\*\+,/\.:;\-<=>\?@\[\\\]\^`{\|}~]/gi;
 
 			// Store the bound elements in the Typing panel for ease of reference
 			self.els = ui.typingPanel._el;
 			// Store this panels body element for ease of reference
 			self.body = ui.typingPanel._el.labellingPanel;
+			
+			$("a.show-illegal-chars").toggle(function(){
+				$("ul.illegal-chars").slideDown();
+			},function(){
+				$("ul.illegal-chars").slideUp();
+			});
+			
 
 			/*
 			 * Add focus, keyup and blur listeners to the row description
@@ -585,15 +592,24 @@ var LinkedGov_LabellingPanel = {
 			var textarea = divElement.find("textarea.row-description");
 			var labelData = LG.vars.labelsAndDescriptions;
 			var status = "";
-
-			// Add the status's CSS class
-			if(input.val().trim().length > 2 && input.val() != "Each row is a..."){
+			
+			/*
+			 * If the row label is longer than 2 letters, doesn't contain the word column
+			 * and passes the regex test for unsafe characters, we can style the input boxes 
+			 * with the "good" or "great" icons
+			 */
+			if(input.val().trim().length > 2 
+					&& input.val() != "Each row is a..."
+						&& input.val().match(self.illegalCharsRegex) == null){
+				
 				status = "good";
+				
 				if(textarea.val().length > 2 && textarea.val() != "Enter a description..."){
 					status = "great";
 				} else {
 					status = "good";
 				}
+				
 			} else {
 				status = "bad";
 			}
@@ -622,9 +638,14 @@ var LinkedGov_LabellingPanel = {
 			var status = "";
 
 			/*
-			 * If the column label is longer than 2 letters and doesn't contain the word column
+			 * If the column label is longer than 2 letters, doesn't contain the word column
+			 * and passes the regex test for unsafe characters, we can style the input boxes 
+			 * with the "good" or "great" icons
 			 */
-			if(input.val().trim().length > 2 && input.val().toLowerCase().indexOf("column") < 0){
+			if(input.val().trim().length > 2 
+					&& input.val().toLowerCase().indexOf("column") < 0
+					&& input.val().match(self.illegalCharsRegex) == null){
+				
 				status = "good";
 				/*
 				 * If the description value is not equal to the holding text, add the "great" 
