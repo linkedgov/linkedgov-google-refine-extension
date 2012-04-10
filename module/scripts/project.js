@@ -245,10 +245,6 @@ LG.loadOperationScripts = function(){
 		 */
 		$.getScript("extension/linkedgov/scripts/project/rdfOperations.js",function(){
 
-			LG.rdfOps = LinkedGov_rdfOperations;
-			LG.rdfOps.applyTypeIcons.init();
-			LG.rdfOps.applyTypeIcons.apply();		
-			LG.detectColumnsOfNumbers();
 
 			/*
 			 * Overwrite Refine's data-table "render" function, 
@@ -257,7 +253,17 @@ LG.loadOperationScripts = function(){
 			 */
 			var interval = setInterval(function(){
 
-				if(typeof ui.dataTableView != 'undefined'){
+				/*
+				 * Make sure two of Refine's core UI objects are created before proceeding
+				 */
+				if(typeof ui.dataTableView != 'undefined' 
+					&& typeof theProject.columnModel != 'undefined' 
+						&& typeof theProject.rowModel != 'undefined'){
+					
+					LG.rdfOps = LinkedGov_rdfOperations;
+					LG.rdfOps.applyTypeIcons.init();
+					LG.rdfOps.applyTypeIcons.apply();		
+					LG.detectColumnsOfNumbers();
 
 					ui.dataTableView.render2 = ui.dataTableView.render;
 					ui.dataTableView.render = function(){
@@ -342,8 +348,9 @@ LG.detectColumnsOfNumbers = function(callback){
 	var columnsContainingNumbers = [];
 
 	// Loop through the columns and compute facets using a regex
-	var columns = theProject.columnModel.columns;
+	var columns = theProject.columnModel.columns;	
 	var expression = "if(not(isNull(value.match(/^\\$?\\-?([1-9]{1}[0-9]{0,2}(\\,\\d{3})*(\\.\\d{0,2})?|[1-9]{1}\\d{0,}(\\.\\d{0,2})?|0(\\.\\d{0,2})?|(\\.\\d{1,2}))$|^\\-?\\$?([1-9]{1}\\d{0,2}(\\,\\d{3})*(\\.\\d{0,2})?|[1-9]{1}\\d{0,}(\\.\\d{0,2})?|0(\\.\\d{0,2})?|(\\.\\d{1,2}))$|^\\(\\$?([1-9]{1}\\d{0,2}(\\,\\d{3})*(\\.\\d{0,2})?|[1-9]{1}\\d{0,}(\\.\\d{0,2})?|0(\\.\\d{0,2})?|(\\.\\d{1,2}))\\)$/)[0])),'number','string')";
+	
 	for(var i=0; i<columns.length; i++){
 		LG.ops.computeColumnFacet(columns[i].name, expression, function(data){
 			// Loop through the facets
