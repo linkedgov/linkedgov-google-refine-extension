@@ -38,12 +38,7 @@ LG.vars = {
 		lgClassURI: "http://data.linkedgov.org/terms/class/"+theProject.id+"/",
 		lgPropertyURI: "http://data.linkedgov.org/terms/property/"+theProject.id+"/",
 		hiddenColumns: "",
-		reconServices : [],
-		confirmDialog:{
-			answered:false,
-			confirmed:false
-		}
-
+		reconServices : []
 };
 
 
@@ -81,7 +76,7 @@ onerror = function(o) {
 alert = function(s) {
 	var dialog = LG.createDialog({
 		header:"Oops!",
-		body:$("<p />").text(s),
+		body:$("<p />").append(s),
 		ok:true,
 		className:"alert"
 	});
@@ -125,7 +120,7 @@ LG.loadTypingPanel = function(callback) {
 				if(typeof ui != 'undefined'){
 					// Create our own "typingPanel" object inside Refine's "ui" object
 					ui.typingPanel = new TypingPanel($("div#refine-tabs-typing"));
-					// Store the 
+					// Store the typing panel so it's accessible by the other panels
 					LG.panels.typingPanel = ui.typingPanel;
 
 					clearInterval(interval);
@@ -269,6 +264,8 @@ LG.loadOperationScripts = function(){
 					ui.dataTableView.render = function(){
 						// Let Refine re-render the table
 						ui.dataTableView.render2();
+						// Re-apply the RDF indicators
+						//LG.rdfOps.applyTypeIcons.apply();
 						// Keep any hidden columns hidden
 						LG.ops.keepHiddenColumnsHidden();
 						// Whenever Refine updates the data table, it removes the classes from the table 
@@ -1036,47 +1033,6 @@ LG.removeColumnOverlays = function(){
 };
 
 /*
- * exposeColumnHeaders
- * 
- * Applies a mask of opacity to elements that leave the column headers exposed.
- * 
- * 'expose' is a boolean - true to mask, false to restore the mask.
- */
-LG.exposeColumnHeaders = function(expose){
-
-	var opacity = 1;
-
-	if(expose){
-		opacity = 0.4;
-		$("table.data-table").find("td").addClass("mask");
-	} else {
-		opacity = 1;
-		$("table.data-table").find("td").removeClass("mask");
-	}
-
-	/*
-	 * Elements to mask/restore
-	 */
-	$(".wizard-body").children().css("opacity",opacity);
-	//$("table.data-table").css("opacity",opacity);
-
-	$("div.viewpanel-header").css("opacity",opacity);
-	$("div.action-buttons").css("opacity",opacity);
-	$("div.cancel-button").css("opacity",opacity);
-	$("div#tool-panel").css("opacity",opacity);
-	$("div#header").css("opacity",opacity);
-	$("ul.ui-tabs-nav").css("opacity",opacity);
-	$("td.column-header").eq(0).css("opacity",opacity);
-
-	/*
-	 * Elements to expose
-	 */
-	$("div.selector").css("opacity","1");
-
-
-};
-
-/*
  * getColumnHeaderElement
  * 
  * Returns the matching column header element given a column name
@@ -1114,10 +1070,10 @@ LG.showWizardProgress = function(show) {
 
 	if (show) {
 
-		$('div.wizardProgressMessage p').find("span.cancel").remove();
+//		$('div.wizardProgressMessage p').find("span.cancel").remove();
 		$('div.wizardProgressMessage').show();
 		$("body").addClass("wizard-progress");
-
+/*
 		try{
 			clearTimeout(LG.vars.progressTimeout);
 		}catch(e){log(e)};
@@ -1132,12 +1088,12 @@ LG.showWizardProgress = function(show) {
 					)
 			);
 		},10000);
-
+*/
 	} else {
-		$('div.wizardProgressMessage p').find("span.cancel").remove();
+//		$('div.wizardProgressMessage p').find("span.cancel").remove();
 		$('div.wizardProgressMessage').hide();
 		$("body").removeClass("wizard-progress");
-		clearTimeout(LG.vars.progressTimeout);
+//		clearTimeout(LG.vars.progressTimeout);
 	}
 
 };

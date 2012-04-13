@@ -86,7 +86,7 @@ var LinkedGov_generalOperations = {
 		findHighestFacetValue : function(colName, expression){
 
 			// log("findHighestFacetValue");
-			
+
 			var result = "";
 
 			/*
@@ -143,7 +143,7 @@ var LinkedGov_generalOperations = {
 									value = data.facets[i].choices[j].v.l;
 									highest = data.facets[i].choices[j].c;
 								}
-								
+
 								if(data.facets[i].choices[j].v.l == "int"){
 									intsPresent = true;
 								} else if(data.facets[i].choices[j].v.l == "float"){
@@ -180,7 +180,7 @@ var LinkedGov_generalOperations = {
 		computeColumnFacet : function(colName, expression, callback){
 
 			// log("computeColumnFacet");
-			
+
 			/*
 			 * Build a parameter object using the first of the column names.
 			 */
@@ -217,7 +217,7 @@ var LinkedGov_generalOperations = {
 			});	
 
 		},
-		
+
 		/*
 		 * setBlanksToNulls
 		 * 
@@ -296,24 +296,32 @@ var LinkedGov_generalOperations = {
 		 */
 		renameColumn : function(oldName, newName, callback) {
 
-			// Check if the new column name isn't present somewhere else
-			if(LG.ops.isUniqueColumnName(newName)){
-				LG.silentProcessCall({
-					type : "POST",
-					url : "/command/" + "core" + "/" + "rename-column",
-					data : {
-						oldColumnName : oldName,
-						newColumnName : newName
-					},
-					success : callback,
-					error : function() {
-						alert("A problem was encountered when renaming the column: \""
-								+ oldName + "\".");
-					}
-				});
+			if(newName.match(LG.panels.labellingPanel.illegalCharsRegex)==null){
+				// Check if the new column name isn't present somewhere else
+				if(LG.ops.isUniqueColumnName(newName)){
+					LG.silentProcessCall({
+						type : "POST",
+						url : "/command/" + "core" + "/" + "rename-column",
+						data : {
+							oldColumnName : oldName,
+							newColumnName : newName
+						},
+						success : callback,
+						error : function() {
+							alert("A problem was encountered when renaming the column: \""
+									+ oldName + "\".");
+						}
+					});
+				} else {
+					alert("Could not rename the \"" + oldName + "\" column to \"" + newName + "\" - a column already exists with that name.");
+					return false;
+				}
 			} else {
-				alert("Could not rename the \"" + oldName + "\" column to \"" + newName + "\" - a column already exists with that name.");
-				return false;
+				alert("Could not rename the \"" + oldName + "\" column to \"" + newName + "\" - because it contains an " +
+						"illegal character.<br /><br />" +
+						"Illegal characters:<br />" +
+						"<ul class='illegal-chars'><li>!</li><li>\"</li><li>#</li><li>$</li><li>&pound;</li><li>%</li><li>&amp;</li><li>'</li><li>(</li><li>)</li><li>*</li><li>+</li><li>,</li><li>/</li><li>.</li><li>:</li><li>;</li><li>&lt;</li><li>=</li><li>&gt;</li><li>?</li><li>@</li><li>[</li><li>]</li><li>^</li><li>`</li><li>{</li><li>|</li><li>}</li><li>~</li></ul>");
+				return false;				
 			}
 		},
 
@@ -455,7 +463,7 @@ var LinkedGov_generalOperations = {
 					$(columnHeaders[i]._td).addClass("hiddenCompletely");
 				}
 			}
-			
+
 			// Hide the column's cells
 			// +3 due to the "All" column
 			var columnIndex = Refine.columnNameToColumnIndex(colName) + 3;
@@ -481,7 +489,7 @@ var LinkedGov_generalOperations = {
 				if(!alreadyAdded){
 					array.push(colName);
 				}
-				
+
 				// Join the array again, so it's easier to save as a preference value
 				LG.vars.hiddenColumns = array.join(",");
 
@@ -494,25 +502,25 @@ var LinkedGov_generalOperations = {
 			// If we have hidden a new column, then we need to 
 			//if(!alreadyAdded){
 
-				var obj = {
-						"project" : theProject.id,
-						"name" : "LG.hiddenColumns",
-						"value" : encodeURIComponent(LG.vars.hiddenColumns)
-				};
+			var obj = {
+					"project" : theProject.id,
+					"name" : "LG.hiddenColumns",
+					"value" : encodeURIComponent(LG.vars.hiddenColumns)
+			};
 
-				$.ajax({
-					type : "POST",
-					url : "/command/" + "core" + "/" + "set-preference",
-					data : $.param(obj),
-					success : function(data) {
-						if(callback){
-							callback();
-						}
-					},
-					error : function() {
-
+			$.ajax({
+				type : "POST",
+				url : "/command/" + "core" + "/" + "set-preference",
+				data : $.param(obj),
+				success : function(data) {
+					if(callback){
+						callback();
 					}
-				});
+				},
+				error : function() {
+
+				}
+			});
 
 			//}
 
@@ -526,7 +534,7 @@ var LinkedGov_generalOperations = {
 		 */
 		unhideHiddenColumn : function(colName, callback) {
 
-			
+
 			// Remove the hiddenCompletely class from the column header
 			var columnHeaders = ui.dataTableView._columnHeaderUIs;
 			for(var i=0;i<columnHeaders.length;i++){
@@ -581,8 +589,8 @@ var LinkedGov_generalOperations = {
 			});
 
 		},
-		
-		
+
+
 		/*
 		 * eraseHiddenColumnData
 		 * 
@@ -661,7 +669,7 @@ var LinkedGov_generalOperations = {
 
 				// Loop through the column names
 				for(var i=0; i<cols.length; i++){
-					
+
 					// +3 to skip the "All" column cells
 					var columnIndex = Refine.columnNameToColumnIndex(cols[i]) + 3;
 
@@ -682,7 +690,7 @@ var LinkedGov_generalOperations = {
 						});
 					}
 				}	
-				
+
 				// Update the "Unhide "X" columns" button in the top right of the 
 				// screen
 				if(cols.length == "1" && cols[0].length == 0){
@@ -695,8 +703,8 @@ var LinkedGov_generalOperations = {
 
 			return false;
 		},
-		
-	
+
+
 		/*
 		 * Trims an object's key-value pair size.
 		 * 

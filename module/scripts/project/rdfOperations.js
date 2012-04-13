@@ -518,7 +518,7 @@ var LinkedGov_rdfOperations = {
 							if(typeof rootNodes[i].links[j].target.columnName != 'undefined' 
 								&& rootNodes[i].links[j].target.columnName == colName) {
 								// remove link from root node
-								log("Removing column RDF for: "+rootNodes[i].links[j].target.columnName);
+								//log("Removing column RDF for: "+rootNodes[i].links[j].target.columnName);
 								rootNodes[i].links.splice(j,1);
 								/*
 								 * Save the RDF.
@@ -547,7 +547,7 @@ var LinkedGov_rdfOperations = {
 										&& typeof rootNodes[i].links[j].target.links[k].target.columnName != "undefined" 
 											&& rootNodes[i].links[j].target.links[k].target.columnName == colName){
 
-										log("Removing column RDF for: "+rootNodes[i].links[j].target.links[k].target.columnName);
+										//log("Removing column RDF for: "+rootNodes[i].links[j].target.links[k].target.columnName);
 
 										rootNodes[i].links.splice(j,1);
 
@@ -558,7 +558,7 @@ var LinkedGov_rdfOperations = {
 											schema : JSON.stringify(schema)
 										}, {}, {
 											onDone : function() {
-												log("Finished");
+												//log("Finished");
 												if(callback){
 													callback();
 												}
@@ -575,69 +575,6 @@ var LinkedGov_rdfOperations = {
 					}
 				}
 			}
-		},
-
-
-		/*
-		 * removeColumnReconciliationRDF
-		 * 
-		 * Removes a columns reconciliation RDF data - which can 
-		 * be located using the "lgrecon:" property prefix.
-		 * 
-		 * The RDF data exists as a "link" to a "rootNode" with a curie that 
-		 * begins "lgrecon".
-		 */
-		removeColumnReconciliationRDF: function(columnName, callback) {
-
-				log("removeColumnReconciliationRDF");
-
-				var self = this;
-				
-				/*
-				 * Make sure the schema exists before attempting to rename 
-				 * the column names it contains.
-				 */
-				if (typeof theProject.overlayModels != 'undefined' && typeof theProject.overlayModels.rdfSchema != 'undefined') {
-
-					var schema = self.getRDFSchema();
-					var rootNode = {};
-					
-					// Locate the row root node - distinguishable by it's property
-					// "isRowNumberCell"
-					for(var i=0; i<schema.rootNodes.length; i++){
-						if(typeof schema.rootNodes[i].isRowNumberCell != 'undefined' && schema.rootNodes[i].isRowNumberCell){
-							for(var j=0; j<schema.rootNodes[i].links.length; j++){
-								if(schema.rootNodes[i].links[j].curie.indexOf("lgrecon") >= 0 
-										&& schema.rootNodes[i].links[j].target.columnName == columnName){
-									schema.rootNodes[i].links.splice(j,1);
-									log("Removed reconciliation data for "+columnName);
-									j = schema.rootNodes[i].links.length-1;
-								}
-							}
-							i = schema.rootNodes.length-1;
-						}
-					}
-					
-					/*
-					 * Save the RDF.
-					 */
-					Refine.postProcess("rdf-extension", "save-rdf-schema", {}, {
-						schema : JSON.stringify(schema)
-					}, {}, {
-						onDone : function() {
-							//log("RDF Schema saved");
-							if(callback){
-								callback();
-							}
-						}
-					});
-				} else {
-					if(callback){
-						callback();
-					}
-					return false;
-				}
-
 		},
 
 		/*
@@ -1089,7 +1026,7 @@ var LinkedGov_rdfOperations = {
 						 * 
 						 * Values can be detected as int, float, string, url
 						 */
-						var expression = 'grel:if(type(value)=="number",if(value%1==0,"int","float"),if(not(isError(value.toNumber())),if(isNull(value),null,if(value.toNumber()%1==0,"int","float")), if(value.startsWith("http://"),"url", if(isBlank(value),"date",if(type(value) == "date","date",if(isError(toDate(value).toString("HH:mm:ss")),"string","date")))))))';
+						var expression = 'grel:if(type(value)=="number",if(value%1==0,"int","float"),if(not(isError(value.toNumber())),if(isNull(value),null,if(value.toNumber()%1==0,"int","float")), if(value.startsWith("http://"),"url", if(isBlank(value),if(value.toDate().toString("yyyy-MM-dd")=="1970-01-01","time","date"),if(type(value) == "date","date",if(isError(toDate(value).toString("HH:mm:ss")),"string",if(value.toDate().toString("yyyy-MM-dd")=="1970-01-01","time","date"))))))))';
 						var type = LG.ops.findHighestFacetValue(columnHeaders[i]._column.name, expression);
 						
 						if(type == "string"){
@@ -1103,6 +1040,10 @@ var LinkedGov_rdfOperations = {
 						} else if(type == "date"){
 							o.target.valueType = "http://www.w3.org/2001/XMLSchema#date";
 							o.target.expression = "value.toDate().toString('yyyy-MM-dd')";
+							//parseValueTypesInColumn("date",columns[i].name);
+						} else if(type == "time"){
+							o.target.valueType = "http://www.w3.org/2001/XMLSchema#time";
+							o.target.expression = "value.toDate().toString('HH:mm:ss')";
 							//parseValueTypesInColumn("date",columns[i].name);
 						} else if(type == "url"){
 							o.target.nodeType = "cell-as-resource";
@@ -1184,7 +1125,7 @@ var LinkedGov_rdfOperations = {
 					}
 					lgUpdate(theOptions, lgCallback);
 				}
-
+				
 
 			},
 
