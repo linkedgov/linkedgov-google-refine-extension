@@ -721,7 +721,7 @@ var LinkedGov_rdfOperations = {
 			/*
 			 * Check which column headers don't have the "typed" class.
 			 */
-			init : function() {
+			initialise : function() {
 
 				var self = this;
 

@@ -262,11 +262,9 @@ var LinkedGov_LabellingPanel = {
 							$(colHeaders[i]._td).removeClass("bad").removeClass("maybe").removeClass("good").removeClass("great");
 						
 					}
-					/*$("td.column-header").each(function(){
-						$(this).removeClass("bad").removeClass("maybe").removeClass("good").removeClass("great");
-					});*/
+
 					// Begin finalising the RDF
-					LG.rdfOps.saveLabelsToRDF.init();
+					LG.rdfOps.saveLabelsToRDF.initialise();
 				}
 
 			});

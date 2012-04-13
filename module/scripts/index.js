@@ -54,10 +54,10 @@ var LG = {
 				this.setUpImportPanel();	
 			}
 
-			setTimeout(function(){
-				$("#header").show();
-				$("body").show();
-			},50);
+			//setTimeout(function(){
+			//	$("#header").show();
+			//	$("body").show();
+			//},50);
 
 		},
 
@@ -84,6 +84,9 @@ var LG = {
 			openProjectArea.bodyElmt.append(div);
 			openProjectArea.bodyElmt.css("visibility","visible");
 			openProjectArea.bodyElmt.show();
+			
+			$("#header").show();
+			$("body").show();
 
 		},
 
@@ -201,6 +204,9 @@ var LG = {
 			$("table tr td#linkedgov-metadata-form").html(DOM.loadHTML("linkedgov", "html/index/metadata-form.html"));
 			$("div#create-project-ui-source-selection").scrollTop(0);
 			$('tr#linkedgov-metadata-form').scrollTop(0);
+			
+			$("#header").show();
+			$("body").show();
 
 		},
 
