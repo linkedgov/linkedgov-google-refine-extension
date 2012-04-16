@@ -534,7 +534,6 @@ var LinkedGov_generalOperations = {
 		 */
 		unhideHiddenColumn : function(colName, callback) {
 
-
 			// Remove the hiddenCompletely class from the column header
 			var columnHeaders = ui.dataTableView._columnHeaderUIs;
 			for(var i=0;i<columnHeaders.length;i++){

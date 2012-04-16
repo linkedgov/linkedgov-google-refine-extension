@@ -1894,7 +1894,7 @@ var LinkedGov_WizardsPanel = {
 		 */
 		displayUnexpectedValuesPanel : function(colObjects, index, wizardBody, callback){
 
-			log("displayUnexpectedValuesPanel");
+			//log("displayUnexpectedValuesPanel");
 			var self = this;
 			
 			// Hide the Back button - the user needs to pick the buttons 

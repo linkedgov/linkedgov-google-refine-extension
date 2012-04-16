@@ -323,11 +323,8 @@ LG.loadOperationScripts = function(){
 
 			},100);
 
-
 		});
 	});
-
-
 };
 
 
@@ -361,7 +358,11 @@ LG.detectColumnsOfNumbers = function(callback){
 						&& typeof data.facets[j].choices != 'undefined') {
 					
 					// Check to see that the "number" value occurs at least 90% of the time
-					var safetyPoint = theProject.rowModel.total * 0.9;
+					// var safetyPoint = theProject.rowModel.total * 0.9;
+					// TODO: Revise the safety point - 100% is safe, if one value out of 1000 is wrong, 
+					// the column won't get converted.
+					// Check to see that the "number" value occurs at least 100% of the time
+					var safetyPoint = theProject.rowModel.total * 1;					
 					
 					for(var k=0; k<data.facets[j].choices.length ;k++){
 						if(data.facets[j].choices[k].v.l == "number" && data.facets[j].choices[k].c >= safetyPoint){
@@ -1058,7 +1059,7 @@ LG.injectWizardProgressOverlay = function() {
 	$("body").append(
 			"<div class='wizardProgressMessage'>" +
 			"<div class='overlay'><!-- --></div>" +
-			"<p>Updating...<img src='images/large-spinner.gif' /></p>" +
+			"<p><span>Updating...</span><img src='images/large-spinner.gif' /></p>" +
 	"</div>");
 };
 
@@ -1066,11 +1067,21 @@ LG.injectWizardProgressOverlay = function() {
  * showWizardProgress
  * 
  * Shows or hides the wizard progress message.
+ * 
+ * Commented out is a timeout that detects if 10 seconds has passed
+ * in which case it displays a "Something might have gone wrong" message.
+ * This incorrectly appears too often however, hence it being commented out.
  */
-LG.showWizardProgress = function(show) {
+LG.showWizardProgress = function(show, message) {
 
 	if (show) {
 
+		if(message){
+			$('div.wizardProgressMessage p span').html(message);
+		} else {
+			$('div.wizardProgressMessage p span').html("Updating...");			
+		}
+		
 //		$('div.wizardProgressMessage p').find("span.cancel").remove();
 		$('div.wizardProgressMessage').show();
 		$("body").addClass("wizard-progress");
@@ -1109,10 +1120,7 @@ LG.showWizardProgress = function(show) {
  * $(document).ready block at the end of this file.
  */
 LG.resizeAll_LG = function() {
-
-	/*
-	 * Call the old resizeAll function - found in the core project.js file.
-	 */
+	// Call the old resizeAll function - found in the core project.js file.
 	resizeAll();
 	// Rebuild the column overlays
 	LG.buildColumnOverlays();

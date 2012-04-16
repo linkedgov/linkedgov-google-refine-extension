@@ -186,7 +186,7 @@ var LinkedGov_rdfOperations = {
 						// Splice the root node from the rootNodes array
 						schema.rootNodes.splice(i,1);
 						// Break from the loops
-						return;
+						continue;
 					}
 				}
 			}
@@ -218,7 +218,7 @@ var LinkedGov_rdfOperations = {
 						// log("Found existing RDF prefixes, removing...");
 						schema.prefixes.splice(i, 1);
 						if(schema.prefixes.length == 0){
-							return;
+							continue;
 						} else {
 							i--;
 						}
@@ -722,7 +722,7 @@ var LinkedGov_rdfOperations = {
 			 * Check which column headers don't have the "typed" class.
 			 */
 			initialise : function() {
-
+				
 				var self = this;
 
 				self.vars.cols = LG.vars.labelsAndDescriptions.cols;
@@ -990,7 +990,7 @@ var LinkedGov_rdfOperations = {
 			saveGenericColumnRDF : function(rootNode, newRootNode, callback) {
 
 				var self = this;
-				LG.showWizardProgress(true);
+				LG.showWizardProgress(true, "Finalising RDF schema...");
 
 				/*
 				 * Loop through the column header elements of the data table and check for any 
@@ -1011,7 +1011,7 @@ var LinkedGov_rdfOperations = {
 								"curie" : self.vars.vocabs.lg.curie + ":" + camelizedColumnName,
 								"target" : {
 									"nodeType" : "cell-as-literal",
-									"expression" : "value",
+									"expression" : "value.trim()",
 									"columnName" : columnHeaders[i]._column.name,
 									"isRowNumberCell" : false
 								}
@@ -1047,7 +1047,6 @@ var LinkedGov_rdfOperations = {
 							//parseValueTypesInColumn("date",columns[i].name);
 						} else if(type == "url"){
 							o.target.nodeType = "cell-as-resource";
-							o.target.expression = "value";
 						}
 
 						rootNode.links.push(o);

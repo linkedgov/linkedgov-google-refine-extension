@@ -43,7 +43,6 @@ var LinkedGov_LabellingPanel = {
 			},function(){
 				$("ul.illegal-chars").slideUp();
 			});
-			
 
 			/*
 			 * Add focus, keyup and blur listeners to the row description
@@ -231,8 +230,8 @@ var LinkedGov_LabellingPanel = {
 			 * - Finalising the RDF (saving columns that haven't been involved in the wizards)
 			 * - Sending the data off to the server
 			 */
-			this.els.finishButton.click(function(){
-
+			$("div.action-bar a.finish").die("click").live("click", function(){
+				
 				/*
 				 * TODO: Make checks to see if the user has visited the other panels,
 				 * as they might head for the Finish button after just using the wizards.
@@ -248,6 +247,7 @@ var LinkedGov_LabellingPanel = {
 						error = true;
 					}
 				});
+				
 				// If any of the statuses are "bad" or "maybe"
 				if(error){
 					// Tell the user they cannot proceed until they have manually visited each input element.
