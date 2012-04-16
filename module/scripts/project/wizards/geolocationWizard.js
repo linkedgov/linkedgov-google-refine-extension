@@ -47,8 +47,8 @@ var LinkedGov_geolocationWizard = {
 			LG.showWizardProgress(true);
 
 			self.vars.elmts = elmts;
-
 			self.vars.colObjects = self.buildColumnObjects();
+			var abort = false;
 
 			if(self.vars.colObjects.length > 0){
 				/*
@@ -57,26 +57,33 @@ var LinkedGov_geolocationWizard = {
 				 */
 				while(self.vars.coordinateName.length < 3){
 					self.vars.coordinateName = window.prompt("Enter a name for these coordniates, e.g. \"Building coordinates\" :","");
-					if(self.vars.coordinateName.length < 3){
+					if(self.vars.coordinateName == null){
+						abort = true;
+						self.vars.coordinateName = "abort";
+					} else if(self.vars.coordinateName.length < 3){
 						alert("The name must be 3 letters or longer, try again...");
-					}
+					}  
 				}
 
-				/*
-				 * Convert the lat/long columns to numbers before operating on them
-				 */
-				self.convertColumnsToNumber(0,function(){
+				if(!abort){
 					/*
-					 * We can check the columns contain floats or ints depending on 
-					 * what the user has specified.
+					 * Convert the lat/long columns to numbers before operating on them
 					 */
-					var colObjects = self.prepareColumnObjectsForValueTest();
-					LG.panels.wizardsPanel.checkForUnexpectedValues(colObjects, self.vars.elmts.geolocationBody, function(){
-						LG.rdfOps.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
-							self.saveRDF(rootNode, foundRootNode);
+					self.convertColumnsToNumber(0,function(){
+						/*
+						 * We can check the columns contain floats or ints depending on 
+						 * what the user has specified.
+						 */
+						var colObjects = self.prepareColumnObjectsForValueTest();
+						LG.panels.wizardsPanel.checkForUnexpectedValues(colObjects, self.vars.elmts.geolocationBody, function(){
+							LG.rdfOps.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
+								self.saveRDF(rootNode, foundRootNode);
+							});
 						});
 					});
-				});
+				} else {
+					LG.showWizardProgress(false);
+				}
 
 			} else {
 				self.onFail("One or more columns need to be selected in order to proceed with the wizard.");				
@@ -361,7 +368,7 @@ var LinkedGov_geolocationWizard = {
 		},
 
 		makeCombinedLatLongRDF : function(colName){
-			
+
 			var self = this;
 
 			var lat = {
@@ -391,13 +398,13 @@ var LinkedGov_geolocationWizard = {
 			var latlong = [];
 			latlong.push(lat);
 			latlong.push(long);
-			
+
 			return latlong;
 
 		},
 
 		makeCombinedEastingNorthingRDF : function(colName){
-			
+
 			var self = this;
 
 			var easting = {
@@ -423,11 +430,11 @@ var LinkedGov_geolocationWizard = {
 						"isRowNumberCell" : false
 					}
 			};
-			
+
 			var eastingnorthing = [];
 			eastingnorthing.push(easting);
 			eastingnorthing.push(northing);
-			
+
 			return eastingnorthing;
 		},
 

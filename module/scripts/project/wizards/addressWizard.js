@@ -87,6 +87,7 @@ var LinkedGov_addressWizard = {
 			 * a post code.}
 			 */
 			self.vars.colObjects = self.buildColumnObjects();
+			var abort = false;
 
 			if (self.vars.colObjects.length > 0) {
 
@@ -96,34 +97,62 @@ var LinkedGov_addressWizard = {
 				 */
 				while(self.vars.addressName.length < 3){
 					self.vars.addressName = window.prompt("Enter a name for this location, e.g. \"Home address\" :","");
-					if(self.vars.addressName.length < 3){
+					if(self.vars.addressName == null){
+						abort = true;
+						self.vars.addressName = "abort";
+					} else if(self.vars.addressName.length < 3){
 						alert("The name must be 3 letters or longer, try again...");
 					}
 				}
 
-				LG.showWizardProgress(true);
+				if(!abort){
 
-				/*
-				 * A marker for recursing through the columns.
-				 */
-				var index = 0;
-
-				/*
-				 * Perform the postcode regex match on any columns that contain postcodes
-				 */
-				self.validatePostCodeColumns(index, function() {
+					LG.showWizardProgress(true);
 
 					/*
-					 * We can check that a column contains postcodes if the user 
-					 * has specified it does
+					 * A marker for recursing through the columns.
 					 */
-					if(self.vars.postcodePresent){
+					var index = 0;
 
-						// If one of the columns contains a postcode, 
-						// we can run an "unexpected values" test on it.
-						var colObjects = self.prepareColumnObjectsForValueTest();
-						LG.panels.wizardsPanel.checkForUnexpectedValues(colObjects, self.vars.elmts.addressBody, function(){
+					/*
+					 * Perform the postcode regex match on any columns that contain postcodes
+					 */
+					self.validatePostCodeColumns(index, function() {
 
+						/*
+						 * We can check that a column contains postcodes if the user 
+						 * has specified it does
+						 */
+						if(self.vars.postcodePresent){
+
+							// If one of the columns contains a postcode, 
+							// we can run an "unexpected values" test on it.
+							var colObjects = self.prepareColumnObjectsForValueTest();
+							LG.panels.wizardsPanel.checkForUnexpectedValues(colObjects, self.vars.elmts.addressBody, function(){
+
+								/*
+								 * Build the address fragments RDF
+								 */
+								self.makeAddressFragments(function(){
+									/*
+									 * Create a new column containing the parts of the address
+									 * the user specified and collapse the other columns.
+									 */
+									self.createAddressColumn(function(){
+										/*
+										 * Save the RDF
+										 */
+										LG.rdfOps.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
+											self.saveRDF(rootNode, foundRootNode);
+										});
+
+									})
+								});
+							});
+						} else {
+
+							// If there are no postcodes present then there isn't 
+							// really any validation tests when can run
 							/*
 							 * Build the address fragments RDF
 							 */
@@ -142,31 +171,12 @@ var LinkedGov_addressWizard = {
 
 								})
 							});
-						});
-					} else {
+						}
+					});
 
-						// If there are no postcodes present then there isn't 
-						// really any validation tests when can run
-						/*
-						 * Build the address fragments RDF
-						 */
-						self.makeAddressFragments(function(){
-							/*
-							 * Create a new column containing the parts of the address
-							 * the user specified and collapse the other columns.
-							 */
-							self.createAddressColumn(function(){
-								/*
-								 * Save the RDF
-								 */
-								LG.rdfOps.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
-									self.saveRDF(rootNode, foundRootNode);
-								});
-
-							})
-						});
-					}
-				});
+				} else {
+					LG.showWizardProgress(false);
+				}
 
 			} else {
 				alert("You need to specify one or more columns as having a part of an address in.")
@@ -478,7 +488,7 @@ var LinkedGov_addressWizard = {
 			var colObjects = self.vars.colObjects;
 
 			log(colObjects[0].part);
-			
+
 			if(colObjects.length == 1 && colObjects[0].part == "mixed"){
 				// A new column doesn't need to be created if only a mixed 
 				// address column is specified.
