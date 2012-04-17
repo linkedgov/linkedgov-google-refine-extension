@@ -1135,11 +1135,14 @@ LG.getColumnHeaderElement = function(colName){
  * Appends the wizard to the project page body,
  */
 LG.injectWizardProgressOverlay = function() {
+	
 	$("body").append(
 			"<div class='wizardProgressMessage'>" +
 			"<div class='overlay'><!-- --></div>" +
 			"<p><span>Updating...</span><img src='images/large-spinner.gif' /></p>" +
 	"</div>");
+	
+	$('div.wizardProgressMessage p').css("top",(($(window).height()-92)/2)-$("div.wizardProgressMessage p").height()+"px");
 };
 
 /*
@@ -1162,6 +1165,7 @@ LG.showWizardProgress = function(show, message) {
 		}
 		
 //		$('div.wizardProgressMessage p').find("span.cancel").remove();
+		$('div.wizardProgressMessage p').css("top",(($(window).height()-92)/2)-$("div.wizardProgressMessage p").height()+"px");
 		$('div.wizardProgressMessage').show();
 		$("body").addClass("wizard-progress");
 /*

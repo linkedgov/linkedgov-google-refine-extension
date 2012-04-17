@@ -1991,7 +1991,6 @@ body.lg div.wizardProgressMessage p
     position: relative;
     text-align: center;
     text-shadow: 1px 1px #CCCCCC;
-    top: 40%;
     width: 225px;
 }
 body.lg div.wizardProgressMessage p span.cancel {
