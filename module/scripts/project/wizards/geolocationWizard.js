@@ -44,46 +44,51 @@ var LinkedGov_geolocationWizard = {
 				self.vars.historyRestoreID = 0;
 			}
 
-			LG.showWizardProgress(true);
 
 			self.vars.elmts = elmts;
 			self.vars.colObjects = self.buildColumnObjects();
-			var abort = false;
 
 			if(self.vars.colObjects.length > 0){
 				/*
 				 * Ask the user to enter a name for the location (as a form 
 				 * of identification if there is more than one location per row).
 				 */
-				while(self.vars.coordinateName.length < 3){
-					self.vars.coordinateName = window.prompt("Enter a name for these coordniates, e.g. \"Building coordinates\" :","");
-					if(self.vars.coordinateName == null){
-						abort = true;
-						self.vars.coordinateName = "abort";
-					} else if(self.vars.coordinateName.length < 3){
-						alert("The name must be 3 letters or longer, try again...");
-					}  
-				}
+				self.vars.coordinateName = "";
+				//while(self.vars.coordinateName.length < 3){
 
-				if(!abort){
-					/*
-					 * Convert the lat/long columns to numbers before operating on them
-					 */
-					self.convertColumnsToNumber(0,function(){
-						/*
-						 * We can check the columns contain floats or ints depending on 
-						 * what the user has specified.
-						 */
-						var colObjects = self.prepareColumnObjectsForValueTest();
-						LG.panels.wizardsPanel.checkForUnexpectedValues(colObjects, self.vars.elmts.geolocationBody, function(){
-							LG.rdfOps.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
-								self.saveRDF(rootNode, foundRootNode);
+				LG.prompt({
+					text:"Enter a name for these coordniates, e.g. \"Building coordinates\"",
+					value:"",
+					ok:function(value){
+						if(typeof value == 'undefined' || value.length < 3){
+							LG.alert("The name must be at least 3 characters long.");
+						} else {
+							DialogSystem.dismissAll();
+							self.vars.coordinateName = value;
+
+							LG.showWizardProgress(true);
+
+							// Convert the lat/long columns to numbers before operating on them
+							self.convertColumnsToNumber(0,function(){
+
+								// We can check the columns contain floats or ints depending on 
+								// what the user has specified.
+								var colObjects = self.prepareColumnObjectsForValueTest();
+								LG.panels.wizardsPanel.checkForUnexpectedValues(colObjects, self.vars.elmts.geolocationBody, function(){
+									LG.rdfOps.checkSchema(self.vars.vocabs, function(rootNode, foundRootNode) {
+										self.saveRDF(rootNode, foundRootNode);
+									});
+								});
 							});
-						});
-					});
-				} else {
-					LG.showWizardProgress(false);
-				}
+						}
+					},
+					cancel: function(){
+						DialogSystem.dismissAll();
+					}
+				});
+
+
+				//}
 
 			} else {
 				self.onFail("One or more columns need to be selected in order to proceed with the wizard.");				
@@ -488,7 +493,7 @@ var LinkedGov_geolocationWizard = {
 		 */
 		onFail : function(message) {
 			var self = this;
-			alert("Geolocation wizard failed. " + message);
+			LG.alert("Geolocation wizard failed. " + message);
 			self.vars.coordinateName = "";
 			LG.panels.wizardsPanel.resetWizard(self.vars.elmts.geolocationBody);
 			LG.showWizardProgress(false);

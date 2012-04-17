@@ -69,20 +69,6 @@ LG.initialise = function() {
 
 };
 
-onerror = function(o) {
-	LG.handleJSError(o);
-};
-
-alert = function(s) {
-	var dialog = LG.createDialog({
-		header:"Oops!",
-		body:$("<p />").append(s),
-		ok:true,
-		className:"alert"
-	});
-	DialogSystem.showDialog(dialog);
-};
-
 /*
  * A home for the panels
  */
@@ -410,7 +396,7 @@ LG.transformColumnsToNumber = function(columnNames, callback){
 				}
 			},
 			error:function(){
-				alert("A problem was encountered when performing a text-transform on the column: \"" + columnNames[i] + "\".");
+				LG.alert("A problem was encountered when performing a text-transform on the column: \"" + columnNames[i] + "\".");
 			}
 		})		
 	}
@@ -586,49 +572,6 @@ LG.switchMode = function(mode){
 };
 
 /*
- * showFinishMessage
- * 
- * Displays the thank you message to users once they've sent their
- * data off to the LG database.
- */
-LG.showFinishMessage = function(){
-
-	var header = "Thanks!";
-	// Construct the HTML for the dialog body
-	var body = 
-		"<p>Well done! This data is much better than it was.</p>" + 
-		"<p>People and machines will be able to understand more from it and find it easier to access it regardless of " +
-		"their location in the world.</p>" + 
-		"<p>This data is now stored inside LinkedGov's database - and is available through the <a href='#'>Question site</a> and " +
-		"the <a href='#'>developer's search</a></p>" +
-		"<h3>What next?</h3>" +
-		"<p>If there are any errors, unexpected values - or work that still " +
-		"needs doing within the data - these will be used to create tasks for others " +
-		"to complete using their expertise and judgement.</p>" +
-		"<p>Depending on the tasks that have been completed, the data is now potentially linkable " +
-		"to other datasets and as a result - much more accessible to users searching for those particular data " +
-		"types.</p>" +
-		"<p><a href='#'>Bookmark</a> | <a href='#'>Tweet</a> | <a href='#'>Email</a></p>";
-
-	// Create some buttons
-	var footer = $('<button></button>').addClass('button').html("&nbsp;&nbsp;OK&nbsp;&nbsp;").click(function() {
-		DialogSystem.dismissAll();	
-	});
-
-	// Create the dialog itself
-	var dialog = LG.createDialog({
-		header:header,
-		body:body,
-		footer:footer,
-		className:"finish-message"
-	});
-
-	// Display the dialog
-	DialogSystem.showDialog(dialog);
-
-};
-
-/*
  * createDialog
  * 
  * Takes an object containing:
@@ -679,6 +622,142 @@ LG.createDialog = function(o){
 	$(dialog).width(500);
 
 	return dialog;
+
+};
+
+/*
+ * A dialog box with a single input field.
+ * 
+ * Takes an object containing:
+ * 
+ * o.text = The message
+ * o.value = A value to populate the input field with
+ * o.ok = The OK button callback that's given the input field value
+ * o.cancel = The Cancel button callback
+ */
+LG.prompt = function(o){
+	
+	var dialog = LG.createDialog({
+		header:"We need something from you!",
+		body:$("<p />").append($("<p />").text(o.text)).append($("<input type='text' />").addClass("prompt").val(o.value)),
+		ok:function(){
+			o.ok($("div.dialog-frame div.prompt").find("input.prompt").val());
+		},
+		cancel:function(){
+			o.cancel();
+		},
+		className:"prompt"
+	});
+	DialogSystem.showDialog(dialog);
+	$("div.prompt input.prompt").focus();
+	$("div.dialog-container").center();
+};
+
+/*
+ * A dialog that displays a text message 
+ * to the user.
+ */
+LG.alert = function(s) {
+	var dialog = LG.createDialog({
+		header:"Oops!",
+		body:$("<p />").append(s),
+		ok:true,
+		className:"alert"
+	});
+	DialogSystem.showDialog(dialog);
+	$("div.dialog-container").center();
+};
+
+/*
+ * handleJSError
+ * 
+ * In case of a JavaScript error, we need to return the page to a state 
+ * where the user can progress regardless of their point in their journey.
+ * - In a wizard
+ * - On the linking panel
+ * - On the labelling panel
+ * 
+ * TODO: Use the undo/redo history to rollback?
+ */
+LG.handleJSError = function(message) {
+
+	var dialog = LG.createDialog({
+		header:"Oops!",
+		body:"<p>Something went wrong!</p>" +
+		"<p class='error'>"+message+"</p>",
+		buttons:{
+			"OK":function(){
+				log("Should log this error or send feedback...");
+				DialogSystem.dismissAll();
+			},
+			"Refresh": function(){
+				window.location = window.location;
+			}
+		},
+		className:"jsError"
+	});
+
+	DialogSystem.showDialog(dialog);
+	$("div.dialog-container").center();
+	
+	// Make sure the "Wizard in progress" message is hidden
+	LG.showWizardProgress(false);
+	// Find the active tab that's open
+	if($("ul.lg-tabs li.active").length > 0){
+		var panelName = $("div#"+$("ul.lg-tabs li.active").find("a").attr("rel")).attr("bind");
+		// Make sure the body of the tab is displayed
+		LG.panels[panelName].displayPanel();
+	}
+};
+
+/*
+ * An override for the browsers onError() function.
+ * JS errors will now display inside a dialog box.
+ */
+onerror = function(o) {
+	LG.handleJSError(o);
+};
+
+/*
+ * showFinishMessage
+ * 
+ * Displays the thank you message to users once they've sent their
+ * data off to the LG database.
+ */
+LG.showFinishMessage = function(){
+
+	var header = "Thanks!";
+	// Construct the HTML for the dialog body
+	var body = 
+		"<p>Well done! This data is much better than it was.</p>" + 
+		"<p>People and machines will be able to understand more from it and find it easier to access it regardless of " +
+		"their location in the world.</p>" + 
+		"<p>This data is now stored inside LinkedGov's database - and is available through the <a href='#'>Question site</a> and " +
+		"the <a href='#'>developer's search</a></p>" +
+		"<h3>What next?</h3>" +
+		"<p>If there are any errors, unexpected values - or work that still " +
+		"needs doing within the data - these will be used to create tasks for others " +
+		"to complete using their expertise and judgement.</p>" +
+		"<p>Depending on the tasks that have been completed, the data is now potentially linkable " +
+		"to other datasets and as a result - much more accessible to users searching for those particular data " +
+		"types.</p>" +
+		"<p><a href='#'>Bookmark</a> | <a href='#'>Tweet</a> | <a href='#'>Email</a></p>";
+
+	// Create some buttons
+	var footer = $('<button></button>').addClass('button').html("&nbsp;&nbsp;OK&nbsp;&nbsp;").click(function() {
+		DialogSystem.dismissAll();	
+	});
+
+	// Create the dialog itself
+	var dialog = LG.createDialog({
+		header:header,
+		body:body,
+		footer:footer,
+		className:"finish-message"
+	});
+
+	// Display the dialog
+	DialogSystem.showDialog(dialog);
 
 };
 
@@ -829,7 +908,7 @@ LG.setupQuickTool = function() {
 					});
 				});
 			} else if(name.trim().length > 0){
-				alert("Column headers must be at least 3 characters long.");
+				LG.alert("Column headers must be at least 3 characters long.");
 			}
 			break;
 		case "remove":
@@ -1127,47 +1206,6 @@ LG.resizeAll_LG = function() {
 };
 
 /*
- * handleJSError
- * 
- * In case of a JavaScript error, we need to return the page to a state 
- * where the user can progress regardless of their point in their journey.
- * - In a wizard
- * - On the linking panel
- * - On the labelling panel
- * 
- * TODO: Use the undo/redo history to rollback?
- */
-LG.handleJSError = function(message) {
-
-	var dialog = LG.createDialog({
-		header:"Oops!",
-		body:"<p>Something went wrong!</p>" +
-		"<p class='error'>"+message+"</p>",
-		buttons:{
-			"OK":function(){
-				log("Should log this error or send feedback...");
-				DialogSystem.dismissAll();
-			},
-			"Refresh": function(){
-				window.location = window.location;
-			}
-		},
-		className:"jsError"
-	});
-
-	DialogSystem.showDialog(dialog);
-
-	// Make sure the "Wizard in progress" message is hidden
-	LG.showWizardProgress(false);
-	// Find the active tab that's open
-	if($("ul.lg-tabs li.active").length > 0){
-		var panelName = $("div#"+$("ul.lg-tabs li.active").find("a").attr("rel")).attr("bind");
-		// Make sure the body of the tab is displayed
-		LG.panels[panelName].displayPanel();
-	}
-};
-
-/*
  * addReconciliationService
  * 
  * Adds a reconciliation service to Refine's ReconciliationManager or the RDF extension's 
@@ -1462,6 +1500,18 @@ function sortArrayOfObjectsByKey(object, key){
  */
 function log(str) {
 	window.console && console.log && LG.vars.debug && console.log(str);
+}
+
+/*
+ * Center an element on the page
+ */
+jQuery.fn.center = function () {
+    this.css("position","absolute");
+    this.css("top", (($(window).height() - this.outerHeight()) / 2) + 
+                                                $(window).scrollTop() + "px");
+    this.css("left", (($(window).width() - this.outerWidth()) / 2) + 
+                                                $(window).scrollLeft() + "px");
+    return this;
 }
 
 /*

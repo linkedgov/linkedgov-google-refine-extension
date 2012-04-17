@@ -70,10 +70,10 @@ var LinkedGov_measurementsWizard = {
 					});
 
 				} else {
-					alert("You need to search for a measurement type using the text box.");
+					LG.alert("You need to search for a measurement type using the text box.");
 				}
 			} else {
-				alert("You need to select a column and specify what type of measurement it contains.");
+				LG.alert("You need to select a column and specify what type of measurement it contains.");
 			}
 		},
 
@@ -235,7 +235,7 @@ var LinkedGov_measurementsWizard = {
 		 */
 		onFail : function(message) {
 			var self = this;
-			alert("Measurments wizard failed.\n\n" + message);
+			LG.alert("Measurments wizard failed.\n\n" + message);
 			LG.panels.wizardsPanel.resetWizard(self.vars.elmts.measurementsBody);
 			LG.showWizardProgress(false);
 		},

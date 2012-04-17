@@ -75,7 +75,7 @@ var LinkedGov_rowsToColumnsWizard = {
 
 			if ($(elmts.rowsToColumnsColumns).children("li").length < 1
 					|| $(elmts.rowsToColumnsColumns2).children("li").length < 1) {
-				alert("You must select a single column containing multiple types and another "
+				LG.alert("You must select a single column containing multiple types and another "
 						+ "column containing their corresponding values.\n\nSelecting any columns "
 						+ "to exclude from the operation is optional.");
 			} else {
@@ -818,7 +818,7 @@ var LinkedGov_rowsToColumnsWizard = {
 		onFail : function(message) {
 			var self = this;
 			LG.ops.setBlanksToNulls(false, theProject.columnModel.columns, 0, function() {
-				alert("Rows to columns wizard failed. \n\n" + message);
+				LG.alert("Rows to columns wizard failed. \n\n" + message);
 				LG.panels.wizardsPanel.resetWizard(self.vars.elmts.rowsToColumnsBody);
 				LG.showWizardProgress(false);
 			});

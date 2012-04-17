@@ -26,7 +26,7 @@ var LinkedGov_rdfOperations = {
 				baseURI: newBaseUri
 			}),function(data){
 				if (data.code === "error"){
-					alert('Error saving base URI:' + data.message);
+					LG.alert('Error saving base URI:' + data.message);
 				}
 			},"json");
 
@@ -657,7 +657,7 @@ var LinkedGov_rdfOperations = {
 							&& typeof val.target != 'undefined'){
 						// This is a column mapping
 						// Check for the camlized version of the column names in the CURIE & URI properties
-						var camelizedOldColumnName = LG.camelize(self.vars.oldName);
+						var camelizedOldColumnName = LG.urlifyColumnName(self.vars.oldName);
 						
 						if(val.curie.split(":")[1] == camelizedOldColumnName){
 							// This CURIE needs to be changed

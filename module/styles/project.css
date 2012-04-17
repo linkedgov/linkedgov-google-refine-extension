@@ -2161,7 +2161,7 @@ body.lg div.dialog-container {
 }
 body.wizard-progress div.dialog-frame, body.wizard-progress div.dialog-overlay
 {
-    display: none !important;
+    /*display: none !important;*/
 }
 body.lg div.dialog-frame div.jsError p {
     margin-bottom:10px;
@@ -2192,6 +2192,10 @@ body.lg div.dialog-frame div.alert ul.illegal-chars li {
     margin: 1.9px;
     text-align: center;
     width: 18px;
+}
+body.lg div.dialog-frame div.prompt input.prompt {
+	margin-top:10px;
+	width:99%;
 }
 div#beta {
 position: fixed;

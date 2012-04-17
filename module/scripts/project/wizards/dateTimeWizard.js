@@ -74,7 +74,7 @@ var LinkedGov_dateTimeWizard = {
 					} else {
 						var checkedInputs = $(this).find("input:checked");
 						if (checkedInputs.length < 1) {
-							alert("You haven't specified what date or time part is contained in the \""
+							LG.alert("You haven't specified what date or time part is contained in the \""
 									+ $(this).find("span.col").html() + "\" column");
 							error = true;
 						}
@@ -156,7 +156,7 @@ var LinkedGov_dateTimeWizard = {
 				}
 
 			} else {
-				alert("You need to select one or more columns that contain a date, time or both.");
+				LG.alert("You need to select one or more columns that contain a date, time or both.");
 			}
 
 		},
@@ -344,7 +344,7 @@ var LinkedGov_dateTimeWizard = {
 							}
 						}
 					} else if(i==data.facets.length-1) {
-						alert("checkNumberOfMonthBeforeDayValues() - Failed to compute facet for column \""+columnName+"\"");
+						LG.alert("checkNumberOfMonthBeforeDayValues() - Failed to compute facet for column \""+columnName+"\"");
 						return 0;
 					}
 				}
@@ -382,7 +382,7 @@ var LinkedGov_dateTimeWizard = {
 							}
 						}
 					} else if(i==data.facets.length-1) {
-						alert("checkNumberOfDayBeforeMonthValues() - Failed to compute facet for column \""+columnName+"\"");
+						LG.alert("checkNumberOfDayBeforeMonthValues() - Failed to compute facet for column \""+columnName+"\"");
 					}
 				}
 				
@@ -677,7 +677,7 @@ var LinkedGov_dateTimeWizard = {
 				});
 			} catch (e) {
 				log(e);
-				alert("A column already exists with the name "
+				LG.alert("A column already exists with the name "
 						+ newName
 						+ ", \"(LG)\" has been appended to the column name for now.");
 				Refine.postCoreProcess("add-column", {
@@ -821,7 +821,7 @@ var LinkedGov_dateTimeWizard = {
 					}
 
 				} else {
-					alert("Sorry, the date combination you specified for the column: \""+colObjects[i].name+"\" cannot be processed.");
+					LG.alert("Sorry, the date combination you specified for the column: \""+colObjects[i].name+"\" cannot be processed.");
 				}
 
 			} 
@@ -1355,7 +1355,7 @@ var LinkedGov_dateTimeWizard = {
 		 */
 		onFail : function(message) {
 			var self = this;
-			alert("Date and time wizard failed.\n\n" + message);
+			LG.alert("Date and time wizard failed.\n\n" + message);
 			LG.panels.wizardsPanel.resetWizard(self.vars.elmts.dateTimeBody);
 			LG.showWizardProgress(false);
 		},

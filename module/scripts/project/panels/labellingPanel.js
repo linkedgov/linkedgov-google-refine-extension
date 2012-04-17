@@ -251,7 +251,7 @@ var LinkedGov_LabellingPanel = {
 				// If any of the statuses are "bad" or "maybe"
 				if(error){
 					// Tell the user they cannot proceed until they have manually visited each input element.
-					alert("Some labels still need to be checked, please make sure you have checked the row description and all of the columns." +
+					LG.alert("Some labels still need to be checked, please make sure you have checked the row description and all of the columns." +
 							"\n\n" +
 							"You do not need to change every value, but we need to make sure you have checked them, so you you are required to visit " +
 					"each label input as a precaution. The status of each input will then change depending on it's value.");

@@ -56,58 +56,111 @@ var LinkedGov_columnsToRowsWizard = {
 			}catch(e){
 				self.vars.historyRestoreID = 0;
 			}
-			
+
 			self.vars.elmts = elmts;
+			var abort = false;
 
 			if ($(elmts.columnsToRowsColumns).children("li").length > 0) {
-
-				//log("Starting columnsToRowsWizard");
-
-				LG.showWizardProgress(true);
-
-				/*
-				 * Recalculate which columns are going to be transposed, taking into
-				 * account any columns the user wants to skip.
-				 */
-				self.checkSkippedColumns();
-				
-				/*
-				 * Remove all RDF relating to the columns involved in the rotation 
-				 * operation as this will break their mappings.
-				 */
-				$(elmts.columnsToRowsColumns).children("li").each(function(){
-					//log("Removing RDF for: "+$(this).html());
-					LG.rdfOps.removeColumnInRDF($(this).data("colName"));
-				});
-				
-				/*
-				 * Set any blank cells to null to protect them from being filled
-				 * down into after the transpose operation (which produces blank
-				 * cells).
-				 * 
-				 * Passing self.transpose() as a parameter calls it immediately for
-				 * some reason.
-				 */
-				LG.ops.setBlanksToNulls(true,theProject.columnModel.columns,0,function() {
-							/*
-							 * If a gap has been detected, reorder the
-							 * columns first.
-							 */
-							if (self.vars.gapInRange) {
-								self.reorderColumns(Refine.columnNameToColumnIndex(self.vars.startColName),function() {
-											self.transposeColumns();
-										});
-							} else {
-								self.transposeColumns();
-							}
-						});
-
+				self.askUserForFirstColumnName();
 			} else {
-				alert("You need to select a column to start from and a column to end at.\n\n"
+				LG.alert("You need to select a column to start from and a column to end at.\n\n"
 						+ "If you need to unselect any column inbetween those columns, you can remove "
 						+ "them from the list by clicking the red cross to the right of the column name.")
 			}
+		},
+		
+		
+		askUserForFirstColumnName:function(){
+			
+			var self = this;
+			
+			// Ask the user to enter the name of the first new column
+			LG.prompt({
+				text:"Enter a name for the new column that summarises these columns",
+				value:"",
+				ok:function(value){
+					if(typeof value == 'undefined' || value.length < 3){
+						LG.alert("The name must be at least 3 characters long.");
+						LG.showWizardProgress(false);
+					} else {
+						DialogSystem.dismissAll();
+						self.vars.newColName = value;
+						self.askUserForSecondColumnName();
+					}
+				},
+				cancel: function(){
+					DialogSystem.dismissAll();
+					LG.showWizardProgress(false);
+				}
+			});
+			
+		},
+		
+		askUserForSecondColumnName:function(){
+			
+			var self = this;
+			
+			// Ask the user to enter the name of the second new column
+			LG.prompt({
+				text:"Now enter a name for the new column that will contain it's values",
+				value:"",
+				ok:function(value){
+					if(typeof value == 'undefined' || value.length < 3){
+						LG.alert("The name must be at least 3 characters long.");
+						LG.showWizardProgress(false);
+					} else {
+						DialogSystem.dismissAll();
+						self.vars.valColName = value;
+						self.beginWizard();
+					}
+				},
+				cancel: function(){
+					DialogSystem.dismissAll();
+					LG.showWizardProgress(false);
+				}
+			});
+			
+		},
+		
+		beginWizard:function(){
+			
+			var self = this;
+			
+			// Recalculate which columns are going to be transposed, taking into
+			// account any columns the user wants to skip.
+			self.checkSkippedColumns();
+			
+			// Remove all RDF relating to the columns involved in the rotation 
+			// operation as this will break their mappings.
+			
+			// TODO: This might need to be chained
+			self.vars.elmts.columnsToRowsColumns.children("li").each(function(){
+				//log("Removing RDF for: "+$(this).html());
+				LG.rdfOps.removeColumnInRDF($(this).data("colName"));
+			});
 
+			/*
+			 * Set any blank cells to null to protect them from being filled
+			 * down into after the transpose operation (which produces blank
+			 * cells).
+			 * 
+			 * Passing self.transpose() as a parameter calls it immediately for
+			 * some reason.
+			 */
+			LG.ops.setBlanksToNulls(true,theProject.columnModel.columns,0,function() {
+				/*
+				 * If a gap has been detected, reorder the
+				 * columns first.
+				 */
+				if (self.vars.gapInRange) {
+					self.reorderColumns(Refine.columnNameToColumnIndex(self.vars.startColName),function() {
+						self.transposeColumns();
+					});
+				} else {
+					self.transposeColumns();
+				}
+			});
+			
 		},
 
 		/*
@@ -119,9 +172,6 @@ var LinkedGov_columnsToRowsWizard = {
 			var self = this;
 			var elmts = self.vars.elmts;
 
-			//log("Before:");
-			//log($(elmts.columnsToRowsColumns).children("li"));
-
 			/*
 			 * Loop through the user's selected columns and trim any columns that
 			 * have been marked as "skip" from the beginning and end.
@@ -131,25 +181,20 @@ var LinkedGov_columnsToRowsWizard = {
 				 * If a selected column has been removed, but was at the beginning,
 				 * remove it from the array of columns.
 				 */
-				if ($($(elmts.columnsToRowsColumns).children("li")[i]).hasClass(
-				"skip")
-				&& i == 0) {
+				if ($($(elmts.columnsToRowsColumns).children("li")[i]).hasClass("skip") && i == 0) {
 					$($(elmts.columnsToRowsColumns).children("li")[i]).remove();
 					i--;
 					/*
 					 * If a selected column has been removed, but was at the end,
 					 * remove it from the array of columns.
 					 */
-				} else if ($($(elmts.columnsToRowsColumns).children("li")[i])
-						.hasClass("skip")
+				} else if ($($(elmts.columnsToRowsColumns).children("li")[i]).hasClass("skip") 
 						&& i == $(elmts.columnsToRowsColumns).children("li").length - 1) {
 					$($(elmts.columnsToRowsColumns).children("li")[i]).remove();
 					i--;
 					i--;
 				}
 			}
-			//log("After:");
-			//log($(elmts.columnsToRowsColumns).children("li"));
 
 			/*
 			 * Once trimmed, the array should only contain columns to skip after and
@@ -163,15 +208,11 @@ var LinkedGov_columnsToRowsWizard = {
 				}
 			}
 
-			log("colsToSkip:");
-			log(self.vars.colsToSkip);
-
 			/*
 			 * Recalculate how many columns to transpose.
 			 */
 			self.vars.startColName = $(elmts.columnsToRowsColumns).children("li").eq(0).data("colName");
 			self.vars.colCount = $(elmts.columnsToRowsColumns).children("li").length  - self.vars.colsToSkip.length;
-			//self.vars.newColName = window.prompt("New column name:", "");
 		},
 
 		/*
@@ -211,7 +252,7 @@ var LinkedGov_columnsToRowsWizard = {
 						 */
 						colIndex = colIndex + 1;
 						self.vars.colsToSkip.splice(0, 1);
-						
+
 						self.reorderColumns(colIndex, callback);
 
 					},
@@ -249,11 +290,7 @@ var LinkedGov_columnsToRowsWizard = {
 			 * process as a more silent "AJAX" call without the default UI update
 			 * callbacks.
 			 */
-			LG.showWizardProgress(false);
-			var newColName = window.prompt("Enter a name for the new column that summarises these columns:","");
-			var valColName = window.prompt("Now enter a name for the new column that will contain it's values:","");
-			LG.showWizardProgress(true);
-			
+
 			LG.silentProcessCall({
 				type : "POST",
 				url : "/command/" + "core" + "/" + "transpose-columns-into-rows",
@@ -261,25 +298,14 @@ var LinkedGov_columnsToRowsWizard = {
 					columnCount : self.vars.colCount,
 					fillDown : true,
 					ignoreBlankCells : true,
-					keyColumnName: newColName,
+					keyColumnName: self.vars.newColName,
 					startColumnName : self.vars.startColName,
-					valueColumnName : valColName,
+					valueColumnName : self.vars.valColName,
 				},
 				success : function() {
-					/*
-					 * Perform a silent UI update before calling the next
-					 * operation.
-					 */
-					//Refine.reinitializeProjectData(function() {
-					//	ui.dataTableView.update(function() {
-					//		ui.browsingEngine.update(self.onComplete());
-					//	});
-					//});
-					
 					Refine.update({modelsChanged:true}, function(){
 						self.onComplete();
 					});
-					
 				},
 				error : function() {
 					self.onFail("A problem was encountered when transposing the columns.");
@@ -294,13 +320,12 @@ var LinkedGov_columnsToRowsWizard = {
 		 * Alerts the user of the reason why the wizard failed and resets the wizard.
 		 */
 		onFail : function(message) {
-			
+
 			var self = this;
 			/*
 			 * Reset any null cells to blanks again, using the "false" flag
 			 */
 			LG.ops.setBlanksToNulls(false, theProject.columnModel.columns, 0,function() {
-				//log("Columns to rows wizard failed.\n\n" + message);
 				Refine.update({everythingChanged : true});
 				LG.panels.wizardsPanel.resetWizard(self.vars.elmts.columnsToRowsBody);
 				LG.showWizardProgress(false);
@@ -320,7 +345,7 @@ var LinkedGov_columnsToRowsWizard = {
 			 * Reset any null cells to blanks again, using the "false" flag
 			 */
 			LG.ops.setBlanksToNulls(false, theProject.columnModel.columns, 0, function() {
-				
+
 				//log("Columns to rows wizard complete");
 				Refine.update({everythingChanged:true},function(){
 					// Refresh the content of the select inputs

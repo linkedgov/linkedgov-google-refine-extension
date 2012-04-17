@@ -433,7 +433,7 @@ var LinkedGov_WizardsPanel = {
 				$("#unitInputField").suggest({
 					"type": "unit"
 				}).bind("fb-select", function (e, data) {
-					//alert(data.name + ", " + data.id);
+					//LG.alert(data.name + ", " + data.id);
 				});
 
 				break;
@@ -493,7 +493,7 @@ var LinkedGov_WizardsPanel = {
 				var separator = $(this).parent().find("input.splitCharacter").val();
 				var splitElement = $(this).parent();
 				if(separator.length < 1 || name.length < 1){
-					alert("You need to make sure you have selected a column to split and entered a character to split by.");
+					LG.alert("You need to make sure you have selected a column to split and entered a character to split by.");
 				} else {
 					LG.ops.splitVariablePartColumn.initialise(name, separator, splitElement, function(){
 						$("input#address-split").removeAttr("checked");
@@ -1173,7 +1173,7 @@ var LinkedGov_WizardsPanel = {
 					}
 				},
 				error : function() {
-					alert("A problem was encountered when computing facets.");
+					LG.alert("generateColumnFacet() - A problem was encountered when computing facets.");
 				}
 			});	
 
@@ -1810,7 +1810,7 @@ var LinkedGov_WizardsPanel = {
 					}
 				},
 				error : function() {
-					alert("A problem was encountered when computing facets.");
+					LG.alert("verifyValueTypes() - A problem was encountered when computing facets.");
 				}
 			});	
 

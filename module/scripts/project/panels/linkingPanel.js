@@ -102,7 +102,7 @@ var LinkedGov_LinkingPanel = {
 					// LG.showWizardProgress(true);
 
 				} else {
-					alert("You need to confirm which columns you want to link. Click the " +
+					LG.alert("You need to confirm which columns you want to link. Click the " +
 					"'Suggest links' button to see which columns might be linkable.");
 				}
 
@@ -471,7 +471,7 @@ var LinkedGov_LinkingPanel = {
 					self.showLinkButton();
 
 				} else {
-					alert("This column has already been confirmed or there is reconciliation data that exists for this column already");
+					LG.alert("This column has already been confirmed or there is reconciliation data that exists for this column already");
 				}
 
 			});
@@ -1800,7 +1800,7 @@ var LinkedGov_LinkingPanel = {
 					}
 				},
 				error : function() {
-					alert("A problem was encountered when computing facets.");
+					LG.alert("updateMatches() - A problem was encountered when computing facets.");
 				}
 			});	
 		},

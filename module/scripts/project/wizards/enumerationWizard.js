@@ -42,7 +42,7 @@ var LinkedGov_enumerationWizard = {
 				self.enumerateValues(self.buildSymbolList());
 
 			} else {
-				alert("You need to select a column.");
+				LG.alert("You need to select a column.");
 			}
 
 		},
@@ -117,7 +117,7 @@ var LinkedGov_enumerationWizard = {
 		 */
 		onFail : function(message) {
 			var self = this;
-			alert("Enumeration wizard failed.\n\n" + message);
+			LG.alert("Enumeration wizard failed.\n\n" + message);
 			LG.panels.wizardsPanel.resetWizard(self.vars.elmts.enumerationBody);
 			LG.showWizardProgress(false);
 		},

@@ -44,7 +44,7 @@ var LinkedGov_nullValueWizard = {
 				self.nullifyValues(elmts.nullValueInputField.val(),0);
 
 			} else {
-				alert("You need to enter a \"missing\" value in the text box.");
+				LG.alert("You need to enter a \"missing\" value in the text box.");
 			}
 
 		},
@@ -91,7 +91,7 @@ var LinkedGov_nullValueWizard = {
 		 */
 		onFail : function(message) {
 			var self = this;
-			alert("Null value wizard failed.\n\n" + message);
+			LG.alert("Null value wizard failed.\n\n" + message);
 			LG.panels.wizardsPanel.resetWizard(self.vars.elmts.nullValueBody);
 			LG.showWizardProgress(false);
 		},

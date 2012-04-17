@@ -48,11 +48,11 @@ var LinkedGov_generalOperations = {
 					if (o.code == "ok") {
 						ui.browsingEngine.update();
 					} else if (o.code == "error") {
-						alert(o.message);
+						LG.alert(o.message);
 					}
 				},
 				error : function() {
-					alert("A problem was encountered when setting the facet count limit.");
+					LG.alert("A problem was encountered when setting the facet count limit.");
 				}
 			});
 
@@ -164,7 +164,7 @@ var LinkedGov_generalOperations = {
 
 				},
 				error : function() {
-					alert("A problem was encountered when computing facets.");
+					LG.alert("A problem was encountered when computing facets.");
 				}
 			});	
 
@@ -212,7 +212,7 @@ var LinkedGov_generalOperations = {
 					callback(data);
 				},
 				error : function() {
-					alert("A problem was encountered when computing facets.");
+					LG.alert("A problem was encountered when computing facets.");
 				}
 			});	
 
@@ -269,7 +269,7 @@ var LinkedGov_generalOperations = {
 						self.setBlanksToNulls(toNulls, columns, i, callback);
 					},
 					error : function() {
-						alert("A problem was encountered when performing a text-transform on the column: \"" + columns[i].name + "\".");
+						LG.alert("A problem was encountered when performing a text-transform on the column: \"" + columns[i].name + "\".");
 					}
 				});
 
@@ -308,16 +308,16 @@ var LinkedGov_generalOperations = {
 						},
 						success : callback,
 						error : function() {
-							alert("A problem was encountered when renaming the column: \""
+							LG.alert("A problem was encountered when renaming the column: \""
 									+ oldName + "\".");
 						}
 					});
 				} else {
-					alert("Could not rename the \"" + oldName + "\" column to \"" + newName + "\" - a column already exists with that name.");
+					LG.alert("Could not rename the \"" + oldName + "\" column to \"" + newName + "\" - a column already exists with that name.");
 					return false;
 				}
 			} else {
-				alert("Could not rename the \"" + oldName + "\" column to \"" + newName + "\" - because it contains an " +
+				LG.alert("Could not rename the \"" + oldName + "\" column to \"" + newName + "\" - because it contains an " +
 						"illegal character.<br /><br />" +
 						"Illegal characters:<br />" +
 						"<ul class='illegal-chars'><li>!</li><li>\"</li><li>#</li><li>$</li><li>&pound;</li><li>%</li><li>&amp;</li><li>'</li><li>(</li><li>)</li><li>*</li><li>+</li><li>,</li><li>/</li><li>.</li><li>:</li><li>;</li><li>&lt;</li><li>=</li><li>&gt;</li><li>?</li><li>@</li><li>[</li><li>]</li><li>^</li><li>`</li><li>{</li><li>|</li><li>}</li><li>~</li></ul>");
@@ -342,7 +342,7 @@ var LinkedGov_generalOperations = {
 					}
 				},
 				error : function() {
-					alert("A problem was encountered when removing the column: \""
+					LG.alert("A problem was encountered when removing the column: \""
 							+ colName + "\".");
 				}
 			});
@@ -377,7 +377,7 @@ var LinkedGov_generalOperations = {
 					Refine.update({cellsChanged : true});
 				},
 				error : function() {
-					alert("Error parsing value types in column");
+					LG.alert("Error parsing value types in column");
 				}
 			});
 
@@ -412,7 +412,7 @@ var LinkedGov_generalOperations = {
 					});
 				},
 				error : function() {
-					alert("A problem was encountered when splitting the column: \""
+					LG.alert("A problem was encountered when splitting the column: \""
 							+ colName + "\".");
 				}
 			});
@@ -438,7 +438,7 @@ var LinkedGov_generalOperations = {
 					}
 				},
 				error : function() {
-					alert("A problem was encountered when moving the column: \"" + colName + "\".");
+					LG.alert("A problem was encountered when moving the column: \"" + colName + "\".");
 				}
 			});
 
@@ -583,7 +583,7 @@ var LinkedGov_generalOperations = {
 					}
 				},
 				error : function() {
-					alert("Error saving hidden column metadata")
+					LG.alert("Error saving hidden column metadata")
 				}
 			});
 
@@ -613,7 +613,7 @@ var LinkedGov_generalOperations = {
 					}
 				},
 				error : function() {
-					alert("Error erasing hidden column metadata")
+					LG.alert("Error erasing hidden column metadata")
 				}
 			});
 
@@ -643,7 +643,7 @@ var LinkedGov_generalOperations = {
 					}
 				},
 				error: function(){
-					alert("Error retrieving hidden column metadata");
+					LG.alert("Error retrieving hidden column metadata");
 				}
 			});
 
@@ -869,9 +869,9 @@ var LinkedGov_generalOperations = {
 							}
 						});
 					} catch (e) {
-						log("Error: splitVariablePartColumn - createNewColumns()")
-						log(e);
-						alert("A column already exists with the name " + self.vars.colName + " " + colSuffix + ", \"(LG)\" has been appended to the column name for now.");
+						//log("Error: splitVariablePartColumn - createNewColumns()")
+						//log(e);
+						LG.alert("A column already exists with the name " + self.vars.colName + " " + colSuffix + ", \"(LG)\" has been appended to the column name for now.");
 						/*
 						 * If the error is due to the new column name already existing
 						 * then append a more unique suffix
@@ -932,7 +932,7 @@ var LinkedGov_generalOperations = {
 
 			onFail : function(message) {
 				var self = this;
-				alert("Column split failed.\n\n" + message);
+				LG.alert("Column split failed.\n\n" + message);
 				self.vars.splitterHTML.find("input#splitCharacter").val("").focus();
 				LG.removeColumnOverlays();
 			},
