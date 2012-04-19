@@ -54,11 +54,6 @@ var LG = {
 				this.setUpImportPanel();	
 			}
 
-			//setTimeout(function(){
-			//	$("#header").show();
-			//	$("body").show();
-			//},50);
-
 		},
 
 		/*
@@ -406,13 +401,6 @@ var LG = {
 			
 			$.each(LG.vars.metadataObject,function(key,val){
 				
-				//log("key = "+key);
-				//log("val = "+val);
-				//log("encodeURIComponent(val) = "+encodeURIComponent(val));
-				
-				
-				//$.post("/command/core/set-preference?name="+key+"&value="+encodeURIComponent(val)+"&project="+projectID);
-				
 				$.ajax({
 					type: "POST",
 					url: "/command/core/set-preference?" + $.param({ 
@@ -432,8 +420,6 @@ var LG = {
 				
 			});
 
-			
-
 		},
 
 		/*
@@ -452,11 +438,11 @@ var LG = {
 
 		resizeParsingPanel:function(){
 
-			log("resizeParsingPanel");
+			//log("resizeParsingPanel");
 
-			var self = Refine.DefaultImportingController.sources[0].ui._controller;
+			var controller = Refine.DefaultImportingController.sources[0].ui._controller;
 
-			self._parsingPanelResizer = function(){
+			controller._parsingPanelResizer = function(){
 
 				$("body.lg div.default-importing-parsing-control-panel")
 				.css("height","auto")
@@ -507,10 +493,10 @@ var LG = {
 					}
 				});
 
-			}
+			};
 
 			$(window).unbind("resize");
-			$(window).bind("resize", self._parsingPanelResizer);
+			$(window).bind("resize", controller._parsingPanelResizer);
 			$(window).resize();
 
 		},
@@ -631,9 +617,9 @@ Refine.DefaultImportingController.prototype._onImportJobReady = function() {
 
 	LG.resizeParsingPanel();
 
-	$(window).unbind("resize");
-	$(window).bind("resize",Refine.DefaultImportingController.sources[0].ui._controller._parsingPanelResizer);
-	$(window).resize();
+	//$(window).unbind("resize");
+	//$(window).bind("resize",Refine.DefaultImportingController.sources[0].ui._controller._parsingPanelResizer);
+	//$(window).resize();
 };
 
 

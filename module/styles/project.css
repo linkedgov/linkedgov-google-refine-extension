@@ -1194,7 +1194,7 @@ body.lg div.column-header-recon-stats-bar
 }
 body.lg div.data-table-recon-candidates
 {
-    display: none;
+    /*display: none;*/
 }
 body.lg div.data-table-recon-extra
 {

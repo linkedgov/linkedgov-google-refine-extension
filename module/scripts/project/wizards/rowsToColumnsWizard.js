@@ -48,7 +48,6 @@ var LinkedGov_rowsToColumnsWizard = {
 			colsToExclude : [],
 			newHeaders : [],
 			abortOperation : false,
-			abortMessage : "",
 			elmts : {}
 		},
 
@@ -71,8 +70,6 @@ var LinkedGov_rowsToColumnsWizard = {
 			
 			self.vars.elmts = elmts;
 
-			// LG.setFacetCountLimit(1000);
-
 			if ($(elmts.rowsToColumnsColumns).children("li").length < 1
 					|| $(elmts.rowsToColumnsColumns2).children("li").length < 1) {
 				LG.alert("You must select a single column containing multiple types and another "
@@ -83,31 +80,22 @@ var LinkedGov_rowsToColumnsWizard = {
 				LG.showWizardProgress(true);
 
 				// Store the column containing the new column header values
-				self.vars.headersColName = $(elmts.rowsToColumnsColumns).children(
-				"li").eq(0).data("colName");
+				self.vars.headersColName = $(elmts.rowsToColumnsColumns).children("li").eq(0).data("colName");
 				// Store the column containing the values for the new columns
-				self.vars.valuesColName = $(elmts.rowsToColumnsColumns2).children(
-				"li").eq(0).data("colName");
+				self.vars.valuesColName = $(elmts.rowsToColumnsColumns2).children("li").eq(0).data("colName");
 
-				log(self.vars.headersColName + "," + self.vars.valuesColName);
-
-				/*
-				 * Store the columns to exclude from the operation (e.g. a totals
-				 * column)
-				 */
+				// Store the columns to exclude from the operation (e.g. a totals
+				// column)
 				$(elmts.rowsToColumnsColumns3).children("li").each(function() {
 					self.vars.colsToExclude.push($(this).data("colName"))
 				});
-
-				/*
-				 * Set blank cells to bull before starting the operation, call the
-				 * first wizard operation once complete.
-				 */
+				
+				// Set blank cells to bull before starting the operation, call the
+				// first wizard operation once complete.
 				LG.ops.setBlanksToNulls(true, theProject.columnModel.columns, 0, function() {
 					self.findSortableColumnHeaders();
 				});
 			}
-
 		},
 
 		/*
@@ -137,21 +125,11 @@ var LinkedGov_rowsToColumnsWizard = {
 			 */
 			$.each(theProject.columnModel.columns, function(key, value) {
 
-				// log("self.vars.valuesColName:");
-				// log(self.vars.valuesColName);
-				// log("self.vars.headersColName:");
-				// log(self.vars.headersColName);
-				// log("value.name");
-				// log(value.name);
-
 				if (value.name != self.vars.valuesColName
 						&& $.inArray(value.name, self.vars.colsToExclude) < 0) {
 					colHeaders.push(value.name);
 				}
 			});
-
-			log("Sortable column headers");
-			log(colHeaders);
 
 			/*
 			 * Sort the columns to produce a 'grouped' situation amongst the rows.
@@ -179,11 +157,6 @@ var LinkedGov_rowsToColumnsWizard = {
 			var self = this;
 
 			var colCountObj = colCountObj || [];
-
-			// log("-----------------------------------")
-			// log("columnCountUniqueValues:");
-			// log(colHeaders);
-			// log(ans);
 
 			/*
 			 * While we still have columns to iterate through
@@ -242,17 +215,16 @@ var LinkedGov_rowsToColumnsWizard = {
 								 * don't, then the transpose will not work
 								 * unless the 'missing' rows are added.
 								 */
-								// log(data.facets[h].columnName + '==' +
-								// self.vars.headersColName);
 								if (data.facets[h].columnName == self.vars.headersColName) {
-									log("here");
+
 									for ( var i = 0; i < (values - 1); i++) {
-										log("i=" + i);
+
 										if (data.facets[h].choices[i].c != data.facets[h].choices[i + 1].c) {
 											self.vars.abortMessage = "Cannot proceed. There aren't an even number of "
 												+ "values in the "
 												+ self.vars.headersColName
 												+ " column.";
+											
 											self.vars.abortOperation = true;
 										}
 									}
@@ -281,30 +253,20 @@ var LinkedGov_rowsToColumnsWizard = {
 							count : values
 						});
 
-						// log('colHeaders');
-						// log(colHeaders);
-						// log('ans');
-						// log(ans);
-						// log('colHeaders.length');
-						// log(colHeaders.length);
-
 						/*
 						 * Remove the column that's just been used
 						 */
 						colHeaders.splice(0, 1);
 
 						if (!self.vars.abortOperation) {
-							self.columnCountUniqueValues(colHeaders,
-									colCountObj, callback);
+							self.columnCountUniqueValues(colHeaders, colCountObj, callback);
 						} else {
 							colHeaders = [];
-							self
-							.onFail("A problem was encountered when computing facets.");
+							self.onFail("columnCountUniqueValues() - A problem was encountered when computing facets.");
 						}
 					},
 					error : function() {
-						self
-						.onFail("A problem was encountered when computing facets.");
+						self.onFail("columnCountUniqueValues() 2 - A problem was encountered when computing facets.");
 					}
 				});
 
@@ -330,9 +292,6 @@ var LinkedGov_rowsToColumnsWizard = {
 
 			var self = this;
 
-			// log('colCountObj');
-			// log(colCountObj);
-
 			// Temp var for storing the highest unique value
 			var highest = 0;
 			// The new array of column names
@@ -347,8 +306,6 @@ var LinkedGov_rowsToColumnsWizard = {
 					columnHeadersByUniqueValue.splice(1, 0, colCountObj[a].name);
 				}
 			}
-
-			log('Column headers by unique value: ' + columnHeadersByUniqueValue);
 
 			self.reorderRows(columnHeadersByUniqueValue);
 		},
@@ -370,7 +327,7 @@ var LinkedGov_rowsToColumnsWizard = {
 		 */
 		reorderRows : function(columnHeadersByUniqueValue) {
 
-			log("reorderRows");
+			//log("reorderRows");
 
 			var self = this;
 
@@ -399,9 +356,6 @@ var LinkedGov_rowsToColumnsWizard = {
 				}
 			}
 
-			log('sortingObject:');
-			log(sortingObject);
-
 			/*
 			 * Post a silent "reorder-rows" call - remembering to include the
 			 * 'theProject' parameter.
@@ -416,7 +370,7 @@ var LinkedGov_rowsToColumnsWizard = {
 					self.multiValueTranspose();
 				},
 				error : function() {
-					self.onFail("A problem was encountered when reordering rows.");
+					self.onFail("reorderRows() - A problem was encountered when reordering rows.");
 				}
 			});
 
@@ -438,7 +392,7 @@ var LinkedGov_rowsToColumnsWizard = {
 
 			var self = this;
 
-			log("multiValueTranspose beginning");
+			//log("multiValueTranspose");
 
 			/*
 			 * Create a facet parameter object using the global column name to
@@ -468,9 +422,6 @@ var LinkedGov_rowsToColumnsWizard = {
 				},
 				success : function(data) {
 
-					// log("data");
-					// log(data);
-
 					for ( var h = 0; h < data.facets.length; h++) {
 						if (data.facets[h].columnName == self.vars.headersColName) {
 							if (typeof data.facets[h].choices != 'undefined') {
@@ -492,7 +443,7 @@ var LinkedGov_rowsToColumnsWizard = {
 								 * wizard because they are trying to
 								 * transpose too many rows to columns.
 								 */
-								log("Aborting rows to columns wizard - facet count limit reached.")
+								//log("Aborting rows to columns wizard - facet count limit reached.")
 								self.vars.abortOperation = true;
 							}
 						}
@@ -503,7 +454,7 @@ var LinkedGov_rowsToColumnsWizard = {
 					 * otherwise continue.
 					 */
 					if (!self.vars.abortOperation) {
-						log("transposing...");
+						//log("transposing...");
 						/*
 						 * Post a silent "transpose" call, performing a
 						 * minor UI update as a callback, before proceeding
@@ -526,7 +477,7 @@ var LinkedGov_rowsToColumnsWizard = {
 							},
 							error : function() {
 								self
-								.onFail("A problem was encountered when transposing rows.");
+								.onFail("multiValueTranspose() - A problem was encountered when transposing rows.");
 							}
 						});
 					} else {
@@ -537,7 +488,7 @@ var LinkedGov_rowsToColumnsWizard = {
 				},
 				error : function() {
 					self
-					.onFail("A problem was encountered when computing facets.");
+					.onFail("multiValueTranspose() - A problem was encountered when computing facets.");
 				}
 			});
 
@@ -650,7 +601,7 @@ var LinkedGov_rowsToColumnsWizard = {
 									clearInterval(myInterval);
 								} else {
 									// wait for facet UI to complete creation
-									log("Blank facet isn't set up yet, waiting 1 second...");
+									//log("Blank facet isn't set up yet, waiting 1 second...");
 								}
 							}, 1000);
 				}
@@ -727,11 +678,6 @@ var LinkedGov_rowsToColumnsWizard = {
 
 			var self = this;
 
-			// log('oldNames');
-			// log(oldNames);
-			// log('newNames');
-			// log(newNames);
-
 			/*
 			 * If there are still column names to rename
 			 */
@@ -775,7 +721,7 @@ var LinkedGov_rowsToColumnsWizard = {
 				});
 
 			} else {
-				log("No more columns to rename");
+				//log("No more columns to rename");
 			}
 		},
 
@@ -788,7 +734,7 @@ var LinkedGov_rowsToColumnsWizard = {
 
 			var self = this;
 
-			log("removeHeadersColumn");
+			//log("removeHeadersColumn");
 
 			/*
 			 * Post a silent "remove-column" call.
@@ -818,7 +764,7 @@ var LinkedGov_rowsToColumnsWizard = {
 		onFail : function(message) {
 			var self = this;
 			LG.ops.setBlanksToNulls(false, theProject.columnModel.columns, 0, function() {
-				LG.alert("Rows to columns wizard failed. \n\n" + message);
+				LG.alert("Rows to columns wizard failed.<br /><br />" + (self.vars.abortMessage ? self.vars.abortMessage: message));
 				LG.panels.wizardsPanel.resetWizard(self.vars.elmts.rowsToColumnsBody);
 				LG.showWizardProgress(false);
 			});
@@ -836,8 +782,6 @@ var LinkedGov_rowsToColumnsWizard = {
 			var self = this;
 
 			LG.ops.setBlanksToNulls(false, theProject.columnModel.columns, 0, function() {
-				DialogSystem.dismissAll();
-				// LG.setFacetCountLimit(100);
 				Refine.update({
 					everythingChanged : true
 				});

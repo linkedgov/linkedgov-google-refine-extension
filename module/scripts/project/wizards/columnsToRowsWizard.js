@@ -126,6 +126,8 @@ var LinkedGov_columnsToRowsWizard = {
 			
 			var self = this;
 			
+			LG.showWizardProgress(true);
+			
 			// Recalculate which columns are going to be transposed, taking into
 			// account any columns the user wants to skip.
 			self.checkSkippedColumns();

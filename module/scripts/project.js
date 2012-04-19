@@ -254,6 +254,8 @@ LG.loadOperationScripts = function(){
 						//LG.rdfOps.applyTypeIcons.apply();
 						// Keep any hidden columns hidden
 						LG.ops.keepHiddenColumnsHidden();
+						// Keep reconciliation options hidden
+						LG.hideReconciliationOptions();
 						// Whenever Refine updates the data table, it removes the classes from the table 
 						// header - which destroys our RDF symbols
 						LG.rdfOps.applyTypeIcons.apply();				
@@ -313,6 +315,17 @@ LG.loadOperationScripts = function(){
 	});
 };
 
+/*
+ * Hides the "Create new topic" option inside the cells 
+ * once a column has been reconciled.
+ */
+LG.hideReconciliationOptions = function(){
+
+	$("div.data-table-recon-candidates").each(function(){
+		$(this).find("div.data-table-recon-candidate").eq($(this).find("div.data-table-recon-candidate").length-1).hide();
+	});
+	
+};
 
 /*
  * detectColumnsOfNumbers
@@ -733,7 +746,7 @@ LG.showFinishMessage = function(){
 		"<p>People and machines will be able to understand more from it and find it easier to access it regardless of " +
 		"their location in the world.</p>" + 
 		"<p>This data is now stored inside LinkedGov's database - and is available through the <a href='#'>Question site</a> and " +
-		"the <a href='#'>developer's search</a></p>" +
+		"the <a href='#'>developer's search</a>.</p>" +
 		"<h3>What next?</h3>" +
 		"<p>If there are any errors, unexpected values - or work that still " +
 		"needs doing within the data - these will be used to create tasks for others " +

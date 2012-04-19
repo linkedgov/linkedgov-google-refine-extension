@@ -49,6 +49,11 @@
 </div>
 
 <script type="text/javascript">
+
+$("input[bind='guessCellValueTypesCheckbox']").click();
+$("input[bind='guessCellValueTypesCheckbox']").removeAttr("checked");
+$("input[bind='guessCellValueTypesCheckbox']").attr("disabled","true");
+
 $("button.no-success").click(function(){
 	// hide success question
 	// show parsing controls

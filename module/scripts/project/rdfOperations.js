@@ -1011,7 +1011,7 @@ var LinkedGov_rdfOperations = {
 								"curie" : self.vars.vocabs.lg.curie + ":" + camelizedColumnName,
 								"target" : {
 									"nodeType" : "cell-as-literal",
-									"expression" : "value.trim()",
+									"expression" : "if(type(value)=='string',value.trim(),value)",
 									"columnName" : columnHeaders[i]._column.name,
 									"isRowNumberCell" : false
 								}

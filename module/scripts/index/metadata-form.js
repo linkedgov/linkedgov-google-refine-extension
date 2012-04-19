@@ -96,6 +96,7 @@ $("button#dummy").toggle(function(){
  * Add our own handler to the "proceed" button.
  */
 $("button.proceed").click(function(){
+	//log("clicked me!");
 	LG.validateForm();
 });
 
