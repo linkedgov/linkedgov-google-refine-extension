@@ -708,5 +708,15 @@ function log(str) {
  * Call the main initialisation function once the script & page has loaded
  */
 $(document).ready(function(){
+	
 	LG.initialise();
+	
+	/*
+	 * Add our own handler to the "proceed" button.
+	 */
+	$("button.proceed").die("click").live("click",function(){
+		log("clicked me!");
+		LG.validateForm();
+	});
+	
 });

@@ -7,8 +7,6 @@ $(document).ready(function(){
 	LG.disableFeaturesForImport();
 });
 
-
-
 /*
  * If the user selects "other" when choosing a data license, then half  
  * of the form needs to be disabled and a license notice message displayed.
@@ -92,11 +90,5 @@ $("button#dummy").toggle(function(){
 	$("div.metadata select#data-update-freq-input").val("");
 });
 
-/*
- * Add our own handler to the "proceed" button.
- */
-$("button.proceed").click(function(){
-	//log("clicked me!");
-	LG.validateForm();
-});
+
 

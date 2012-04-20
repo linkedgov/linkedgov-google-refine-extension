@@ -609,7 +609,6 @@ LG.createDialog = function(o){
 
 	if(o.ok){
 		if(typeof o.ok == "function"){
-			log("Creating ok button with custom callback");
 			$('<button></button>').addClass('button').html("&nbsp;&nbsp;OK&nbsp;&nbsp;").click(o.ok).appendTo(footer);
 		} else {
 			$('<button></button>').addClass('button').html("&nbsp;&nbsp;OK&nbsp;&nbsp;").click(function(){
