@@ -347,6 +347,9 @@ body.lg a.wizard-header:hover
 body.lg div#left-panel div.refine-tabs
 {
 }
+body.lg div.ui-tabs ul.ui-tabs-nav li {
+    margin:0px;
+}
 body.lg div#refine-tabs-typing a.collapse-expand
 {
     bottom: 6px;

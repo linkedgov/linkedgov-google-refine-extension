@@ -715,7 +715,6 @@ $(document).ready(function(){
 	 * Add our own handler to the "proceed" button.
 	 */
 	$("button.proceed").die("click").live("click",function(){
-		log("clicked me!");
 		LG.validateForm();
 	});
 	

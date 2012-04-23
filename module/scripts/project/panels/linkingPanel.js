@@ -39,10 +39,10 @@ var LinkedGov_LinkingPanel = {
 			// cross-browser index-out-of-range errors.
 			// TODO: Doesn't seem to have an effect (Safari).
 			self.suggestCache = {
-					"a":"b"
+					"LG123456789":"LG123456789"
 			};
 			self.previewCache = {
-					"a":"b"					
+					"LG123456789":"LG123456789"			
 			};
 
 			// Set up the vocabularies we use to store the RDF
@@ -2061,10 +2061,7 @@ var LinkedGov_LinkingPanel = {
 					suggestOptions = ReconciliationManager.standardServices[i].suggest.entity;
 				}
 			}
-
-			//log("suggestOptions");
-			//log(suggestOptions);
-
+			
 			// Create an AJAX object for the suggest pane. We can specifically choose 
 			// to abort this AJAX call this way
 			self.suggestXHR = {
@@ -2130,8 +2127,9 @@ var LinkedGov_LinkingPanel = {
 							dataType:"json",
 							async:true,
 							success : function(data) {
+								
 								// If we have a result
-								if(typeof data.result != 'undefined' && data.result.length > 0){
+								if(typeof data != 'undefined' && typeof data.result != 'undefined' && data.result.length > 0){
 									// Pass a number of variables to help construct the list of suggestions
 									self.buildSuggestionList(data, inputElement, unmatchedValue, serviceURL, suggestOptions);
 								} else {
@@ -2194,7 +2192,7 @@ var LinkedGov_LinkingPanel = {
 			//log("buildSuggestionList");
 
 			var self = this;
-
+			
 			// Begin to construct the list
 			var ul = $("<ul>").addClass("fbs-list");
 			// Iterate through the suggestion results
