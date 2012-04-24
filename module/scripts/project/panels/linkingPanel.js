@@ -550,12 +550,21 @@ var LinkedGov_LinkingPanel = {
 			// Loop through the column model to find columns with reconciliation objects
 			for(var i=0; i<columns.length; i++){
 
-				// Check that the column also has at least one matched topic
+				// Check that the column also has at least one matched topic.
+				// 
+				// The "columns[i].reconStats.matchedTopics > 0" line test is necessary
+				// as Refine doesn't actually clear all traces of reconciliation (it actually 
+				// leaves reconConfig and reconStats defined).
+				// This means if a column is reconciled but returns no matches - we will not count 
+				// it as having been reconciled if the project is refreshed / the linking panel is 
+				// revisited.
+				// 
+				// http://code.google.com/p/google-refine/issues/detail?id=545
 				if(typeof columns[i].reconConfig != 'undefined' 
 					&& typeof columns[i].reconStats != 'undefined'){
-					// (This line has been taken out as it's possible to reconcile 
-					// a column with no matches
-					//	&& columns[i].reconStats.matchedTopics > 0){
+						//&& columns[i].reconStats.matchedTopics > 0){
+
+						
 
 					// This column has reconciliation data
 
@@ -674,6 +683,7 @@ var LinkedGov_LinkingPanel = {
 							self.existingLinks.splice(i,1);
 						}
 					}
+					
 					self.showLinkButton();
 				});
 			});
@@ -1699,6 +1709,8 @@ var LinkedGov_LinkingPanel = {
 			// 4. Remove the columns reconciliation RDF data
 			LG.rdfOps.removeColumnInRDF(columnName);
 
+			//
+			
 			// 5. Perform any UI clean up
 			Refine.update({modelsChanged:true}, function(){
 				callback(columnName);

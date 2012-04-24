@@ -51,7 +51,8 @@
 <script type="text/javascript">
 var myInterval = setInterval(function(){
 	if($("div.default-importing-progress-data-panel").css("display") != "none"){
-		//log("Updating preview...");
+		// Wait for Refine to automatically type the columns containing numbers 
+		// and dates 
 	} else {
 	    $("input[bind='guessCellValueTypesCheckbox']").click().change();
 	    clearInterval(myInterval);
