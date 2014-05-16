@@ -1,3 +1,13 @@
+The LinkedGov extension for Google Refine is a plug and play module that semi-automatically cleans up messy, unformatted government data.
+
+The technical documentation can be found here: http://wiki.linkedgov.org/index.php/Google_Refine_extension
+
+As the data is cleaned and formatted, the user is asked to specify things and answer questions about their data, which in turn creates mappings that transform the user's imported tabular data into graph data - specifically - RDF (a linked data format).
+
+The extension offers a number of wizards that carry out cleaning, linking or enriching tasks on the data. For example, a cleaning wizard may ask the user if there's a column containing dates - and which format(s) the dates are in (e.g. 02/05/2012, 02-May-2012...). The wizard is then able to process and reformat the dates into a standardised, globally acceptable format (ISO8601).
+
+The linking wizard is able to perform automatic reconciliation against linked data endpoints on the web - linking them to their online definitions. For example, a column containing department name abbreviations (e.g. MOD, BIS, HMRC...), could be automatically reconciled to their identifiers on data.gov.uk (e.g. http://reference.data.gov.uk/doc/department/bis). By linking the values to their online definitions - whole new paths of information can be accessed for each department.
+
 Icon credits
 
 Labelling panel icon
